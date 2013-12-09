@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		xmlns:com="com.adams.dt.view.tracability.ui.*"
+		horizontalScrollPolicy="off" verticalScrollPolicy="off"
+		horizontalAlign="center"
+		creationComplete="onCreationComplete()">
+<mx:Script>
+	<![CDATA[
+		import mx.events.FlexEvent;
+		import com.adams.dt.view.tracability.ui.CustomDateField;
+		import com.adams.dt.model.scheduler.util.DateUtil;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.vo.Phases;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.tracability.TracPhase;
+		
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		public var fromPhases:Boolean;
+		
+		private var _lineColor:Array = ["0x9C8F5F", "0x2A7C69","0xB91854","0x005DB3","0xD91B00","0x5BC236"];
+		private var isChildrenAdded:Boolean;
+		private var isCreationComplete:Boolean;
+		
+		private var _datesArray:Array;         
+		[Bindable]
+		public function get datesArray():Array {
+			return _datesArray;
+		}          
+		public function set datesArray( value:Array ):void {
+			_datesArray = value;
+			createDateFields();
+		}
+		
+		private var _enabledValue:Boolean;
+		[Bindable]
+		public function get enabledValue():Boolean {
+			return _enabledValue;
+		}
+		
+		public function set enabledValue( value:Boolean ):void {
+			_enabledValue = value
+		}
+		
+		private function onCreationComplete():void {
+			if( !isCreationComplete ) {
+				isCreationComplete = true;
+			}
+			if( isCreationComplete && isChildrenAdded ) {
+				childUpdate();
+			} 
+		}
+		
+		private function createDateFields():void {
+			for( var j:int = ( numChildren - 1 ); j >= 0; j-- ) {
+				removeChildAt( j );
+			}
+			if( model.tracTaskContent.adjustedStartDate &&( model.workflowState != 0 || model.mainProjectState == 1 ) ) {
+				model.tracTaskContent.adjustedStartDate = null;
+			}
+			var startDate:CustomDateField = new CustomDateField();
+			startDate.phaseLabel = 'Project Start';
+			startDate.editEnabled = false;
+			if( !Phases( model.currentProjects.phasesSet.getItemAt( 0 ) ).phaseEnd && model.currentUserProfileCode == 'FAB' && model.updatePhase ) {  
+				startDate.startAdjustable = true;
+				startDate.addEventListener( "applyReferenceDate", onReferenceDateChange , false, 0, true );
+			}
+			startDate.lineColor = _lineColor[ 0 ];
+			startDate.period = 1;
+			startDate.selectedDate = Phases( model.currentProjects.phasesSet.getItemAt( 0 ) ).phaseStart;
+			startDate.localReferenceDate = model.currentProjects.projectDateStart;
+			startDate.visibleDays = true;
+			addChild( startDate );
+			
+			for( var i:int = 1; i <= datesArray.length; i++ ) {
+				
+				var dateField:CustomDateField = new CustomDateField();
+				dateField.phaseNumber = i.toString();
+				dateField.phaseLabel = TracPhase( datesArray[ i - 1 ] ).phaseName;
+				dateField.editEnabled = enabledValue;
+				dateField.lineColor = _lineColor[ i ];
+				dateField.selectedDate = TracPhase( datesArray[ i - 1 ] ).phaseDate;
+				dateField.referenceDate = CustomDateField( getChildAt( i -1 ) ).selectedDate;
+				
+				if( Phases( model.currentProjects.phasesSet.getItemAt( 0 ) ).phaseEnd ) {  
+					dateField.editEnabled = false;	
+				}
+				
+				if( dateField.editEnabled ) {
+					dateField.addEventListener( "applyReferenceDate", onReferenceDateChange, false, 0, true );
+				}
+				
+				if( i == datesArray.length ) {
+					dateField.visibleTotal = true;
+					dateField.addEventListener( FlexEvent.CREATION_COMPLETE, onChildAddedComplete, false, 0, true );
+				}
+				addChild( dateField );
+			}
+		}
+		
+		private function onChildAddedComplete( event:FlexEvent ):void {
+			CustomDateField( event.currentTarget ).removeEventListener( FlexEvent.CREATION_COMPLETE, onChildAddedComplete );
+			if( CustomDateField( getChildAt( numChildren - 1) ) == CustomDateField( event.currentTarget ) ) {
+				if( !isChildrenAdded ) {
+					isChildrenAdded = true;
+				}
+				if( isCreationComplete && isChildrenAdded ) {
+					childUpdate();
+				}
+			}
+		}
+		
+		private function onReferenceDateChange( event:Event ):void {
+			var selectedIndex:int = getChildIndex( event.currentTarget as DisplayObject );
+			for( var i:int = ( selectedIndex + 1 ); i < numChildren; i++ ) {
+				CustomDateField( getChildAt( i ) ).referenceDate = CustomDateField( getChildAt( i - 1 ) ).selectedDate;
+			}
+			setTotalPeriod();
+			
+			if( fromPhases ) {
+				update( selectedIndex );
+			}
+		}
+		
+		private function setTotalPeriod():void {
+			var finalTime:Number = CustomDateField( getChildAt( numChildren - 1 ) ).selectedDate.getTime();
+			var startTime:Number = CustomDateField( getChildAt( 0 ) ).selectedDate.getTime();
+			var totalTime:Number = Math.ceil( ( finalTime - startTime ) / DateUtil.DAY_IN_MILLISECONDS ); 
+			var totalPeriod:Number = DateUtil.weekEndRemovalOfSelectedDate( CustomDateField( getChildAt( 0 ) ).selectedDate, totalTime );
+			var startPoint:Point = CustomDateField( getChildAt( 0 ) ).originPoint;
+			startPoint = CustomDateField( getChildAt( 0 ) ).localToGlobal( startPoint );
+			var totalDuration:int;
+			for( var i:int = 0; i < numChildren; i++ ) {
+				CustomDateField( getChildAt( i ) ).initialDate = CustomDateField( getChildAt( 0 ) ).selectedDate;	
+				CustomDateField( getChildAt( i ) ).globalStartPoint = startPoint;
+				CustomDateField( getChildAt( i ) ).totalPeriod = totalPeriod;
+				
+				if( i == ( numChildren - 1 ) ) {
+					CustomDateField( getChildAt( i ) ).totalDays.text = totalPeriod.toString();
+				}
+			}
+		}
+		
+		private function childUpdate():void {	
+			var totalWidth:Number = ( getChildAt( numChildren - 1 ).x + getChildAt( numChildren - 1 ).width / 2 ) - ( getChildAt( 0 ).x + getChildAt( 0 ).width / 2 );
+			for( var j:int = 0; j < numChildren; j++ ) {
+				CustomDateField( getChildAt( j ) ).totalWidth = totalWidth;
+				if( !CustomDateField( getChildAt( j ) ).editEnabled ) {
+					CustomDateField( getChildAt( j ) )._phaseInput.styleName = 'disabledText';
+				}
+			}
+			if( ( numChildren > 1 ) && CustomDateField( getChildAt( numChildren -1 ) ).selectedDate ) {
+				setTotalPeriod();
+			}
+		}
+		
+		private function update( selectedIndex:int ):void {
+			
+			var updateCollection:ArrayCollection = new ArrayCollection();
+			
+			for( var i:int = 1; i < numChildren;i++ ) {
+				
+				var phase:Phases = Phases( model.tracTaskContent.phasesTemplates.getItemAt( i - 1 ) );
+				var prevphase:Phases = new Phases();
+				
+				if( i != 1 ) {
+					prevphase = Phases( model.tracTaskContent.phasesTemplates.getItemAt( i - 2 ) );
+				}
+				
+				if( ( model.updatePhase ) && ( !prevphase.phaseEnd ) ) {
+					if( i != 1 )	phase.phaseStart = CustomDateField( getChildAt( i -1 ) ).selectedDate;
+				}
+				
+				if( !phase.phaseEnd ) {	
+					phase.phaseDuration = CustomDateField( getChildAt( i ) ).period;
+				}
+				
+				if( ( i == 1 )  &&  ( selectedIndex == 0 ) ) {
+					model.tracTaskContent.adjustedStartDate = CustomDateField( getChildAt( 0 ) ).selectedDate;
+				}
+				
+				phase.phaseEndPlanified = CustomDateField( getChildAt( i ) ).selectedDate;
+				updateCollection.addItem( phase );
+			}
+			model.tracTaskContent.tracPhases = updateCollection;
+		}
+		
+	]]>
+</mx:Script>
+</mx:HBox>

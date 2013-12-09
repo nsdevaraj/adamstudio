@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" contentBackgroundColor="red"
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="25" verticalAlign="middle">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adams.dt.model.vo.Tasks;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.ButtonBarButton;
+			import spark.events.IndexChangeEvent;
+			
+			private var sort:Sort;
+			private var status:Array;
+			private var dateSort:String = 'Descending';
+			private var _previousSort:int = -1;
+			
+			private var _sourceProvider:ArrayCollection;
+			public function set sourceProvider( value:ArrayCollection ):void {
+				_sourceProvider = value;
+			}
+			
+			protected function dateSortHandler( event:MouseEvent ):void {
+				if( dateSort == 'Ascending' ) {
+					dateSort = 'Descending';
+				} 
+				else {
+					dateSort = 'Ascending';
+				}
+				makeStatusSort( false );
+			}
+			
+			protected function sortClickHandler( event:IndexChangeEvent ):void {
+				var index:int = statusBar.selectedIndex;
+				
+				if( _previousSort != index ) {
+					
+					if( _previousSort != -1 ) {
+						var unSelectBtn:ButtonBarButton = statusBar.dataGroup.getElementAt( _previousSort ) as ButtonBarButton;
+						unSelectBtn.enabled = true;
+					}
+					
+					_previousSort = index;
+					
+					var selectBtn:ButtonBarButton = statusBar.dataGroup.getElementAt( _previousSort ) as ButtonBarButton;
+					selectBtn.enabled = false;
+					
+					status = [];
+					switch( statusBar.selectedItem.value ) {
+						case 'waiting':
+							status.push( ProjectStatus.WAITING );
+							break;
+						case 'in_progress':
+							status.push( ProjectStatus.INPROGRESS );
+							status.push( ProjectStatus.INPROGRESS_ILLUSTRATOR );
+							break;
+						case 'in_checking':
+							status.push( ProjectStatus.INCHECKING );
+							break;
+						case 'in_delivery':
+							status.push( ProjectStatus.INDELIVERY );
+							break;
+						default:
+							break;
+					}
+					makeStatusSort( true );
+				}	
+			}
+			
+			private function makeStatusSort( isStatusSort:Boolean ):void {
+				if( !sort ) {
+					sort = new Sort();
+					_sourceProvider.sort = sort;
+				}
+				if( isStatusSort ) {
+					sort.compareFunction = statusSortFunction;
+				}
+				else {
+					sort.compareFunction = dateSortFunction;
+				}
+				_sourceProvider.refresh();
+			}
+			
+			private function statusSortFunction( objA:Object, objB:Object, fields:Array = null ):int {
+				var statusA:int = status.indexOf( objA.projectObject.projectStatusFK );
+				var statusB:int = status.indexOf( objB.projectObject.projectStatusFK );
+				var statusReturn:int;
+				
+				if( ( ( statusA == -1 )  && ( statusB == -1 ) ) || ( ( statusA != -1 )  && ( statusB != -1 ) ) ) {
+					statusReturn = 0;
+				}
+				if( ( statusA != -1 )  && ( statusB == -1 ) ) {
+					statusReturn = -1;
+				}
+				if( ( statusA == -1 )  && ( statusB != -1 ) ) {
+					statusReturn = 1;
+				}
+				return statusReturn;
+			}
+			
+			private function dateSortFunction( objA:Object, objB:Object, fields:Array = null ):int {
+				var dateA:Date = new Date( objA.tDateCreation.getTime() );
+				var dateB:Date = new Date( objB.tDateCreation.getTime() );
+				var dateCompare:int = ObjectUtil.dateCompare( dateA, dateB );
+				
+				var dateReturn:int;
+				
+				if( dateCompare == 0 ) {
+					dateReturn = 0;
+				}	
+				else if( dateCompare == 1 ) {
+					if( dateSort == 'Ascending' ) {
+						dateReturn = -1;
+					}
+					else {
+						dateReturn = 1;
+					}	
+				}
+				else if( dateCompare == -1 ) {
+					if( dateSort == 'Ascending' ) {
+						dateReturn = 1;
+					}
+					else {
+						dateReturn = -1;
+					}	
+				}
+				return dateReturn;
+			}
+			
+			protected function taskSelector_changeHandler( event:IndexChangeEvent ):void {
+				if( _sourceProvider ) {
+					var collection:ArrayCollection = _sourceProvider as ArrayCollection;
+					switch( taskSelector.selectedItem ) {
+						case 'All':
+							collection.filterFunction = null;
+							break;
+						case 'Tasks':
+							collection.filterFunction = taskFilter;
+							break;
+						case 'Messages':
+							collection.filterFunction = messageFilter;
+							break;
+						default:
+							break;
+					}
+					collection.refresh();
+				}
+			}
+			
+			private function taskFilter( obj:Object ):Boolean {
+				if( Tasks( obj ).workflowtemplateFK.taskCode != 'M01' ) {
+					return true;
+				}
+				return false;
+			}
+			
+			private function messageFilter( obj:Object ):Boolean {
+				if( Tasks( obj ).workflowtemplateFK.taskCode == 'M01' ) {
+					return true;
+				}
+				return false;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Label id="mpvIcon" width="17"/>
+	<s:Label text="Project Name" width="100%"/>
+	<s:DropDownList id="taskSelector" dataProvider="{ new ArrayList( [ 'All', 'Tasks', 'Messages' ] ) }" selectedIndex="0" change="taskSelector_changeHandler( event )"/>
+	<s:Label text="Domain" width="100"/>
+	<s:Label text="Current Task" width="238"/>
+	<s:Group width="140" height="100%">
+		<s:ToggleButton styleName="sortDateToggle" label="Validated Deadline" click="dateSortHandler( event )"/>	
+	</s:Group>
+	<s:ButtonBar id="statusBar" styleName="todoStatusBar" arrowKeysWrapFocus="true" labelField="value" width="103" selectedIndex="-1"
+				 change="sortClickHandler( event )">
+		<s:layout><s:HorizontalLayout variableColumnWidth="false" columnWidth="25" gap="0" paddingRight="1" paddingLeft="2"/></s:layout>
+		<s:dataProvider>
+			<s:ArrayList>
+				<fx:Object icon="@Embed('assets/images/waiting_over.png')" label="In Waiting" value="waiting"/>
+				<fx:Object icon="@Embed('assets/images/progress_over.png')" label="In Progress" value="in_progress"/>
+				<fx:Object icon="@Embed('assets/images/checking_over.png')" label="In Checking" value="in_checking"/>
+				<fx:Object icon="@Embed('assets/images/delivery_over.png')" label="In Delivery" value="in_delivery"/>
+			</s:ArrayList>
+		</s:dataProvider>
+	</s:ButtonBar>
+	<s:Label text="Notes" width="35"/>
+</s:HGroup>

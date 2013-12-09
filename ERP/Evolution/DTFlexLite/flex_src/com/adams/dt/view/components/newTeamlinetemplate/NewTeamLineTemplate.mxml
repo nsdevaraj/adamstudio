@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	xmlns:view="com.adams.dt.view.components.*" styleName="bgContainer" 
+	 creationComplete="onCreationComplete()"  xmlns:teamSelection="com.adams.dt.view.components.todolistscreens.TeamSelection.*" >
+	<mx:Script>
+	 
+	 	<![CDATA[
+	 		import mx.collections.IViewCursor;
+	 		import mx.collections.SortField;
+	 		import mx.collections.Sort;
+	 		import com.adams.dt.view.components.todolistscreens.TeamSelection.cardLayout;
+	 		import com.adams.dt.model.vo.ProfileModules;
+	 		import com.adams.dt.business.util.GetVOUtil;
+	 		import com.universalmind.cairngorm.events.Callbacks;
+	 		import mx.rpc.IResponder;
+	 		import com.adobe.cairngorm.control.CairngormEvent;
+	 		import mx.core.DragSource;
+	 		import mx.events.DragEvent;
+			import mx.managers.DragManager;
+	 		import com.adams.dt.event.PersonsEvent;
+	 		import mx.core.UIComponent;
+	 		import mx.controls.Image;
+	 		import flash.utils.ByteArray;
+			import mx.collections.ArrayCollection;
+	 		import com.adams.dt.model.vo.Profiles;
+	 		import com.adams.dt.model.vo.Persons;
+	 		import com.adams.dt.event.TeamTemplatesEvent;
+	 		import com.adams.dt.model.vo.TeamTemplates;
+	 		import com.adams.dt.event.TeamlineEvent;
+	 		import com.adams.dt.model.vo.Workflows;
+	 		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+	 		import mx.controls.Alert;
+	 		import com.adams.dt.model.vo.Teamlinestemplates;
+	 		import com.adams.dt.model.ModelLocator;
+	 		import com.adams.dt.event.WorkflowsEvent;
+	 		import com.adams.dt.event.generator.SequenceGenerator;
+	 		import com.adams.dt.event.TeamlineTemplatesEvent;
+	 		[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	[Bindable]
+		 	private var personLayout:cardLayout;
+		 	[Bindable]
+		 	public var teamTempID:TeamTemplates
+		 	[Bindable]
+		 	private var selectedTeamlineTemplatesID:int
+		 	private var profileArrColl:ArrayCollection = new ArrayCollection();
+		 	private var totalPersonColl:ArrayCollection  = new ArrayCollection();
+		 	public var newTeamLinePerson:ArrayCollection = new ArrayCollection();
+		 	private var checkProfile:Boolean
+		 	public var removedProfiles:ArrayCollection = new ArrayCollection();
+		 	
+		 	private var keys:Object;
+		 	
+		 	
+			private function onCreationComplete() :void{
+		 		var teamTempEvt:TeamTemplatesEvent = new TeamTemplatesEvent(TeamTemplatesEvent.EVENT_GET_ALL_TEAMTEMPLATESS);
+		 		var teamLineTempEvt:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_GET_ALL_TEAMLINETEMPLATES);
+		 		var businesscardSeq:SequenceGenerator = new SequenceGenerator([teamTempEvt,teamLineTempEvt])
+		  		businesscardSeq.dispatch();
+		  		profileform.visible = false;
+		  		profileform.includeInLayout = false;
+		  		BtnHolder.visible = false;
+		  	}
+		  	private function selectTeamLineTemp(evt:Event):void {
+		  		var check:Boolean;
+		  		model.teamTemplatesCollection.removeAll();
+	 			for(var i:int =0;i<teamTemp.dataProvider.length;i++){
+					if(Object(teamTemplateform.getChildAt(i)).selected){
+						teamTempID = model.getAllTeamTemplatesArr[i] as TeamTemplates
+						model.teamTemplatesCollection.addItem(teamTempID);
+						var teamLinetempevt:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_GET_TEAMLINETEMPLATES);
+			 			teamLinetempevt.teamtemplates =  teamTempID;
+			 			var handler:IResponder = new Callbacks(onTeamlTempResult,null)
+				 		teamLinetempevt.callbacks = handler;
+				 		teamLinetempevt.dispatch();
+		 				check = true
+					} 
+				}
+				if(!check){
+					   Alert.show(model.loc.getString('selectOneTeamLineTemplates'));
+					}  			 
+			}
+			private function onTeamlTempResult(obj:Object) :void {
+	 			var profile:Profiles;
+	 		    var teamLineTemp:Teamlinestemplates
+	 		    var profileArr:Array = new Array();
+	 		    var person:Persons = new Persons();
+	 		    profileArrColl = new ArrayCollection();
+	 		    model.teamLineProfileColl.removeAll()
+				totalPersonColl.removeAll()
+	 		    getPersonDetais();
+	 		    removedProfiles = new ArrayCollection([{defaultProfile:"1"}]);
+	 		    for(var i:int =0;i<model.teamLinetemplatesCollection.length;i++){
+	 		    		profile = new Profiles();
+	 		    	    teamLineTemp = Teamlinestemplates(model.teamLinetemplatesCollection[i])
+						selectedTeamlineTemplatesID = teamLineTemp.teamTemplateFk
+						person = GetVOUtil.getPersonObject(teamLineTemp.personFk)
+						profileArrColl.addItem(person);
+						model.teamLineProfileColl.addItem(person);
+						removeSelectedItem(person)
+					}
+					profileform.removeUnwantedProfiles = removedProfiles;
+					if(!checkProfile) {
+						profileform.profileCollection = profileArrColl;
+					}else{
+						profileform.newTeamCollection = profileArrColl;
+						checkProfile = false; 
+					}
+					profileform.personCollection = totalPersonColl;
+					
+					profileform.visible = true;
+		  			profileform.includeInLayout = true;
+		  			teamLine.visible = false;
+		  			teamLine.includeInLayout = false;
+		  			BtnHolder.visible = true;
+		  			backBtn.visible = true;
+		  			
+		  	}
+		  	/**
+		    * Delete the particular person from the PersonCollection 
+		    */	
+			private function removeSelectedItem( item:Object ):void {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [ new SortField( "personId" ) ];
+	            totalPersonColl.sort = sort;
+	            totalPersonColl.refresh(); 
+				var cursor:IViewCursor =  totalPersonColl.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if( found ) {
+					totalPersonColl.removeItemAt( totalPersonColl.getItemIndex( cursor.current ) );
+					totalPersonColl.refresh();
+				}
+			}
+			private function getPersonDetais(  ):void { 
+				for each ( var teamPerson:Persons in model.personsArrCollection ) {
+					totalPersonColl.addItem( teamPerson );
+				}
+			}
+			/**
+		    * To create the newTeam ....
+		    */
+		  	private function newTeam(event:MouseEvent) :void {
+				model.teamLineProfileColl.removeAll();
+				checkProfile = true;
+				var obj:Object = new Object()
+				onTeamlTempResult(obj)
+				//;
+			}
+			/**
+		    * Update the teamLine ...
+		    */
+			private function modifyTeam(event:MouseEvent) :void {
+				var deleteEvent:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_DELETE_ALL_TEAMLINETEMPLATES);
+				CairngormEventDispatcher.getInstance().dispatchEvent(deleteEvent);
+				model.selecteTeamlineTemplateArr.removeAll();
+		  		for each ( var teamPerson:Persons in model.teamLineProfileColl ) {
+		  			var newTeamTemp:Teamlinestemplates = new Teamlinestemplates()
+	         	 	newTeamTemp.personFk = teamPerson.personId;
+	         	 	newTeamTemp.profileFk = teamPerson.defaultProfile
+	         	 	newTeamTemp.teamTemplateFk = selectedTeamlineTemplatesID
+					model.selecteTeamlineTemplateArr.addItem(newTeamTemp);
+				}
+				var teamlineEvent : TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_BULK_UPDATE_TEAMLINETEMPLATES);
+				CairngormEventDispatcher.getInstance().dispatchEvent(teamlineEvent);   
+				makeInvisibe();
+		  	}
+		  	/**
+		    * Back Function ...
+		    */
+			private function backfn(event:MouseEvent) :void {
+				makeInvisibe();
+				totalPersonColl.removeAll();
+			}
+			private function makeInvisibe() :void {
+				BtnHolder.visible = false;
+			 	backBtn.visible = false;
+			 	profileform.visible = false;
+				profileform.includeInLayout = false;
+				teamLine.visible = true;
+			 	teamLine.includeInLayout = true
+			}
+			private function trimAll(str:String):String
+			{
+				return str.split(" ").join("");
+			}
+		  	private function selectNewTeamLineTemp(event:MouseEvent) :void {
+				model.teamTemplatesCollection.removeAll();
+				var check:Boolean
+				for(var i:int =0;i<teamTemp.dataProvider.length;i++){
+					if(Object(teamTemplateform.getChildAt(i)).selected && trimAll(newTeamLineTxt.text).length!=0){
+						teamTempID = model.getAllTeamTemplatesArr[i] as TeamTemplates
+						var createNew:TeamTemplatesEvent = new TeamTemplatesEvent(TeamTemplatesEvent.EVENT_CREATE_TEAMTEMPLATES)
+						var newTeamTemplate:TeamTemplates = new TeamTemplates();
+						newTeamTemplate.workflowFk = teamTempID.workflowFk
+						newTeamTemplate.teamTemplateLabel = newTeamLineTxt.text;
+						model.getAllTeamTemplatesArr.addItem(newTeamTemplate);
+						createNew.teamtemplates = newTeamTemplate;
+						CairngormEventDispatcher.getInstance().dispatchEvent(createNew);
+						
+						model.teamTemplatesCollection.addItem(teamTempID);
+						var teamLinetempevt:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_GET_TEAMLINETEMPLATES);
+			 			teamLinetempevt.teamtemplates =  teamTempID;
+			 			var handler:IResponder = new Callbacks(GetTeamlTempResult,null)
+				 		teamLinetempevt.callbacks = handler;
+				 		teamLinetempevt.dispatch();
+		 				check = true
+		 				newTeamLineTxt.text =  "";
+					} 
+				}
+				if(!check){
+					   Alert.show(model.loc.getString('selectOneTeamLineTemplates'));
+					} 
+			}
+			
+			
+			public function GetTeamlTempResult(obj:Object) :void {
+	 			var profile:Profiles;
+	 			var person:Persons
+	 		    var teamLineTemp:Teamlinestemplates;
+	 		    model.selecteTeamlineTemplateArr.removeAll();
+	 		    for(var i:int =0;i<model.teamLinetemplatesCollection.length;i++){
+					profile = new Profiles();
+	 		    	    teamLineTemp = Teamlinestemplates(model.teamLinetemplatesCollection[i])
+						selectedTeamlineTemplatesID = teamLineTemp.teamTemplateFk
+						var newTeamTemp:Teamlinestemplates = new Teamlinestemplates()
+		         	 	newTeamTemp.personFk = teamLineTemp.personFk;
+		         	 	newTeamTemp.profileFk = teamLineTemp.profileFk;
+		         	 	newTeamTemp.teamTemplateFk = model.createdTeamTemplate.teamTemplateId
+		         	 	model.selecteTeamlineTemplateArr.addItem(newTeamTemp);
+						
+	 		    }
+	 		    model.teamLinetemplatesCollection.removeAll();
+	 		    var teamlineEvent : TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_BULK_UPDATE_TEAMLINETEMPLATES);
+				CairngormEventDispatcher.getInstance().dispatchEvent(teamlineEvent); 
+				onCreationComplete();  
+	 	}
+	    ]]>
+	 </mx:Script>
+	<mx:Canvas id="teamLine"  name="teamLine details" width="100%" >
+				<mx:FormItem id="teamTemplateform" label="TeamTemplate selection" paddingBottom="10" paddingTop="10" paddingRight="10" paddingLeft="10">
+					    <mx:Repeater id="teamTemp" dataProvider="{model.getAllTeamTemplatesArr}" >
+							<mx:RadioButton id="teamTemplate" label="{TeamTemplates(teamTemp.currentItem).teamTemplateLabel}" />
+						</mx:Repeater>
+				</mx:FormItem>
+				<mx:FormItem id="NewTeamLineform" label="TeamLineTemplate Label" top="{teamTemplateform.height}" paddingBottom="10" paddingTop="10" paddingRight="10" paddingLeft="10">
+					<mx:TextInput id="newTeamLineTxt" name="newTeamLineTxt"    />	
+					<mx:Button id="newteamLine" name="newteamLine"    label="NewteamLine" click="selectNewTeamLineTemp(event)"  />
+				</mx:FormItem>	
+				<mx:Canvas width="100%" backgroundColor="#262626" top="{teamTemplateform.height+NewTeamLineform.height}" height="50" bottom="0">
+					<mx:Button id="selectTeamLine" name="selectTeamLine"    label="{model.loc.getString('selectTeam')}" click="selectTeamLineTemp(event)"  right="10" verticalCenter="0"/>	
+				</mx:Canvas>
+	</mx:Canvas>
+	<teamSelection:ProfileScreen id="profileform"   height="100%"/>
+	<mx:HBox id="BtnHolder" backgroundColor="#262626" height="35" bottom="0" horizontalAlign="right" width="100%" 
+		verticalAlign="middle" paddingRight="15" visible="false" >
+		<mx:Button label="Modify Team " click="modifyTeam(event)" />	
+		<mx:Button label="Reset" id="newlyBut" click="newTeam(event)" />	
+	</mx:HBox>
+	<mx:Image source="assets/images/pic_icon.png" id="dummy"  visible="false" includeInLayout="false"/>
+	<mx:Button label="Back" id="backBtn" top="5" right="5"  visible="false" includeInLayout="false" click="backfn(event)"/>
+</mx:Canvas>

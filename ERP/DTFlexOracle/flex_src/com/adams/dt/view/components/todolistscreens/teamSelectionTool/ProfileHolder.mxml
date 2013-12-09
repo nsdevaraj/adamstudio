@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100" >
+	<mx:Metadata>
+        [Event(name="radioButtonClicked")]
+    </mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import mx.events.DragEvent;
+		import mx.controls.Alert;
+		import mx.controls.List;
+		import com.adams.dt.model.vo.Teamlines;
+		import com.adams.dt.event.TeamlineEvent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.business.util.GetVOUtil;
+		
+		[Bindable]
+		public var companyName:String;
+		
+		[Bindable]
+		public var personPosition:String;
+		
+		[Bindable]
+		public var personName:String;
+		
+		public var dragEvent:DragEvent;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();
+		override public function set data(value:Object):void
+		{
+			super.data =  value;
+			setStyle("backgroundColor",GetVOUtil.getProfileObject(data.profileID).profileColor);
+			companyName = GetVOUtil.getCompanyObject(GetVOUtil.getPersonObject(data.personID).companyFk).companyname;
+			personPosition = GetVOUtil.getPersonObject(data.personID).personPosition;
+			personName = GetVOUtil.getPersonObject(data.personID).personFirstname+","+GetVOUtil.getPersonObject(data.personID).personLastname
+		} 
+		
+		protected function deleteTeamline( event :MouseEvent ):void
+		{
+			var deleteList:List =  List(this.owner);
+			if(deleteList.dataProvider.length>1)
+				{
+					 model.teamLinePersonColl.addItem(convertTeamlineToPerson(deleteList.selectedItem as Teamlines));
+					 model.deleteTeamLineColl.addItem((deleteList.selectedItem as Teamlines));
+					 checkDeletedItems(deleteList.selectedItem as Teamlines)
+					 deleteList.dataProvider.removeItemAt(deleteList.selectedIndex);
+				}else{
+					Alert.show(" Not able to delete single Element");
+				}
+		}
+		public function convertTeamlineToPerson(obj:Teamlines):Object
+		{
+			var profileObj:Object = new Object();
+			profileObj.profile = GetVOUtil.getProfileObject( obj.profileID );
+		 	profileObj.person = GetVOUtil.getPersonObject( obj.personID );
+		 	profileObj.personId = GetVOUtil.getPersonObject( obj.personID ).personId;
+		 	return profileObj;
+		}
+		private function checkDeletedItems(item:Teamlines):void
+		{
+			for each( var deleteTeamLine:Teamlines in model.addedTeamLineColl )
+			{
+				if(deleteTeamLine.personID == item.personID )
+				{
+					model.addedTeamLineColl.removeItemAt( model.addedTeamLineColl.getItemIndex(deleteTeamLine) );
+				}
+			}
+		}
+	]]>
+</mx:Script>
+
+	<mx:Button styleName="closeButton" id="closeBtn" 
+		visible="{model.currentUserProfileCode=='TRA'||model.currentUserProfileCode=='FAB'?true:false}"  
+		right="5"  top="2" name="{data.profileID}"  click="deleteTeamline(event)"/>
+	<mx:VBox verticalCenter="0" left="5">
+		<mx:Label text="{personName}" styleName="menuText" fontSize="12" />
+		<mx:Label text="{personPosition}" fontSize="12" width="200" color="#959595"/>
+		<mx:Label text="{companyName}" fontSize="10" color="#959595"/>
+	</mx:VBox>
+	<mx:Image source="{GetVOUtil.getPersonObject(data.personID).personPict}"  right="5" verticalCenter="0"
+		width="50" height="50" />
+</mx:Canvas>
+

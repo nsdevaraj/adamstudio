@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" minHeight="30">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.business.util.DateUtils;
+		import com.adams.dt.event.sortingevent.SortingEvent;
+		import com.adams.dt.business.util.Utils;
+ 
+		import mx.collections.CursorBookmark;
+		import mx.collections.IViewCursor;
+		import mx.collections.ArrayCollection;
+		
+		[Bindable]
+		private var cursor:IViewCursor;
+		
+		[Bindable]
+		public var setSelection:Boolean;
+		/**
+		 * get the Current date(year,month,week)
+		 **/
+		[Bindable]
+		public var _dateSortField:String
+		public function set dateSortField (value : String) : void
+		{
+			_dateSortField = value;
+			 dateBtn.label = _dateSortField;
+			
+		}
+
+		public function get dateSortField () : String
+		{
+			return _dateSortField;
+		}
+		
+		
+		
+		/**
+		 * get the field type of sorting ...
+		 **/
+		[Bindable]
+		private var _fieldType : String;
+		public function set fieldType (value : String) : void
+		{
+			_fieldType = value;
+			setBtnStyle()
+			
+		}
+
+		public function get fieldType () : String
+		{
+			return _fieldType;
+		}
+		
+		
+		
+		/**
+		 * 
+		 **/
+		[Bindable]
+		private var _sortCollection : ArrayCollection;
+		public function set sortCollection (value : ArrayCollection) : void
+		{
+			_sortCollection = value;
+			initSort();
+		}
+
+		public function get sortCollection () : ArrayCollection
+		{
+			return _sortCollection;
+			
+		}
+		
+		
+		/**
+		 * place the Cursor position for the current year and Month...
+		 **/
+		private function initSort():void
+		{
+			cursor = sortCollection.createCursor();
+			cursor.seek(CursorBookmark.FIRST);
+			while(cursor.moveNext())
+			{
+				if(cursor.current.Label ==  _dateSortField)
+				{
+					break;
+				}
+			}
+			setBtnStatus(cursor.current.Label)
+		}
+		
+		/**
+		 * 
+		 **/
+		private function navigateBtnClick(event:MouseEvent):void
+		{
+			switch (event.currentTarget.id)
+			{
+				case "btnNext":
+					cursor.moveNext();
+					break;
+				case "btnPrevious":
+					cursor.movePrevious();
+					break;
+			}
+			if(cursor.current!=null)
+			{
+				dateBtn.label = cursor.current.Label;
+				var sortEvt:SortingEvent ;
+				switch (fieldType)
+				{
+					case Utils.MONTH:
+						sortEvt = new SortingEvent(SortingEvent.EVENT_GET_SORT_MONTH)
+						sortEvt.monthName = dateBtn.label
+					break;
+					case Utils.YEAR:
+						sortEvt = new SortingEvent(SortingEvent.EVENT_GET_SORT_YEAR)
+						sortEvt.yearName = dateBtn.label
+					break;
+					case Utils.WEEK:
+						sortEvt = new SortingEvent(SortingEvent.EVENT_GET_SORT_WEEK)
+					break;
+				}
+				dispatchEvent(sortEvt);
+				setBtnStatus(cursor.current.Label);
+			}
+		}
+		
+		/**
+		 * set the status for the back and previuos Button
+		 * */
+		private function setBtnStatus(btnName:String):void
+		{
+		(sortCollection.getItemAt(sortCollection.length-1).Label==btnName)?btnNext.enabled=false:btnNext.enabled=true;
+		(sortCollection.getItemAt(0).Label==btnName)?btnPrevious.enabled=false:btnPrevious.enabled=true;
+		}
+		
+		/**
+		 * check whether the year , month selected or not...
+		 * */
+		private function dateBtnClick(event:MouseEvent):void
+		{
+			//setBtnStatus()
+			var toggleEvt:SortingEvent = new SortingEvent(SortingEvent.EVENT_GET_TOGGLE_NAME)
+			if(fieldType==Utils.MONTH)
+			{
+				toggleEvt.monthName = dateBtn.label;
+			}else{
+				toggleEvt.yearName = dateBtn.label
+			}
+			toggleEvt.toggleName = fieldType;
+			toggleEvt.toggleStatus = dateBtn.selected;
+			dispatchEvent(toggleEvt);
+		} 
+		
+		/**
+		 * set the Button Styles for the year and month view...
+		 * */
+		private function setBtnStyle():void
+		{
+			/*  switch (fieldType)
+				{
+					case Utils.MONTH:
+						btnPrevious.styleName = "monthTopBtn";
+						btnNext.styleName="monthBottomBtn"
+						dateBtn.styleName="monthLabelBtn"
+					break;
+					case Utils.YEAR:
+						btnPrevious.styleName = "yearBottomBtn";
+						btnNext.styleName="yearTopBtn"
+						dateBtn.styleName="yearLabelBtn"
+					break;
+				}  */
+		}
+	]]>
+</mx:Script>
+
+<mx:Button click="navigateBtnClick(event)" styleName = "yearTopBtn" id="btnPrevious" 
+	visible="{dateBtn.selected}"  width="15" height="15" useHandCursor="true"/>
+<mx:Button  click="navigateBtnClick(event)" id="btnNext" styleName="yearBottomBtn" enabled="false"
+	 visible="{dateBtn.selected}" width="15" height="15" useHandCursor="true"/>
+<mx:Button width="{this.width-17}" id="dateBtn" styleName="yearLabelBtn" toggle="true" 
+	click="dateBtnClick(event)" selected="{setSelection}" />
+</mx:Canvas>

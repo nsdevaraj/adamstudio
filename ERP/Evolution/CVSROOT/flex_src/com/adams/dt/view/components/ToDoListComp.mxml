@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Workflows;
+			import com.adams.dt.event.PropertiespresetsEvent;
+			import com.adams.dt.model.vo.Categories;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.OpenToDoListScreenEvent;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Projects;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			private var _dataProvider:ArrayCollection = new ArrayCollection();
+			
+			/**
+			 *  get dataprovider for todolist 
+			 */
+			public function get dataProvider():ArrayCollection{				
+				return _dataProvider;
+			}
+			/**
+			 * @param arrc, input model.taskCollection
+			 *  set dataprovider for todolist 
+			 */
+			public function set dataProvider(arrC:ArrayCollection):void{
+				_dataProvider = arrC;
+				updateChildren();
+			} 
+			/**
+			 *  listen the taskCollection change to update todolist 
+			 */
+			public function init():void{
+				model.taskCollection.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateList,false,0,true);
+			}
+			/**
+			 *  create todolist items
+			 */
+			public function updateList(event:CollectionEvent):void{
+				_dataProvider = model.taskCollection;
+				updateChildren();
+			}
+	
+			/**
+			 *  create domain headers in accordin and add the ListComponent
+			 *  set the tasks collection to the ListComponent
+			 */
+			private function updateChildren():void{				
+				domains.removeAllChildren();
+				for each( var item:Object in _dataProvider ) {
+					var component:ListComponent = new ListComponent();
+					component.taskData = ArrayCollection( item.tasks );
+					component.domainLabel = item.domain.categoryName + "                 No of Pending Projects : " + getPendingProjects( item.domain );
+					domains.addChild( component );
+				}
+			}
+			
+			private function getPendingProjects( item:Categories ):String {
+				var returnValue:int;
+				var prjSet:ArrayCollection;
+				if( model.clientCode == "CLT" ) {
+					prjSet = item.projectSet;
+				}	
+				else {
+					prjSet = getCollectiveSet( item );
+				}	
+				for each( var obj:Projects in prjSet ) {
+					if( !obj.projectDateEnd ) {
+						returnValue += 1;
+					}
+				}
+				return returnValue.toString();
+			}
+			
+			private function getCollectiveSet( item:Categories ):ArrayCollection {
+				var returnCollection:ArrayCollection = new ArrayCollection();
+				for each( var prj:Projects in model.projectsCollection ) {
+					if( prj.categories.categoryFK.categoryFK.categoryId == item.categoryId ) {
+						returnCollection.addItem( prj );
+					}
+				}
+				return returnCollection;
+			}
+		]]>
+	</mx:Script>
+		<!--styleName="darkBorder"-->
+		<mx:Accordion id="domains"
+			width="100%"
+			height="100%"/>
+</mx:Canvas>

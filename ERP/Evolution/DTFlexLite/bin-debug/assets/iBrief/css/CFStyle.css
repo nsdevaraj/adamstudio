@@ -1,0 +1,1707 @@
+/* CSS file */
+global{
+	modalTransparency: 0.5;
+	modalTransparencyBlur: 5;
+	modalTransparencyColor: #272727;
+	modalTransparencyDuration: 100;
+}
+WindowedApplication{
+	disabled-overlay-alpha:.1;
+	color: #959494;
+	fontSize: 11;
+	corner-radius: 0;
+	border-style:solid;
+	border-thickness: 0;
+	border-color: black;
+	background-alpha:0;
+}
+.teamSelectionBtn{
+ 	upSkin:Embed(source='assets/swf/CFSkin.swf#teamSelection');
+	downSkin:Embed(source='assets/swf/CFSkin.swf#teamSelection');
+	overSkin:Embed(source='assets/swf/CFSkin.swf#teamSelection');
+ }
+
+.menuStyleName{
+	background-color: #413b37;
+	border-color: #2e2821;
+}
+.subHeader{
+fontFamily: myFont;
+color: #ffffff;
+fontSize: 14;
+}
+.menuText{
+	fontFamily: myFont;
+	color: #ffffff;
+	fontSize: 14;	
+}
+.dynamicReport{
+	fontFamily: myFont;
+	color: #989897;
+	fontSize: 13;	
+}
+ 
+.customPanel {
+   borderColor: #5b5b5b; 
+   border-style:solid;
+   borderAlpha: .9;
+   backgroundColor: #222222;
+   background-alpha:.9;
+     dropShadowEnabled: true;
+   shadowDistance: 4;
+   shadowDirection: right;
+   corner-radius:10;
+}
+.customText{ 
+	text-align:center;
+	vertical-center:0;
+	 font-family:            myFont;
+    font-size:              13px;
+    color:                  #ffffff;
+}
+ 
+.stCanvas{
+	background-color: #363636;
+	border-color: #22201e;
+	header-height:60;
+	border-alpha: 1;
+	corner-radius: 10;
+	dropShadowStyleName: panelDropShadow;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#header_bg', scaleGridLeft=20, scaleGridRight=200, scaleGridTop=40,scaleGridBottom=42);
+	dropShadowEnabled: false;
+}
+.panelDropShadow{
+	distance:5;
+	size:28;
+	alpha:0.7;
+}
+.headerStyle{
+	text-align:center;
+	font-size: 15;
+	fontFamily:myFont;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#header_bg', scaleGridLeft=20, scaleGridRight=200, scaleGridTop=40,scaleGridBottom=42);
+}
+ Alert{
+	background-color: #363636;
+	border-color: #22201e;
+	header-height:60;
+	border-alpha: 1;
+	corner-radius: 10;
+	dropShadowStyleName: panelDropShadow;
+/* 	border-skin: ClassReference("assets.iBrief.skins.SmartPanelSkin"); */
+	dropShadowEnabled: false;
+	title-style-name: headerStyle;
+	header-height: 50;
+	button-style-name:Button;
+}
+ScrollBar{
+	trackSkin: Embed(source='assets/swf/CFSkin.swf#track', scaleGridLeft=6, scaleGridRight=7, scaleGridTop=26,scaleGridBottom=27);
+	thumbUpSkin:Embed(source='assets/swf/CFSkin.swf#thumb_up', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=9);
+	thumbOverSkin:Embed(source='assets/swf/CFSkin.swf#thumb_over', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=9);
+	thumbDownSkin:Embed(source='assets/swf/CFSkin.swf#thumb_over', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=9); 
+	upArrowUpSkin:Embed(source='assets/swf/CFSkin.swf#top_arrow_up');
+	upArrowDownSkin:Embed(source='assets/swf/CFSkin.swf#top_arrow_over');
+	upArrowOverSkin:Embed(source='assets/swf/CFSkin.swf#top_arrow_over');
+	downArrowUpSkin:Embed(source='assets/swf/CFSkin.swf#bottom_arrow_up');
+	downArrowDownSkin:Embed(source='assets/swf/CFSkin.swf#bottom_arrow_over');
+	downArrowOverSkin:Embed(source='assets/swf/CFSkin.swf#bottom_arrow_over');
+	down-arrow-disabled-skin:Embed(source='assets/swf/CFSkin.swf#bottom_arrow_up');
+	up-arrow-disabled-skin:Embed(source='assets/swf/CFSkin.swf#top_arrow_up');
+}
+ToggleButtonBar, ButtonBar{
+	font-family: myFont;
+	buttonStyleName: middleButtonStyleName;
+	firstButtonStyleName: firstButtonStyleName;
+	lastButtonStyleName: lastButtonStyleName;
+	verticalGap: 0;
+	horizontalGap: 0;
+	buttonHeight: 27;
+}
+.buttonStyleName{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedUpSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedOverSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedDownSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	font-weight: normal;
+	textRollOverColor:#888888;
+	color: #959494;
+	font-size:12;
+}
+.middleButtonStyleName{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedUpSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedOverSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedDownSkin:Embed(source='assets/swf/CFSkin.swf#button_bar2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	font-weight: normal;
+	textRollOverColor:#888888;
+	color: #959494;
+	font-size:12;
+}
+
+.firstButtonStyleName{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_up', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_up', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_selected', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	selectedUpSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_selected', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	selectedOverSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_selected', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	selectedDownSkin:Embed(source='assets/swf/CFSkin.swf#firstButton2_selected', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=11,scaleGridBottom=12);
+	font-weight: normal;
+	textRollOverColor:#888888;
+	color: #959494;
+	font-size:12;
+}
+.lastButtonStyleName{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedUpSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedOverSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedDownSkin:Embed(source='assets/swf/CFSkin.swf#lastButton2_selected', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	font-weight: normal;
+	textRollOverColor:#888888;
+	color: #959494;
+	font-size:12;
+}
+TabBar{
+	font-family: myFont;
+	tabStyleName: buttonStyleName;
+	background-color: #363636;
+}
+LinkButton {
+   rollOverColor: #424242;
+   selectionColor: #303030;
+   color: #959494;
+   textSelectedColor: #959494;
+}
+.iagree{
+	up-skin : Embed(source='assets/swf/CFSkin.swf#dummyNullImg');
+	down-skin : Embed(source='assets/swf/CFSkin.swf#dummyNullImg');
+	over-skin : Embed(source='assets/swf/CFSkin.swf#dummyNullImg');
+	disabled-skin : Embed(source='assets/swf/CFSkin.swf#dummyNullImg');
+	fontSize : 14;
+	color : #060606;
+	text-decoration : underline;
+	font-weight : normal;
+	textRollOverColor : #FFFFFF;
+}
+	
+CheckBox
+{
+	upIcon: Embed(source='assets/swf/CFSkin.swf#CheckBox_upIcon');
+	downIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_downIcon');
+	overIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_overIcon');
+	selectedUpIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_selectedUpIcon');
+	selectedOverIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_selectedDownIcon');
+	selectedDownIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_selectedOverIcon');
+	selectedDisabledIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_selectedDisabledIcon');
+	disabledIcon:Embed(source='assets/swf/CFSkin.swf#CheckBox_disabledIcon');
+	textRollOverColor:#dddddd;
+	textSelectedColor:#aaaaaa;
+	color: #959494;
+}
+
+RadioButton
+{
+	upIcon: Embed(source='assets/swf/CFSkin.swf#RadioButton_upIcon');
+	downIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_downIcon');
+	overIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_overIcon');
+	selectedUpIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_selectedUpIcon');
+	selectedOverIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_selectedDownIcon');
+	selectedDownIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_selectedOverIcon');
+	disabledIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_disabledIcon');
+	selectedDisabledIcon:Embed(source='assets/swf/CFSkin.swf#RadioButton_selectedDisabledIcon');
+	textRollOverColor:#dddddd;
+	textSelectedColor:#aaaaaa; 
+	color: #959494;
+}
+
+ComboBox
+{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#comboBox_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#comboBox_up', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#comboBox_over', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	disabledSkin: Embed(source='assets/swf/CFSkin.swf#comboBox_disabled', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	padding-left: 10;
+	color:#959595;
+	dropdownStyleName: dropdownStyleName;
+}
+PopUpButton{
+	
+	padding-right: 10;
+	padding-left: 10;
+	text-align:left;
+	up-skin:Embed(source='assets/swf/CFSkin.swf#IBpopUP', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=3,scaleGridBottom=4);
+	over-skin:Embed(source='assets/swf/CFSkin.swf#IBpopUP_over', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=3,scaleGridBottom=4);
+	down-skin:Embed(source='assets/swf/CFSkin.swf#IBpopUP', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=3,scaleGridBottom=4);
+	
+	popUpDownSkin: Embed(source='assets/swf/CFSkin.swf#IBpopUP_over', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=3,scaleGridBottom=4);
+	popUpOverSkin: Embed(source='assets/swf/CFSkin.swf#IBpopUP_over', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=3,scaleGridBottom=4);
+}
+.dropdownStyleName
+{
+	background-color: #2b2a2a;
+	border-color: #2e2821;
+	selectionColor:#3e3d3d;
+	rollOverColor:#3e3d3d;
+	textRollOverColor:#ffffff;
+	textSelectedColor:#ffffff; 
+	color: #ffffff;
+	font-weight:normal;
+	dropShadowEnabled: true;
+}
+TextInput,TextArea
+{
+   focus-alpha:0;
+ 	border-skin: Embed(source='assets/swf/CFSkin.swf#input_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+ 	disabled-skin: Embed(source='assets/swf/CFSkin.swf#disabled_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+}
+  
+.itemText{
+	font-family: myFont;
+	font-size:14;
+	color: "#000000";
+}
+.editable
+{
+	font-weight:normal;
+	color: #eeeeee;
+	fillColors: #e5b421, #e5b421;
+	fillAlphas: 1,1;
+	border-color: #e5b421;
+}
+ColorPicker
+{
+	upSkin: Embed(source='assets/swf/CFSkin.swf#ColorPicker_upSkin');
+	downSkin: Embed(source='assets/swf/CFSkin.swf#ColorPicker_downSkin');
+	overSkin: Embed(source='assets/swf/CFSkin.swf#ColorPicker_overSkin');
+	disabledSkin: Embed(source='assets/swf/CFSkin.swf#ColorPicker_disabledSkin');
+}
+ 
+HSlider, VSlider
+{
+	thumbUpSkin: Embed(source='assets/swf/CFSkin.swf#slider_thumbUp');
+	thumbOverSkin: Embed(source='assets/swf/CFSkin.swf#slider_thumbOver');
+	thumbDownSkin: Embed(source='assets/swf/CFSkin.swf#slider_thumbDown');
+	trackSkin: 	Embed(source='assets/swf/CFSkin.swf#slider_track', scaleGridLeft=5, scaleGridRight=20, scaleGridTop=2,scaleGridBottom=3);
+}
+NumericStepper
+{
+	upArrowUpSkin: Embed(source='assets/swf/CFSkin.swf#NS_upArrowUpSkin');
+	upArrowOverSkin: Embed(source='assets/swf/CFSkin.swf#NS_upArrowOverSkin');
+	upArrowDownSkin: Embed(source='assets/swf/CFSkin.swf#NS_upArrowDownSkin');
+	downArrowUpSkin: Embed(source='assets/swf/CFSkin.swf#NS_downArrowUpSkin');
+	downArrowOverSkin: Embed(source='assets/swf/CFSkin.swf#NS_downArrowOverSkin');
+	downArrowDownSkin: Embed(source='assets/swf/CFSkin.swf#NS_downArrowDownSkin');
+}
+.disabledDateField{
+	skin: ClassReference(null);
+	disabledSkin: ClassReference(null);
+	text-input-style-name:"disabledText";
+	  
+} 
+DateField
+{
+	dateChooserStyleName: dateChooserStyleName;
+	skin: ClassReference(null);
+	disabledSkin: ClassReference(null);
+}
+DateChooser, .dateChooserStyleName
+{
+	background-color: #2b2a2a;
+	dropShadowEnabled: true;
+	border-color: #787370;
+	color: #ffffff;
+	header-colors: #44413d, #2d2b28;
+	prevMonthUpSkin: Embed(source='assets/swf/CFSkin.swf#prevMonthUpSkin');
+	nextMonthUpSkin: Embed(source='assets/swf/CFSkin.swf#nextMonthUpSkin');
+	prevMonthDownSkin: Embed(source='assets/swf/CFSkin.swf#prevMonthUpSkin');
+	nextMonthDownSkin: Embed(source='assets/swf/CFSkin.swf#nextMonthUpSkin');
+	prevMonthOverSkin: Embed(source='assets/swf/CFSkin.swf#prevMonthOverSkin');
+	nextMonthOverSkin: Embed(source='assets/swf/CFSkin.swf#nextMonthOverSkin');
+	headerStyleName: dateChooserHeader;
+	corner-radius:8;
+	roll-over-color: #e5b421;
+	selectionColor: #ff9c00;
+}
+.dateChooserHeader
+{
+ 	font-weight:normal;
+}
+.customDateChooser{
+            /* null the skins defined in default.css */
+            skin: ClassReference(null);
+            upSkin: ClassReference(null);
+            overSkin: ClassReference(null);
+            downSkin: ClassReference(null);
+            disabledSkin: ClassReference(null);
+            editable-disabled-skin:ClassReference(null);
+            editable-up-skin:ClassReference(null);
+            focus-alpha:0;
+            text-input-style-name : textAreaReader;
+}
+TileList
+{
+	padding-bottom:2;
+	padding-left:2;
+	padding-right:2;
+	padding-top:2;
+	background-color:#303030;
+	background-alpha:0;
+	corner-radius:7;
+	border-style:solid;
+	border-color:#272727;
+	roll-over-color:#272727;
+	selection-color:#1c1c1c;
+	
+	/* border-skin: Embed(source='assets/swf/CFSkin.swf#content_bg', scaleGridLeft=10, scaleGridRight=40, scaleGridTop=10,scaleGridBottom=30); */
+}
+Tree, List
+{
+	background-color: #2b2a2a;
+	border-color: #555555;
+	rollOverColor:#5a5a5a;
+	selectionColor: #212121;
+	textRollOverColor:#ffffff;
+	text-selected-color:#ffffff;
+	rollOverColor:#444444;
+	
+}
+.horizontalListAlpha{
+	background-alpha:0; 
+	border-alpha:0;
+}
+
+DataGrid
+{
+	/* font-family:myFont; */
+	headerColors: #44413d, #2d2b28;
+	alternatingItemColors: #2b2a2a, #2b2a2a;
+	background-color:#2b2a2a;
+	border-color: #555555;
+	verticalGridLineColor: #555555;
+	color: #dddddd;
+	headerStyleName: dataGridHeader;
+	rollOverColor:#444444;
+	textRollOverColor:#ffffff;
+	selectionColor: #000000;
+	textSelectedColor:#ffffff;
+}
+.dataGridHeader{
+	color:#959494;
+}
+Tree {
+    folderClosedIcon: Embed(source='assets/swf/CFSkin.swf#folder');
+    folderOpenIcon: Embed(source='assets/swf/CFSkin.swf#folder_open');
+    defaultLeafIcon: Embed(source='assets/swf/CFSkin.swf#new_page');
+    selectionColor: #212121;
+    textSelectedColor:#ffffff;
+    fontFamily:myFont;
+}
+ 
+Button{ 
+	font-family:myFont;
+	upSkin:Embed(source='assets/swf/CFSkin.swf#btn', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#btn',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#btn_over',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	disabled-skin:Embed(source='assets/swf/CFSkin.swf#btn_disabled', scaleGridLeft=10, scaleGridRight=12,scaleGridTop=3,scaleGridBottom=5);
+	selected-up-skin:Embed(source='assets/swf/CFSkin.swf#btn_over_selected',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-over-skin:Embed(source='assets/swf/CFSkin.swf#btn_over_selected',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-down-skin:Embed(source='assets/swf/CFSkin.swf#btn_over_selected',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	color: #959595;
+	textRollOverColor: #959595;
+    textSelectedColor: #ffffff;
+}
+
+
+
+.sideTabBar{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#mesgSeparator',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#mesgSeparator',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#mesgSeparator',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3, scaleGridBottom=5);
+}
+ 
+
+/* Embed from file */
+ @font-face {
+    fontFamily: myFont;
+    src: url("assets/iBrief/fonts/verdana.TTF"); 
+} 
+
+  @font-face {
+    fontFamily:myFont;
+    font-weight:bold;
+    src: url("assets/iBrief/fonts/Verdana_Bold.TTF");
+    advancedAntiAliasing: true; 
+} 
+ 
+@font-face {
+    fontFamily: myGothic;
+    src: url("assets/iBrief/fonts/GOTHIC.TTF"); 
+     advancedAntiAliasing: true;
+}
+ 
+/* TIME LINE */
+
+
+ 
+ 
+
+ 
+.mainProjectHeader{
+font-family:            myGothic;
+color:#ffffff;
+top:30;
+font-size:22;
+left:15;
+
+}
+  
+/* ////END TIME LINE  */
+
+/* PEOPLE MESSAGE__________________________________________________ */
+
+.prjDecText{
+	 font-family:            myGothic;
+    font-size:              14px;
+    color:                  #a7a7a7;
+}
+.messageAlertBox{
+corner-radius:10;
+borderColor: #000000;
+border-style:solid;
+background-color:#272727;
+padding-bottom:15;
+padding-top:15;
+padding-left:15;
+padding-right:15;
+drop-shadow-enabled:true;
+}
+.messageAlertText{
+	font-family:myFont;
+	font-size:14;
+	text-align:justify;
+	color:#d8d8d8;
+	vertical-center:0;
+	horizontal-center:0;
+	
+}
+
+ 
+
+/* CSS file */
+
+.RegionPointerBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionPointer"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionPointer"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionPointer"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionPointer");
+}
+
+.DotBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin");
+}
+
+.RegionCompareBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin");
+}
+
+.RegionResetBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin");
+}
+
+.PlayPauseBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonDownSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonDisableSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonDownSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonDisableSkin"); 
+	
+}
+.DiscussBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	
+}
+.CommentOnOffBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOffSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOffSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOffSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOffSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOnSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOnSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOnSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentOnSkin"); 
+	
+}
+.CommentEditSaveBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool"); 
+	
+}
+
+.ExpandCollapseBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ExpandUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ExpandOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ExpandUpSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ExpandUpSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CollapseUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CollapseOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CollapseUpSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CollapseUpSkin"); 
+	
+}
+
+ 
+
+.regionCompareBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareToolSelect"); 
+	
+}
+ 
+.NoteBtnSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkinOver");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkinOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkinOver");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteButtonSkinOver");
+}/*      */
+.pdfBtnSkin1{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIconSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIconSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIconSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIconSelect");
+}
+ 
+.pdfBtnSkin2{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIconSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIconSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIconSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIconSelect");
+}
+
+.panSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="panIconOpen");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="panIconOpen");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="panIconOpen");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="panIconOpen");
+}
+.rotateClockwiseSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateClockwise");
+}
+.rotateCounterclockwiseSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="rotateCounterclockwise");
+}
+.zoomInSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomInBtn"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomInBtn"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomInBtn"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomInBtn");
+}
+.zoomOutSkin{ 
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomOutBtn"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomOutBtn"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomOutBtn"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ZoomOutBtn");
+}
+.CompareBtnSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonDisableSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonDisableSkin"); 
+	
+}
+
+.LinkButtonSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButton"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButton"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButton"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButton");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButtonSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButtonSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButtonSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LinkButtonSelect");
+	color: #F5F5F5;
+	textRollOverColor: #F4F4F4;
+}
+ 
+.resizeToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");  
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ResizeTool");
+}
+.deleteNoteSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteDownSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteDownSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+}
+ 
+.FillToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FillToolSelect");
+}
+ 
+.EraseToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EraseToolSelect");
+}
+.ClearToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ClearToolSelect");
+}
+.SaveToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SaveToolSelect");
+}
+.UndoToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoTool");
+	 
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="UndoToolSelect");
+}
+.RedoToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RedoToolSelect");
+}
+ 
+.textAreaVideo
+{
+	focus-alpha:0;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#dummy');
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+	color: "#101010";
+}
+
+
+.category1Icon{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#category1');
+	over-skin:Embed(source='assets/swf/CFSkin.swf#category1_over');
+}
+.category2Icon{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#category2');
+	over-skin:Embed(source='assets/swf/CFSkin.swf#category2_over');
+}
+.categoryPanel{
+border-skin: Embed(source='assets/swf/CFSkin.swf#category_bg', scaleGridLeft=80, scaleGridRight=90, scaleGridTop=70,scaleGridBottom=80);	
+}
+.categoryLeft{
+upSkin:Embed(source='assets/swf/CFSkin.swf#left_nav', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+downSkin:Embed(source='assets/swf/CFSkin.swf#left_nav',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+overSkin:Embed(source='assets/swf/CFSkin.swf#left_nav_over',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+		
+}
+.categoryRight{
+upSkin:Embed(source='assets/swf/CFSkin.swf#right_nav', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+downSkin:Embed(source='assets/swf/CFSkin.swf#right_nav',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+overSkin:Embed(source='assets/swf/CFSkin.swf#right_nav_over',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+
+.todoRedBTN{
+upSkin:Embed(source='assets/swf/CFSkin.swf#red_bg', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+downSkin:Embed(source='assets/swf/CFSkin.swf#red_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+overSkin:Embed(source='assets/swf/CFSkin.swf#red_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+.todoGreenBTN{
+upSkin:Embed(source='assets/swf/CFSkin.swf#green_bg', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+downSkin:Embed(source='assets/swf/CFSkin.swf#green_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+overSkin:Embed(source='assets/swf/CFSkin.swf#green_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+.todoBlueBTN{
+upSkin:Embed(source='assets/swf/CFSkin.swf#blue_bg', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+downSkin:Embed(source='assets/swf/CFSkin.swf#blue_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+overSkin:Embed(source='assets/swf/CFSkin.swf#blue_bg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+.rootNodeStyle{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#project', scaleGridLeft=15, scaleGridRight=16, scaleGridTop=15,scaleGridBottom=16);
+}
+.middleNodeStyle{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#account', scaleGridLeft=15, scaleGridRight=16, scaleGridTop=15,scaleGridBottom=16);
+}
+.lastNodeStyle{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#people', scaleGridLeft=15, scaleGridRight=16, scaleGridTop=15,scaleGridBottom=16);
+}
+
+ 
+.menuText{
+fontFamily: myFont;
+color: #ffffff;
+fontSize: 14;	
+}
+/* mail header backGround color  */
+.headerBgContainer{
+	background-color:#191919;
+}
+/* Main component bg color which can also set to transparent  */
+.mainBgContainer{
+	background-color: #363636;
+	background-alpha:0;
+}
+/* default background color for the theme */
+.bgContainer{
+	background-color: #363636;
+}
+/* a bit darker than the default bg color theme (mail bg ,team bg)*/
+.darkBgContainer{
+	background-color:#2a2a2a;
+}
+/* on FULLSCREEN mode set the bg color here by default its alpha 0*/
+.fullscreenBgColor{
+	background-color: #363636;
+	background-alpha:0;
+}
+/* bg color with border / set only standalone components*/
+.bgBorderContainer{
+	border-style:solid;
+	background-color: #363636;
+	border-color:#272727;
+}
+/* bg color with border / set only standalone components*/
+.darkBorder{
+	border-style:solid;
+	border-color:#000000;
+}
+.innerBorder{
+	border-style:solid;
+	border-color:#4c4c4c;
+	
+}
+
+
+/* Footer color of the team selection */
+.teamFooter{
+	background-color:#262626;
+	border-style:solid;
+	border-color:#4e4e4e;
+}
+/* Traffic general status Panel styles*/
+.statusHeader{
+	background-color:#1A1A1A;
+}
+.statusContent{
+	background-color:#303030;
+}
+.communicationMailIconBg{
+	background-color:#000000;
+}
+.planningDetailCurrentTask{
+	color:#FFFF00;
+}
+.planningDetailTask{
+	color:#DDDDDD;
+}
+/*  Set the background color like MPV which s using the TabNavigator*/
+TabNavigator{
+	border-style:solid;
+	border-color:#272727;
+	/*  borderStyle="solid" borderColor="#000000" MPV */
+	 background-color:#363636; 
+} 
+/* set the bg color to all the accordion */
+Accordion {
+    backgroundColor: #363636;
+    headerStyleName: accordionHeader;
+    borderColor: #22201E;
+    fontSize: 10;
+    color:#959494;
+}
+.accordionHeader {
+    fillColors: #D19A48, #D17C01;    
+    upSkin:Embed(source='assets/swf/CFSkin.swf#acc', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15, scaleGridBottom=16);
+    downSkin:Embed(source='assets/swf/CFSkin.swf#acc_selected', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    overSkin:Embed(source='assets/swf/CFSkin.swf#acc_selected', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedUpSkin: Embed(source='assets/swf/CFSkin.swf#acc_selected', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedOverSkin:Embed(source='assets/swf/CFSkin.swf#acc_selected', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    fontSize: 10;
+    fontFamily:myFont;
+    paddingTop: 3;
+    paddingLeft: 10;
+    paddingBottom: 1;
+    paddingRight: 10;
+    color:#959494;
+}
+
+Panel, TitleWindow
+{
+	close-button-up-skin:Embed(source='assets/swf/CFSkin.swf#close_icon');
+ 	close-button-down-skin:Embed(source='assets/swf/CFSkin.swf#close_icon');
+ 	close-button-over-skin:Embed(source='assets/swf/CFSkin.swf#close_icon_over');
+	background-color: #363636;
+	border-color: #22201e;
+	header-height:60;
+	border-alpha: 1;
+	corner-radius: 10;
+	/*dropShadowStyleName: panelDropShadow;
+	border-skin: ClassReference("assets.iBrief.skins.SmartPanelSkin");*/
+	dropShadowEnabled: false;
+	title-style-name: headerStyle;
+	/* headerSkin: ClassReference("assets.skins.HeaderSkin"); */
+}
+.alertBtn{
+horizontal-center:0;
+bottom: 5;
+left:100;
+}
+
+Alert{
+background-color: #363636;
+	border-color: #22201e;
+	header-height:60;
+	border-alpha: 1;
+	corner-radius: 10;
+	dropShadowStyleName: panelDropShadow;
+	/* border-skin: ClassReference("assets.iBrief.skins.SmartPanelSkin"); */
+	dropShadowEnabled: false;
+	title-style-name: headerStyle;
+	 creationCompleteEffect: alertCreationCompleteEffect;
+	/* headerSkin: ClassReference("assets.skins.HeaderSkin"); */
+}
+/*----------------------------------------------------------------------------------
+							WINDOWSHADE Styles 
+----------------------------------------------------------------------------------*/
+.windowShadeButton{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#windowShade', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/swf/CFSkin.swf#windowShade',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/swf/CFSkin.swf#windowShade_over',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	disabled-skin:Embed(source='assets/swf/CFSkin.swf#toMesg', scaleGridLeft=10, scaleGridRight=12,scaleGridTop=3,scaleGridBottom=5);
+	selected-up-skin:Embed(source='assets/swf/CFSkin.swf#toMesg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-over-skin:Embed(source='assets/swf/CFSkin.swf#windowShade_over',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-down-skin:Embed(source='assets/swf/CFSkin.swf#toMesg',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+
+/*----------------------------------------------------------------------------------
+							TODO LIST Styles 
+----------------------------------------------------------------------------------*/
+.todoListHeaderBG{
+	background-color:#201f19;
+	
+}
+.todoListHeaderText{
+	font-family: myFont;
+	font-size:14;
+	color:#504f43;
+}
+.todoListItemText{
+	font-family: myFont;
+	font-size:10;
+	color:#A2A2A2;
+}
+.vruleColor{
+	stroke-color:#504f43;
+}
+.todoListBg{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#todo_bg', scaleGridLeft=6, scaleGridRight=7, scaleGridTop=5,scaleGridBottom=6);
+}
+
+/*----------------------------------------------------------------------------------
+							Chat window Panel Styles 
+----------------------------------------------------------------------------------*/
+.chatWindow{
+	background-color:#3f3f3f;
+	drop-shadow-color:#000000;
+	border-style:solid;
+	border-color:#000000;
+}
+.chatHeader{
+	background-color:#000000;
+}
+.chatText{
+	font-family:myFont;
+	color:#959595;
+}
+
+/*----------------------------------------------------------------------------------
+							Communication Panel Tree Styles 
+----------------------------------------------------------------------------------*/
+.communicationHeader{
+	background-color:#000000;
+}
+.advGridStyle{
+	alternating-item-colors:'#363636','#363636';
+	background-color:#363636;
+	vertical-grid-line-color:#363636;
+	border-style:none;
+	selection-color:#000000;
+	roll-over-color:#2f2f2f;
+	vertical-grid-line-alpha:0;
+	padding-bottom:1;
+	padding-left:0;
+	padding-right:0;
+	padding-top:0;
+	text-roll-over-color:#ffffff;
+	text-selected-color:#ffffff;
+	}
+.dgTextStyle{
+	color:#ffffff;
+	roll-over-color:#000000;
+}
+/* ------------------------------------------------------------------------------
+									Settings Panel 
+---------------------------------------------------------------------------------*/
+.itemStyle{
+   background-color: #363636;
+   left:0;
+   right:0;
+   text-align:left;
+   vertical-align:middle;
+   label-style-name:"mylable";
+   padding-bottom:5;
+   padding-top:5;
+   padding-left:5;
+   padding-right:5;
+   }
+   .mylable{
+   vertical-align:middle;
+   } 
+/* --------------------------------------------------------------------------------- */   
+ 
+ 
+
+ToolTip { 
+        color: #ffffff; 
+        backgroundColor: #3f3f3f;
+        background-alpha:0.9; 
+}
+
+.toMesgBTN{
+	upSkin: Embed(source='assets/swf/CFSkin.swf#toMesg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=12,scaleGridBottom=13);
+	over-skin:Embed(source='assets/swf/CFSkin.swf#toMesg_over', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=12,scaleGridBottom=13);
+	down-skin:Embed(source='assets/swf/CFSkin.swf#toMesg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=12,scaleGridBottom=13);
+	}
+
+
+ 
+
+.zoomSliderVBox{
+	 backgroundColor: #515151;
+	 cornerRadius: 10;
+	 borderStyle: "solid";
+	 borderColor: #515151;
+}
+ 
+
+.textAreaReader{
+	focus-alpha:0;
+ 	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:12;
+}
+.teamSelectionPersonBox{
+	border-style:solid;
+	border-color:#000000;
+	border-thickness:5;
+}
+.chartViewerDragDropBG{
+	horizontal-align:center;
+	padding-bottom:10;
+	padding-left:10;
+	padding-right:10;
+	padding-top:10;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#input_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);	
+}
+
+.teamSelectionForm{
+	vertical-gap:7;
+	label-width:140;
+	padding-bottom:0;
+	padding-left:0;
+	padding-right:0;
+	padding-top:7;
+}
+.settingsForm{
+	vertical-gap:1;
+	label-placement:left;
+}
+.technicalFormHeader{
+	backgroundColor:#303030;
+	verticalAlign:middle;
+	paddingLeft:15;
+	borderStyle:solid;
+	borderColor:#000000;	
+}
+ 
+.technicalFormContainer{
+	top:30;
+	borderStyle:solid;
+	borderColor:#000000;
+	/* horizontal-center:0; */
+	border-sides: left, right, bottom;
+}
+ 
+.disabledText{
+	focus-alpha:0;
+ 	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_none', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+	font-weight:bold;
+}
+
+.commentTitleEnable{
+	left:45;
+	right:10;
+	top:10;
+	font-weight:bold;
+	fontSize:10;
+	color:#FFFFFF;
+	disabled-color:#FFFFFF;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#input_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+.commentDescEnable{
+	left:10;
+	right:10;
+	top:40;
+	bottom:40;
+	font-weight:bold;
+	fontSize:10;
+	color:#FFCC00;
+	disabled-color:#FFCC00;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#input_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+.commentTitleDisable{
+	left:45;
+	right:10;
+	top:10;
+	font-weight:bold;
+	fontSize:10;
+	color:#FFFFFF;
+	disabled-color:#FFFFFF;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_bg_alpha', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+ 
+.commentDescDisable{
+	left:10;
+	right:10;
+	top:40;
+	bottom:40;
+	font-weight:bold;
+	fontSize:10;
+	color:#FFCC00;
+	disabled-color:#FFCC00;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_bg_alpha', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+/**-------------------------PDFTool Skins-----------------------------*/
+.pdfToolStyle{
+	background-color: #000000;
+}
+.toolBoxLayoutHBoxStyle{
+	background-color: #222222;
+}
+.commentListStyle{
+	background-color: #222222;
+}
+.commentListItemStyle{
+	background-color: #424242;
+}
+.pdfPageTileList{
+	backgroundColor: #333333;
+	background-alpha : 1;
+	color: #FFFFFF;
+	theme-color: #666666;	 
+}
+.commentBox
+{
+	background-color: #000000;
+	background-alpha: 0.4;
+	border-color: #FFFFFF;
+	border-style: solid;
+	border-alpha: 0.35;
+	corner-radius: 8;
+	titleStyle: "commentBoxTitleStyle";
+	descriptionStyle: "commentBoxDescDisable";
+	padRight: 150;
+}
+.commentBoxTitleStyle{
+	right:10;
+	top:10; 
+	font-weight:bold;
+	fontSize:10;
+	color:#FFFFFF;
+	disabled-color:#FFFFFF;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_bg_alpha', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+.commentBoxDescDisable{
+	left:10;
+	right:10;
+	top:40;
+	bottom:40;  
+	font-weight:bold;
+	fontSize:10;
+	color:#FFCC00;
+	disabled-color:#FFCC00;
+	border-skin: Embed(source='assets/swf/CFSkin.swf#readerArea_bg_alpha', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+}
+.moveCanvasStyle
+{
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: #222222;
+	background-alpha: 0.05;
+	corner-radius: 8;
+	border-style: solid;
+}
+.selectPDFSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="FirstPDFIcon");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="SecondPDFIcon");
+}
+.noteMaxMinBtn 
+{
+	left: 10;
+	top: 10;
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMinUp"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMinOver"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMinUp"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMinUp");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMaxUp");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMaxOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMaxUp");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="noteMaxUp"); 
+}
+.arrowSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="ArrowToolSelect");
+}
+.noteDeleteBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteDownSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteDownSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="deleteNoteUpSkin");
+}
+.noteEditBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="EditBtnSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CommentSaveTool"); 
+	
+}
+.noteDiscussBtn
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DiscussBtnSkin"); 
+}
+.BrushToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="BrushToolSelect");
+}
+.LineToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="LineToolSelect");
+}
+.RectangleToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RectangleToolSelect");
+}
+.OvalToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="OvalToolSelect");
+}
+.PlayPauseSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonOverSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonDownSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="playButtonDisableSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonUpSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonDownSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="pauseButtonDisableSkin"); 
+	
+}
+.NormalCompareSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonUpSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonDisableSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="CompareButtonOverSkin");	
+}
+.RegionCompareSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionCompareBtnSkin");
+}
+.RegionCompareSelectSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareUpSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareUpSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareUpSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareUpSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareOverSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareOverSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareOverSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="regionCompareOverSkin");
+}
+.dotSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="DotBtnSkin");
+}
+.RegionResetSkin
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="RegionResetBtnSkin");
+}
+.highlightToolSkin{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightTool"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightTool"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightTool"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightTool");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightToolSelect");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightToolSelect");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightToolSelect");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="highlightToolSelect");
+}
+.NoteListOpenClose
+{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListOpenSkin"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListOpenSkin"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListOpenSkin"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListOpenSkin");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListCloseSkin");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListCloseSkin");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListCloseSkin");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="NoteListCloseSkin"); 
+	
+}
+.doublePageView{
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewUp"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewUp"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewUp"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewUp");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewOver");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewOver");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="doubleViewOver");
+}
+.newNoteVerBtnSkin{ 
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnUp"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnUp"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnUp"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnUp");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnOver");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnOver");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesVerBtnOver"); 
+}
+.newNoteBtnSkin{ 
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnUp"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnUp"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnUp"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnUp");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnOver");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnOver");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesBtnOver"); 
+}
+.newNoteRecBtnSkin{ 
+	upSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnUp"); 
+	overSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnUp"); 
+	downSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnUp"); 
+	disabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnUp");
+	
+	selectedUpSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnOver");
+	selectedOverSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnOver");  
+	selectedDownSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnOver");
+	selectedDisabledSkin: Embed(source="assets/iBrief/swf/additionalAssetsReader.swf", symbol="notesRecBtnOver"); 
+}
+.noteHistoryNumStp
+{
+	left: 37;
+	top: 117;	
+}
+ 
+.enabledText{
+	focus-alpha:0;
+ 	border-skin: Embed(source='assets/swf/CFSkin.swf#input_bg', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+}
+ 
+
+ 
+/* ///////////////////////////////////// *//* ///////////////////////////////////// *//* ///////////////////////////////////// */
+											/* Customized Styles*/
+/* ///////////////////////////////////// *//* ///////////////////////////////////// *//* ///////////////////////////////////// */
+/* ///////////////////////////////////// *//* ///////////////////////////////////// *//* ///////////////////////////////////// */
+/* ///////////////////////////////////// *//* ///////////////////////////////////// *//* ///////////////////////////////////// */
+ 
+HRule, VRule
+{
+	strokeColor: #000000;
+	shadowColor: #222222;
+}
+.closeButton
+{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#closeBtn");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#closeBtn");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#closeBtn");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#closeBtn");
+}
+.AppCloseButton{
+	top:30;
+	right:5;
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+}
+ 
+/* .closeBTN{
+	upSkin:Embed(source='assets/swf/CFSkin.swf#closeBtn');
+	downSkin:Embed(source='assets/swf/CFSkin.swf#close');
+	overSkin:Embed(source='assets/swf/CFSkin.swf#close_over');
+} */
+
+ApplicationControlBar {
+   highlightAlphas: 0.25, 0;
+   fillAlphas: 1, 1;
+   fillColors: #232323, #000000;
+   backgroundColor: #000000;
+   cornerRadius: 0;
+   dropShadowEnabled: false;
+ }
+.resizeBtn{
+	upSkin: Embed(source='assets/swf/CFSkin.swf#resize');	
+	over-skin: Embed(source="assets/swf/CFSkin.swf#resize");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#resize");
+}
+.AppMinimizeButton{
+	top:0;
+	right:30;
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFminimizeBtn");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFminimizeBtn");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFminimizeBtn");
+} 
+.loginCloseBTN{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFcloseBtn");
+	top:20;
+	right:0;
+}
+.loginPanelStyle{
+	border-skin: Embed(source='assets/images/CFlogin_panel.png');
+	border-alpha:0;
+	background-alpha:0.5;
+}
+.loginErrorTxt{
+	fontFamily: myFont;
+	color: #ff0000;
+	fontSize: 14;
+	top:70;
+	right:20;
+}
+.bgMain{
+	border-skin: Embed(source='assets/swf/CFSkin.swf#CFapp_bg', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=50,scaleGridBottom=60);
+}
+ 
+.innerCompanyLogo{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	top:25;
+	left:40;
+}
+.AppCompanyLogo{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#cf_logo");
+	top:25;
+	left:40;
+}
+
+.TodoList{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFtodoList");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFtodoList_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFtodoList");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFtodoList_selected");
+}
+.PendingProjectView{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFpendingProject");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFpendingProject_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFpendingProject");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFpendingProject_selected");
+}
+.NewProject{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFnewProject");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFnewProject_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFnewProject");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFnewProject_selected");
+}
+.MainProjectView{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFmpv");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFmpv_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFmpv");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFmpv_selected");
+}
+.AdminView{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFadminView");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFadminView_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFadminView");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFadminView_selected");
+}
+.Report{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFreport");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFreport_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFreport");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFreport_selected");
+}
+.Search{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFsearch");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFsearch_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFsearch");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFsearch_selected");
+}
+.Archive{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFarchive");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFarchive_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFarchive");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFarchive_selected");
+}
+.Dashboard{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFdashboard");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFdashboard_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFdashboard");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFdashboard_selected");
+}
+.History{
+	upSkin: Embed(source="assets/swf/CFSkin.swf#CFhistory");
+	over-skin: Embed(source="assets/swf/CFSkin.swf#CFhistory_over");
+	down-skin: Embed(source="assets/swf/CFSkin.swf#CFhistory");
+	disabled-skin: Embed(source="assets/swf/CFSkin.swf#CFhistory_selected");
+}
+.contsWidth{
+	right:25;
+	left:25;
+}

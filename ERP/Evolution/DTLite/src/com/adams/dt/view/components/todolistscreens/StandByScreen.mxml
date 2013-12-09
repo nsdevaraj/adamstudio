@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%" 
+	xmlns:view="com.adams.dt.view.PDFTool.*"
+	xmlns:todolistscreens="com.adams.dt.view.components.todolistscreens.*"
+	xmlns="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Metadata>
+		[Event(name="updateTask", type="flash.events.Event")]
+	</mx:Metadata> 
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.Status;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.ProjectsEvent;
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Tasks;
+		/**
+		 * Change the project status to inprogress
+		 * and create the last unfinished task 
+		 */
+		public function createNewTask():void{
+			var status:Status = new Status();
+			status.statusId = TaskStatus.FINISHED
+			model.currentTasks.taskStatusFK = status.statusId;
+			model.workflowState = 0;
+			dispatchEvent(new Event('updateTask'));	
+			model.currentProjects.projectStatusFK= ProjectStatus.INPROGRESS;	
+			var eventproj:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_STATUSUPDATE_PROJECTS);
+			eventproj.projects = model.currentProjects;
+			CairngormEventDispatcher.getInstance().dispatchEvent( eventproj );
+		}
+		
+		/**
+		 * override the gotoPrevTask and update the properties
+		 */
+		override public function gotoPrevTask():void{
+			super.gotoPrevTask();
+		}
+		/**
+		 * override the gotoNextTask and update the properties
+		 */
+		override public function gotoNextTask():void{
+			super.gotoNextTask();
+			/* Current Phase - GetVOUtil.getPhaseTemplateObject(model.currentTasks.previousTask.workflowtemplateFK.phaseTemplateFK).phaseName
+			Project was handled by GetVOUtil.getProfileObject(model.currentTasks.previousTask.personDetails.defaultProfile).profileLabel
+			model.currentTasks.previousTask.personDetails
+			
+			Details of LastTask  - Associated with this Project -  model.currentProjects.projectName
+			TaskLabel  model.currentTasks.previousTask.workflowtemplateFK.taskLabel
+			
+			Task Created at  */
+			
+		}   
+		
+		override public function updateProperties():void {
+				
+		}  
+			 
+	]]>
+	</mx:Script>
+	<mx:Panel  horizontalAlign="center" width="100%" height="100%" paddingLeft="15" paddingTop="15" 
+					title="{model.currentProjects.projectName +' - '+ model.currentTasks.previousTask.workflowtemplateFK.taskLabel}">
+		<mx:Form labelWidth="130">
+			<mx:FormHeading label="Last Task Detail" styleName="subHeader" fontWeight="normal"/>
+			<mx:FormItem label="Phase">
+				<mx:TextInput styleName="disabledText" enabled="false" text="{GetVOUtil.getPhaseTemplateObject(model.currentTasks.previousTask.workflowtemplateFK.phaseTemplateFK).phaseName}"/>
+			</mx:FormItem>
+			<mx:FormItem label="Created at" right="0">
+				<mx:DateField id="nowDate" styleName = "disabledText" formatString="DD/MM/YYYY" 
+							selectedDate="{model.currentTasks.previousTask.tDateCreation}"
+						enabled="false"/>
+			</mx:FormItem>
+			<mx:FormHeading label="Person Detail" styleName="subHeader" fontWeight="normal"/>
+			<mx:FormItem label="Profile">
+				<mx:TextInput styleName="disabledText" enabled="false" text="{GetVOUtil.getProfileObject(model.currentTasks.previousTask.personDetails.defaultProfile).profileLabel}" />
+			</mx:FormItem>
+			
+			<mx:FormItem label="Name">
+				<mx:TextInput styleName="disabledText" enabled="false" text="{model.currentTasks.previousTask.personDetails.personFirstname +' '+ model.currentTasks.previousTask.personDetails.personLastname}"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="Email">
+				<mx:TextInput styleName="disabledText" enabled="false" text="{model.currentTasks.previousTask.personDetails.personEmail}" />
+			</mx:FormItem>
+			<mx:FormItem label="Phone">
+				<mx:TextInput styleName="disabledText" enabled="false" text="{model.currentTasks.previousTask.personDetails.personPhone}" />
+			</mx:FormItem>
+		</mx:Form>
+	<mx:ControlBar width="100%" horizontalAlign="right">
+		<mx:Button label="Change To In Progress" click="createNewTask()"/>		
+	</mx:ControlBar>
+	</mx:Panel> 
+</TodoList>

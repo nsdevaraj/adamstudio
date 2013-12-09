@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" 
+		   xmlns:components="com.adams.scrum.views.components.*"> 
+	<fx:Script>
+		<![CDATA[ 			 
+			import com.adams.scrum.models.vo.CurrentInstance;
+			import com.adams.scrum.models.vo.Events;
+			import com.adams.scrum.models.vo.Tasks;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IVisualElement;
+			import mx.core.mx_internal;
+			import mx.events.FlexEvent;
+			
+			import spark.events.RendererExistenceEvent;
+			
+			use namespace mx_internal;			
+			
+			[Bindable]
+			public var eventvo:Events;
+			public static var dataCollection:Array;
+						
+			/**
+ 			 * <p>
+ 			 * Initiates the Task Renderer Object, the task status is set with toggle Button Selection
+ 			 * </p>
+			 */			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if(value){					
+					eventvo = value as Events; 					
+					eventId.text = eventvo.eventId.toString();
+					eventDate.text = eventvo.eventDate.toString();
+					eventStatusFk.text = eventvo.eventStatusFk.toString();
+					personFk.text = eventvo.personFk.toString();
+					taskFk.text = eventvo.taskFk.toString();
+					productFk.text = eventvo.productFk.toString();
+					eventLabel.text = eventvo.eventLabel.toString();
+					storyFk.text = eventvo.storyFk.toString();
+					sprintFk.text = eventvo.sprintFk.toString();
+					ticketFk.text = eventvo.ticketFk.toString();
+				}
+			}			
+		]]>
+	</fx:Script>
+	<s:Group width="100%" >
+		<s:Rect top="1" left="1" right="1" bottom="0">
+			<s:fill>
+				<s:SolidColor id="backgroundSolidColor" color="#ffffff" />
+			</s:fill>
+		</s:Rect>		
+		<s:HGroup verticalAlign="middle" top="1" bottom="0" left="5" right="5">
+			<s:Label id="eventId" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="eventDate" width="100%" minHeight="25" maxWidth="200"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="eventStatusFk" width="100%" minHeight="25" maxWidth="70"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="personFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="taskFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="productFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="eventLabel" width="100%" minHeight="25" maxWidth="200"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="storyFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="sprintFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />
+			<s:Label id="ticketFk" width="100%" minHeight="25" maxWidth="60"
+					 color="0x000000"
+					 showTruncationTip="true" />		
+		</s:HGroup>
+	</s:Group>
+</mx:Canvas>

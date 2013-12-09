@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:trac="com.adams.dt.view.tracability.*" width="100%"
+	       height="100%" xmlns:view="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Script>
+		<![CDATA[
+		/**
+		 * this dcreen only for imprimur
+		 */
+		import mx.events.CollectionEvent;
+		import mx.controls.Alert;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.FileDetailsEvent;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.ModelLocator;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance(); 
+		
+		/**
+		 * get the updated properties 
+		 */
+		public function getPropertiespjSet():ArrayCollection{			
+			var arrayColllection:ArrayCollection = timeChalk.getPropertiespjSet();
+			return arrayColllection;
+		}
+		
+		/**
+		 * get the basic file details 
+		 */
+		private function getBasicFiles():void{
+			if( tab.selectedIndex == 1 ) {
+				var fileEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_BASICFILEDETAILS );
+				CairngormEventDispatcher.getInstance().dispatchEvent( fileEvent );
+			}
+		}
+			
+		]]>
+	</mx:Script>
+	<mx:Canvas styleName="bgContainer" top="0" left="0" right="0" bottom="0">
+		<mx:TabNavigator id="tab" creationPolicy="all" change="getBasicFiles()" 
+						horizontalGap="0" top="0" left="0" right="0" bottom="0">
+			<view:TimesheetChalkBoard id="timeChalk" top="0" left="0" right="0" bottom="0" backgroundAlpha="0" 
+				                      label="{ model.loc.getString( 'technicalProperties' ) }"
+									  projectProperty="{ model.propertiespresetsCollection }" 
+						              toRemoveHighlight="{ model.mainProjectState }" 
+						              applyDefaultTemplateValue="{ model.applyProjectDftValue }"
+						              getUpdated="{ model.getPropertiesUpdated }"
+						              currentDefaultTemplateValue="{ model.projectDefaultValue }"/>		 
+		</mx:TabNavigator>
+	</mx:Canvas>
+</mx:Canvas>

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+<mx:Metadata>
+	[Event(name="bindChart", type="flash.events.Event")]
+</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.controls.Label;
+			import mx.events.ListEvent;
+			import mx.effects.WipeDown;
+			import mx.collections.ArrayCollection;
+			
+			public var dataCollection:ArrayCollection;
+	    	public var nameProperty:Array;
+	    	public var categoryFilter:String;
+	    	public var comingFromPerson:Boolean;
+	    	public var isReferenceProject:Boolean;
+	    	
+	    	private var _scrollIndex:int = -1;
+	    	private var _isItemSelected:Boolean;
+	    	private var _labelField:String;
+	    	[Bindable]
+	    	public function get labelField():String {
+	    		return _labelField;
+	    	} 
+	    	public function set labelField( value:String ):void {
+	    		_labelField = value;
+	    		updateDataProvider();
+	    	}
+	    	private function setLabelFunction():void{
+	    		_list.labelFunction = getReferenceName;
+	    	}
+	    	private function getReferenceName( item:Object ):String {
+				return item.substring( ( item.indexOf( '_' ) + 1 ), item.length );
+	    	}
+	    	private function onTextInputChange():void {
+	    		updateDataProvider();
+	    	}
+	    	
+			private function onItemClick():void {
+				if( _list.selectedItem ) {
+					_input.text = _list.itemToLabel(_list.selectedItem)
+					_input.setSelection( _input.text.length, _input.text.length );
+					_isItemSelected = true;
+					_input.dispatchEvent( new Event( Event.CHANGE ) );
+				}	
+			}
+			
+			private function updateDataProvider():void {
+				if( dataCollection ) {
+					dataCollection.filterFunction = defaultFilterFunction;
+					dataCollection.refresh();
+					_list.dataProvider = getProvider( dataCollection );
+					if( ( !_list.visible )  && ( _input.text != '' ) && ( _list.dataProvider.length != 0 ) ) {
+						_list.visible = true;
+					}
+					else if( ( _list.dataProvider.length == 0 ) || ( _input.text == '' ) || ( _isItemSelected ) ) {
+						_list.visible = false;
+						_list.selectedItem = null;
+						_scrollIndex = -1;
+						_isItemSelected = false;
+					}
+					if(!comingFromPerson || !isReferenceProject) dispatchEvent( new Event( 'bindChart' ) );
+				}
+			}
+			 
+			private function defaultFilterFunction( element:Object ):Boolean {
+				var returnValue:Boolean;
+				if( comingFromPerson ) {
+					returnValue = PersonFilter( element );
+				}
+				else {
+					if( labelField == "All" ) {
+						returnValue = multiCheck( element );
+					}
+					else {
+						returnValue = singleCheck( element, labelField );
+				    }
+				}
+			    return returnValue;
+			}
+			private function PersonFilter( element:* ):Boolean {
+				var bool:Boolean;
+				if ( GetVOUtil.getCompanyObject( element.companyFk ).companyCategory == categoryFilter && ( element.activated != 0 ) ) { 
+					if( labelField == "All" ) {
+						bool = multiCheck( element );
+					}
+					else {
+						bool = singleCheck( element, labelField );
+				    }
+				}
+				else {
+					bool = false;
+				}
+				return bool;
+			}
+			private function multiCheck( obj:Object ) : Boolean {
+				var returnValue:Boolean;
+				for each( var str:String in nameProperty ) {
+					var val:String;
+					if( str == 'companyFk' ) val = GetVOUtil.getCompanyObject( obj.companyFk ).companyname; 
+					else val = String( obj[ str ] );
+					if ( _input.text == null ) return true;
+					var cntVal:String = String( _input.text );
+					if ( cntVal.length < 1 ) return true;
+					var re:RegExp = new RegExp( cntVal, 'i' );
+					returnValue = ( re.test( val ) );
+					if( returnValue ) break;
+				}
+				return returnValue;
+			} 
+			private function singleCheck( obj:Object, str:String ):Boolean {
+				var val:String;
+				if( str == 'companyFk' ) val = GetVOUtil.getCompanyObject( obj.companyFk ).companyname;
+				else val = String( obj[ str ] );
+				if ( _input.text == null ) return true;
+				var cntVal:String = String( _input.text );
+				if ( cntVal.length < 1 ) return true;
+				var re:RegExp = new RegExp( cntVal, 'i' );
+				return ( re.test( val ) );
+			}
+			
+		 
+		 private function getProvider( value:ArrayCollection ):Array {
+	    	var resultArray:Array = [];
+	    	for ( var i:int = 0; i < value.length; i++ ) {
+				if( labelField == 'All' ) {
+					for( var j:int = 0; j < nameProperty.length; j++ ) {
+						if( nameProperty[ j ] == 'companyFk' ) {
+							if( ( singleCheck( value.getItemAt( i ), 'companyFk' ) ) && ( resultArray.indexOf( GetVOUtil.getCompanyObject( value.getItemAt( i ).companyFk ).companyname ) == -1  ) ) {
+								resultArray.push( GetVOUtil.getCompanyObject( value.getItemAt( i ).companyFk ).companyname );
+							}
+						}
+						else {
+							if( value.getItemAt( i )[ nameProperty[ j ] ] != '' ) { 
+								if( ( singleCheck( value.getItemAt( i ), nameProperty[ j ] ) ) && ( resultArray.indexOf( value.getItemAt( i )[ nameProperty[ j ] ] ) == -1  ) ) {
+									resultArray.push( value.getItemAt( i )[ nameProperty[ j ] ] );
+								}	
+							}
+						}
+					}
+				}
+				else {
+					if( labelField == 'companyFk' ) {
+						if( resultArray.indexOf( GetVOUtil.getCompanyObject( value.getItemAt( i ).companyFk ).companyname ) == -1  ) {
+							resultArray.push( GetVOUtil.getCompanyObject( value.getItemAt( i ).companyFk ).companyname );
+						}
+					}
+					else {
+						if( ( resultArray.indexOf( value.getItemAt( i )[ labelField ] ) == -1 ) && ( value.getItemAt( i )[ labelField ] != '' ) ) {
+							resultArray.push( value.getItemAt( i )[ labelField ] );
+						}
+					}	
+				}	
+			}
+			return resultArray; 
+	    }
+		    
+		    private function onKeyDown( event:KeyboardEvent ):void {
+		    	if( _list.visible ) {
+		    		if( event.keyCode == 38 ) {
+		    			if( _scrollIndex == -1 )	_scrollIndex = 0; 
+		    			else	_scrollIndex -= 1 
+		    			_list.selectedIndex = _scrollIndex;
+		    			_list.scrollToIndex( _scrollIndex );
+		    		}
+		    		else if( event.keyCode == 40 ) {
+		    			if( _scrollIndex != ( _list.dataProvider.length - 1 ) ) {
+		    				_scrollIndex += 1 
+		    				_list.selectedIndex = _scrollIndex;
+		    				_list.scrollToIndex( _scrollIndex );
+		    			}
+		    		}
+		    		else if( event.keyCode == 13 ) {
+		    			if( _list.selectedIndex != -1 ) {
+		    				_list.dispatchEvent( new ListEvent( ListEvent.ITEM_CLICK ) );
+		    			}
+		    		}
+		    	}
+		    }
+			
+		]]>
+	</mx:Script>
+	<mx:TextInput id="_input"   width="100%" change="onTextInputChange()" keyDown="onKeyDown( event )"/>
+	
+	<mx:List id="_list" width="100%" showEffect="{ mx.effects.WipeDown }" hideEffect="{ mx.effects.WipeUp }" visible="false" y="{ _input.y + _input.height }"
+		     rowCount="{ ( _list.dataProvider.length > 7 ) ? 7 : _list.dataProvider.length }"
+		     itemClick="onItemClick()" creationComplete="if(isReferenceProject)setLabelFunction()"/>  
+</mx:Canvas>

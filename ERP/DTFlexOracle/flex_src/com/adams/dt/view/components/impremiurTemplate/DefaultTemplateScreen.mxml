@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  width="100%">
+	<mx:Metadata>
+		[Event(name = "editClicked" , type = "flash.events.Event")]
+		[Event(name = "deleteClicked" , type = "flash.events.Event")]
+		[Event(name = "applyClicked" , type = "flash.events.Event")]
+	</mx:Metadata>
+    <mx:Script>
+    	<![CDATA[
+    		import com.adams.dt.business.util.GetVOUtil;
+    		import com.adams.dt.model.vo.DefaultTemplateValue;
+    		import com.adams.dt.event.generator.SequenceGenerator;
+    		import com.adams.dt.event.PropertiespjEvent;
+    		import com.adams.dt.business.util.Utils;
+    		import com.adams.dt.model.vo.Propertiespj;
+    		import com.adams.dt.model.vo.Propertiespresets;
+    		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+    		import mx.rpc.IResponder;
+    		import com.universalmind.cairngorm.events.Callbacks;
+    		import mx.controls.Alert;
+    		import mx.events.CloseEvent;
+    		import com.adams.dt.model.ModelLocator;
+    		import com.adams.dt.event.DefaultTemplateEvent;
+    		import com.adams.dt.event.DefaultTemplateValueEvent;
+    		import mx.events.ListEvent;
+    		import com.adams.dt.model.vo.DefaultTemplate;
+    		import mx.collections.ArrayCollection;
+    		
+    		[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	
+    		public var clickedDefaultTemplate:DefaultTemplate;
+    		public var editedDefaultTempLabel:String
+    		
+    		/**
+    		 *Gets the PropertiesPj set of Timesheet Chalkboard and Update it When the Apply is Clicked 
+    		 **/
+    		private var _resultCollection:ArrayCollection;
+    		[Bindable]
+    		public function get resultCollection():ArrayCollection {
+    			return _resultCollection;
+    		}
+    		public function set resultCollection( value:ArrayCollection ):void {
+    			_resultCollection = value;
+    			if( value ) {
+    				if( value.length > 0 ) {
+    					timesheetChalkUpdate();	
+    				}
+    			}
+    		}
+    		
+    		/**
+		    * Dispatch the Event when Apply Button clicked .
+		    */
+		    public function onApply( ):void {
+		    	var alertStr:String = "Do you Want to Apply the Template Values?";
+		    	Alert.show( alertStr, '', Alert.YES|Alert.NO, model.mainClass, confirmationHandler );
+    		} 
+    		
+    		private function confirmationHandler( event:CloseEvent ):void {
+    			if ( event.detail == Alert.YES ) {
+    				
+    				clickedDefaultTemplate = DefaultTemplate( defaultTemplateDataGrid.selectedItem );
+    				
+    				model.selectedDefaultTemplate = clickedDefaultTemplate.defaultTemplateLabel; 
+	    			
+	    			var getClickedPropPresets:Propertiespresets = Utils.getPropPreset( 'propertyTemplateID' );;
+	    			var propertiesPj:Propertiespj = Utils.propertyPjForFieldName( 'propertyTemplateID', model.currentProjects.propertiespjSet );
+	    			if( propertiesPj ) {
+	    				propertiesPj.fieldValue = String( clickedDefaultTemplate.defaultTemplateId );
+	    			}
+	    			else {
+	    				propertiesPj = new Propertiespj();
+	    				propertiesPj.projectFk = model.currentProjects.projectId; 
+	    				propertiesPj.propertyPreset = getClickedPropPresets;
+	    				propertiesPj.fieldValue = String( clickedDefaultTemplate.defaultTemplateId );
+	    			}
+	    			
+	    			var createNewProperitesPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ );
+	    			createNewProperitesPjEvent.propertiespj = propertiesPj;
+	    			
+	    			var handler:IResponder = new Callbacks( makeApply );
+	    			var templateValueEvent:DefaultTemplateValueEvent = new DefaultTemplateValueEvent( DefaultTemplateValueEvent.GET_DEFAULT_TEMPLATE_VALUE, handler );
+	    			templateValueEvent.defaultTemplateValuesID = clickedDefaultTemplate.defaultTemplateId;
+	    			
+	    			var applySeq:SequenceGenerator = new SequenceGenerator( [ createNewProperitesPjEvent, templateValueEvent ] );
+	  				applySeq.dispatch();
+    			}
+    		}
+    		
+    		private var _bindTechCollection:ArrayCollection;
+    		private function makeApply( rpcEvent:Object ):void {
+    			_bindTechCollection = rpcEvent.result as ArrayCollection;
+    			dispatchEvent( new Event( 'applyClicked' ) );
+    		}
+    		
+    		private function timesheetChalkUpdate():void {
+    			model.propertiespjCollection = resultCollection;
+    			for each( var propPj:Propertiespj in model.propertiespjCollection ) {
+					var dfTemp:DefaultTemplateValue = getMatchedValue( propPj.propertyPreset.propertyPresetId, _bindTechCollection );
+					if( dfTemp ) {
+						propPj.fieldValue = dfTemp.defaultTemplateValue;
+					}
+				}
+				var handler:IResponder = new Callbacks( makeRefresh );
+				var propertiesPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_BULKUPDATE_PROPERTIESPJ, handler );
+				propertiesPjEvent.dispatch(); 
+    		} 
+    		
+    		private function getMatchedValue( id:int, arrC:ArrayCollection ):DefaultTemplateValue {
+				var returnValue:DefaultTemplateValue;
+				for each( var dfTemp:DefaultTemplateValue in arrC ) {
+					if( dfTemp.propertiesPresetFK == id ) {
+						returnValue = dfTemp;
+					}
+				}
+				return returnValue;
+			}
+		 	
+		 	private function makeRefresh( rpcEvent:Object ):void {
+		 		if( model.getPropertiesUpdated ) {
+		 			model.getPropertiesUpdated = false;
+		 		}	
+		 		else {
+		 			model.getPropertiesUpdated = true;
+		 		}
+		 		model.applyProjectDftValue = _bindTechCollection;
+		 	}
+    		
+    		/**
+		    * Dispatch the Event when Edit Button clicked .
+		    */
+    		private function onClickDataGrid( event:ListEvent ):void {
+    			clickedDefaultTemplate = DefaultTemplate( defaultTemplateDataGrid.selectedItem );
+    			dispatchEvent( new Event( "editClicked" ) );
+    		}
+    		
+    		/**
+		    * Dispatch the Event when Delete Button clicked .
+		    */
+    		public function onDelete() :void {
+    			clickedDefaultTemplate = DefaultTemplate( defaultTemplateDataGrid.selectedItem );
+    			Alert.show( 'Do U Really Want To Delete " ' + defaultTemplateDataGrid.selectedItem.defaultTemplateLabel + ' " ? ', 'Delete Label', Alert.OK  | Alert.CANCEL, null, deleteCheck );
+    		}
+    		
+    		private function deleteCheck( event:CloseEvent ):void {
+				if( event.detail == Alert.OK ) {
+					if( clickedDefaultTemplate.defaultTemplateLabel == model.selectedDefaultTemplate ) {
+						model.selectedDefaultTemplate = '';
+					}
+					model.preloaderVisibility = true;
+					var handler:IResponder = new Callbacks( deleteDefaultTempValueHandler );
+					var defaultTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent ( DefaultTemplateValueEvent.GET_DELETE_TEMPLATE_VALUE, handler );
+					defaultTempValueEvt.defaultTemplateValuesID = clickedDefaultTemplate.defaultTemplateId;
+					defaultTempValueEvt.dispatch();
+					dispatchEvent( new Event( "deleteClicked" ) );	
+				}
+        	}
+        	
+        	/**
+		    * Delete the DefaultTemplateValue when the user clicked th delete Button .
+		    */
+    		private function deleteDefaultTempValueHandler( rpcEvent:Object ):void {
+    			var handler:IResponder = new Callbacks( deleteDefaultTempHandler );
+    			var defaultTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent ( DefaultTemplateValueEvent.DELETE_DEFAULT_TEMPLATE_VALUE, handler );
+    			defaultTempValueEvt.dispatch();
+    		}
+    		
+    		/**
+		    * Delete the Default Template when the user clicked th delete Button .
+		    */
+    		private function deleteDefaultTempHandler( rpcEvent:Object ):void {
+    			if( model.defaultTempValueColl.length == 0 ) {
+    				var handler:IResponder = new Callbacks( onDeleteTemplateResult );
+	    			var deleteEvt:DefaultTemplateEvent = new DefaultTemplateEvent( DefaultTemplateEvent.DELETE_DEFAULT_TEMPLATE, handler );
+	    			deleteEvt.defaultTemplates = clickedDefaultTemplate;
+	    			deleteEvt.dispatch();
+	    		 }
+	    	}
+	    	
+	    	private function onDeleteTemplateResult( rpcEvent:Object ):void {
+	    		model.specificDefaultTemplateCollect.removeItemAt( model.specificDefaultTemplateCollect.getItemIndex( clickedDefaultTemplate ) );
+	    		model.specificDefaultTemplateCollect.refresh(); 
+	    		var propertiesPj:Propertiespj = Utils.propertyPjForFieldName( 'propertyTemplateID', model.currentProjects.propertiespjSet );
+    			if( propertiesPj ) {
+    				if( int( propertiesPj.fieldValue )  == clickedDefaultTemplate.defaultTemplateId ) {
+    					propertiesPj.fieldValue = null;
+    					var handler:IResponder = new Callbacks( onFinalResult );
+    					var updateProperitesPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ, handler );
+    					updateProperitesPjEvent.propertiespj = propertiesPj;
+    					updateProperitesPjEvent.dispatch();
+    				}	
+    			}
+    			model.preloaderVisibility = false;
+    		}
+    		
+    		private function onFinalResult( rpcEvent:Object ):void {
+    			model.projectDefaultValue = new ArrayCollection();
+    			model.projectDefaultValue.refresh();
+    		}
+    		
+    	]]>
+    </mx:Script>
+    <mx:DataGrid id="defaultTemplateDataGrid"  dataProvider="{ model.specificDefaultTemplateCollect }" itemClick="onClickDataGrid( event )" height="100%" width="100%">
+		<mx:columns>
+				<mx:DataGridColumn headerText="Template Label" dataField="defaultTemplateLabel" width="{this.width-150}" />
+				<mx:DataGridColumn id="ItemRen" width="150" >
+                	<mx:itemRenderer>
+                		<mx:Component>
+	                		<mx:HBox paddingLeft="10" paddingRight="40">
+	                			<mx:Button  click="outerDocument.onApply()" styleName="applyIcon" toolTip="Apply"/>
+	                			<mx:Button styleName="deleteIcon"  click="outerDocument.onDelete()" right="40" toolTip="Delete"/>
+	                		</mx:HBox>
+                		</mx:Component>
+                	</mx:itemRenderer>
+                </mx:DataGridColumn>
+		</mx:columns>
+    </mx:DataGrid>
+</mx:Canvas>

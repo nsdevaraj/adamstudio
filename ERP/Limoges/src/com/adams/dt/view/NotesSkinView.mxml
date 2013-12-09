@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*"
+		xmlns:com="com.adams.dt.view.components.*" 
+		xmlns:autocomplete="com.adams.dt.view.components.autocomplete.*">	
+	
+	<fx:Declarations>
+		<com:NotesBox id="notesBox"/>
+	</fx:Declarations>
+	
+	<s:VGroup width="100%" height="100%">
+		
+		<s:HGroup id="notesContainer" height="5%">
+			<components:NativeButton id="createNote" label="Create Note"/>
+		</s:HGroup>	
+		
+		<s:HGroup verticalAlign="middle" height="5%" width="100%">
+			<s:Label text="Search: "/>
+			<autocomplete:AutoCompleteView id="autoComplete" dataProvider="{ historyGrid.dataProvider as ArrayCollection }"
+										   labelField="All"/>
+			<s:DropDownList id="searchSelector" width="180"/>
+			<s:Spacer width="100%"/>
+			<s:Label text="Filters: "/>
+			<s:HGroup gap="0">
+				<s:ToggleButton id="tasksButton" label="Tasks"/>
+				<s:ToggleButton id="notesButton" label="Notes"/>
+				<s:ToggleButton id="eventsButton" label="Events"/>
+			</s:HGroup>
+		</s:HGroup>
+		
+		<com:ReportGrid id="historyGrid" width="100%" height="100%" rowHeight="23" specificText="{ autoComplete.specificText }"
+						isDashBoard="false" selectedColumn="{ searchSelector.selectedItem }">
+			<com:columns>
+				<s:ArrayList>
+					<s:GridColumn headerText="Title" dataField="title" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+					<s:GridColumn headerText="Message" dataField="message" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer" width="200"/>
+					<s:GridColumn headerText="Person" dataField="person" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+					<s:GridColumn headerText="Date" dataField="date" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+					<s:GridColumn headerText="Type" dataField="type" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+				</s:ArrayList>
+			</com:columns>
+		</com:ReportGrid> 
+		
+		<s:BorderContainer width="100%" height="0" id="formPanel" >
+			<s:BorderContainer styleName="projectHeaderBC" id="formHeader" width="100%" top="0" height="35" borderVisible="false">
+				<s:Label id="detailTitle" styleName="headerLabel" fontSize="24" left="10" verticalCenter="0"/>	
+			</s:BorderContainer>
+			
+			<s:Label id="detailType" styleName="headerLabel" fontSize="18" top="40" left="10"/>
+			<s:Label text="Message :" top="70" left="10"/>
+			<s:TextArea id="detailMessage" editable="false" top="90" right="10" left="10" bottom="10"/>
+			<s:VGroup top="40" right="10" horizontalAlign="right">
+				<s:Label id="detailPerson" styleName="headerLabel" fontSize="18"/>
+				<s:Label id="detailDate"/>
+			</s:VGroup>
+		</s:BorderContainer>
+		
+	</s:VGroup>
+	
+</s:Skin>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:CheckBox xmlns:mx="http://www.adobe.com/2006/mxml" change="valueChanged()"  >
+	<mx:Script>
+		<![CDATA[
+			public function valueChanged():void{
+				var eve:Event = new Event('valueChanged',true,true);
+				enabled = false;
+				this.dispatchEvent(eve);
+			}
+			override public function set data(value:Object):void {
+				super.data=value;
+				if( data.companyFK == parentDocument.model.clientCompanyId) {
+					 selected =true;
+					 enabled = false;
+				}
+				else {
+					 selected =false;
+				}
+			}
+			
+		]]>
+	</mx:Script>
+</mx:CheckBox>

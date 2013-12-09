@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" currentState="login" showStatusBar="false" 
+	 showTitleBar="false" layout="absolute" xmlns:containers="com.dougmccune.containers.*"
+	width="1000" height="600"  initialize="initApplication()">
+<mx:Style source="styles.css"/>
+    <mx:Script>
+    <![CDATA[
+    	import mx.effects.easing.Back;
+    	import mx.events.ResizeEvent;
+    	import mx.binding.utils.BindingUtils;
+    	import mx.core.Window;
+    	import mx.core.UIComponent;
+    	import mx.controls.HTML;
+    	import mx.events.ListEvent;
+		import mx.core.Application;
+		import mx.collections.ArrayCollection;
+		import mx.rpc.xml.SimpleXMLDecoder;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.managers.CursorManager; 
+		import mx.events.CloseEvent;
+		import mx.events.ResizeEvent;
+		import flash.system.Security;
+		 import CustomHost;
+         private var host:CustomHost;
+			[Bindable]
+			private var xmlSites:XML;
+			[Bindable]
+			private var prefsXML:XML;
+			private var html:HTML;
+			public var urlSites:Array =new Array();
+			
+			private var sitesArr:Array =new Array();
+			private var myTimer:Timer; 
+			private var locChanged:Boolean =false;
+			private static const MUSICALWEB:String = 'http://www.accord-valmy.fr';
+			[Bindable]
+			private var selItem:Object;
+			[Bindable]
+			[Embed(source="assets/swf/interfaceAssets.swf#title_center")]
+			public var titleCenterImg:Class;
+			[Bindable]	
+			[Embed(source="assets/swf/interfaceAssets.swf#title_corner")]
+			public var titleCornerImg:Class;
+			public var dockImage:BitmapData; 
+			public var urlStr:String='';
+			[Bindable]	
+			public var autoLogin:Boolean;
+			public var userID:String;
+			public var password:String;
+			private var cUrlReq:URLRequest;
+			[Bindable]	
+			public var loginURL:String;
+			[Bindable]	
+			public var menuProvider:ArrayCollection = new ArrayCollection();
+			public var lastToolObj:Object =new Object();
+			
+			private var iconsList:Array = ['net2ftp','AV','webcenter','perigee','veepeepost','tracabilite']
+			private function setResize(event:ResizeEvent = null):void{ 
+				if(loginView.numChildren){ 
+					loginView.getChildAt(0).x = (Application.application.width/2)-400;	
+					loginView.getChildAt(0).y = (Application.application.height/2)-350;	
+				} 
+			}
+			private function faultHandler(event:FaultEvent):void
+			{
+				Alert.show(event.fault.faultString +loginURL);
+			} 
+			public function loadAllSites( siteURL:String ):void {
+			  
+			  var htL:HTMLLoader = new HTMLLoader();
+			  htL.addEventListener(Event.COMPLETE,htmlCompleteHandler);
+			  htL.addEventListener(Event.HTML_DOM_INITIALIZE,htmlDOMHandler);
+			  htL.addEventListener(Event.LOCATION_CHANGE,htmlChangeHandler);
+			  htL.addEventListener(Event.RENDER,htmlRenderHandler);
+ 			  host = new CustomHost();
+              htL.htmlHost = host;
+              
+			  var holder:UIComponent = new UIComponent();
+			  holder.percentHeight = 100;
+			  holder.percentWidth = 100; 
+			  holder.addChild(htL);
+			  
+			  var hbox:HBox = new HBox();
+			  hbox.setStyle('showEffect',fIn);
+			  hbox.setStyle('hideEffect',fOt);
+			  hbox.addChild(holder);
+			  hbox.percentHeight = 100;
+			  hbox.percentWidth = 100;
+			  vStack.addChild(hbox); 
+			 
+			  var obj:Object = new Object();
+			  obj.url = siteURL;
+			  obj.holder = holder;
+			  obj.htL = htL; 
+			  sitesArr.push(obj);   
+			  
+			}
+			public function htmlRenderHandler(e:Event):void
+			{  
+				 
+			}
+			
+			public function htmlURLLoader(ind:int):void
+			{  
+			  var obj:Object = sitesArr[ind];
+			  if(lastToolObj.url ==MUSICALWEB){
+			   	lastToolObj.htL.load(new URLRequest( 'about:blank' ))
+			  }			  
+			  var cArray:Array;
+			  var cUrl:String;
+			  var cVars:URLVariables;
+			  cArray = String(obj.url).split("?");
+			  cUrl = cArray[0].toString();
+			  cUrlReq = new URLRequest( cUrl );
+			  if( cArray.length > 1 ) {
+			    cVars = new URLVariables( cArray[1] );
+			    cUrlReq.data = cVars;
+			  }  
+			  cUrlReq.method = URLRequestMethod.POST;	 
+
+			  BindingUtils.bindProperty(obj.htL,'width',Application.application,'width');
+			  BindingUtils.bindProperty(obj.htL,'height',Application.application,'height'); 
+	 
+			  if(obj.htL.location == 'about:blank'){
+			  	 CursorManager.setBusyCursor(); 
+			  	 obj.htL.load(cUrlReq);	  	
+			  }else{
+			  	if(obj.htL.getHistoryAt(0).url==obj.htL.location){
+			  		menuIcon.visible = false; 	  	
+			  	}else{
+			  	menuIcon.visible = true; 	  	
+			  	}
+			  }  
+			  lastToolObj = obj
+			}
+			private function htmlChangeHandler(e:Event):void
+			{  
+				locChanged = true;   
+			}
+			private function htmlDOMHandler(e:Event):void
+			{  
+				 
+			} 
+			private function htmlCompleteHandler(e:Event):void
+			{
+			  CursorManager.removeBusyCursor();
+			  var doc:Object = e.target.window.document;   
+			  var form:Object =doc.getElementsByTagName("Form"); 
+				var anchors:Object =doc.getElementsByTagName("a");  
+				if (anchors != null) {				
+					for (var j:uint = 0; j < anchors.length; j++){  
+						var hrefObj:String = anchors[j].href;
+						 anchors[j].onmouseup = function():void { 
+							locChanged = false;	
+							urlStr = hrefObj;  
+							myTimer = new Timer(2000,1)   
+				            myTimer.addEventListener("timer", timerHandler);  
+				            myTimer.start();  					
+						}      
+					} 
+				}   
+			  if(form!= null){
+			  	if(form.length ==1 && lastToolObj.htL.historyLength == 1){   
+			  		lastToolObj.htL.load(cUrlReq);	  
+			  	} 
+			  }
+			  if(lastToolObj.htL.historyLength >= 1){
+			  	   menuIcon.visible = true;
+			  	   //trace(lastToolObj.htL.historyLength+"lasjdflkasd")
+			  		//lastToolObj.htL.load(cUrlReq);	  
+			  	}
+			  if(lastToolObj.htL.historyLength){	
+			  	if(lastToolObj.htL.getHistoryAt(0).url==lastToolObj.htL.location){
+			  		menuIcon.visible = false;
+			  		// trace("else"+lastToolObj.htL.location)			  	
+			  		 }
+			  	 }
+			}
+			  public function timerHandler(event:TimerEvent):void { 
+			   trace(locChanged+ ' '+urlStr);
+			   if(!locChanged){ 
+			   	 if(urlStr.indexOf('http')==-1){  
+			   	 	trace(urlStr+ ' '+lastToolObj.url); 
+			   	 }else{
+			   	 	//openPopup(urlStr);
+			   	 	trace(urlStr+ ' '+lastToolObj.url); 
+			   	 }
+			   } 	
+				myTimer.stop(); 
+	        } 
+			public function openPopup(urlStr:String):void{  
+				trace(urlStr)  
+				navigateToURL(new URLRequest(urlStr));  
+			}  
+			private function goBack():void{
+				lastToolObj.htL.load(new URLRequest(String(lastToolObj.htL.getHistoryAt(lastToolObj.htL.historyLength-2).url)))
+			}
+			public function loadSite(ind:int):void{ 
+				htmlURLLoader(ind);
+				vStack.selectedIndex = ind;
+				currentState = "main";
+				menuList.selectedIndex = vStack.selectedIndex;
+			}
+			private function resultHandler(event:ResultEvent):void
+			{        	  
+			var myXML:XML = new XML();
+			var XML_URL:String = "xml/data.xml";
+			var myXMLURL:URLRequest = new URLRequest(XML_URL);
+			var myLoader:URLLoader = new URLLoader(myXMLURL);
+			myLoader.addEventListener("complete", xmlLoaded);
+			
+			function xmlLoaded(event:Event):void
+			{
+			    myXML = XML(myLoader.data);
+			     var xmlDoc:XMLDocument = new XMLDocument(myXML.toString());
+			    var decoder:SimpleXMLDecoder = new SimpleXMLDecoder(true);
+			    var resultObj:Object = decoder.decodeXML(xmlDoc);
+			  	if(resultObj.SITES){ 
+					var products:ArrayCollection  = resultObj.SITES.SITE; 
+					if(loginView.numChildren == 2){
+						trace("loginViewwwwwwwwwwwwwwwwwwwww");
+					loadSiteAC(products);
+					}
+					menuProvider = products;
+			 	}else{ 
+					errorLogin.visible=true;
+					currentState="login";
+				}  
+			    trace("Data loaded.");
+			}
+
+				
+				       
+			   
+			}    
+			private function checkIndex(event:MouseEvent){
+				trace("loadSite___"+iconsList.indexOf(event.currentTarget.name)+"++++++++"+event.currentTarget.name);
+				loadSite(iconsList.indexOf(event.currentTarget.name))
+			}
+			private function loadSiteAC(site:ArrayCollection):void{         
+				//var caroussel:Carousel = new Carousel(800 -800/4,600,site,0.6,10);
+				
+				
+				
+				
+				//loginView.addChild(caroussel); 
+				//addEventListener(MouseEvent.MOUSE_MOVE,caroussel.onMove); 
+			  	currentState='menu';
+			  	for(var i:int=0;i<site.length;i++){
+			  		//var strName:String = site[i].NAME;
+			  		 var len:Number = site[i].IMAGE.indexOf(".");
+			  		var str:String = String(site[i].IMAGE).slice(0,len);
+			  		var nBTN:Button = new Button();
+			  		nBTN.styleName = str;
+			  		nBTN.name = str;
+			  		nBTN.addEventListener(MouseEvent.CLICK,checkIndex);
+			  				  		
+			  		if(i>2){
+			  			row2.addChild(nBTN);
+			  		}else{
+			  			row1.addChild(nBTN);
+			  		}
+			  		  
+			  		trace(str+"sdfsdfsdf");
+			  		
+			  		loadAllSites(site[i].URL);
+			  		urlSites.push(site[i].URL);
+			  	}
+			  	setResize(); 
+			}
+		    public function initApplication():void { 
+		    	readFromFile(); 
+				//Use the loader object to load an image, which will be used for the systray       //After the image has been loaded into the object, we can prepare the application       //for docking to the system tray 
+				var loader:Loader=new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,prepareForSystray);
+				loader.load(new URLRequest("assets/icons/tray.png"));
+				//Catch the closing event so that the user can decide if it wants to dock or really       //close the application 
+				this.addEventListener(Event.CLOSING,closingApplication);
+			}
+			public function closingApplication(evt:Event):void {
+				//Don't close, so prevent the event from happening  
+				stage.nativeWindow.visible = true;		
+				stage.nativeWindow.orderToFront();
+				evt.preventDefault(); 
+				
+				Alert.okLabel = "Exit";
+				Alert.yesLabel = "Logout";
+				Alert.noLabel = "Cancel";
+				Alert.show("Are you sure, you want to close?","Accord-Valmy",Alert.OK|Alert.YES|Alert.NO,this,alertCloseHandler); 
+			}
+			// Event handler function for displaying the selected Alert button. 
+			public function alertCloseHandler(event:CloseEvent):void {
+				if (event.detail == Alert.OK) {
+					closeApp(event);
+				}else if (event.detail == Alert.YES) {
+					logout(event);
+				}else {
+					 
+				}
+			} 
+			public function logout(ev:Event):void { 
+				undock(ev);
+				saveToFile('', '');
+				row1.removeAllChildren();
+				row2.removeAllChildren();		
+				userNameText.text = '';
+			    passNameText.text = '';
+			    errorLogin.visible= false;
+				currentState = 'login';
+			}
+			public function prepareForSystray(event:Event):void {
+				//Retrieve the image being used as the systray icon 
+				dockImage=event.target.content.bitmapData;
+				//For windows systems we can set the systray props       //(there's also an implementation for mac's, it's similar and you can find it on the net... ;) ) 
+				if (NativeApplication.supportsSystemTrayIcon) {
+					setSystemTrayProperties();
+					//Set some systray menu options, so that the user can right-click and access functionality          //without needing to open the application          
+					SystemTrayIcon(NativeApplication.nativeApplication.icon).menu = createSystrayRootMenu(); 
+				}
+			}
+			public function createSystrayRootMenu():NativeMenu {
+				//Add the menuitems with the corresponding actions 
+				var menu:NativeMenu=new NativeMenu  ;
+				var openNativeMenuItem:NativeMenuItem=new NativeMenuItem("Open");
+				var logoutNativeMenuItem:NativeMenuItem=new NativeMenuItem("Logout");
+				
+				var exitNativeMenuItem:NativeMenuItem=new NativeMenuItem("Exit");
+				//What should happen when the user clicks on something...       
+				openNativeMenuItem.addEventListener(Event.SELECT,undock);
+				logoutNativeMenuItem.addEventListener(Event.SELECT,logout);
+				exitNativeMenuItem.addEventListener(Event.SELECT,closingApplication);
+				//Add the menuitems to the menu 
+				menu.addItem(openNativeMenuItem);
+				menu.addItem(new NativeMenuItem("",true));
+				//separator 
+				menu.addItem(logoutNativeMenuItem); 				
+				menu.addItem(exitNativeMenuItem);
+				return menu;
+			}
+			public function setSystemTrayProperties():void {
+				//Text to show when hovering of the docked application icon       
+				SystemTrayIcon(NativeApplication.nativeApplication.icon).tooltip="A-V";
+				//We want to be able to open the application after it has been docked       
+				SystemTrayIcon(NativeApplication.nativeApplication.icon).addEventListener(MouseEvent.CLICK,undock);
+				//Listen to the display state changing of the window, so that we can catch the minimize       
+				//stage.nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGING,nwMinimized);//Catch the minimize event 
+			}
+			public function nwMinimized(displayStateEvent:NativeWindowDisplayStateEvent):void {
+				//Do we have an minimize action?       //The afterDisplayState hasn't happened yet, but only describes the state the window will go to,       //so we can prevent it! 
+				if (displayStateEvent.afterDisplayState == NativeWindowDisplayState.MINIMIZED) {
+					//Prevent the windowedapplication minimize action from happening and implement our own minimize          //The reason the windowedapplication minimize action is caught, is that if active we're not able to          //undock the application back neatly. The application doesn't become visible directly, but only after clicking          //on the taskbars application link. (Not sure yet what happens exactly with standard minimize) 
+					displayStateEvent.preventDefault();
+					//Dock (our own minimize) 
+					dock();
+				}
+			}
+			public function dock():void {
+				//Hide the applcation 
+				stage.nativeWindow.visible=false;
+				//Setting the bitmaps array will show the application icon in the systray 
+				NativeApplication.nativeApplication.icon.bitmaps = [dockImage]; 
+			}
+			public function undock(evt:Event):void {
+				//After setting the window to visible, make sure that the application is ordered to the front,       //else we'll still need to click on the application on the taskbar to make it visible 
+				stage.nativeWindow.visible=true;
+				stage.nativeWindow.orderToFront();
+				//Clearing the bitmaps array also clears the applcation icon from the systray 
+				NativeApplication.nativeApplication.icon.bitmaps = []; 
+			}
+			public function closeApp(evt:Event):void { 
+				stage.nativeWindow.close();
+			}
+			private function doDrag(e:MouseEvent):void {
+				stage.nativeWindow.startMove();
+			}
+			private function showLocation(event:Event):void
+			{  
+				var str:String = String(event.currentTarget.location);
+				//Alert.show(str) 
+			}
+			private function domInitialize(e:Event):void
+			{
+				//Alert.show('init')
+			}
+			private function hiddenLocation(event:Event):void
+			{  
+				var str:String = String(event.currentTarget.location);
+				Alert.show(str) 
+			}
+
+			private function onScriptException(e:HTMLUncaughtScriptExceptionEvent):void
+			{
+				e.preventDefault();
+				var ex:Object = e.exceptionValue; 
+				var buffer:String = new String();
+				buffer = "Line #: " + ex.line + "\n";
+				buffer += "Error type: " + ex.name + "\n";
+				buffer += "Message: " + ex.message + "\n";
+				buffer += "URL: " + ex.sourceURL + "\n";
+				buffer += "Stacktrace: " + ex.sourceURL + "\n";
+				for each (var line:Object in e.stackTrace)
+				{
+					buffer += "    " + line.line + ": " + line["function"] + "\n";
+				}
+				//buffer;
+			}	
+			public function saveToFile(user:String,password:String):void { 
+				var file:File = File.userDirectory;
+				file = file.resolvePath("autoLogin.xml");
+				var fileStream:FileStream = new FileStream(); 
+				fileStream.openAsync(file, FileMode.WRITE);
+				var fileText:String = '<root><userID>'+user+'</userID><passWord>'+password+'</passWord></root>'; 
+				fileStream.writeUTFBytes(fileText);
+				fileStream.close(); 
+			}
+			public function readFromFile():void {
+				var file:File = File.userDirectory;
+				file = file.resolvePath("autoLogin.xml");
+				var fileStream:FileStream = new FileStream(); 
+				fileStream.openAsync(file, FileMode.READ);
+				fileStream.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);  
+				fileStream.addEventListener(Event.COMPLETE, processXMLData); 					
+			}
+			public function errorHandler(event:IOErrorEvent):void {  
+				saveToFile('', '');					
+			}				
+			public function processXMLData(event:Event):void 
+			{ 
+				prefsXML = XML(event.currentTarget.readUTFBytes(event.currentTarget.bytesAvailable));
+				event.currentTarget.close();	
+				if(String(prefsXML.userID).length > 0) {
+					userID = prefsXML.userID
+					password = prefsXML.passWord
+					autoLogin = true;
+					auto.selected = autoLogin;					
+					userNameText.text = userID
+					passNameText.text = password;
+					login(); 
+				}  
+			}	
+			public function login(eve:MouseEvent = null):void 
+			{ 		
+				userID= userNameText.text;
+			    password = passNameText.text;
+			    if(autoLogin){
+					saveToFile(userID,password);			
+				}else{
+					saveToFile('', '');
+				}
+				loginURL = 'http://62.193.234.4/StadeRelay/avsites?'
+				loginURL += 'id='+userID+'&amp;pw='+password;
+				sites.send();	
+			}
+			private function loadHTMLPage(event:ListEvent):void{
+				trace(event.currentTarget.selectedIndex);
+			}
+			private var oldAppWidth:int;
+			private var oldAppHight:int;
+			private var oldAppX:int;
+			private var oldAppY:int;
+			private function doFullScreen():void{
+				trace(Application.application.width+"SW"+ Capabilities.screenResolutionX);
+				 if(Application.application.width != Capabilities.screenResolutionX){
+					oldAppWidth = Application.application.width;
+					oldAppHight = Application.application.height;
+					oldAppY = nativeWindow.y;
+					oldAppX = nativeWindow.x; 
+					Application.application.width = Capabilities.screenResolutionX;
+					Application.application.height= Capabilities.screenResolutionY;
+					nativeWindow.x = 0;
+					nativeWindow.y= 0;
+					//stage.displayState = "normal";
+				}else{
+					Application.application.width = oldAppWidth;
+					Application.application.height = oldAppHight;
+					nativeWindow.y = oldAppY; 
+					nativeWindow.x = oldAppX;  
+					setResize();
+					
+					//stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+				} 
+			}
+			
+    ]]>
+    </mx:Script>
+	<mx:WipeDown id="wUp" duration="200"/>
+	<mx:WipeUp id="wDn" duration="10"/>
+	<mx:Move xFrom="{-Application.application.width}" xTo="0" id="fIn" duration="100"/>
+	<mx:Move xFrom="0" xTo="{Application.application.width}" id="fOt" duration="500"/>
+
+	<mx:Validator id="userval" source="{userNameText}" property="text" required="true" />
+	<mx:Validator id="passval" source="{passNameText}" property="text" required="true"/>
+    <mx:HTTPService id="sites" result="resultHandler(event)" fault="faultHandler(event)" resultFormat="xml"
+                    url="{loginURL}"/>
+	<mx:states>
+		<mx:State name="login">
+			<mx:SetProperty target="{loginView}"  name="visible" value="false" />
+			<mx:SetProperty target="{mainView}" name="visible" value="false"/>
+			<mx:SetProperty target="{homeIcon}" name="visible" value="false"/>
+			<mx:SetProperty target="{menuIcon}" name="visible" value="false"/>
+			<mx:SetProperty target="{loginPanel}" name="visible" value="true"/>
+			<mx:SetProperty target="{menuBtn}" name="visible" value="false"/>
+		</mx:State>
+		<mx:State name="menu">
+			<mx:SetProperty target="{loginView}"  name="visible" value="true" />
+			<mx:SetProperty target="{mainView}" name="visible" value="false"/>
+			<mx:SetProperty target="{menuIcon}" name="visible" value="false"/>
+			<mx:SetProperty target="{homeIcon}" name="visible" value="false"/>
+			<mx:SetProperty target="{loginPanel}" name="visible" value="false"/>
+			<mx:SetProperty target="{menuBtn}" name="visible" value="true"/>
+		</mx:State>
+		<mx:State name="main">
+			<mx:SetProperty target="{loginView}"  name="visible" value="false" />
+			<mx:SetProperty target="{mainView}" name="visible" value="true"/>
+			<mx:SetProperty target="{homeIcon}" name="visible" value="true"/>
+			<mx:SetProperty target="{loginPanel}" name="visible" value="false"/>
+			<mx:SetProperty target="{menuBtn}" name="visible" value="true"/>
+		</mx:State>
+	</mx:states>
+    
+	<mx:HBox id="titlecontainer"  mouseDown="doDrag(event)" horizontalGap="0" verticalAlign="middle" width="100%" height="30" backgroundColor="#000000" backgroundImage="{titleCenterImg}" backgroundSize="100%">
+		<mx:Image id="leftcorner" source="{titleCornerImg}" left="0" top="0" height="30" width="5"/>
+		<mx:HBox width="100%"  verticalAlign="middle" id="clientlogoContainer" x="10" y="203">
+			<mx:Image id="clientlogo" source="@Embed('assets/icons/logo.png')"/>
+			<mx:Spacer width="100%" />
+			<mx:Image id="minimizeIcon" source="@Embed('assets/icons/mini.png')" click="dock()"/>
+			<mx:Image id="maximiseIcon" source="@Embed('assets/icons/maxi.png')" click="closingApplication(event)"/>
+			<mx:Spacer width="10" />
+		</mx:HBox>
+		<mx:Image id="rightcorner" source="{titleCornerImg}" right="0" top="0" height="30" width="5"/>
+	</mx:HBox>
+	
+	<mx:VBox id="loginView"  verticalAlign="middle" horizontalAlign="center" width="{Application.application.width}" 
+		height="{Application.application.height}" right="0" left="0" bottom="0" top="35" resize="setResize(event)">
+		<mx:HBox id="row1" horizontalAlign="center" width="100%">
+			
+		</mx:HBox>
+		<mx:HBox id="row2" width="100%" horizontalAlign="center">
+			
+		</mx:HBox>
+	
+	</mx:VBox>
+	<mx:Canvas id="loginPanel" right="0" left="0" top="30" bottom="0" horizontalCenter="0" verticalCenter="0" backgroundAlpha="0">
+		<mx:VBox  horizontalCenter="0" verticalCenter="0" horizontalAlign="center">	
+		<mx:VBox id="loginContent" width="400" verticalAlign="middle" horizontalCenter="0" verticalCenter="0"
+			 horizontalAlign="center" backgroundColor="#000000" backgroundAlpha="0">
+			<mx:Form id="loginForm"  verticalCenter="0" horizontalCenter="0" 
+				textAlign="left" >
+			<mx:FormItem label="User Name:" filters="{[new DropShadowFilter(1, 45)]}">
+            	<mx:TextInput styleName="fieldText" id="userNameText" />
+	        </mx:FormItem>
+	        <mx:FormItem label="Password:" filters="{[new DropShadowFilter(1, 45)]}">
+	            <mx:TextInput id="passNameText" styleName="fieldText" displayAsPassword="true"/>
+	        </mx:FormItem>
+	       	<mx:FormItem>
+	            <mx:CheckBox label="Remember Password" id="auto" change="{autoLogin=auto.selected}" 
+	            	filters="{[new DropShadowFilter(1, 45)]}"/>
+	        </mx:FormItem>
+	        <mx:HBox> 
+	        	<mx:FormItem width="60"></mx:FormItem>
+		        <mx:FormItem> 
+	            	<mx:Button id="loginId" label="LOGIN"  enabled="{userNameText.text.length!=0 || passNameText.text.length!=0}" 
+	            		click="{login(event)}"/>
+	            </mx:FormItem>
+			</mx:HBox>
+			
+			</mx:Form>
+		</mx:VBox>
+		 <mx:Text id="errorLogin" filters="{[new DropShadowFilter(1, 45)]}" fontSize="12"
+				color="red" visible="false"  text="Check your username and password" selectable="false"/>
+		</mx:VBox>
+	</mx:Canvas>
+	<mx:Image source="@Embed('assets/icons/av_logo.png')"   id="avLogo" bottom="15"  right="15" />
+	<mx:Canvas id="mainView"  right="0" left="0" top="30" bottom="0">
+		<mx:ViewStack  id="vStack"   width="100%" height="100%">
+		</mx:ViewStack>
+		<!--<mx:HTML id="invisible" width="0" height="0" uncaughtScriptException="onScriptException(event)" locationChange="hiddenLocation(event)" includeInLayout="false" />-->
+	</mx:Canvas>
+	<mx:Image source="@Embed('assets/icons/home.png')" id="homeIcon" click="currentState='menu',CursorManager.removeBusyCursor()" top="5" left="35"/>
+	<mx:Image source="@Embed('assets/icons/backArrow.png')" visible="false" id="menuIcon" click="goBack()" top="5" right="137"/>
+	<mx:Image source="@Embed('assets/icons/downArrow.png')"  rollOver="{menuList.visible=(menuList.visible==true?false:true)}" id="menuBtn" right="105"  top="5" />
+	<mx:Image source="@Embed('assets/icons/fullScreen.png')"  click="doFullScreen()" id="fScreenBtn" right="73"  top="7" />
+	
+	
+	<mx:List  showEffect="wUp" hideEffect="wDn" rollOut="menuList.visible=false" id="menuList"
+		 change="loadSite(event.currentTarget.selectedIndex)" dataProvider="{menuProvider}" 
+		 visible="false" labelField="NAME" right="10" top="29" width="125" height="140" />
+	
+	
+	
+</mx:WindowedApplication>

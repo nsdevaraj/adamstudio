@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" 
+		xmlns:components="com.adams.scrum.views.components.*">
+	<fx:Metadata>
+		[HostComponent("com.adams.scrum.views.mediators.ProductViewMediator")]
+	</fx:Metadata> 
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#000000" alpha=".7" />
+		</s:fill>
+	</s:Rect>
+	<s:Panel title="Product Form"  verticalCenter="0" horizontalCenter="0">		
+			<mx:Form id="productForm">
+				<mx:FormItem label="Product Name">
+					<s:TextInput id="productName"/>
+				</mx:FormItem> 
+				<mx:FormItem label="Product Code">
+					<s:HGroup>
+						<s:TextInput id="productCode" editable="false" maxChars="5"/>
+						<s:Label id="avilableText" 
+								 text="Not Available" fontStyle="normal" color="red"
+								 visible="false" includeInLayout="false"/>
+					</s:HGroup>
+				</mx:FormItem>
+				<mx:FormItem label="Domain Name">
+					<s:DropDownList id="domainFk" name="domainId" labelField="domainName" selectedIndex="0"/>
+				</mx:FormItem>
+				<mx:FormItem label="Status Name">
+					<s:DropDownList id="productStatusFk" name="statusId" labelField="statusLabel" selectedIndex="0"/>
+				</mx:FormItem>
+				<mx:FormItem label="Product Comments">
+					<s:TextArea id="productComment" width="150" height="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Product Start Date">
+					<mx:DateField id="productDateStart" width="150" />
+				</mx:FormItem>
+				<mx:FormItem label="Product End Date">
+					<mx:DateField id="productDateEnd" width="150"/>
+				</mx:FormItem>				
+				<mx:FormItem label="Product Task Types">
+					<s:TextInput id="productTasktypes" height="0" text="{taskComponent.txtOutput}" visible="false"/>
+					<s:Scroller>
+						<components:TextArrInput id="taskComponent" width="500" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+					</s:Scroller>
+				</mx:FormItem>
+				<mx:FormItem label="Product Roles">
+					<s:TextInput id="productRoles" height="0" text="{roleComponent.txtOutput}" visible="false"/>
+					<s:Scroller>
+						<components:TextArrInput id="roleComponent" width="500" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+					</s:Scroller>
+				</mx:FormItem>	
+				<mx:FormItem label="Product Versions">
+					<s:Scroller>
+						<components:TextArrInput id="versionComponent" width="500" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+					</s:Scroller>
+				</mx:FormItem>	
+				<mx:FormItem label="Product Themes">
+					<s:Scroller>
+						<components:TextArrInput id="themesComponent" width="500" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+					</s:Scroller>
+				</mx:FormItem>
+			</mx:Form>				
+		<s:controlBarContent>
+			<components:NativeButton id="createBtn" label="Product" styleName="OkIcon"/>
+			<components:NativeButton id="editBtn" label="Edit" styleName="EditIcon"/>
+			<components:NativeButton id="cancelBtn" label="Cancel" styleName="CancelIcon"/>
+		</s:controlBarContent>
+	</s:Panel>
+</s:Skin>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:components="com.adams.scrum.views.components.*"
+		 creationComplete="setItemRenderer(event)" rollOut="onCloseList(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.scrum.utils.Utils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable]
+			public var themeDP:ArrayCollection; 
+			private var _dataProvider:ArrayCollection
+			[Bindable]
+			public function get dataProvider():ArrayCollection
+			{
+				return _dataProvider;
+			}
+			/**
+			 * dataProvider is the total Collection set for the component
+			 * themeDP is the collection to store the values selected using component
+ 			 * <p>
+ 			 * The themeDP is emptied to initiate the component, the combo popup is closed
+ 			 * </p>
+			 */			
+			public function set dataProvider(value:ArrayCollection):void
+			{
+				_dataProvider = value; 
+				themeDP = new ArrayCollection();
+				openList = false;
+			}
+			/**
+ 			 * <p>
+ 			 * Mouse Handler to open the combolist of popup
+ 			 * </p>
+			 */			
+			protected function onOpenList(event:MouseEvent):void{
+				openList=true;	
+			} 
+			protected function onCloseList(event:Event):void{
+				openList=false;	
+			} 
+			/**
+ 			 * the items select handler for droplist popup, the elements were choosed
+ 			 * only if its not in the list already.
+ 			 * <p>
+ 			 * ThemeDp, is edited based on the selected elements
+ 			 * </p>
+			 */
+			 protected function onChangeHandler(event:IndexChangeEvent):void{
+				var exist:int = themeDP.getItemIndex(event.currentTarget.selectedItem);
+				if(exist==-1)themeDP.addItem(event.currentTarget.selectedItem);
+				themeList.layout.horizontalScrollPosition = themeList.dataGroup.contentWidth -themeList.width;
+				openList=false;
+				event.currentTarget.selectedIndex =-1;
+			}
+			protected function setItemRenderer(event:FlexEvent):void{ 
+				themeList.itemRenderer = Utils.getCustomRenderer(Utils.THEMESELECTIONRENDERER);
+			}
+			[Bindable]
+			private var openList:Boolean;
+		]]>
+	</fx:Script>  
+	<s:HGroup verticalAlign="middle" > 
+		<s:List id="themeList" dataProvider="{themeDP}" width="100"
+				height="50">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle" horizontalAlign="center" gap="2"/>
+			</s:layout>
+		</s:List>
+		<s:Button label="Select" click="onOpenList(event)" styleName="OkIcon"/>
+	</s:HGroup>
+	<s:Group clipAndEnableScrolling="false" visible="{openList}"
+			 top="35" right="1" >
+		<components:NativeList  dataProvider="{dataProvider}" labelField="themeLbl" 
+								change="onChangeHandler(event)"/>	
+	</s:Group>
+</s:Group>

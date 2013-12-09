@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+			  clipAndEnableScrolling="false"
+				depth="0" depth.hovered="1">
+	
+	<fx:Declarations>
+		<mx:CurrencyFormatter id="cf"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			private function downloadFiles(url:String):void{
+				//var urlReq:URLRequest = new URLRequest(url)
+				//navigateToURL(urlReq);
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+	</s:states>
+
+	<s:transitions>
+		<s:Transition fromState="normal" toState="hovered" autoReverse="true">
+			<s:Parallel target="{img}">
+				<s:Resize startDelay="0" duration="200"/>
+				<s:Fade target="{group}" startDelay="100"/>
+			</s:Parallel>
+		</s:Transition>
+		<s:Transition fromState="*" toState="normal" autoReverse="true">
+			<s:Parallel target="{img}">
+				<s:Resize startDelay="0"  duration="100"/>
+				<s:Fade target="{group}"  />
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+	
+	<!--<s:transitions>
+		<s:Transition fromState="normal" toState="hovered" autoReverse="true">
+				<s:Parallel target="{imgGroup}">
+					<s:Rotate3D  angleXFrom="0" angleXTo="50" angleZFrom="0" angleZTo="0"  transformX="0"  angleYTo="0" angleYFrom="0"   />
+					<s:Fade target="{group}" startDelay="100" />
+				</s:Parallel>
+		</s:Transition>
+		<s:Transition fromState="*" toState="normal" autoReverse="true">
+			<s:Parallel target="{imgGroup}">
+				<s:Rotate3D  angleXFrom="50" angleXTo="0" angleZFrom="0" angleZTo="0" transformX="0"      angleYTo="0" angleYFrom="0"   />
+				<s:Fade target="{group}"  />
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>-->
+	
+	<mx:Image id="img" source="{data.thumb}" top="0" horizontalCenter="0" 
+			  width.normal="100%" height="100%" width.hovered="75%" />
+		<!--<mx:Image id="img" source="{data.thumb}" horizontalCenter="0" />-->
+	
+	  
+	
+	<s:Group id="group" top="0" bottom="0" left="0" right="0" visible.normal="false" click="downloadFiles(data.videoURL)">
+
+		 
+		<s:Label id="txt" text="{data.title}"  styleName="linksSt" bottom="5" 
+				 fontSize="15" horizontalCenter="0"/>
+	</s:Group>
+	 
+
+</s:ItemRenderer>

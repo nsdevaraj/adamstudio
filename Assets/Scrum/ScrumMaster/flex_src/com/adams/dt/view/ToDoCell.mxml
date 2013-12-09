@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CusCell xmlns="com.*" xmlns:mx="http://www.adobe.com/2006/mxml">
+		<mx:Script>
+		<![CDATA[ 
+			import mx.collections.ArrayCollection;
+		    import mx.controls.Alert;
+		    import mx.collections.XMLListCollection;
+		    [Bindable]
+		    public var todoCusCellArrayCollection:ArrayCollection = new ArrayCollection();
+		    public var dashBoardArr:ArrayCollection = new ArrayCollection();
+		    
+		    public var dashboardCollection:XMLListCollection = new XMLListCollection();
+		    private function init() :void {
+		   
+		    }
+		    /*
+		    *This code is for Add the list items
+		    *
+		    */
+			public function addItems():void{
+				todoCusCellArrayCollection.addItem(">");
+				todoCusCellArrayCollection.refresh();
+				//return todoCusCellArrayCollection;
+			}
+			
+			/*
+		    *This code is for Remove the list items
+		    *
+		    */
+			private function removeItems():void{
+				if(cell.selectedIndex!=-1){
+					todoCusCellArrayCollection.removeItemAt(cell.selectedIndex);
+				}
+				else{
+					Alert.show("Select Atleast one Items");
+				}
+			}
+			 
+			
+	]]>
+</mx:Script>
+	<mx:HBox right="10" bottom="0" >
+		<mx:Button label="+" click="addItems()"/>
+		<mx:Button label="-" click="removeItems()"/>	
+	</mx:HBox>
+</CusCell>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Modules" table="modules">
+        <id name="moduleId" type="integer" column="Module_ID">
+            <generator class="increment" />
+        </id>
+        <property name="moduleName">
+            <column name="Module_Name" />
+        </property>
+        <property name="moduleWidth">
+            <column name="Module_width" />
+        </property>
+    </class> 
+    <query name="Modules.findById">
+        select u from Modules u, Profiles p, ProfileModules m where m.profileFk = p.profileId and u.moduleId = m.moduleFk and p.profileId = ?
+    </query>
+    <query name="Modules.findByName">
+        select u from Modules u where u.moduleName = ?
+    </query>
+</hibernate-mapping>

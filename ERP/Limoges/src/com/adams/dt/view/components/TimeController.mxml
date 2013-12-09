@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="com.adams.dt.view.components.*" creationComplete="creationCompleteHandler(event)" >
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dt.util.ProcessUtil;
+			
+			import mx.collections.ArrayList;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.FlexEvent;
+			private var indiaTimeDiff:Number = ProcessUtil.timeDiff;
+			[Bindable] private var _selectedDate:Date = new Date();
+			
+			[Bindable]
+			private var _dayNames:ArrayList = new ArrayList(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
+			
+			public function get selectedDate():Date{
+				return _selectedDate;
+			}
+			
+			[Bindable]
+			public function set selectedDate(value:Date):void{
+				_selectedDate = value
+				this.date.selectedDate = value;
+				frTime.currentDate = value;
+				setInTime();
+			}
+			
+			private function onFrChange(event:Event):void{
+				selectedDate = frTime.currentDate; 
+			}
+			private function onInChange(event:Event):void{
+				selectedDate = updateFrTime(inTime.currentDate);
+			}
+			protected function setInTime():void{
+				var cDate:Date = new Date();
+				cDate.setTime(selectedDate.getTime()+indiaTimeDiff);
+				inTime.currentDate = cDate;
+			} 
+			protected function updateFrTime(inDate:Date):Date{
+				var cDate:Date = new Date();
+				cDate.setTime(inDate.getTime()-indiaTimeDiff);
+				return cDate;
+			}
+			
+			private var _enabledDate:Boolean = true;
+			[Bindable]
+			public function get enabledDate():Boolean{
+				return _enabledDate;
+			}
+			
+			public function set enabledDate( value:Boolean ):void{
+				_enabledDate = value;
+			}
+			
+			protected function onchangeHandler(event:CalendarLayoutChangeEvent):void{
+				selectedDate = event.currentTarget.selectedDate;
+			}
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void{
+				if(ProcessUtil.isCLT){
+					currentState = "FR";
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="IN" />
+		<s:State name="FR" />
+	</s:states>
+	<s:layout>
+		<s:HorizontalLayout verticalAlign="middle"/>
+	</s:layout>
+	<s:VGroup>
+		<mx:DateField id="date" formatString="DD/MM/YYYY" selectedDate="{new Date()}" change="onchangeHandler(event)" enabled="{enabledDate}"/>
+		<s:Label text="{_dayNames.getItemAt(date.selectedDate.getDay()).toString()}" />
+	</s:VGroup>
+	<s:VGroup>
+		<components:TimeComponent img="@Embed('assets/images/fr.png')" id="frTime" change="onFrChange(event)" enabled.IN="false" enabled="{enabledDate}"/>
+		<components:TimeComponent img="@Embed('assets/images/in.png')" id="inTime" change="onInChange(event)" enabled.FR="false" enabled="{enabledDate}"/>	
+	</s:VGroup>
+	<s:Spacer width="100%"/>
+</s:Group>

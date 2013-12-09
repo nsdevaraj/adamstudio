@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+		 xmlns:view="com.adams.dt.view.components.*" paddingTop="50" creationComplete="modifyDPWorkflow()">
+	<mx:Binding source="model.propertiespresetsCollection" destination="this.projectProperty"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.business.util.StringUtils;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.event.ProjectsEvent;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.model.vo.DomainWorkflow;
+			import com.adams.dt.model.vo.FileCategory;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.vo.Presetstemplates;
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.model.vo.Workflows;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.view.components.NewClient;
+			import com.adams.dt.view.components.NewPersonTemplate;
+			import com.adams.dt.view.components.ReferenceProjectScreen;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.universalmind.cairngorm.events.Callbacks;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.IResponder;
+			import mx.utils.StringUtil;  
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			public static var month:Array =  ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","sep",
+				"Oct","Nov","Dec"]; 
+			
+			[Bindable]
+			private var domainStr:String = 'Domain';
+			private var workflowTaskCode:String = "";		
+			private var _projectProperty:ArrayCollection;
+			private var refProjectId:int;
+			private var workflowId:int;
+			
+			public var pjresult:String = ' ';
+			[Bindable]
+			public function get projectProperty():ArrayCollection {
+				return _projectProperty;
+			}
+			public function set projectProperty( value:ArrayCollection ):void {
+				_projectProperty = value; 
+			}
+			private function createProjectTable():void {
+				var projects:Projects = new Projects();			
+				projects.projectDateStart = model.currentTime;		
+				Utils.traceLog( Workflows( workflow.selectedItem ).workflowId.toString() + 'here')
+				projects.workflowFK = Workflows( workflow.selectedItem ).workflowId;
+				var workflowTemplate:Workflowstemplates = Utils.getWorkflowTemplates( model.modelAnnulationWorkflowTemplate, projects.workflowFK );
+				model.workflowstemplates = workflowTemplate; 
+				projects.propertiespjSet = getPropertiespjSet();
+				projects.projectStatusFK = ProjectStatus.WAITING;
+				projects.projectName = projectLabel.text;
+				projects.projectQuantity = 1;
+				projects.presetTemplateFK = model.presetTempCollection.getItemAt( 0 ) as Presetstemplates; 
+				
+				if( model.currentUserProfileCode == 'CLT' )	 {
+					model.clientTeamlineId = model.person.personId;			
+				} 
+				projects.projectDateStart = model.currentTime;
+				var ba:ByteArray = new ByteArray();
+				ba.writeUTFBytes( comment.text );
+				projects.projectComment = ba; 
+				var categ:Categories = new Categories();			
+				categ.categoryName = String( model.currentTime.fullYear );
+				
+				/* if( domain.selectedItem ) {	
+					model.domain = Categories( domain.selectedItem );
+				} */
+				categ.categoryFK = model.domain;			
+				var categ2:Categories = new Categories();
+				categ2.categoryName = month[ model.currentTime.month ];		
+				
+				model.categories1 = categ; 
+				model.categories2 = categ2;
+				model.newProject = projects; 
+				
+				var handler:IResponder = new Callbacks( adminVersionTask );
+				var projectCreationEvent:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_ORACLE_NEWPROJECTCALL,handler ); //createOracleNewProject
+				
+				if( text_ean.text ) {
+					projectCreationEvent.codeEAN = text_ean.text;	
+				}		
+				if( text_sap.text )	{
+					projectCreationEvent.codeGEST = text_sap.text;
+				}
+				if( text_impremiur.text.length > 0 ) 	{
+					projectCreationEvent.codeIMPRE = text_impremiur.text;
+				}
+				else {
+					projectCreationEvent.codeIMPRE = ' ';
+					model.currentImpremiuerID = 0;
+				}
+				projectCreationEvent.endTaskCode = 'P1T02A';
+				projectCreationEvent.projectCreatePersonId = model.person.personId; 
+				projectCreationEvent.dispatch();			
+				
+				model.preloaderVisibility = true;
+				setTimeout( closeMesg, 5000 );
+			} 
+			private function adminVersionTask( rpcEvent:Object ):void {	
+				resetForm()
+			}
+			
+			private function getPropertiespjSet():ArrayCollection {
+				var arrC:ArrayCollection = new ArrayCollection();
+				for( var i:int = 0; i < projectProperty.length;i++ ) {				
+					var item:Propertiespresets = Propertiespresets( projectProperty.getItemAt( i ) );
+					var propertySets:Propertiespj = new Propertiespj();
+					if( hasOwnProperty("text_"+item.fieldName ) ) {			
+						propertySets.propertyPreset = item;
+						propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+						propertySets.fieldValue = this[ "text_" + item.fieldName ].text;	
+						arrC.addItem( propertySets );	
+					}
+					if( this.hasOwnProperty( "popup_" + item.fieldName ) ) {		
+						propertySets.propertyPreset = item;		
+						propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+						propertySets.fieldValue = this[ "popup_" + item.fieldName ].selectedIndex;
+						arrC.addItem( propertySets );	
+					}  
+				}
+				if( model.currentUserProfileCode != 'TRA' ) {
+					var cppPropertyPj:Propertiespj = new Propertiespj();
+					var propPreset:Propertiespresets = getPropPreset( 'chef_project_pack' );
+					cppPropertyPj.propertyPreset = propPreset;
+					cppPropertyPj.propertyPreset.propertyPresetId = propPreset.propertyPresetId;
+					cppPropertyPj.fieldValue = GetVOUtil.getCompanyObject( model.person.companyFk ).companyname + '-' + model.person.personLastname + ', '+ model.person.personFirstname;
+					arrC.addItem( cppPropertyPj );
+				}
+				//VALIDATION DB fieldname
+				var arrayValidation:Array = [ 'chp_validation', 'cpp_validation', 'agn_validation', 'comm_validation', 'ind_validation', 'imp_validation' ];
+				for each ( var itemValidation:String in arrayValidation ) {
+					var dynamicPropertyPj:Propertiespj = initializeValidation( itemValidation );
+					arrC.addItem( dynamicPropertyPj );
+				}
+				return arrC;			
+			} 
+			
+			private function initializeValidation( validationName:String ):Propertiespj {
+				var cppvalidPropertyPj:Propertiespj = new Propertiespj();
+				var propPreset:Propertiespresets = getPropPreset( validationName );
+				cppvalidPropertyPj.propertyPreset = propPreset;
+				cppvalidPropertyPj.propertyPreset.propertyPresetId = propPreset.propertyPresetId;
+				cppvalidPropertyPj.fieldValue = "0";
+				return cppvalidPropertyPj;
+			}		
+			
+			private function getPropPreset( value:String ):Propertiespresets {
+				for each( var item:Propertiespresets in projectProperty ) {
+					if( item.fieldName == value ) {
+						return item;
+					}
+				}
+				return null;
+			}
+			private function openIMPSelection( str:String ):void {
+				model.personSelectionVersion = str;
+				var perWindow:NewPersonTemplate = new NewPersonTemplate();
+				perWindow.fromNewProject = true;
+				perWindow.addEventListener( PersonsEvent.EVENT_SELECTED_PERSON, changedPerson );
+				PopUpManager.addPopUp( perWindow, this );
+				PopUpManager.centerPopUp( perWindow );
+			}
+			
+			private function getSpecialWorkFlowsOnly( item:Workflows ):Boolean {
+				var retVal:Boolean = false;
+				if ( item.workflowId == workflowId ) { 
+					retVal = true;
+				}
+				return retVal;
+			}
+			public function getWorkflow( dwfset:ArrayCollection ):ArrayCollection {
+				var wrflwColl:ArrayCollection = new ArrayCollection();
+				for each( var dwf:DomainWorkflow in dwfset ) {
+					workflowId = dwf.workflowFk;
+					model.workflowsCollection.filterFunction = getSpecialWorkFlowsOnly;
+					model.workflowsCollection.refresh();
+					if( model.workflowsCollection.length > 0 ){
+						wrflwColl.addItem( model.workflowsCollection.getItemAt( 0 ) );
+					}	
+					
+					var sort : Sort = new Sort();
+					sort.fields = [ new SortField( "workflowLabel" ) ];
+					wrflwColl.sort = sort;
+					wrflwColl.refresh();
+				}
+				model.workflowsCollection.filterFunction = null;
+				model.workflowsCollection.refresh();
+				return wrflwColl;
+			} 
+			
+			private function selectDomain(item:Categories):Boolean {
+				var retVal:Boolean = false;
+				if( item.categoryCode == model.domain.categoryCode ) { 
+					retVal = true;
+				}
+				return retVal;
+			}
+			
+			
+			private function getDomainsOnly(item:Categories):Boolean {
+				var retVal:Boolean = false;
+				// check the items in the itemObj Ojbect to see if it contains the value being tested
+				if ( !item.categoryFK ) {
+					retVal = true;
+				}
+				return retVal;
+			}
+			
+			private function modifyDPWorkflow():void {
+				if( GetVOUtil.getProfileObject( model.person.defaultProfile ).profileCode == 'CLT' ) {
+					model.collectAllDomains.filterFunction = selectDomain;
+				}
+				else {
+					model.collectAllDomains.filterFunction = getDomainsOnly;
+				}
+				model.collectAllDomains.refresh();
+				if( GetVOUtil.getProfileObject( model.person.defaultProfile ).profileCode == 'CLT' )
+					domain.selectedIndex = 0;
+				domain.validateNow()
+				workflow.dataProvider = getWorkflow( Categories( domain.selectedItem ).domainworkflowSet );
+				trace("modifyDPWorkflow domain.selectedItem:"+domain.selectedItem);
+			} 
+			private function changedPerson( ev:PersonsEvent ):void {
+				text_impremiur.text = ev.selectedPerson;
+			}
+			private function resetForm():void {
+				trace("copyFileProcedure resetForm");
+
+				projectLabel.text = "";
+				text_ean.text = "";
+				text_sap.text = "";
+				text_impremiur.text = "";			
+				comment.text = "";
+				fileList.listFiles.dataProvider = [];
+				fileList.UploadFiles = [];
+			}   
+			private function showMesg():void{
+				if( model.mainProjectState != 0 ) {
+					model.mainProjectState = 0;	
+				} 
+				model.newOrderCLTFAB = true;
+				if( model.referenceProject ) {
+					trace("CALLING REFERNCE PROJECT");
+					copyFromRefProject();
+				}
+				else {
+					trace("CALLING New PROJECT");
+					createProjectTable();
+				}
+			}
+			
+			private function getPropertySet( refSet:ArrayCollection ):ArrayCollection {
+				var pjSet:ArrayCollection = getPropertiespjSet();
+				var returnArrc:ArrayCollection = new ArrayCollection();
+				for each( var propertiesPj:Propertiespj in refSet ) {
+					var searchItem:Propertiespj = new Propertiespj();
+					searchItem.propertyPreset = propertiesPj.propertyPreset;				
+					var pj:Propertiespj = getCurrenItem( searchItem, pjSet );
+					if( !pj ) {				   
+						pj = new Propertiespj();
+						pj.fieldValue = propertiesPj.fieldValue;
+						pj.propertyPreset = propertiesPj.propertyPreset;
+					}
+					returnArrc.addItem( pj );
+				}
+				return returnArrc;
+			}
+			
+			private function getCurrenItem( item:Propertiespj, dp:ArrayCollection ):Propertiespj {
+				for each( var pj:Propertiespj in dp ) {
+					if( pj.propertyPreset.propertyPresetId == item.propertyPreset.propertyPresetId ) {
+						return pj;
+					}
+				} 
+				return null
+			}
+			
+			private function UpdateCPPValue( proj:Projects ,cppId:int ):Projects
+			{
+				for each(var pjDatas:Propertiespj in proj.propertiespjSet )
+				{
+					if(proj.presetTemplateFK.presetstemplateId == cppId )
+					{
+						pjDatas.fieldValue = model.person.personFirstname+" , "+model.person.personLastname;
+						return proj;
+					}
+				}
+				return null
+			}
+			private function copyFromRefProject():void{		
+				model.refFilesDetails = new ArrayCollection();
+				var projects:Projects = new Projects();			
+				projects.projectDateStart = model.currentTime;
+				projects.workflowFK = model.referenceProject.workflowFK;
+				var ba:ByteArray = new ByteArray();
+				var referenceString:String = 'Reference Project: '+ model.referenceProject.projectName + '(' + String( model.referenceProject.projectDateStart ) + ')';
+				var newComments:XML = new XML( comment.htmlText );
+				var newstr:String =  StringUtil.trim( refprojectComments( newComments,referenceString ) );
+				ba.writeUTFBytes( newstr );
+				projects.projectComment = ba;
+				var workflowTemplate:Workflowstemplates = Utils.getWorkflowTemplates( model.modelAnnulationWorkflowTemplate, projects.workflowFK );
+				model.workflowstemplates = workflowTemplate; 
+				projects.propertiespjSet = getPropertySet( model.referenceProject.propertiespjSet );
+				projects.projectStatusFK = ProjectStatus.WAITING;
+				projects.projectName = projectLabel.text;
+				projects.projectQuantity = 1;
+				projects.presetTemplateFK = model.presetTempCollection.getItemAt( 0 ) as Presetstemplates;
+				refProjectId = model.referenceProject.projectId
+				if((model.currentUserProfileCode == 'CLT') && (model.currentUserProfileCode == 'TRA'))	
+				{
+					model.clientTeamlineId = model.person.personId;
+					var cppId:int =  getPropPreset( 'chef_project_pack' ).propertyPresetId
+					if(!UpdateCPPValue(projects ,cppId ) )
+					{
+						var pj:Propertiespj = new Propertiespj();
+						pj.fieldValue = model.person.personFirstname+" , "+model.person.personLastname;
+						pj.propertyPresetFk = getPropPreset( 'chef_project_pack' ).propertyPresetId;
+						projects.propertiespjSet.addItem(pj); 
+					}
+					model.clientTeamlineId = model.person.personId;
+				}
+				else {
+					model.clientTeamlineId = getClientPerson( domain.selectedItem as Categories );
+				}
+				trace("copyFromRefProject domain.selectedItem:"+domain.selectedItem);
+				projects.projectDateStart = model.currentTime;
+				pjresult = Utils.pjParameters( projects.propertiespjSet );
+				var categ:Categories = new Categories();			
+				categ.categoryName = String( model.currentTime.fullYear );
+				categ.categoryFK = model.domain;			
+				var categ2:Categories = new Categories();
+				categ2.categoryName = month[ model.currentTime.month ];		
+				
+				model.categories1 = categ;
+				model.categories2 = categ2;
+				model.newProject = projects; 
+				//var fileHandler:IResponder = new Callbacks( createRefproject );
+				//var refFileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_REFFILEDETAILS ,fileHandler )
+				//refFileEvent.dispatch();
+			
+				//model.refFilesDetails = rpcEvent.result as ArrayCollection;
+				
+				var prjHandler:IResponder = new Callbacks( copyFileProcedure )
+				var projectCreationEvent:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_ORACLE_NEWPROJECTCALL ,prjHandler ); //createOracleNewProject
+				if( text_ean.text ) {
+					projectCreationEvent.codeEAN = text_ean.text;	
+				}		
+				if( text_sap.text )	{
+					projectCreationEvent.codeGEST = text_sap.text;
+				}
+				if( text_impremiur.text.length > 0 ) 	{
+					projectCreationEvent.codeIMPRE = text_impremiur.text;
+				}
+				else {
+					projectCreationEvent.codeIMPRE = ' ';
+					model.currentImpremiuerID = 0;
+				}
+				trace("currentImpremiuerID :"+model.currentImpremiuerID);
+				trace("model.clientTeamlineId :"+model.clientTeamlineId);
+				projectCreationEvent.endTaskCode = 'P1T02A';
+				projectCreationEvent.projectCreatePersonId = model.person.personId; //AdminTool default person [CLT-TRA-FAB] - 2
+				projectCreationEvent.dispatch();
+			}
+			/* private function getTeamline(  rpcEvent :Object ) :void
+			{
+				var handler:IResponder = new Callbacks( updateTeamlineandPj);
+				var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE, handler );
+				teamTempEvt.projectId = refProjectId; 
+				teamTempEvt.dispatch();				
+			} */
+			
+			private function copyFileProcedure(  rpcEvent :Object ) :void{
+				trace("\n\n CALLING copyFileProcedure");
+				var resultArrColl:ArrayCollection = rpcEvent.result as ArrayCollection;
+				if( resultArrColl ) {					
+					var newprojectList:ArrayCollection = resultArrColl.getItemAt( 3 ) as ArrayCollection;
+					var tempProjects:Projects = newprojectList.getItemAt( 0 ) as Projects;
+					trace("copyFileProcedure projectName:"+tempProjects.projectName);
+					
+					var taskArc:ArrayCollection = rpcEvent.result.getItemAt( 6 ) as ArrayCollection;
+					var fileTask:Tasks = taskArc.getItemAt( 0 ) as Tasks;
+					trace("copyFileProcedure taskId:"+fileTask.taskId);
+				
+					//var handler:IResponder = new Callbacks( updatefilesteamlineproperties );
+					var teamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_ORACLE_REFPROJECT_TEAMLINE );
+					teamlineEvent.refProjectId = refProjectId; 
+					teamlineEvent.projectId = tempProjects.projectId;
+					teamlineEvent.currentTaskId = fileTask.taskId;
+					teamlineEvent.refTypeName = "Basic";
+					teamlineEvent.refCategoryName = FileCategory.REFERENCE;
+					trace("copyFileProcedure text_impremiur:"+text_impremiur.text);
+					teamlineEvent.txtInputImpLength = text_impremiur.text.length;
+					teamlineEvent.clientTeamlineId = model.clientTeamlineId;
+					trace("copyFileProcedure model.clientTeamlineId:"+model.clientTeamlineId);
+					teamlineEvent.oraclepropertiesprojectId = String( tempProjects.projectId );
+					teamlineEvent.oraclepropertiespresetId = String(pjresult.split("#&#")[1]).slice(0,-1);
+					teamlineEvent.oraclepropertiesfieldvalue = String(pjresult.split("#&#")[0]).slice(0,-1);
+					teamlineEvent.dispatch();
+					trace("CALLING EVENT_ORACLE_REFPROJECT_TEAMLINE");
+					
+					model.preloaderVisibility = true;
+					setTimeout( closeMesg, 5000 );
+				}
+			}
+			private function updatefilesteamlineproperties( rpcEvent:Object ):void{
+				trace("RESULT CALLLING");
+			}
+			private var teamprofileId :String; 
+			private	var teampersonId:String;
+			private function updateTeamlineandPj( rpcEvent:Object ):void
+			{
+				teamprofileId=''; 
+				teampersonId ='';
+				var teamArr:ArrayCollection = updateCPPTeamValue( rpcEvent.result as ArrayCollection );
+				for each ( var teamline:Teamlines in teamArr )
+				{
+					if( text_impremiur.length == 0  )
+					{
+						if(teamline.profileID != 6)
+						{
+							teamprofileId +=  teamline.profileID+";";
+							teampersonId +=  teamline.personID+";";
+						}
+					}else{
+						teamprofileId +=  teamline.profileID+";";
+						teampersonId +=  teamline.personID+";";
+					}
+				}
+				
+				var teamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_ORACLE_UPDATE_TEAMLINE );
+				teamlineEvent.oracleprojectId = String( model.currentProjects.projectId );
+				teamlineEvent.oracleprofileId = teamprofileId.slice(0,-1);
+				teamlineEvent.oraclepersonId = teampersonId.slice(0,-1);
+				
+				teamlineEvent.oraclepropertiesprojectId = String( model.currentProjects.projectId );
+				teamlineEvent.oraclepropertiespresetId = String(pjresult.split("#&#")[1]).slice(0,-1);
+				teamlineEvent.oraclepropertiesfieldvalue = String(pjresult.split("#&#")[0]).slice(0,-1);
+				teamlineEvent.dispatch();
+				model.refFilesDetails.removeAll();
+				
+			}
+			public function updateCPPTeamValue( teamArr:ArrayCollection ):ArrayCollection {
+				var cppVal:Boolean;
+				for each( var item:Teamlines in teamArr ) {
+					if( item.profileID == Utils.getProfileId('CPP') ) 
+					{
+						item.personID =  model.clientTeamlineId;
+						cppVal = true;
+						break;
+					}
+				}
+				if( !cppVal )
+				{
+					var cppteam:Teamlines =  new Teamlines();
+					cppteam.profileID = Utils.getProfileId('CPP');
+					cppteam.personID = model.clientTeamlineId;
+					cppteam.projectID =  model.currentProjects.projectId;
+					teamArr.addItem( cppteam );
+				}
+				return teamArr;
+			}
+			private function getClientPerson( obj:Categories ):int {
+				var returnValue:int;
+				for each( var item:Persons in model.personsArrCollection ) {
+					if( obj.categoryCode == GetVOUtil.getCompanyObject( item.companyFk ).companycode ) {
+						returnValue = item.personId;
+						break;
+					}
+				}
+				return	returnValue;
+			}
+			
+			
+			private function refprojectComments( myXML:XML , refStr:String  ):String {
+				for( var i:int = 0 ; i < myXML.children().length(); i++ ) {
+					myXML.children()[ i ].FONT  = refStr+myXML.children()[ i ].FONT;
+				}
+				return myXML.toString();
+			}
+			/**
+			 * Close the alert
+			 */
+			private function closeMesg():void {
+				model.workflowState = 0;
+				model.mainClass.navigateModule( "TodoList" ).dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+
+				if( model.preloaderVisibility )	{
+					model.preloaderVisibility = false;
+				}
+				resetForm();
+				//if( model.mainProjectState != 0 )model.mainProjectState = 0;	
+				if(!model.AutoProj) if( model.referenceProject )	model.referenceProject = null;
+				if( model.referenceTeamline )	model.referenceTeamline = null;
+				if( model.currentImpremiuerID != 0 )	model.currentImpremiuerID = 0;
+			}
+			
+			private function showAlert( evt:Event ):void {
+				Alert.buttonWidth = 80;
+				Alert.yesLabel = model.loc.getString( "yes" );
+				Alert.noLabel = model.loc.getString( "no" );
+				Alert.show( model.loc.getString( "newOrderCancel" ), "Accord-Valmy" , Alert.YES|Alert.NO , this, alertCloseHandler ); 
+			}
+			/**
+			 * on cancel resert the form
+			 */
+			private function alertCloseHandler( event:CloseEvent ):void {
+				if ( event.detail == Alert.YES ) {
+					resetForm();
+					model.currentProjectFiles.removeAll();
+				} 
+			}
+			
+			private function makeReferenceProject():void {
+ 				var referenceWindow:ReferenceProjectScreen = new ReferenceProjectScreen(); 
+				if(domain.selectedItem)
+					referenceWindow.selectedDomain = Categories( domain.selectedItem );
+				else
+					referenceWindow.selectedDomain = Categories( model.domain );
+				
+				referenceWindow.behindScreen = this;
+				PopUpManager.addPopUp( referenceWindow, this );
+				PopUpManager.centerPopUp( referenceWindow );
+			}
+			
+			private function createNewDomain():void {
+				var domainWindow:NewClient = new NewClient();
+				PopUpManager.addPopUp( domainWindow, this );
+				PopUpManager.centerPopUp( domainWindow );
+			}
+			
+		]]>
+	</mx:Script>  
+	
+	<mx:HBox width="100%" horizontalAlign="right">
+		<mx:Button id="_referButton" enabled="{ ( model.projectsCollection.length > 0 ) }" label="Reference Project" click="makeReferenceProject()" />
+		<mx:Button id="_newDomainBtn" visible="{model.currentUserProfileCode =='TRA'}" label="New Client" click="createNewDomain()" />
+		<mx:Spacer width="100"/>
+	</mx:HBox>
+	<mx:Form id="loginForm1" labelWidth="140" paddingLeft="0" paddingBottom="0" >
+		<mx:FormItem label="{domainStr}" id="domainField" visible="{model.collectAllDomains.length>1}">
+			<mx:ComboBox id="domain" width="160"
+						 dataProvider="{model.collectAllDomains}" labelField="categoryName" change="modifyDPWorkflow()"/>
+		</mx:FormItem>   
+		
+		<mx:FormItem label="Workflow" id="workFlowForm" visible="{workflow.dataProvider.length>1}">
+			<mx:ComboBox id="workflow" width="160" labelField="workflowLabel" />
+		</mx:FormItem>
+		<mx:FormItem label="{model.loc.getString('projectName')}" >
+			<mx:TextInput id="projectLabel" maxChars="250"/>
+		</mx:FormItem>
+		<mx:FormItem label="Imprimeur">
+			<mx:Canvas>
+				<mx:TextInput id="text_impremiur" styleName="disabledText" editable="false" maxChars="250"/>
+				<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" click="openIMPSelection('EPR')" 
+						  mouseChildren="false" text="select" x="{ text_impremiur.x + text_impremiur.width + 5 }"/>
+				<mx:Button styleName="closeButton" visible="{ ( text_impremiur.text.length > 1 ) }"	
+						   x="{ text_impremiur.x + text_impremiur.width - 15 }" y="{ text_impremiur.y + 6 }" 
+						   click="text_impremiur.text = ''" buttonMode="true" useHandCursor="true" 
+						   toolTip="unselect the person"/>	                	           	
+			</mx:Canvas>
+		</mx:FormItem>
+		<mx:FormItem id="label_ean" label="Code EAN">
+			<mx:TextInput id="text_ean" maxChars="250" restrict="0-9"/>
+		</mx:FormItem>
+		
+		<mx:FormItem id="label_sap" label="Code Gestion">
+			<mx:TextInput id="text_sap" maxChars="250"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="{model.loc.getString('requestDetails')}" textAlign="left" >
+			<view:REditor id="comment" width="500"  height="90"/>
+		</mx:FormItem>
+		<mx:FormItem>
+			<view:Upload fileCategory="{ FileCategory.CREATION }" left="0" type="Basic" 
+						 id="fileList" width="500" height="198" basicFileCollection="{ model.basicFileCollection }"
+						 basicFileVisible="{ true }" />	
+		</mx:FormItem>
+		<mx:FormItem >
+			<mx:HBox>
+				<mx:Button label="{model.loc.getString('cancelOrder')}" styleName="cancelOrderBtn" click="showAlert(event)"/>
+				<mx:Button label="{model.loc.getString('submitOrder')}" styleName="submitOrderBtn" click="showMesg()" enabled="{text_ean.text.length >0 ||text_sap.text.length >0 }"/>
+			</mx:HBox>
+		</mx:FormItem>  	
+	</mx:Form>
+</mx:VBox>

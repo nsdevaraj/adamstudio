@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off"	
+	borderStyle="solid" borderColor="#5E5F61"
+	backgroundColor="{uint(Profiles(model.profilesCollection.getItemAt( 0 )).profileColor)}"
+	xmlns:view="com.adams.dt.view.components.*"
+	 >
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.CompaniesEvent;
+			import com.adams.dt.model.vo.Groups;
+			import com.adams.dt.event.GroupsEvent;
+					import com.adams.dt.event.WorkflowsEvent;
+			import com.adams.dt.event.ProfilesEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.TeamlineTemplatesEvent;
+		 	import mx.controls.Alert;
+		 	import com.adams.dt.model.vo.Profiles;
+		 	import com.adams.dt.model.ModelLocator;
+		 	[Bindable]
+		 	private var model:ModelLocator = ModelLocator.getInstance();
+		 	private var roundedMask:Sprite;
+		 	/* initialize="setMask()" 
+		 	private function setMask():void{
+				roundedMask = new Sprite();
+				roundedMask.graphics.clear();
+				roundedMask.graphics.beginFill(0xFF0000);
+				var w:Number = 290;
+				var h:Number = 55;
+				var cornerRadius:uint = 15;
+				roundedMask.graphics.drawRoundRect(0, 0, w, h,cornerRadius, cornerRadius);
+				roundedMask.graphics.endFill();
+				imgCont.rawChildren.addChild(roundedMask);
+				imgCont.mask = roundedMask;
+			} */
+ 	]]>
+	</mx:Script>
+			<mx:Image id="pic" verticalCenter="0" left="3"
+				source="{model.businessCard.personPict}"
+				width="50"
+				height="50"/>
+			<mx:Label id="fnameTxt" text="{model.businessCard.personFirstname+' '+model.businessCard.personLastname}"
+				styleName="menuText" top="10" left="{pic.width+10}" right="5"/>
+			<mx:Label text="{model.businessCard.personPosition+', '+GetVOUtil.getCompanyObject(model.businessCard.companyFk).companyname}"
+				bottom="{10}" left="{pic.width+10}" width="{this.width-(pic.width+15)}"
+				color="#ffffff"
+				fontSize="10"/>
+</mx:Canvas>

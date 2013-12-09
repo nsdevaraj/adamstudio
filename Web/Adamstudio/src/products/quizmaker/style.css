@@ -1,0 +1,147 @@
+/* CSS file */
+Application{
+	background-color: #ffffff;
+	padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	padding-top:0;
+	vertical-gap:0;
+	horizontal-gap:0;
+	font-family:arial;
+	font-size:12;
+	font-anti-alias-type:advanced;
+}
+.blueBar {
+   highlightAlphas: 0.31, 0;
+   fillAlphas: 1, 1;
+   fillColors: #1a50b8, #0072a6;
+   backgroundColor: #ffffff;
+   cornerRadius: 0;
+   dropShadowEnabled: false;
+   shadowDistance: 0;
+   padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	padding-top:0;
+}
+.addImage{
+skin: Embed("assets/images/add.png");
+over-skin: Embed("assets/images/add_over.png");
+}
+.bgImage{
+            backgroundImage: Embed("assets/images/top_bg1.png");
+            backgroundColor: red;
+        }
+
+.prevBtn {
+	skin	:Embed("assets/images/prev.png");
+	up-skin: Embed("assets/images/prev.png");
+	over-skin:Embed("assets/images/prev_over.png");
+}
+.itemBg {
+	skin	:Embed("assets/images/item_bg.png");
+	up-skin: Embed("assets/images/item_bg.png");
+	over-skin:Embed("assets/images/item_bg.png");
+	
+}
+.nextBtn{
+	skin	:Embed("assets/images/next.png");
+	up-skin: Embed("assets/images/next.png");
+	over-skin:Embed("assets/images/next_over.png");
+}
+.tickBtn {
+	skin	:Embed("assets/images/tick.png");
+	up-skin: Embed("assets/images/tick.png");
+	over-skin:Embed("assets/images/tick_over.png");
+}
+.noteBtn {
+	skin	:Embed("assets/images/note.png");
+	up-skin: Embed("assets/images/note.png");
+	over-skin:Embed("assets/images/note_over.png");
+}
+.labBtn {
+	skin	:Embed("assets/images/lab.png");
+	up-skin: Embed("assets/images/lab.png");
+	over-skin:Embed("assets/images/lab_over.png");
+}
+.stemBtn {
+	skin	:Embed("assets/images/stem.png");
+	/* up-skin: Embed("assets/images/stem.png");
+	over-skin:Embed("assets/images/stem_over.png");
+	selected-up-skin:Embed("assets/images/stem_down.png");
+	selected-down-skin:Embed("assets/images/stem_down.png");
+	selected-over-skin:Embed("assets/images/stem_down.png"); */
+}
+.stemBtn2 {
+	skin	:Embed("assets/images/stem_down.png");
+}
+.optionBtn {
+	skin	:Embed("assets/images/option.png");
+	/* up-skin: Embed("assets/images/option.png");
+	over-skin:Embed("assets/images/option_over.png");
+	selected-up-skin:Embed("assets/images/option_down.png");
+	selected-down-skin:Embed("assets/images/option_down.png");
+	selected-over-skin:Embed("assets/images/option_down.png"); */
+}
+.optionBtn2 {
+	skin	:Embed("assets/images/option_down.png");
+}
+.suspendBtn {
+	skin	:Embed("assets/images/suspend.png");
+	up-skin: Embed("assets/images/suspend.png");
+	over-skin:Embed("assets/images/suspend_over.png");
+}
+.pauseBtn {
+	skin	:Embed("assets/images/pause.png");
+	up-skin: Embed("assets/images/pause.png");
+	over-skin:Embed("assets/images/pause_over.png");
+}
+.stopBtn {
+	skin	:Embed("assets/images/stop.png");
+	up-skin: Embed("assets/images/stop.png");
+	over-skin:Embed("assets/images/stop_over.png");
+}
+.explanationBtn {
+	skin	:Embed("assets/images/explanation.png");
+	up-skin: Embed("assets/images/explanation.png");
+	over-skin:Embed("assets/images/explanation_over.png");
+}
+.yesBtn {
+	skin	:Embed("assets/images/btn_yes.png");
+	up-skin: Embed("assets/images/btn_yes.png");
+	over-skin:Embed("assets/images/btn_yes.png");
+}
+.noBtn {
+	skin	:Embed("assets/images/btn_no.png");
+	up-skin: Embed("assets/images/btn_no.png");
+	over-skin:Embed("assets/images/btn_no.png");
+}
+.resumeBtn {
+	skin	:Embed("assets/images/btn_resume.png");
+	up-skin: Embed("assets/images/btn_resume.png");
+	over-skin:Embed("assets/images/btn_resume.png");
+}
+.greenBar {
+   highlightAlphas: 0.31, 0;
+   fillAlphas: 1, 1;
+   fillColors: #2C4D01, #416F08;
+   backgroundColor: #ffffff;
+   cornerRadius: 0;
+   dropShadowEnabled: true;
+   shadowDistance: 2;
+   padding-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	padding-top:0;
+}/*
+Panel {
+    borderColor: #cee5b1;
+   borderAlpha: 1;
+   borderThicknessLeft: 1;
+   borderThicknessTop: 0;
+   borderThicknessBottom: 25;
+   borderThicknessRight: 1;
+   cornerRadius: 0;
+   footerColors: #cee5b1, #cee5b1;
+   shadowDistance: 0;
+}*/

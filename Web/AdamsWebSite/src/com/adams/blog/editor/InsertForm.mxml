@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	InsertForm
+	
+	This component is used by the BlogEditor to insert links and SWFs or images into an article. The
+	form also provides a way to upload a file.
+	
+	The component is a TabNavigator with (at present) 2 tabs: one to insert links and one to insert
+	SWFs or images. The different is that inserting a link just puts a link into the text using the
+	<a href="...">text here</a> HTML tags. The SWF/Image insert actually places the image or SWF in-line.
+	
+	Ideally the <img> tag would support that, but I've found a bug with the RichTextEditor that seems to
+	put extra copies of the tag into the text. Plus I'm not sure if <img> supports SWFs. Since I didn't want
+	to risk that, I invented my own syntax. When you use the SWF/image insert, the text:
+	
+		[swf url="somethinghere"]
+		
+	Is placed into the text. In the RTE you can see and edit this text. In the Blog Reader, the BlogArticle
+	component breaks these [swf ...] segments out of the text and replaces them with a SWFLoader component.
+	This way you get your images or SWFs inline.
+-->
+<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" 
+	historyManagementEnabled="false"
+	creationPolicy="all"
+	creationComplete="clear()" >
+
+	<mx:Metadata>
+		[Event(name="insertLink",type="com.adobe.blog.events.BlogEvent")]
+		[Event(name="insertSWF",type="com.adobe.blog.events.BlogEvent")]
+	</mx:Metadata>
+
+	<mx:Script>
+	<![CDATA[
+		import com.adobe.blog.service.BlogUtils;
+		import com.adobe.blog.events.BlogEvent;
+		
+		/** enableLinkInsert - this variable is bound to the components on the Link insert tab. Changing
+		 *  the value of this variable enables or disables the components. This is useful when uploading
+		 *  a file to prevent the user from mucking with it.
+		 */
+		[Bindable] private var enableLinkInsert:Boolean = true;
+		
+		/** enableSWFInsert = this variable is bound to the components on the SWF insert tab. Changing
+		 *  the value of this variable enables or displays the components.
+		 */
+		[Bindable] private var enableSWFInsert:Boolean = true;
+		
+		/*
+		 *
+		 */
+		
+		/**
+		 * clear
+		 *
+		 * This function resets all of the fields to their original settings.
+		 */
+		private function clear() : void
+		{
+			alignGroup.selectedValue = "Left";
+			
+			linkLabel.text = "";
+			linkURL.text = "";
+			
+			swfURL.text = "";
+			swfViewer.source = null;
+		}
+		
+		/*
+		 * Link
+		 */
+		
+		/**
+		 * uploadFile
+		 *
+		 * This function is called from the upload LinkButton on the Link Insert tab. The function
+		 * begins the process of uploading a file through the FileUploadManager.
+		 */
+		private function uploadFile() : void
+		{
+			var ulm:FileUploadManager = new FileUploadManager();
+			ulm.addEventListener(BlogEvent.UPLOAD_BEGIN, showUploadFileProgress);
+			ulm.addEventListener(BlogEvent.UPLOAD_COMPLETE, insertUploadFile);
+			ulm.upload();
+		}
+		
+		/**
+		 * showUploadFileProgress
+		 *
+		 * This function is called as the FileUploadManager dispatches an UPLOAD_BEGIN event.
+		 * The function switches to the linkUploadState that disables the fields and shows a
+		 * ProgressBar.
+		 */
+		private function showUploadFileProgress( event:BlogEvent ) : void
+		{
+			currentState = "linkUploadState";
+		}
+		
+		/**
+		 * insertUploadFile
+		 *
+		 * This function is called when the upload completes. The state is returned to the base
+		 * state and the URL to the uploaded file is shown in the linkURL field.
+		 */
+		private function insertUploadFile( event:BlogEvent ) : void
+		{
+			currentState = "";
+			linkURL.text = event.uploadURL;
+		}
+		
+		/**
+		 * insertLink
+		 *
+		 * This function is called when the Insert button on the Link tab is clicked. The link label
+		 * and link URL are dispatched with the INSERT_LINK event and the form is cleared.
+		 */
+		private function insertLink() : void
+		{
+			var event:BlogEvent = new BlogEvent(BlogEvent.INSERT_LINK);
+			event.linkURL = linkURL.text;
+			event.linkLabel = linkLabel.text;
+			dispatchEvent(event);
+			
+			clear();
+		}
+		
+		/*
+		 * SWF
+		 */
+		 
+		/**
+		 * uploadSWF
+		 *
+		 * This function begins the process of uploading a SWF or image using the FileUploadManager.
+		 */
+		private function uploadSWF() : void
+		{
+			var ulm:FileUploadManager = new FileUploadManager();
+			ulm.addEventListener(BlogEvent.UPLOAD_BEGIN, showUploadSWFProgress);
+			ulm.addEventListener(BlogEvent.UPLOAD_COMPLETE, insertUploadSWF);
+			ulm.upload();
+		}
+		
+		/**
+		 * showUploadSWFProgress
+		 *
+		 * This function is called in response to the UPLOAD_BEGIN event from the FileUploadManager.
+		 * The function displays a ProgressBar and disables all of the components during the upload
+		 * process.
+		 */
+		private function showUploadSWFProgress( event:BlogEvent ) : void
+		{
+			currentState = "swfUploadState";
+		}
+		
+		/**
+		 * insertUploadSWF
+		 *
+		 * This function is called when the upload completes. The swfURL text component is given
+		 * the name of the uploaded file and the preview of the file is displayed.
+		 */
+		private function insertUploadSWF( event:BlogEvent) : void
+		{
+			swfURL.text = event.uploadURL;
+			
+			previewSWF();
+		}
+		
+		/**
+		 * previewSWF
+		 *
+		 * Once the upload completes, this function loads the SWF or image into the swfViewer.
+		 */
+		private function previewSWF() : void
+		{				
+			swfViewer.load( swfURL.text );
+			swfViewer.setStyle("horizontalAlign", String(alignGroup.selectedValue).toLowerCase());
+		}
+		
+		/**
+		 * adjustSize
+		 *
+		 * This function is a no-op right now. It does return the state of the tab to the base state,
+		 * but it could also adjust the size of the display.
+		 */
+		private function adjustSize(event:Event) : void
+		{
+			// not sure if adjusting the size of the swfCanvas is really worth it.
+			var w:Number = swfViewer.content.width;
+			var h:Number = swfViewer.content.height;
+			
+			currentState = "";
+		}
+		
+		/**
+		 * insertSWF
+		 *
+		 * This function is called by the Insert button on the SWF tab. The url, alignment, etc.
+		 * are packed into a INSERT_SWF event and disbatched. Then the form is cleared.
+		 */
+		private function insertSWF() : void
+		{
+			var event:BlogEvent = new BlogEvent(BlogEvent.INSERT_SWF);
+			event.swfURL = swfURL.text;
+			event.swfAlign = String(alignGroup.selectedValue).toLowerCase();
+			event.swfWidth = String(Math.min(swfViewer.content.width,swfViewer.width));
+			event.swfHeight = String(Math.min(swfViewer.content.height,swfViewer.height));
+			dispatchEvent(event);
+			
+			clear();
+		}
+		
+	]]>
+	</mx:Script>
+	
+	<!--
+		States
+		
+		linkUploadState shows a ProgressBar in place of the linkURL
+		swfUploadState shows a ProgressBar in plsace of the swfURL
+	-->
+	
+	<mx:states>
+		<mx:State name="linkUploadState" enterState="enableLinkInsert=false" exitState="enableLinkInsert=true">
+			<mx:AddChild relativeTo="{canvas1}" position="lastChild">
+				<mx:ProgressBar y="97" horizontalCenter="0" label="" id="linkProgress" indeterminate="true"/>
+			</mx:AddChild>
+			<mx:RemoveChild target="{linkURL}"/>
+			<mx:SetProperty target="{linkbutton2}" name="visible" value="false" />
+		</mx:State>
+		<mx:State name="swfUploadState" enterState="enableSWFInsert=false" exitState="enableSWFInsert=true">
+			<mx:AddChild relativeTo="{canvas2}" position="lastChild">
+				<mx:ProgressBar y="67" horizontalCenter="0" label="" id="swfProgress" indeterminate="true"/>
+			</mx:AddChild>
+			<mx:RemoveChild target="{swfURL}"/>
+			<mx:SetProperty target="{linkbutton1}" name="visible" value="false" />
+		</mx:State>
+	</mx:states>
+	
+	<!--
+		The Insert Link tab
+	-->
+	<mx:Canvas label="Insert Link" width="100%" height="100%" id="canvas1">
+		<mx:Canvas horizontalCenter="0" top="50">
+			<mx:Label x="47" y="12" text="Label:" styleName="FormLabel" enabled="{enableLinkInsert}" id="label2"/>
+			<mx:Label x="55" y="42" text="URL:" styleName="FormLabel" enabled="{enableLinkInsert}" id="label1"/>
+			<mx:TextInput id="linkLabel" x="94" y="10" width="270" enabled="{enableLinkInsert}"/>
+			<mx:TextInput id="linkURL" x="94" y="40" width="270" enabled="{enableLinkInsert}"/>
+			<mx:LinkButton x="372" y="40" label="upload" enabled="{enableLinkInsert}" click="uploadFile()" id="linkbutton2"/>
+			<mx:Button y="85" label="Insert" click="insertLink()" enabled="{enableLinkInsert}" id="button2" width="76" horizontalCenter="0"/>
+		</mx:Canvas>
+	</mx:Canvas>
+
+	<!--
+		The Insert SWF/Image tab
+	-->
+	<mx:RadioButtonGroup id="alignGroup" />
+	
+	<mx:Canvas label="Insert SWF/Image" width="100%" height="100%" id="canvas2">
+		<mx:Canvas id="insertSWFForm" horizontalCenter="0" top="50">
+			<mx:Label x="54" y="12" text="URL:" styleName="FormLabel" enabled="{enableSWFInsert}" id="label3"/>
+			<mx:TextInput id="swfURL" x="94" y="10" width="270" enabled="{enableSWFInsert}"/>
+			<mx:LinkButton x="372" y="12" label="upload" enabled="{enableSWFInsert}" click="uploadSWF()" id="linkbutton1"/>
+			<mx:Label x="49" y="46" text="Align:" styleName="FormLabel" enabled="{enableSWFInsert}" id="label4"/>
+			<mx:RadioButton x="108" y="46" label="Left" styleName="FormLabel" click="previewSWF()" groupName="alignGroup" selected="true" enabled="{enableSWFInsert}" id="radiobutton1"/>
+			<mx:RadioButton x="197" y="46" label="Center" styleName="FormLabel" click="previewSWF()" groupName="alignGroup" enabled="{enableSWFInsert}" id="radiobutton2"/>
+			<mx:RadioButton x="292" y="46" label="Right" styleName="FormLabel" click="previewSWF()" groupName="alignGroup" enabled="{enableSWFInsert}" id="radiobutton3"/>
+			<mx:Button y="79" label="Insert" enabled="{enableSWFInsert}" click="insertSWF()" id="button1" width="76" horizontalCenter="0"/>
+		</mx:Canvas>
+		<mx:Canvas id="swfCanvas" styleName="InsertFormPreview" top="187" bottom="50" left="50" right="50">
+			<mx:SWFLoader id="swfViewer" scaleContent="true" width="100%" height="100%" complete="adjustSize(event)"/>
+		</mx:Canvas>
+	</mx:Canvas>
+	
+</mx:TabNavigator>

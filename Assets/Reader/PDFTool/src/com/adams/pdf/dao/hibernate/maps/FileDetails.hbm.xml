@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.pdf.pojo.FileDetails" table="file_details">
+        <id name="fileId" type="integer" column="File_ID">
+          <generator class="increment" />
+        </id>
+        <property name="fileName">
+            <column name="Filename" />
+        </property>
+        <property name="filePath">
+            <column name="Filepath" />
+        </property>
+        <property name="fileDate">
+            <column name="Filedate" /> 
+        </property> 
+        <property name="type">
+            <column name="Type" />
+        </property>
+        <property name="storedFileName">
+            <column name="StoredFileName" />
+        </property>
+         <property name="visible">
+            <column name="visible" />
+        </property>
+        <property name="releaseStatus">
+            <column name="release_Status" />
+        </property>       
+        <property name="miscelleneous">
+            <column name="miscellaneous" />
+        </property> 
+        <property name="fileCategory">
+            <column name="File_Category" />
+        </property>
+        <property name="page">
+            <column name="page" />
+        </property>
+    </class>  
+    <!-- 
+    <query name="FileDetails.findById">
+        select u from FileDetails u where u.fileId=?
+    </query>
+    
+    <query name="FileDetails.findById">
+        select u from FileDetails u where u.miscellaneous in (select distinct f.miscellaneous from FileDetails f where f.fileId = ? order by u.page)
+    </query>
+     -->
+     <!-- 
+     <sql-query name="FileDetails.findById">
+          select u from FileDetails u where u.miscellaneous in (select distinct f.miscellaneous from FileDetails f where f.fileId = ? order by u.page)
+     </sql-query>
+      -->
+      <!-- 
+    <query name="FileDetails.findById">
+		select * from FileDetails d where d.fileId in (select u.fileId from FileDetails u where u.miscellaneous in (select distinct f.miscellaneous from FileDetails f where f.fileId = 1 order by u.page))
+    </query>
+     -->
+     <query name="FileDetails.findById">
+        select u from FileDetails u where u.fileId=?
+    </query>
+    <query name="FileDetails.findByName">
+        select u from FileDetails u where u.miscelleneous=? and u.visible!=1 and u.page!=0 order by u.page
+    </query>
+    <query name="FileDetails.findByNameId">
+        select u from FileDetails u where u.miscelleneous=? and u.fileId!=? order by u.page
+    </query>
+    <query name="FileDetails.findByMailFileId">
+        select u from FileDetails u where u.fileId=?
+    </query>  
+</hibernate-mapping>

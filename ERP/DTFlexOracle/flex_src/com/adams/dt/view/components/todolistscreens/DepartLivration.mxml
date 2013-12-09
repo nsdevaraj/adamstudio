@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%" height="100%" creationComplete="updateProperties()"
+	xmlns:todolistscreens="com.adams.dt.view.components.todolistscreens.*"
+	xmlns="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Script>
+		<![CDATA[
+		/**
+		 * override the gotoPrevTask and update the properties
+		 */
+		override public function gotoPrevTask():void {
+			model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+			super.gotoPrevTask();
+		}
+		/**
+		 * override the gotoNextTask and update the properties
+		 */
+		override public function gotoNextTask():void {
+			model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+			super.gotoNextTask();
+		}
+		
+		override public function updateProperties():void {
+			property.updateProperties();
+		}
+	]]>
+	</mx:Script>
+	<todolistscreens:Depart id="property" projectProperty="{ model.propertiespresetsCollection }" visibleOperator="true"/>
+</TodoList>

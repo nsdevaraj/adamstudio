@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Notes" table="notes">
+        <id name="commentID" type="integer" column="comment_ID">
+            <generator class="increment" />
+        </id>
+        <property name="commentX">
+            <column name="comment_X" />
+        </property>
+        <property name="commentY">
+            <column name="comment_Y" />
+        </property>
+         <property name="commentBoxX">
+            <column name="commentBox_X" />
+        </property>
+        <property name="commentBoxY">
+            <column name="commentBox_Y" />
+        </property>
+        <property name="commentTitle">
+            <column name="comment_Title" />
+        </property>
+        <property name="commentWidth">
+            <column name="comment_Width" />
+        </property>
+        <property name="commentHeight">
+            <column name="comment_Height" />
+        </property>
+        <property name="commentColor">
+            <column name="comment_Color" />
+        </property>
+        <property name="commentDescriptionBlob">
+            <column name="comment_Description" />
+        </property>
+        <property name="commentMaximize">
+            <column name="comment_Maximize" />
+        </property>
+         <property name="commentStatus">
+            <column name="comment_Status" />
+        </property>
+         <property name="misc">
+            <column name="misc" />
+        </property>
+        <property name="commentType">
+            <column name="comment_Type" />
+        </property>
+        <property name="creationDate">
+            <column name="creation_Date" />
+        </property>
+        <property name="filefk">
+            <column name="file_fk" />
+        </property>
+        
+        <property name="createdby">
+            <column name="created_by" />
+        </property>
+        <property name="history">
+            <column name="history_id" />
+        </property>
+    </class> 
+    <query name="Notes.findById">
+        select u from Notes u where u.id = ?
+    </query>
+    <query name="Notes.findByNums">
+        select u from Notes u where u.filefk = ? or u.filefk = ?
+    </query>
+</hibernate-mapping>

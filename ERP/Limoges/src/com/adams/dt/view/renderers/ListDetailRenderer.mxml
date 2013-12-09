@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				width="100%" height="100%"
+				dataChange="dataChangeAction( event )" 
+				toolTip="{ data.file.fileName }"> 
+	<fx:Script>
+		<![CDATA[			
+			import com.adams.dt.view.components.FileUploadTileList;
+			override public function set data(value:Object):void{
+				super.data = value;
+			}
+			private function dataChangeAction( evt:Event ):void
+			{
+				if(data)
+					test.setProgress(Number( data.uploadPercentage ), 100);
+			}
+			
+			private function onShowOption():void{
+				var ar:Array = data.options.source;
+				if(ar.length != 1 ||  ar[0]["deleteItem"] != "Delete")
+				{
+					listPopup.displayPopUp = true;
+					listPopup.top = 15; 
+					listPopup.right = 12;
+					addElement( listPopup );	
+					controlsGroup.removeAllElements();
+					for each(var obj:Object in ar){
+						for (var str:String in obj) {
+							if(str == "compareItem"){
+								if(data.extension == 'pdf'&& data.previewed){
+									createOptionBtn(obj,str,true);
+								}else{
+									createOptionBtn(obj,str,false);
+								} 
+							}else{
+								createOptionBtn(obj,str,true);
+							} 
+						}
+					}
+				}
+			} 
+			private function createOptionBtn(obj:Object,str:String,viewable:Boolean):void{
+				var btn:Button = new Button();
+				btn.addEventListener(MouseEvent.CLICK,onOptionClick);
+				btn.percentWidth = 100;
+				btn.styleName = str;
+				btn.label = obj[str];
+				btn.name = str;
+				btn.enabled = viewable; 
+				if(str == FileUploadTileList.REPLACE_ITEM ||str == FileUploadTileList.RENAME_ITEM ||str == FileUploadTileList.DELETE_ITEM){
+					btn.enabled = false;
+				}
+				controlsGroup.addElement(btn);
+			}
+			
+			private function onOptionClick(event:MouseEvent):void{
+				var returnEvent:String = event.currentTarget.name;
+				if(String(data.extension).toLowerCase() == 'pdf'){
+					Object( owner ).renderSignal.dispatch( FileUploadTileList.SELECT_PREVIOUS_ITEM, data );
+				} 
+				Object( owner ).renderSignal.dispatch( returnEvent, data );
+				onRemovePopup();
+			}
+			private function onRemovePopup():void{
+				listPopup.displayPopUp = false;
+				removeElement( listPopup );
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:PopUpAnchor id="listPopup" popUpPosition="below" displayPopUp="false" showEffect="fade" hideEffect="fade" >
+			<s:Group id="popGroup" mouseDownOutside="onRemovePopup()" width="90" >
+				<s:Rect id="shadow" left="0" right="-2" top="0" bottom="-2" radiusX="5" radiusY="5">
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0x000000" alpha=".5" />
+							<s:GradientEntry color="0x000000" alpha=".5"  />
+						</s:LinearGradient>
+					</s:fill>
+				</s:Rect>
+				<s:BorderContainer id="controlsGroup" width="90" minHeight="35">
+					<s:layout>
+						<s:VerticalLayout paddingBottom="3" gap="0" paddingTop="3" paddingLeft="3" paddingRight="3"
+										  horizontalAlign="left" verticalAlign="middle" />
+					</s:layout>
+				</s:BorderContainer>
+			</s:Group>
+		</s:PopUpAnchor>
+	</fx:Declarations>
+	 
+	<s:HGroup width="100%" height="100%" verticalAlign="middle">
+		<s:Image id="fileImg" source="{ data.img }"
+				 top="0" bottom="15" 
+				 scaleMode="letterbox" fillMode="scale"
+				 verticalAlign="middle" horizontalAlign="center"
+				 visible="{((data.uploadStatus == 'Done')?true:false)}" />
+		<s:VGroup width="100%">
+			<s:Label text="{data.fileName}" fontSize="15" styleName="headerLabel" maxDisplayedLines="1" showTruncationTip="true" width="100%" />
+			<s:Label text="{data.otherFileType}" fontSize="11" showTruncationTip="true" width="100%" />
+			<s:Label text="{data.otherFileExt}" fontSize="11" showTruncationTip="true" width="100%" />
+		</s:VGroup>
+	</s:HGroup>
+	<mx:ProgressBar id="test" 
+					mode="manual"
+					minimum="0" maximum="100"
+					width="40" fontSize="9" fontWeight="bold"
+					labelPlacement="center" label="{data.uploadPercentage +'%'}"
+					verticalCenter="-5" horizontalCenter="0"
+					visible="{((data.uploadStatus == 'Not Done')?true:false)}" />
+	<s:Button id="optionBtn" click="onShowOption()" focusEnabled="false" buttonMode="true" styleName="optionsItem" top="-1" right="-1"/>
+</s:ItemRenderer>

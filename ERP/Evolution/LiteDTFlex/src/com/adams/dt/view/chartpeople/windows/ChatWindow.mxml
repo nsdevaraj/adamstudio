@@ -1,0 +1,206 @@
+<mx:Window xmlns:mx="http://www.adobe.com/2006/mxml" showTitleBar="false" 
+		   	systemChrome="none" transparent="true" styleName="chatWindow"
+	 		verticalGap="0" showStatusBar="false" layout="absolute" minHeight="300" 
+	 		cornerRadius="0" horizontalAlign="center" 
+	 		 minWidth="300"  showGripper="false" dropShadowEnabled="true" 
+	 		 creationComplete="offLineChatData(event);" close="modelReset()">
+	 		
+	<mx:Binding source="model.mainProjectState" destination="this.projectStateChange"/>
+	<mx:Binding source="model.chatCollection" destination="this.offlineData"/>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Chat;
+			import com.adams.dt.event.chatevent.ChatDBEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.TeamlineEvent;
+			import mx.binding.utils.BindingUtils;
+			import mx.controls.textClasses.TextRange;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			public var personSenderID:int;
+			[Bindable]
+			public var personReceiverID:String;
+			
+			[Bindable]
+			public var personColor:String;
+			[Bindable]
+			public var projectID:int;
+			
+			public var _projectStateChange:int;
+			[Bindable]
+			public function get projectStateChange():int {
+				return _projectStateChange;
+			} 
+			public function set projectStateChange( value:int ):void {
+				_projectStateChange = value;
+				if( value == 0 )	onClose();
+			}			
+			public function doDrag():void{
+				this.nativeWindow.startMove();
+			}
+			
+			public function onResizeCommand( event:MouseEvent ):void {
+    			this.nativeWindow.startResize( NativeWindowResize.BOTTOM_RIGHT );
+    		}
+    		public function offLineChatData(evt:Event):void{
+    			_typingArea.setFocus();	
+    			
+    			var createChatEvt:ChatDBEvent = new ChatDBEvent( ChatDBEvent.EVENT_GET_CHAT );
+				createChatEvt.chatprojectId = projectID;
+				createChatEvt.dispatch();
+    		}
+    		private var _offlineData:ArrayCollection;
+			[Bindable]
+			public function get offlineData():ArrayCollection {
+				return _offlineData;
+			}
+			public function set offlineData( value:ArrayCollection ):void {
+				if( value ) {
+					 _offlineData = makeOfflineData( value );
+				}
+			}
+			private function makeOfflineData( arrC:ArrayCollection ):ArrayCollection {
+				var tempChatCollection:ArrayCollection = new ArrayCollection();
+				for each( var item:Chat in  arrC ) {		    		 
+			    	tempChatCollection.addItem( item );	
+			    	textAreaChanges(item.projectFk,item.senderName,item.description,true);		    	
+		    	}
+		    	return tempChatCollection;
+		    }
+    		
+    		public function onClose():void {
+    			modelReset();
+    			this.close();
+    		}
+    		
+    		public function modelReset():void {
+    			model.chatWindowCollection[ projectID ] = undefined;
+    		}
+    		
+    		public function onMinimize():void {
+    			this.minimize();
+    		}
+    		public function commonPageDisplay(curProjectId:int, sender:String,dynamicMsg:String,outer:Boolean ):void{
+    			var typedText:String = dynamicMsg;
+    			textAreaChanges( curProjectId,sender,typedText,outer );
+    		}    		
+    		
+    		public function onKeyDown( event:KeyboardEvent ):void {
+    			if( ( event.keyCode == 13 ) && ( _typingArea.text.length != 0 ) ) {
+    				var sender:String = model.person.personFirstname;
+    				var typedText:String = _typingArea.text;
+    				textAreaChanges( projectID,sender,typedText,true );
+    				
+	    			model.chatvo.senderId = model.person.personId;
+			 		model.chatvo.senderName = model.person.personFirstname;
+			 		model.chatvo.description = typedText;
+			 		model.chatvo.receiverId = int(personReceiverID);
+			 		model.chatvo.receiverName = this.title;
+			 		model.chatvo.chatDateentry = model.currentTime;
+			 		model.chatvo.projectFk = projectID;
+			 		
+			 		var handler:IResponder = new Callbacks(chatTeamlinePersonResult,fault);
+			 		 var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_PROJECT_TEAMLINE, handler );
+	 				teamTempEvt.projectId = projectID;  				
+			 		teamTempEvt.dispatch();
+			    	
+			    	 
+				}
+    		}
+    		
+    		public function chatTeamlinePersonResult(rpcEvent : Object):void{
+				model.chatTeamLineCollection = rpcEvent.result as ArrayCollection;
+				
+				var producer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_CHAT_PRODUCER );
+				var handler:IResponder = new Callbacks(result,fault);
+				var eventSeq:SequenceGenerator = new SequenceGenerator( [producer], handler );
+		    	eventSeq.dispatch(); 
+    		}
+    		
+    		public function result(rpc:Object):void{				
+			}			
+			
+			public function fault(rpc:Object):void{				
+			}
+			
+			[Bindable]
+    		private var messageIntermediator:String = "";
+    		public function textAreaChanges(curProjectId:int, senderName:String ,msg:String, outer:Boolean):void {
+    			if(this.projectID == curProjectId){
+					var assigningText:String = senderName+": ";
+					if(outer){	
+						var textRange:TextRange = new TextRange( _typingArea );
+						textRange.beginIndex = 0;
+						textRange.endIndex = _typingArea.text.length;
+						textRange.text = "";
+						_typingArea.selectionBeginIndex = 0; 
+					}				
+					this.messageIntermediator += "<b><font size='11'>"+ assigningText + "</font></b>" + msg + "\n";
+					if(_messageArea!=null){
+						_messageArea.validateNow();
+						_messageArea.verticalScrollPosition = _messageArea.maxVerticalScrollPosition;
+					} 
+    			}
+			}	
+			public function onTextInput( event:TextEvent ):void {
+	            if ( event.text == "\n" ) {
+	            	event.preventDefault();
+	            }
+	        }
+	       
+	        private function openMainProjectView():void {
+	        	if( model.currentMainProject.projectId != projectID ) {
+		        	model.currentMainProject = GetVOUtil.getProjectObject( projectID );
+		        	model.currentProjects = model.currentMainProject;
+		        	model.preloaderVisibility = true;
+		        	if( model.mainProjectState != 1 ) {
+			        	 model.mainProjectState = 1;
+					}
+					else {
+						model.mainProjectState = 0;
+						model.mainProjectState = 1;
+					}
+	        	}
+	        }
+    		
+		]]>
+	</mx:Script>
+	
+	<mx:ApplicationControlBar mouseDown="doDrag()" top="0" left="0" right="0">
+		<mx:Label text="{ this.title }" left="5" styleName="menuText" color="#959595" fontSize="12"/>								
+		<mx:Spacer width="100%" />  
+		<mx:Button id="minimizeBtn" buttonMode="true" click="onMinimize()" 
+			       right="40" styleName="AppMinimizeButton"/>
+		<mx:Button id="closeBtn" buttonMode="true" click="onClose()" right="10" styleName="AppCloseButton"/>	       
+	</mx:ApplicationControlBar>
+	
+	<mx:VBox top="24" verticalGap="1" horizontalAlign="right" paddingLeft="5" paddingRight="5" paddingTop="5" 
+			paddingBottom="5" id="userIdList" width="100%" styleName="chatHeader">
+		<mx:Button styleName="backMPV" cornerRadius="0" click="openMainProjectView()" />
+	</mx:VBox>
+	
+	<mx:Canvas id="chatAreaCon" top="{userIdList.height+userIdList.y+5}" 
+				bottom="50"  left="5" right="5">
+		<mx:TextArea id="_messageArea" width="100%"   height="100%" styleName="chatText" 
+			         editable="false" wordWrap="true" htmlText="{this.messageIntermediator}"/>
+	</mx:Canvas>
+		
+	
+	<mx:Canvas width="100%" bottom="0" height="50" >
+		<mx:TextArea id="_typingArea" right="3" left="3" top="5" bottom="3"  styleName="chatText"
+						keyDown="onKeyDown( event )" textInput="onTextInput( event )" />
+		<mx:Canvas  bottom="3" right="3"  mouseDown="onResizeCommand(event)">
+			<mx:Button  styleName="resizeBtn" alpha=".5" />	
+		</mx:Canvas>	
+	</mx:Canvas>
+	
+</mx:Window>

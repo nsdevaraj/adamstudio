@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="66f97970-af40-40a4-bf6d-2e0d90c1b848" projectUUID="66f97970-af40-40a4-bf6d-2e0d90c1b848" sdkVersion="4.0.0" uuid="547fb613-b968-48a9-9c7b-9fea367f43d0" version="4">
+  <projects/>
+  <src/>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="547fb613-b968-48a9-9c7b-9fea367f43d0"/>
+    <linked location="C:/Documents and Settings/Admin/Desktop/AdamSuite/libs" path="/libs" position="1" uuid="075b2351-a699-4420-b185-374a8d4ee763"/>
+  </swc>
+  <misc/>
+  <theme/>
+</fxpProperties>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Swiz:Swiz xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   xmlns:swiz="org.swizframework.core.*"
+		   xmlns:Swiz="org.swizframework.core.mxml.*"
+		   xmlns:dao="com.adams.suite.dao.*"
+		   xmlns:response="com.adams.suite.response.*"
+		   xmlns:signals="com.adams.suite.signals.*" 
+		   xmlns:processors="com.foomonger.swizframework.processors.*"
+		   xmlns:storage="org.swizframework.storage.*" 
+		   xmlns:mediators="com.adams.suite.views.mediators.*"
+		   xmlns:services="org.swizframework.utils.services.*" 
+		   xmlns:mediateview="com.briankotek.mediateview.*" 
+		   xmlns:formprocessors="com.nsdevaraj.swiz.processors.*"
+		   activate="initializeHandler(event)"
+		   xmlns:controller="com.adams.suite.controller.*" 
+		   xmlns:vo="com.adams.suite.models.vo.*">	
+	<fx:Script>
+		<![CDATA[  
+			import com.adams.suite.models.vo.*;
+			import com.adams.suite.utils.Utils;
+			
+			import mx.logging.LogEventLevel;
+			import mx.logging.targets.TraceTarget;
+			
+			import org.swizframework.utils.logging.AbstractSwizLoggingTarget;
+			import org.swizframework.utils.logging.SwizLogEventLevel;
+			import org.swizframework.utils.logging.SwizLogger;
+			
+			protected function initializeHandler( event:Event ):void { 
+				   var target:TraceTarget = new TraceTarget();
+				target.includeCategory = true; 
+				target.level = LogEventLevel.ALL;    
+				var targets:AbstractSwizLoggingTarget = new AbstractSwizLoggingTarget();
+				targets.level = SwizLogEventLevel.INFO;
+				SwizLogger.addLoggingTarget( targets );    
+			}
+		]]> 
+	</fx:Script>
+	
+	<fx:Declarations>
+		<storage:SharedObjectBean/>		
+	</fx:Declarations>
+	
+	<Swiz:config>
+		<swiz:SwizConfig viewPackages="com.adams.suite.views.*" tearDownEventType="{ Event.REMOVED_FROM_STAGE }"/>
+	</Swiz:config>
+	
+	<Swiz:customProcessors>
+		<processors:MediateSignalProcessor id="signalProcessor" signalPackages="com.adams.suite.signals" strictArgumentTypes="true"/>		
+ 		<mediateview:MediateViewProcessor/>
+	</Swiz:customProcessors>
+	
+	<Swiz:beanProviders> 
+		<swiz:BeanProvider>  
+			<vo:CurrentInstance/>  	
+			<controller:BootStrapSuite/>
+		</swiz:BeanProvider>
+	</Swiz:beanProviders>
+</Swiz:Swiz>

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.FileDetails" table="file_details">
+        <id name="fileId" type="integer" column="File_ID">
+            <!-- <generator class="increment" /> --> 
+            <generator class="sequence">
+    			<param name="sequence">FILE_DETAILS_FILE_ID_SEQ</param>
+  			</generator> 
+        </id>
+        <property name="fileName">
+            <column name="Filename" />
+        </property>
+        <property name="filePath">
+            <column name="Filepath" />
+        </property>
+        <property name="fileDate">
+            <column name="Filedate" /> 
+        </property>
+        <property name="categoryFK">
+            <column name="Category_FK" />
+        </property>
+        <property name="type">
+            <column name="Type" />
+        </property>
+        <property name="storedFileName">
+            <column name="StoredFileName" />
+        </property>
+        <property name="releaseStatus">
+            <column name="release_Status" />
+        </property>
+        <property name="visible">
+            <column name="visible" />
+        </property>
+        <property name="miscelleneous">
+            <column name="miscellaneous" />
+        </property>
+        <property name="taskId">
+            <column name="Task_Fk" />
+        </property>
+        <property name="projectFK">
+            <column name="project_Fk" />
+        </property>
+        <property name="fileCategory">
+            <column name="File_Category" />
+        </property>
+        <property name="page">
+            <column name="page" />
+        </property>
+    </class> 
+     <query name="FileDetails.findById">
+        select u from FileDetails u where u.projectFK=?
+    </query>
+    <query name="FileDetails.findByIdName">
+        select u from FileDetails u where u.projectFK=? and u.type=?
+    </query>
+    <query name="FileDetails.findByTaskId">
+        select u from FileDetails u where u.taskId=?
+    </query>
+    <query name="FileDetails.findByNameId">
+        select u from FileDetails u where u.miscelleneous=? and u.fileId!=? order by u.page
+    </query>
+    <query name="FileDetails.findByMailFileId">
+        select u from FileDetails u where u.fileId=?
+    </query>
+   <query name="FileDetails.findByNameFileId">
+        select u from FileDetails u where u.miscelleneous=? and u.projectFK=? and u.fileId!=? order by u.page
+    </query>
+    <query name="FileDetails.findByIndProjId">
+        select u from FileDetails u where u.miscelleneous=? and u.projectFK=? order by u.page
+    </query>
+</hibernate-mapping>

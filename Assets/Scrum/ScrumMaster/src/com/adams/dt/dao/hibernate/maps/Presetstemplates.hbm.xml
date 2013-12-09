@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Presetstemplates" table="presets_templates">
+        <id name="presetstemplateId" type="integer" column="presets_template_ID">
+            <generator class="increment" />
+        </id>
+        <property name="presetTemplateLabel">
+            <column name="preset_template_label" />
+        </property>
+        <property name="impremiurfk">
+            <column name="impremiur_FK" />
+        </property> 
+        <set name="propertiesPresetSet" table="prop_presets_templates" order-by="prop_presets_templates_ID" inverse="true" cascade="none" lazy="false">
+            <key column="presets_templates_FK" />
+            <one-to-many class="com.adams.dt.pojo.Proppresetstemplates" />
+        </set>
+    </class>
+     <query name="Presetstemplates.findById">
+        select u from Presetstemplates u where u.presetstemplateId=?
+    </query>
+</hibernate-mapping>

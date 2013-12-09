@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:upload="components.*" width="100%" height="100%" horizontalAlign="center" paddingLeft="20" verticalAlign="middle"
+	          creationComplete="{bool=true,Controller.getInstance().registerView = this}" xmlns:popText="components.pouptextcomponent.*" xmlns:cmp="components.textInput.*"
+	          		xmlns:customComp="components.*">
+<mx:Script>
+	<![CDATA[
+		import business.AccessRights;
+		import mx.managers.PopUpManager;
+		import data.UploadDeatils;
+		import mx.core.Application;
+		import events.TaskEvent;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import business.DateFormatterClass;
+		import controller.Controller;
+		import data.Tasks;
+		import data.Interface.IModel;
+		import mx.collections.ArrayCollection;
+		[Bindable]		
+		private var upfiles:ArrayCollection;
+		[Bindable]		
+		private var deleveredfiles:ArrayCollection;
+		private var _selectedtaskObj:Tasks;		
+		private var popUp:PopUp = new PopUp();
+		[Bindable]
+		private var saveButton:Boolean;
+		[Bindable]
+		private var statusButton:Boolean;
+		[Bindable]
+		private var comboObj:ArrayCollection =new ArrayCollection([{label:"waiting",data:"1"},{label:"inprogress",data:"2"},
+											{label:"delivered",data:"3"},{label:"archived",data:"4"}])
+		private var type:String = Controller.getInstance().userObj.type;	
+		private var statusFlowArr:Array = ["waiting","inprogress","delivered","archived"]																		
+		public function set selectedTaskObj(obj:Tasks):void{
+			_selectedtaskObj = obj;
+			type = Controller.getInstance().userObj.type;
+			loadvalues();
+			
+		}
+		private var exisitingData:int = 0;
+	    [Bindable]
+		private var timing:String = new String()
+		private var creationDate:String = new String();
+		private var creationTime:String = new String();
+		public function init():void{
+		}
+		public function garbageCollection():void{
+			Alert.show("Garbage Collection");
+		}
+		private function loadvalues():void{
+			upfiles = _selectedtaskObj.uploadedImageData;
+			deleveredfiles = _selectedtaskObj.deliveredImageData;
+			task.text=unescape(_selectedtaskObj.label);
+			qtimages.value=Number(_selectedtaskObj.number_of_images);
+			details.text=unescape(_selectedtaskObj.comments);		
+			var creationArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.datetime_of_creation).split(",")
+			creationDate = creationArr[0];
+			creationTime = creationArr[1];
+			var expectedArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.dedline).split(",");
+			expectedDate.text =expectedArr[0]; 
+			expected.text=expectedArr[1];
+			var estimatedArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.datetime_of_estimated).split(",");
+			estimatedDate.text = estimatedArr[0]; 
+			estimated.text=estimatedArr[1]
+			timing = (_selectedtaskObj.time_spending=='0')?'':_selectedtaskObj.time_spending;
+			deliveryDate = _selectedtaskObj.date_of_delivery;
+			var _deliveryArr:Array = DateFormatterClass.displayFormat(deliveryDate).split(",");
+			deliveryDateComp.text=_deliveryArr[0];
+			deliveryTime.text=_deliveryArr[1];
+			status.selectedIndex =int(_selectedtaskObj.status)- 1;
+			archiveDate = _selectedtaskObj.datetime_archive;
+			if(Controller.getInstance().userObj.type == "1"){
+				exsitingArr = upfiles.toArray();				
+			}else{
+				exsitingArr = deleveredfiles.toArray();
+			}
+			exisitingData = exsitingArr.length;
+			saveButton = AccessRights.getEditState(status.selectedLabel,type);
+			statusButton = AccessRights.getStatusState(status.selectedLabel,type);
+			var index:int = statusFlowArr.indexOf(status.selectedLabel)
+			statusBtn.label = statusFlowArr[index+1];
+			updateUI();
+			
+		}
+		[Bindable]
+		private var uicomp_task:Boolean;
+		[Bindable]
+		private var uicomp_details:Boolean;
+		[Bindable]
+		private var uicomp_expected:Boolean;
+		[Bindable]
+		private var uicomp_estimated:Boolean;
+		[Bindable]
+		private var uicomp_timings:Boolean;
+		[Bindable]
+		private var uicomp_status:Boolean;
+		[Bindable]
+		private var uicomp_UploadButtonVisi:Boolean;
+		[Bindable]
+		private var uicomp_deliveredButtonVisi:Boolean;
+		private function updateUI():void{			
+			uicomp_task = AccessRights['type_'+type].editTask_task;
+			qtimages.editable = AccessRights['type_'+type].editTask_images;
+			qtimages.styleName = getStyleName(AccessRights['type_'+type].editTask_images)
+			uicomp_details = AccessRights['type_'+type].editTask_deatils;
+			expectedDate.changeToLabel = AccessRights['type_'+type].editTask_expected;
+			expectedDate.styleName = getStyleName(AccessRights['type_'+type].editTask_expected);
+			uicomp_expected = AccessRights['type_'+type].editTask_expectedTime;
+			estimatedDate.changeToLabel = AccessRights['type_'+type].editTask_estimated;
+			estimatedDate.styleName = getStyleName(AccessRights['type_'+type].editTask_estimated);
+			uicomp_estimated = AccessRights['type_'+type].editTask_estimatedTime;			
+			uicomp_timings = AccessRights['type_'+type].editTask_timing;
+			uicomp_status = AccessRights['type_'+type].editTask_status;
+			uicomp_UploadButtonVisi = AccessRights.getButtonVisi(_selectedtaskObj.statusVal,Controller.getInstance().userObj.type,0);
+			uicomp_deliveredButtonVisi = AccessRights.getButtonVisi(_selectedtaskObj.statusVal,Controller.getInstance().userObj.type,1);
+		}
+		private function getStyleName(boolVal:Boolean):String{
+			return (boolVal)?'normalDisp':'disabledLabelStyle';
+		}
+		private var exsitingArr:Array = new Array();
+		private function updateDataGrid():void{
+			if(Controller.getInstance().userObj.type != "3"){
+				if(Controller.getInstance().userObj.type == "1"){					
+					popUp.fileUpload_client.listFiles.dataProvider = upfiles;
+					popUp.fileUpload_client.exsitingData = exsitingArr;
+					popUp.fileUpload_client.newTask = false;
+				}else{
+					popUp.downloadfiles_client.dataProvider = upfiles;
+				}				
+				
+				if(Controller.getInstance().userObj.type == "2"){
+					popUp.fileUpload_suplier.listFiles.dataProvider = deleveredfiles;
+					popUp.fileUpload_suplier.exsitingData = exsitingArr;
+					popUp.fileUpload_suplier.newTask = false;
+				}else{
+					popUp.downloadfiles_suplier.dataProvider=deleveredfiles;
+				
+				}
+			}else{
+				popUp.uploadfiles.dataProvider = upfiles;
+				popUp.deliveredfiles.dataProvider=deleveredfiles;
+				
+			}
+			popUp.uploadeDP = _selectedtaskObj.uploadedImageData ;
+			popUp.deliverDP = _selectedtaskObj.deliveredImageData;
+		}
+		private function updateChanges():void{
+			var obj:Object = new Object();
+			obj.label = escape(task.text);
+			obj.number_of_images=String(qtimages.value);
+			obj.comments = escape(details.text);			
+			obj.time_spending = timings.text;
+			obj.activated = "1";
+			obj.date_of_delivery = deliveryDate;
+			obj.datetime_archive = archiveDate;
+			obj.status = int(status.selectedIndex)+1;
+			obj.dedline = DateFormatterClass.backendFormat(expectedDate.text+" "+ expected.text);
+			obj.datetime_of_estimated = DateFormatterClass.backendFormat(estimatedDate.text+" "+ estimated.text);
+			updateQuery = generateQuery(obj);
+			connect.getOperation('updateTable').send();
+			updateImageData();
+			loadvalues();			
+		}
+		private function updateImageData():void{
+			var grp_id:String = Controller.getInstance().userObj.type
+			var status:String = (grp_id == "1")?"uploaded":"delivered";
+			var statusVal:int = (grp_id == "1")?1:2;
+			var dataCollection:ArrayCollection = new ArrayCollection();
+			if(grp_id == "1"){
+				dataCollection = _selectedtaskObj.uploadedImage;
+			}else{
+				dataCollection = _selectedtaskObj.deliveredImage;
+			}
+			var imageFiles:ArrayCollection = new ArrayCollection()
+			if(popUp.fileUpload_client!=null||popUp.fileUpload_suplier!=null){
+				imageFiles = (grp_id == "1")?popUp.fileUpload_client.listFiles.dataProvider as ArrayCollection:popUp.fileUpload_suplier.listFiles.dataProvider as ArrayCollection;
+			}
+			for(var i:String in imageFiles){
+				if((Number(i)+1)>exisitingData){
+					var uploadedImageDeatils:UploadDeatils = new UploadDeatils();
+					uploadedImageDeatils.pk_task = id;
+					uploadedImageDeatils.imagesize = imageFiles[i]["size"];
+					uploadedImageDeatils.imagename = imageFiles[i]["name"];
+					uploadedImageDeatils.status = status;
+					updateQuery = "insert into uploadeddetails (imagename, imagesize, pk_task, status) values" + 
+						"('"+imageFiles[i]["name"]+"', '"+imageFiles[i]["size"]+"', '"+_selectedtaskObj.pk_task+"',"+ statusVal+")";
+					connect.getOperation('updateTable').send(); 
+					dataCollection.addItem(uploadedImageDeatils);
+				}
+				
+			}
+			if(grp_id == "1"){
+				_selectedtaskObj.uploadedImageData= dataCollection;
+			}else{	
+				_selectedtaskObj.deliveredImageData = dataCollection;
+			}
+				
+		}
+		
+		private function generateQuery(dataObj:Object):String{
+			var updateStr:String=''
+			for(var i:String in dataObj){
+				_selectedtaskObj[i]= dataObj[i]
+				updateStr+= i +" = '"+_selectedtaskObj[i]+"',"				
+			}
+			updateStr = updateStr.substr(0,updateStr.length-1);
+			var conditionStr:String = " where pk_task = '"+_selectedtaskObj.pk_task+"'"
+			var queryStr:String = "update tasks set "+updateStr+conditionStr;
+			return queryStr;
+		}
+		[Bindable]
+		private var query:String;
+		private function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		private function get updateQuery():String{
+			return query;
+		}	
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("-fault-->"+event.fault);
+		}
+		private function resultHandler(event:ResultEvent):void{
+			if(!delivery&&!archive&&!inprogress){
+				Controller.getInstance().updateHistoryData('SAVE');
+			}else if(delivery) {
+				Controller.getInstance().updateHistoryData('DELIVERY');
+				delivery = false;
+			}else if(archive){
+				Controller.getInstance().updateHistoryData('ARCHIVE')
+				archive = false;
+			}else if(inprogress){
+				inprogress = false;
+			}
+			dispatchEvent(new TaskEvent(TaskEvent.NEWTASK));
+		}
+		private function updateStatus(statusLabel:String):void{
+			switch(statusLabel){
+				case "inprogress":
+					updateInprogress();
+				break;
+				case "delivered":
+					updateDelivery();
+				break;
+				case "archived":
+					updateArchive();
+				break;
+				case "waiting":
+					
+				break;
+			}
+		}
+		private var deliveryDate:String = "0000-00-00 00:00:00";
+		private var delivery:Boolean=false
+		private function updateDelivery():void{
+			delivery = true;
+			var date:Date = new Date();
+			var month:Number = date.month+1 
+			var monthStr:String = (month>9)?String(month):"0"+String(month);
+			var dateVal:Number = date.day;
+			var dateStr:String = (dateVal>9)?String(dateVal):"0"+String(dateVal);
+			deliveryDate = date.fullYear+"-"+monthStr+"-"+dateStr+" "+date.hours+":"+date.minutes+":"+date.seconds;
+			status.selectedIndex = 2;
+			updateChanges()			
+
+		}
+		private var archiveDate:String = "0000-00-00 00:00:00";
+		private var archive:Boolean=false
+		private function updateArchive():void{					
+			var date:Date = new Date()
+			archive = true;
+			var month:Number = date.month+1 
+			var monthStr:String = (month>9)?String(month):"0"+String(month);
+			var dateVal:Number = date.day;
+			var dateStr:String = (dateVal>9)?String(dateVal):"0"+String(dateVal);
+			archiveDate = date.fullYear+"-"+monthStr+"-"+dateStr+" "+date.hours+":"+date.minutes+":"+date.seconds;
+			status.selectedIndex = 3;
+			updateChanges();
+		}
+		private var inprogress:Boolean=false
+		private function updateInprogress():void{					
+			inprogress = true;			
+			status.selectedIndex = 1;
+			updateChanges();
+		}
+		private var bool:Boolean = false;
+		private function formateDate(date:Date):String{			
+			if(date!=null&&bool){
+				var currentDate:Date = DateFormatterClass.getDateObj(_selectedtaskObj.datetime_of_creation);
+				if(Number(date.valueOf())>Number(currentDate.valueOf())){
+					var dateArr:Array = date.toString().split(" ");
+					var dateStr:String = dateArr[2]+"-"+dateArr[1]+"-"+dateArr[5];
+					if(int(dateArr[2])<=0)dateStr='';
+				}else{
+					Alert.show(this+"Entered Date is  invalid"+date);
+				}
+			}	
+			return dateStr;
+		}
+		
+		private var currIndex:int = 0;
+		private function openPopup(num:int):void{
+			popUp.creationPolicy = 'all'
+			PopUpManager.removePopUp(popUp);
+			PopUpManager.addPopUp(popUp, this, true);
+			PopUpManager.centerPopUp(popUp);
+			popUp.selectedTask = false;
+			currIndex = num;
+			updateDataGrid();
+			popUp.addEventListener("closed",removeActiveListener);
+			popUp.width = stage.width/2-20;
+			popUp.x = stage.width/2-popUp.width/2
+			popUp.height = Application.application.height-20;
+			popUp.y = 10; 
+			
+			var appletVisible:Boolean = AccessRights.getAppletVisible(_selectedtaskObj.statusVal,Controller.getInstance().userObj.type,currIndex)
+			if(appletVisible)
+				Application.application.showApplet();
+			else
+				Application.application.hideApplet();	
+				
+			popUp.loadChild(num);
+			stage.addEventListener(Event.RESIZE,checkPopup);
+		}
+		private function removeActiveListener(event:Event):void{
+			if(event.currentTarget.fileUploadedArr.length>0){
+				upfiles = event.currentTarget.fileUploadedArr;
+			}
+			if(event.currentTarget.fileDeliveredArr.length>0){
+				deleveredfiles = event.currentTarget.fileDeliveredArr;
+			}
+			stage.removeEventListener(Event.RESIZE,checkPopup);
+		}
+		private function checkPopup(event:Event):void{
+			openPopup(currIndex)
+			//popUp.width = 
+		}
+		private function onComboChange(event:Event):void{
+			
+		}
+		private function onSaveButtonPress(event:Event):void{
+			if(status.selectedLabel == _selectedtaskObj.statusVal){
+				updateChanges();
+			}else{
+				updateStatus(status.selectedLabel);
+			}
+		}
+	]]>
+</mx:Script>
+		<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+				<mx:method name="updateTable" result="resultHandler(event)">
+					<mx:arguments>
+						<query>{updateQuery}</query>
+					</mx:arguments>
+				</mx:method>
+		</mx:RemoteObject>
+		<mx:TitleWindow showCloseButton="true" close="{this.parentDocument.assignSelectedvalues(_selectedtaskObj.pk_task)}" title="Edit Task"  id="ntPanel" width="70%" height="100%" horizontalAlign="center" paddingTop="15" paddingBottom="15" paddingLeft="15" paddingRight="15">
+		<mx:VBox width="100%" height="100%" horizontalAlign="left">
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="task" textAlign="left"/>
+				<cmp:PTTextInputWmode id="task" width="40%" editable ="{uicomp_task }" maxChars="20" styleName="{(uicomp_task)?'':'disabledLabelStyle'}" />				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="qt images" textAlign="left"/>
+				<customComp:CustomNumericStepper id="qtimages" width="10%" height="20%" minimum="0" maximum="100"/>
+				<mx:LinkButton  label="uploadedFiles" visible="{uicomp_UploadButtonVisi}"  width="20%" height="20%" click="openPopup(0)"/>
+				<mx:LinkButton  label="DeliveredFiles" visible="{uicomp_deliveredButtonVisi}"  width="20%" height="20%" click="openPopup(1)"/>
+			</mx:HBox>
+			<mx:HBox width="100%" height="30%">
+				<mx:Label width="20%" text="details (optional)" textAlign="left"/>
+				<cmp:PTTextAreaWmode id="details" width="40%" height="100%" editable ="{uicomp_details }"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%"> 
+				<mx:Label width="20%" text="delivery deadline" fontWeight="bold" textDecoration="underline" textAlign="left"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="expected" textAlign="left"/>
+				<customComp:CustomDateField id="expectedDate" width="30%" height="20%" yearNavigationEnabled="true" labelFunction="formateDate"/>
+				<mx:Label width="10%" text="Time" textAlign="left"/>
+				<popText:PopTextInput  id="expected" width="20%" enabled="{uicomp_expected}"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="estimated" textAlign="left"/>
+				<customComp:CustomDateField id="estimatedDate" width="30%" height="20%" yearNavigationEnabled="true" labelFunction="formateDate"/>
+				<mx:Label width="10%" text="Time" textAlign="left"/>
+				<popText:PopTextInput id="estimated" width="20%" enabled="{uicomp_estimated}"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="19.5%" text="timing (in minutes)" textAlign="left"/>
+				<mx:TextInput id="timings" width="30%" text="{timing}" enabled="{uicomp_timings}" restrict="0-9"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+					<mx:Label width="20%" text="final" textAlign="left"/>
+					<customComp:CustomDateField id="deliveryDateComp" width="30%" height="20%" editable="false" 
+							styleName="disabledLabelStyle" changeToLabel="false" yearNavigationEnabled="true" labelFunction="formateDate"/>
+					<mx:Label width="10%" text="Time" textAlign="left"/>
+					<mx:TextInput id="deliveryTime" width="20%" editable="false"/>	
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">				
+					<mx:Label width="20%" y="349" text="status" textAlign="left" x="116"/>
+					<mx:ComboBox id="status" dataProvider="{comboObj}" change="{onComboChange(event)}" enabled="{uicomp_status}" width="20%"/>
+			</mx:HBox>	
+			<mx:HBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="right"> 
+			 	 <mx:Button label="Save" visible="{saveButton}" click="{onSaveButtonPress(event),this.parentDocument.assignSelectedvalues(_selectedtaskObj.pk_task)}" enabled="{!this.parentApplication.demoView}"/>
+			 	 <mx:Button id="statusBtn" click="{updateStatus(statusBtn.label),this.parentDocument.assignSelectedvalues(_selectedtaskObj.pk_task)}" visible="{statusButton}"/>
+				</mx:HBox>					
+			</mx:VBox>
+			
+		</mx:TitleWindow>				
+</mx:VBox>

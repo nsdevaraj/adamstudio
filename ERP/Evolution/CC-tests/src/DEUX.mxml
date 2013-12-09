@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+    <mx:HTTPService id="productmainsvc" result="productmainHandler(event)" fault="faultHandler(event)"
+		            url="http://" resultFormat="text"
+		            />
+
+    <mx:Script>
+    <![CDATA[
+    	import mx.utils.XMLUtil;
+        import mx.controls.Alert;
+        import mx.collections.ArrayCollection;
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.utils.ObjectUtil;
+
+        private var templateUrl:String = "http://boutique.stade.fr/boutique/recherche_resultats.cfm?marque_nav=0&rayon_nav=-1&gamme_nav=0&prix_min=&prix_max=&mot=%25&classement=&code_lg=[lg]&ordre=&triage=0&pag=[pg]"
+    	private var pg_num:int = 1;
+
+    	[Bindable]
+    	private var mainproducts:ArrayCollection;
+    	private var lang_code:String;
+
+    	private function faultHandler(event:FaultEvent):void
+            {
+				Alert.show(event.fault.faultString);
+            }
+
+    	private function productmainHandler(event:ResultEvent):void
+            {
+            var frmmrk:RegExp = / name=\"form_result/im ;
+            var xmldata:XML;
+            var xmlform:XMLList;
+            var formnum:int;
+            var strdata:String;
+            var formname:String;
+            var pos:int;
+		
+            strdata = event.result.toString();
+            strdata = strdata.replace( /[\r\n]/g, "" ); 
+            strdata = strdata.replace( /(<LINK [^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<META [^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<IMG [^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<INPUT [^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<AREA [^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<BR[^>]*)>/ig, "$1/>" ).replace( /\/\/>/g, "/>" );
+            strdata = strdata.replace( /(<input.*) checked[	 ]*([^=].*>)/ig, '$1 checked="1" $2' );
+            strdata = strdata.replace( /(<option.*) selected[	 ]*([^=].*>)/ig, '$1 selected="1" $2' );
+            strdata = strdata.replace( /(<option.*>.*)(<[^\/])/ig, '$1</option>$2' );
+            strdata = strdata.replace( /(<.* size=)([0-9]*) (.*>)/ig, '$1"$2" $3' );
+            strdata = strdata.replace( /<SCRIPT /g, "<script " );
+            strdata = strdata.replace( /<\/SCRIPT[	 ]*>/g, "</script>" );
+			// Even more SF specifics
+            strdata = strdata.replace( /(<option [^>]*>.*)<\/td/ig, '$1</option></select></td' );
+            // Remove presentation elements
+            strdata = strdata.replace( /(<HR [^>]*)>/ig, "" );
+            strdata = strdata.replace( /(<DIV [^>]*)>/ig, "" );
+            strdata = strdata.replace( /<DIV>/ig, "" );
+            strdata = strdata.replace( /<\/DIV>/ig, "" );
+            strdata = strdata.replace( /(<TD [^>]*)>/ig, "" );
+            strdata = strdata.replace( /<TD>/ig, "" );
+            strdata = strdata.replace( /<\/TD>/ig, "" );
+            strdata = strdata.replace( /(<TR [^>]*)>/ig, "" );
+            strdata = strdata.replace( /<TR>/ig, "" );
+            strdata = strdata.replace( /<\/TR>/ig, "" );
+            strdata = strdata.replace( /(<TABLE [^>]*)>/ig, "" );
+            strdata = strdata.replace( /<TABLE>/ig, "" );
+            strdata = strdata.replace( /<\/TABLE>/ig, "" );
+            trace(strdata);
+            xmldata = new XML( strdata );
+
+            // strdata = event.result.toString();
+            // pos = strdata.search(frmmrk);
+            // while( pos != -1 ) {
+            // 	strdata = strdata.substring(pos+18);
+            //     trace( strdata.substr(0,80) );
+            //     pos = strdata.search(frmmrk);
+            // }
+
+			
+			// Alert.show( xmldata.length() );
+			// formnum = 0;
+			//do {
+			//	formname = "form_result" + formnum; 
+			//	xmlform = xmldata.(@name == formname);
+			//	if( xmlform.length() ) 
+			//		Alert.show( xmlform.toXMLString() );
+			//	formnum++;
+			//	} while( 0 && xmlform.length() > 0 );
+			//if( formnum == 20 )
+			//	getProducts();
+            }
+
+        private function getProducts():void
+			{
+			lang_code = "lg_fr";
+			productmainsvc.url = "testdata.xml"; // templateUrl.replace("[lg]", lang_code).replace("[pg]",pg_num);
+			productmainsvc.send();
+			pg_num += 1;
+			} 
+  	]]>
+
+    <![CDATA[
+      import fr.brennus.specifics.SF.dataCatch;
+      private var objTest:dataCatch = new dataCatch( "fr" );
+      private function classTest11():void {
+        var cXml:XML = objTest.getHilite( "fr" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+      private function classTest12():void {
+        var cXml:XML = objTest.getHilite( "en" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+      private function classTest21():void {
+        var cXml:XML = objTest.getCatalog( "fr" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+      private function classTest22():void {
+        var cXml:XML = objTest.getCatalog( "en" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+      private function classTest31( pRef:String ):void {
+        var cXml:XML = objTest.getDetails( pRef , "fr" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+      private function classTest32( pRef:String ):void {
+        var cXml:XML = objTest.getDetails( pRef , "en" );
+        if( cXml == null )
+          trace( "...please retry later" );
+        else
+          trace( cXml );
+      }
+    ]]>
+
+    </mx:Script>
+    
+    <mx:VBox>
+	<mx:DataGrid visible="false" dataProvider="{mainproducts}" >
+	  <mx:columns>
+	  	<mx:DataGridColumn dataField="num" headerText="ID" />
+	  	<mx:DataGridColumn dataField="project" headerText="Project" />
+	  	<mx:DataGridColumn dataField="job" headerText="Job" />
+	  	<mx:DataGridColumn dataField="time_minutes" headerText="Time" />
+	  	<mx:DataGridColumn dataField="comments" headerText="Comments" />
+	  </mx:columns>
+	</mx:DataGrid>
+	<mx:Button visible="false" label="Get products" click="getProducts()" />
+
+    <mx:HRule />
+    <mx:Grid>
+      <mx:GridRow>
+        <mx:GridItem>
+          <mx:Label text="En français" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:Button label="Hilites" click="classTest11()" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:Button label="Catalog" click="classTest21()" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:HBox>
+            <mx:TextInput id="detref" name="detref" text="189492Kaki_kid_copie" />
+            <mx:Button label="&lt;- this ref Details" click="classTest31( detref.text )" />
+          </mx:HBox>
+        </mx:GridItem>
+      </mx:GridRow>
+      <mx:GridRow>
+        <mx:GridItem>
+          <mx:Label text="In english" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:Button label="Hilites" click="classTest12()" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:Button label="Catalog" click="classTest22()" />
+        </mx:GridItem>
+        <mx:GridItem>
+          <mx:HBox>
+            <mx:TextInput id="detrefe" name="detrefe" text="SCRAVEP" />
+            <mx:Button label="&lt;- this ref Details" click="classTest32( detrefe.text )" />
+          </mx:HBox>
+        </mx:GridItem>
+      </mx:GridRow>
+    </mx:Grid>
+
+    </mx:VBox>
+</mx:Application>

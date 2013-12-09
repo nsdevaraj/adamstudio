@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="100%" height="100%" xmlns:views="com.adams.scrum.views.*"
+		 xmlns:mediators="com.adams.scrum.views.mediators.*">
+	 
+	<fx:Script> 
+		<![CDATA[
+			import com.adams.scrum.models.vo.CurrentInstance;
+			
+			import mx.events.IndexChangedEvent;
+			[Bindable]
+			[Inject]
+			public var currentInstance:CurrentInstance; 
+			/**
+			 * The function to handle viewStack change event
+			 * 
+			 * <p>
+			 * if the view is initialized, it sets mainViewStackIndex property of the element
+			 * to initiate the view.
+			 * </p>
+			 */
+			protected function stack_changeHandler(event:IndexChangedEvent):void
+			{
+				if(Object(NavigatorContent(stack.selectedChild).getElementAt(0)).view.initialized) NavigatorContent(stack.selectedChild).getElementAt(0)['mainViewStackIndex'] = stack.selectedIndex; 
+			}
+
+		]]>  
+	</fx:Script>
+	<mx:ViewStack id="stack" change="stack_changeHandler(event)" selectedIndex="{currentInstance.mainViewStackIndex}" width="100%" height="100%">
+		<s:NavigatorContent>
+			<mediators:LoginViewMediator id="login" skinClass="com.adams.scrum.views.LoginSkinView" 
+										 width="100%" height="100%"/>
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:HomeViewMediator id="home" skinClass="com.adams.scrum.views.HomeSkinView"
+										scrumState="{currentInstance.scrumState}" 
+										width="100%" height="100%"/>
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:ProductConfigViewMediator id="pEdit" skinClass="com.adams.scrum.views.ProductConfigSkinView" 
+										productState="{currentInstance.productState}" 
+										width="100%" height="100%"/>	
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:ProductOpenViewMediator id="pLog" skinClass="com.adams.scrum.views.ProductOpenSkinView"
+									   productOpenState="{currentInstance.productOpenState}"
+									   width="100%" height="100%"/>
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:SprintConfigViewMediator id="sEdit" skinClass="com.adams.scrum.views.SprintConfigSkinView"
+										sprintState="{currentInstance.sprintState}"
+										width="100%" height="100%"/>
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:SprintOpenViewMediator id="sLog" skinClass="com.adams.scrum.views.SprintOpenSkinView"
+										sprintOpenState="{currentInstance.sprintOpenState}"
+									    width="100%" height="100%"/>		
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<mediators:HistoryViewMediator id="hLog" skinClass="com.adams.scrum.views.HistorySkinView"
+									  historyOpenState="{currentInstance.historyOpenState}"
+									  width="100%" height="100%"/>		
+		</s:NavigatorContent>
+	</mx:ViewStack>
+</s:Group>

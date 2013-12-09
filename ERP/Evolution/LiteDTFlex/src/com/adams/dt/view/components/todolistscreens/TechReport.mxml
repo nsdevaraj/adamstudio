@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" showCloseButton="true" 
+	 headerHeight="30" width="800" height="600" verticalGap="5" borderThickness="5"  creationComplete="createDataGrid()"
+    title="Technical Summary"  horizontalAlign="center"  close="{PopUpManager.removePopUp(this)}">
+
+    <mx:Script>
+        <![CDATA[
+        	import com.adams.dt.business.util.StringUtils;
+        	import com.adams.dt.model.vo.Profiles;
+        	import com.adams.dt.model.vo.Workflowstemplates;
+        	import com.adams.dt.business.util.GetVOUtil;
+        	import com.adams.dt.model.vo.TaskStatus;
+        	import com.adams.dt.event.TasksEvent;
+        	import com.universalmind.cairngorm.events.Callbacks;
+        	import mx.rpc.IResponder;
+        	import mx.rpc.events.ResultEvent;
+        	import com.adams.dt.model.vo.Tasks;
+        	import mx.controls.Alert;
+        	import mx.controls.CheckBox;
+        	import com.adams.dt.model.vo.Propertiespj;
+        	import com.adams.dt.business.util.Utils;
+        	import com.adams.dt.view.components.exportGenerator.ExcelGenerator;
+        	import com.adams.dt.view.components.exportGenerator.PdfGenerator;
+        	import com.adams.dt.view.components.exportGenerator.TextGenerator;
+        	import com.adams.dt.view.components.exportGenerator.HtmlGenerator;
+        	import mx.collections.IViewCursor;
+        	import mx.collections.SortField;
+        	import mx.collections.Sort;
+        	import mx.controls.Text;
+        	import mx.controls.TextArea;
+        	import mx.controls.DataGrid;
+        	import mx.controls.Label;
+        	import mx.collections.ArrayCollection;
+        	import mx.managers.PopUpManager;
+        	import com.adams.dt.model.ModelLocator;
+        	import mx.effects.Fade;
+        	[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			 
+		   	private var _exportColl:ArrayCollection;
+		   	private var _projectComments:String;
+		   	[Bindable]
+		   	private var _checkBoxVisible:Boolean;
+		   	[Bindable]
+		   	private var _selectedGrid:Boolean;
+		   	
+		   	[Bindable]
+		   	private var _comments:String;
+		   	private function createDataGrid():void
+		   	{
+		   	 _exportColl = new ArrayCollection(); 
+	   		 for each(var techObj:Object in model.techCollection){
+		   		 var obj:Object = getUniqueItem(techObj.Category);
+		   		 if(obj)
+		   		 {
+		   		 	obj.properties.push( getFieldValue( techObj )  );
+		   		 }else{
+		   		 	obj = {};
+		   		 	obj.properties = new Array();
+		   		 	obj.Category = techObj.Category;
+		   		 	obj.properties.push( getFieldValue( techObj ) );
+		   		 	_exportColl.addItem( obj );
+		   		 }
+	   		 	}
+	   		 	//get the General Properties.....
+		   		var objProp:Object={};
+		   		objProp.Category = "GeneralProperties"
+		   		objProp.properties = new Array();
+		   		objProp.properties= getGeneralProperties();
+		   		_exportColl.addItem( objProp ); 
+		   		_exportColl.refresh();
+		   		sortByCatagories();
+		   		getLastTaskComments()
+		  }
+		  private function getUniqueItem( item:String ):Object
+		  {
+		  	 	for each(var expObj:Object in _exportColl){
+		  	 		if(expObj.Category ==  item )
+		  	 		{
+		  	 			return expObj
+		  	 		}
+		  	 	}
+		  	 	return null;
+		  }
+		  private function getFieldValue(obj:Object):Object
+		  {
+		  	var fieldObj:Object = new Object()
+		  	fieldObj.Field = obj.Field;
+		  	fieldObj.Value = obj.Value;
+		  	return fieldObj
+		  }
+		  private function getLastTaskComments():void
+		  {
+		  	var handler:IResponder = new Callbacks( dynamicLastTasks );
+			var tasksEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_TODO_LASTTASKSCOMMENTS, handler );
+			tasksEvent.lastTaskProjectId = model.currentProjects.projectId;
+			tasksEvent.dispatch();
+		  }
+		  private function dynamicLastTasks( rpcEvent:ResultEvent ):void {
+				var arrc : ArrayCollection = rpcEvent.result as ArrayCollection;
+				_comments = getLastComments( arrc );
+				trace(_comments+" ----->>>>")
+		  }
+		  private function getLastComments(arrc:ArrayCollection):String
+		  {
+			var len:int = arrc.length;
+			var entryComment:String = '';
+			for( var j:int = 0; j < len; j++ ) {
+				if(Tasks( arrc.getItemAt( j ) )){
+					var taskStatus:int = Tasks( arrc.getItemAt( j ) ).taskStatusFK;
+					if( taskStatus != TaskStatus.FINISHED ) {
+						if( Tasks( arrc.getItemAt( j ) ).workflowtemplateFK != null ){
+							var workflowsstemp:Workflowstemplates = GetVOUtil.getWorkflowTemplate(Tasks( arrc.getItemAt( j ) ).wftFK );
+							if((workflowsstemp.taskLabel!="New Message") && (workflowsstemp.taskLabel!="VALIDATION CREA"))
+							{	
+								if(Tasks( arrc.getItemAt( j ) ).previousTask!=null){
+									var tempTask:Tasks = preTaskComment(Tasks( arrc.getItemAt( j ) ).previousTask.taskId,arrc);
+									var prof:Profiles = GetVOUtil.getProfileObject(tempTask.workflowtemplateFK.profileFK);
+									if(tempTask.taskComment) entryComment = tempTask.taskComment.toString();
+									return entryComment;
+								}
+							}
+						}
+					}
+				}
+			}
+			return null;
+		  }
+		  private function preTaskComment(taskId:int,arr:ArrayCollection):Tasks{
+				for each( var item:Tasks in arr ) {
+					if( item.taskId == taskId ) {
+						return item;
+					}
+				}
+				return null;
+			}
+		  private function getGeneralProperties():Array
+		  {
+		  	
+		  	var genArr:Array = ["ean","sap","department","brand","id","name"]
+		  	var retArr:Array = []
+		  	retArr.push(getLanguageObj());
+			  	for (var i:int=0;i<genArr.length;i++)
+		  	{
+		  		var genObj:Object = new Object();
+		  		if(genArr[i]!= 'id' && genArr[i]!= 'name' )
+		  		{
+		  			genObj.Field = Utils.getPropPreset(genArr[i]).fieldLabel;
+		  			genObj.Value = Utils.getPropertyValue(model.currentProjects,genArr[i]);
+		  		}else{
+		  			genObj.Field = (genArr[i]=='id')?'ProjectID':'ProjectName'
+		  			genObj.Value = Utils.getName( model.currentProjects, genArr[i] )
+		  		}
+		  		retArr.push(genObj);
+		  	} 
+		  	return retArr
+		  }
+		  private function getLanguageObj():Object
+		  {
+		  	var langNamearr:Array = ["En","Fr","Sp","Gr","It","Pg","Dt"]
+		  	var langStr:String = " ";
+		  	var otherLang:String= " ";
+		  	if(Utils.getPropertyPj( Utils.getPropPreset( "language_group" ).propertyPresetId ,model.currentProjects.propertiespjSet ) !=null){
+		  		langStr = Utils.getPropertyPj( Utils.getPropPreset( "language_group" ).propertyPresetId ,model.currentProjects.propertiespjSet ).fieldValue;
+		  	}
+		  	if(Utils.getPropertyPj( Utils.getPropPreset( "langues" ).propertyPresetId ,model.currentProjects.propertiespjSet ) !=null){
+		  		otherLang = Utils.getPropertyPj( Utils.getPropPreset( "langues" ).propertyPresetId ,model.currentProjects.propertiespjSet ).fieldValue;
+		  	}
+		  	
+		  	var lanObj:Object = new Object();
+		  	lanObj.Field = "Language";
+		  	lanObj.Value = '';
+		  	 var langArr:Array = [];
+		  	langArr = langStr.split(",")
+		  	for (var j:int=0;j<langArr.length-1;j++)
+		  	{
+		  		if(langArr[j]==1)
+		  		lanObj.Value += langNamearr[j]+",";
+		  	}
+		  	lanObj.Value +=otherLang 
+		  	return lanObj;
+		  }
+		  private function sortByCatagories():void
+		  {
+		  	var sort:Sort = new Sort()
+		  	sort.fields = [new SortField('Category')];
+		  	_exportColl.sort = sort; 
+		  	_exportColl.refresh();
+		  	for each( var exportObj:Object in _exportColl)
+		  	{
+		  		var holderBox:HBox = new HBox()
+		  		gridContainer.addChild(holderBox);
+		  		holderBox.x = 20;
+		  		var _checkBox:CheckBox = new CheckBox();
+		   	 	_checkBox.name = exportObj.Category;
+		   	 	_checkBox.label = exportObj.Category
+		   	 	holderBox.addChild(_checkBox);
+		   	 	_checkBox.addEventListener(MouseEvent.CLICK,checkDataGridSelected);
+		   	 	exportObj.checkBoxSelected = _checkBox;
+		   	 	
+		   	 	var exportDataGrid:DataGrid = new DataGrid();
+		   	 	exportDataGrid.name =  exportObj.Category;
+		   	 	exportDataGrid.dataProvider = exportObj.properties;
+		   	 	var rheight:int = exportDataGrid.dataProvider.length*23+25;		   	
+		   	 	exportDataGrid.height = rheight;
+		   	 	exportDataGrid.percentWidth = 95;
+		   	 	exportDataGrid.x = 20
+		   	 	gridContainer.addChild(exportDataGrid);
+		  	}
+		  }
+		  private function checkDataGridSelected(event:MouseEvent):void
+		  {
+		  	_checkBoxVisible = false;
+		  	for each( var exportObj:Object in _exportColl)
+		  	{
+		  		if( CheckBox( exportObj.checkBoxSelected ).selected ){
+		  			_selectedGrid = true;
+		  			break;
+		  		}
+		  		_selectedGrid = false;
+		  	}
+		  }
+		  private function generatePDF():void
+		  {
+		  	_checkBoxVisible = !_checkBoxVisible;
+		    myMove.end();
+            myMove.yTo=radioBox.y-5; 
+            myMove.play();
+		  }
+		  private function generateExcel():void
+		  {
+		  	_checkBoxVisible = false;
+		  	var generateExcel:ExcelGenerator = new ExcelGenerator();
+		  	generateExcel.createExcel( _exportColl ,projectComments.text.toString() );
+		  }
+ 		  private function generateHtml():void
+ 		  {
+ 		  	_checkBoxVisible = false;
+ 		  	var generateHtml:HtmlGenerator = new HtmlGenerator()
+ 		  	generateHtml.createHtml( _exportColl ,projectComments.text.toString() );
+ 		  }
+ 		  private function generateText():void
+ 		  {
+ 		  	_checkBoxVisible = false;
+ 		  	var generateText:TextGenerator = new TextGenerator();
+ 		  	generateText.createTextFile( _exportColl ,projectComments.text.toString() );
+ 		  }
+ 		  private function exportPdf(event:MouseEvent):void
+ 		  {
+ 		  	var generatePdf:PdfGenerator = new PdfGenerator(event.target.name);
+		  	generatePdf.createPdf( _exportColl , onHtmlTextChange(),taskComments.text.toString() );
+ 		  }
+ 		  private function generateAlertReport():void
+ 		  {
+ 		  	Alert.show("s'il vous plaît sélectionner au moins un pour imprimer");
+ 		  }
+ 		 private function onHtmlTextChange():String{
+ 		 	var projectStr:String=''
+			var htmlVal:XML = new XML('<root>'+model.currentProjects.projectComment+'</root>');
+			var lines:XMLList = new XMLList()
+			lines = htmlVal..TEXTFORMAT 
+			for each(var val:XML in lines){
+				projectComments.htmlText =val 
+				projectComments.validateNow()
+				projectStr+=trimSpace(projectComments.text)+'\n'
+			} 
+			return projectStr;
+		}
+		public function trimSpace(v:String):String{
+			return v.replace(/\s+/g, ' ');
+		} 
+        ]]>
+    </mx:Script>
+    <mx:Move id="myMove" target="{radioBox}"/>
+   	<mx:VBox id="gridContainer" width="95%" top="0" bottom="0"/>
+    <mx:ControlBar  width="100%"  id="ctlBar"  >
+    <mx:VBox width="100%" height="100%" horizontalAlign="right" >
+	     <mx:HBox  id="radioBox" styleName="bgBorderContainer" showEffect="Fade" hideEffect="Fade"
+		 		 width="200" right="0" bottom="0"  visible="{_checkBoxVisible}">
+			 			<mx:RadioButton id="Portrait" label="Portrait" click="exportPdf(event)" left="0"/>
+						<mx:RadioButton id="Landscape" label="Landscape" click="exportPdf(event)" right="0"/>
+			</mx:HBox>
+	    <mx:HBox verticalCenter="0" right="0"
+	    	paddingBottom="3" paddingTop="3" paddingLeft="5" paddingRight="5">
+			   <mx:Label text="Save file as :" />  
+			   <mx:Button id="_pdfButton" styleName="Innerpdf" buttonMode="true" name="pdf" click="(_selectedGrid)?generatePDF():generateAlertReport()"/>
+	           <mx:Button id="_xlsButton" styleName="xlSheet" buttonMode="true" name="xls" click="(_selectedGrid)?generateExcel():generateAlertReport()"
+	        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+	           <mx:Button id="_txtButton" styleName="htmlIcon" buttonMode="true" name="txt" click="(_selectedGrid)?generateHtml():generateAlertReport()"
+	        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+	           <mx:Button id="_textButton" styleName="textIcon" buttonMode="true" name="text" click="(_selectedGrid)?generateText():generateAlertReport()"
+	        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+		</mx:HBox>
+	</mx:VBox>
+	<mx:Label id="taskComments" htmlText="{_comments}" visible="false" includeInLayout="false"/>
+	<!--<mx:Label id="projectComments" htmlText="{model.currentProjects.projectComment}" visible="false" includeInLayout="false"/>-->
+	<mx:TextArea id="textComment" htmlText="{model.currentProjects.projectComment}"  visible="false" />
+	<mx:Label id="projectComments"  width="1" height="1"  visible="false" />
+	</mx:ControlBar>
+  
+</mx:TitleWindow>  

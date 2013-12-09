@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*" width="100%" height="50" top="0" xmlns:mx="library://ns.adobe.com/flex/mx">	
+	<s:HGroup verticalAlign="middle" paddingLeft="25" paddingRight="15" width="100%">
+		<s:BorderContainer width="43" height="50" backgroundColor="#124066" borderVisible="false">
+			<s:Image source="@Embed('assets/images/logo.png')" verticalCenter="0" horizontalCenter="0"/>	
+		</s:BorderContainer>
+		<s:ToggleButton id="todoBtn" styleName="todoToggle" toolTip="To Do" selected="true" enabled="false" buttonMode="false"/>
+		<s:ToggleButton id="newProjectBtn" styleName="newProjectToggle" toolTip="New Project" includeInLayout="{ newProjectBtn.visible }" buttonMode="true"/>
+		<s:ToggleButton id="dashboardBtn" styleName="dashboardToggle" toolTip="Dashboard" buttonMode="true"/>
+		<s:Spacer width="25" />
+		<s:Label id="headerLbl" styleName="headerLabel" fontSize="30" text="ToDo"/>
+		<s:Spacer width="100%" /> 
+		<s:VGroup>
+			<s:Label id="userNameText" textAlign="right" width="100%" fontSize="16" styleName="headerLabel"/>
+			<s:Label id="companyNameText" textAlign="right" width="100%"/>	
+		</s:VGroup>
+		<s:Image id="userPic" width="30" height="35"/>
+		<s:Spacer width="25" />
+		<s:BorderContainer width="98" height="28">
+			<s:layout><s:HorizontalLayout gap="3" horizontalAlign="center" verticalAlign="middle"/></s:layout>
+			<components:NativeButton id="fullScreenBtn"  styleName="fullScreenBtn" buttonMode="true"/>
+			<components:NativeButton id="refreshBtn" styleName="refreshBtn" buttonMode="true"/>
+			<components:NativeButton id="settingsBtn" styleName="settingsBtn" buttonMode="true"/>
+			<components:NativeButton id="logoutBtn" styleName="logoutBtn" buttonMode="true"/>
+		</s:BorderContainer>
+	</s:HGroup>
+</s:Skin>

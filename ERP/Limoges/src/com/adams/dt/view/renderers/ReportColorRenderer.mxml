@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" width="100%"
+					xmlns:mx="library://ns.adobe.com/flex/mx" minHeight="30" clipAndEnableScrolling="true">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dt.view.components.ReportGrid;
+			
+			import spark.utils.TextFlowUtil;
+			
+			private var inputText:String;
+			private var inputTextSameCase:String;
+			private var prevSearchWord:String='';
+			override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value;
+					
+					if( column.dataField == 'bat_date' ) {
+						if( value[ column.dataField ] == 'NULL' ) {
+							inputText = value[ 'clt_date' ];
+							property.setStyle( 'color', 0xFFFF00 );
+						}
+						else {
+							property.setStyle( 'color', 0xBDBDBD );
+							inputText = value[ column.dataField ];
+						}
+					}
+					else {
+						property.setStyle( 'color', 0xBDBDBD ); 
+						inputText = value[ column.dataField ];
+					}
+					
+					if( !inputText || inputText=='' ) {
+						property.text ='';
+						return;
+					}
+					
+					property.text = inputText;
+					inputTextSameCase = inputText;
+					
+					if(inputText.indexOf("</span>")!=-1){
+						var txtXML:XML = new XML(inputText);
+						property.textFlow = TextFlowUtil.importFromString(inputText);
+						inputText = txtXML.children();
+					} 
+					inputText = inputText.toUpperCase();
+				}
+			}
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				if( data && property && inputText ) {
+					if( ( ReportGrid( owner ).selectedColumn == 'All' )  || ( ReportGrid( owner ).selectedColumn == column.headerText ) ) {
+						var specificText:String = ReportGrid( owner ).specificText.toUpperCase();
+						if( specificText && specificText != '' && inputText && inputText != '' ) {
+							var selectionBeginIndex:int = inputText.toUpperCase().indexOf( specificText );
+							if( selectionBeginIndex != -1 ) {	
+								highlightItem( specificText);
+							} 
+						}
+						else{
+							removeHighlight();
+						}
+					}
+				}
+				super.updateDisplayList( unscaledWidth, unscaledHeight );
+			}	 
+			
+			protected function highlightItem(wordHilight:String):void
+			{
+				if(wordHilight=='' || property.text=='')return;
+				removeHighlight();
+				var str:String =inputText.split(wordHilight).join("<span color='#FF0000'>"+wordHilight+"</span>");
+				property.textFlow = TextFlowUtil.importFromString(str);
+				prevSearchWord = wordHilight;
+			}
+			
+			protected function removeHighlight():void
+			{
+				if(prevSearchWord=='' || property.text=='')return;
+				property.textFlow = TextFlowUtil.importFromString(inputTextSameCase);
+			} 
+		]]>
+	</fx:Script>
+	<s:RichText id="property" verticalAlign="middle" width="100%" height="100%"
+				maxDisplayedLines="1" showTruncationTip="true" paddingLeft="5"/>
+</s:GridItemRenderer>

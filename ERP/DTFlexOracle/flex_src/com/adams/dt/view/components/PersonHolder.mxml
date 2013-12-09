@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  horizontalScrollPolicy="off" 
+	verticalScrollPolicy="off" width="100%" height="100"  styleName="bgBorderContainer"   
+	  dropShadowEnabled="true" >
+	<mx:Script>
+		<![CDATA[
+			private function checkIcon(evet:Event) :void {
+				info_Icon.visible = true
+			}
+			private function removeIcon(evet:Event) :void {
+				info_Icon.visible = false
+			}
+		]]>  
+	</mx:Script>
+
+	<mx:Glow id="glowImage" duration="50" alphaFrom="0" alphaTo=".7" blurXFrom="0.0" blurXTo="10.0" 
+            blurYFrom="0.0" blurYTo="10.0"  strength="1" color="0xFFFFFF" target="{personImage}"/>
+    	<mx:Glow id="unglowImage" duration="50" alphaFrom=".7" alphaTo="0" blurXFrom="10.0" blurXTo="0.0" 
+    		blurYFrom="10.0" blurYTo="0.0"  strength="1" color="0xFFFFFF" target="{personImage}"/>
+		<mx:Label id="FName"  fontSize="12" left="10" top="5"/>
+		<mx:Label id="LName"  fontSize="12" left="10" top="{FName.y+FName.height}" />
+		<mx:Label id="Phone"   fontSize="11" left="10" top="{LName.y+LName.height}"/>
+		<mx:Label id="EmailID"  selectable="false"   fontSize="10" left="10"
+			top="{Phone.y+Phone.height}" maxWidth="100"/>	
+		<mx:Canvas width="50" height="50" right="10" verticalCenter="0" rollOver="glowImage.play(),checkIcon(event)"
+			 rollOut="unglowImage.play(),removeIcon(event)">
+			<mx:Image id="personImage" width="50" maintainAspectRatio="false" height="50" />
+	  		<mx:Image id="info_Icon" width="15" height="15" right="3"  visible="false" verticalCenter="10" 
+	  		source="@Embed('assets/swf/General_Assets.swf#EditProfileIcon')" />
+		</mx:Canvas>	
+		
+</mx:Canvas>

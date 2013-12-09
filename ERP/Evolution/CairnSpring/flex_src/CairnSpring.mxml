@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	xmlns:view="com.adams.dt.view.*"
+	xmlns:control="com.adams.dt.control.*"
+	xmlns:service="com.adams.dt.business.*"
+	preinitialize="initChannel()">
+	<mx:Script>
+		<![CDATA[
+			import mx.resources.ResourceBundle;
+			import mx.resources.ResourceManager;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[ResourceBundle("Server")] 
+	 		private static var rb : ResourceBundle; 
+			public static const server:String = rb.getString("server");
+			private function initChannel():void{
+				model.serverLocation = server;
+				var langchannel:AMFChannel = new AMFChannel("my-polling-amf",  model.serverLocation+"spring/messagebroker/amfpolling");
+	   			var channelSet:ChannelSet = new ChannelSet();
+	   			channelSet.addChannel(langchannel);
+	   			model.langChannelSet = channelSet;
+	   			
+	   			var channel:AMFChannel = new AMFChannel("my-amf", model.serverLocation+"spring/messagebroker/amf");
+ 				var securechannelSet:ChannelSet = new ChannelSet();
+ 				securechannelSet.addChannel(channel);
+				model.channelSet = securechannelSet;
+	   		}
+		]]>
+	</mx:Script>
+	<service:Services/>
+	<control:DTController/>
+	<mx:ViewStack selectedIndex="{int(model.loginStatus)}" width="100%" height="100%">
+		<view:DisplayForm/>
+		<view:LoggedIn/>	
+	</mx:ViewStack>
+</mx:Application>

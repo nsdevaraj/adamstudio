@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="library://ns.adobe.com/flex/mx" 
+	xmlns:fx ="http://ns.adobe.com/mxml/2009" styleName="slideItem">
+	<mx:VBox horizontalAlign="center"  width="300">
+		<mx:Label text="What Do We Do?" color="#8a8a8a" fontSize="13" fontWeight="bold"/>
+		<mx:Image id="img1" source="{ImageResourceExample.AnimationImg1}" />
+	</mx:VBox>
+	<mx:Canvas  width="50%" height="150" >
+		
+	<mx:TextArea editable="false" selectable="false" borderStyle="none" 
+		  color="#7a7a7a" fontSize="12" width="100%" height="100%">
+				<mx:htmlText>
+					<![CDATA[<br/><br/><p align="justify">Most online applications can take advantage of the appropriate use of the RIA technologies.</p><br/>]]>
+				</mx:htmlText>
+	</mx:TextArea>
+	<mx:LinkButton label="more..." color="#7a7a7a"  left="130" top="110"/>
+	
+	</mx:Canvas>
+</mx:HBox>

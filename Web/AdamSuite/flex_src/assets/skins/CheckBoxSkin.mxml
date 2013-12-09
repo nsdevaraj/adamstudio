@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+ADOBE SYSTEMS INCORPORATED
+Copyright 2008 Adobe Systems Incorporated
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file
+in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for the Spark CheckBox component.  
+
+@see spark.components.CheckBox
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 1.5
+@productversion Flex 4
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabledStates="0.5">
+	
+	<fx:Metadata>
+		<![CDATA[ 
+		/** 
+		* @copy spark.skins.spark.ApplicationSkin#hostComponent
+		*/
+		[HostComponent("spark.components.CheckBox")]
+		]]>
+	</fx:Metadata> 
+	
+	<fx:Script fb:purpose="styling">
+		/* Define the skin elements that should not be colorized. 
+		For button, the graphics are colorized but the label is not. */
+		static private const exclusions:Array = ["labelDisplay", "check"];
+		
+		[Bindable]
+		[Embed("assets/images/check_red.png")]
+		public var checkRed:Class;
+		[Bindable]
+		[Embed("assets/images/check_green.png")]
+		public var checkGreen:Class;
+		
+		/** 
+		 * @private 
+		 */     
+		override public function get colorizeExclusions():Array {return exclusions;}
+		
+		/* Define the symbol fill items that should be colored by the "symbolColor" style. */
+		static private const symbols:Array = ["checkMarkFill"];
+		
+		/**
+		 * @private 
+		 */
+		override public function get symbolItems():Array {return symbols};
+		
+		/**
+		 * @private
+		 */
+		override protected function initializationComplete():void
+		{
+			useChromeColor = true;
+			super.initializationComplete();
+		}
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void {
+			var disableColor:uint = getStyle("wrongAnswer");
+			
+			if (disableColor == uint(0xff0000)){
+				iconImg.source = checkRed;
+			}else if(disableColor == uint(0x00ff00)){
+				iconImg.source = checkGreen
+			}
+			
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+		}
+	</fx:Script>
+	
+	<fx:Script>
+		<![CDATA[
+			/** 
+			 * @private 
+			 */     
+			private static const focusExclusions:Array = ["labelDisplay"];
+			
+			/**
+			 * @private
+			 */
+			override public function get focusSkinExclusions():Array { return focusExclusions;};
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" stateGroups="overStates" />
+		<s:State name="down" stateGroups="downStates" />
+		<s:State name="disabled" stateGroups="disabledStates" />
+		<s:State name="upAndSelected" stateGroups="selectedStates" />
+		<s:State name="overAndSelected" stateGroups="overStates, selectedStates" />
+		<s:State name="downAndSelected" stateGroups="downStates, selectedStates" />
+		<s:State name="disabledAndSelected" stateGroups="disabledStates, selectedStates" />
+	</s:states>
+	
+	 
+		<!-- checkmark -->
+		<!--- The checkmark in the box for this skin. To create a custom check mark, create a custom skin class. -->
+		<s:Path visible="false" left="2" top="0" includeIn="selectedStates" id="check" itemCreationPolicy="immediate"
+				data="M 9.2 0.1 L 4.05 6.55 L 3.15 5.0 L 0.05 5.0 L 4.6 9.7 L 12.05 0.1 L 9.2 0.1">
+			<s:fill>
+				<!--- 
+				@private 
+				The solid color fill for the CheckBox's checkmark. The default alpha is .9, and the default fill color is 0x000000. 
+				-->
+				<s:SolidColor id="checkMarkFill" color="0" alpha="0.8" />
+			</s:fill>
+		</s:Path>
+	<s:BitmapImage id="iconImg" source.up="@Embed('assets/images/check_up.png')" 
+				   source.over="@Embed('assets/images/check_up.png')" alpha.over=".5"
+				   source.down="@Embed('assets/images/check_up.png')" 
+				   source.disabled="@Embed('assets/images/check_up.png')"
+				   
+				   source.upAndSelected="@Embed('assets/images/check_selected.png')"
+				   source.overAndSelected="@Embed('assets/images/check_selected.png')" alpha.overAndSelected=".5"
+				   source.downAndSelected="@Embed('assets/images/check_selected.png')" 
+				   source.disabledAndSelected="@Embed('assets/images/check_selected.png')" 
+				   
+				   />
+	<!-- Label -->
+	<!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay -->
+	<s:Label id="labelDisplay"
+			 textAlign="start" styleName="optionText"
+			 verticalAlign="middle"
+			 maxDisplayedLines="1"
+			 left="18" right="0" top="3" bottom="3" verticalCenter="2" color.disabledStates="{hostComponent.getStyle('wrongAnswer')}"/>
+	
+</s:SparkSkin>

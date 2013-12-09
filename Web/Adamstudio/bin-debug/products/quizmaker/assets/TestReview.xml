@@ -1,0 +1,507 @@
+<?xml version='1.0' encoding='UTF-8'?>
+    <node label="root">
+      <testdrive></testdrive>
+      <testid>
+        186984
+      </testid>
+      <status>
+        1
+      </status>
+      <loginid>
+        1
+      </loginid>
+      <totalquestions>
+        5
+      </totalquestions>
+      <totalquestions>
+        5
+      </totalquestions>
+      <totaltime>
+        360
+      </totaltime>
+      <remainingtime>
+        360
+      </remainingtime>
+      <question num="1">
+        <used>
+          true
+        </used>
+        <qid>
+          3231
+        </qid>
+        <marked>
+          1
+        </marked>
+        <annotation>
+          1
+        </annotation>
+        <useranswer>
+          1
+        </useranswer>
+        <corranswer>
+          1
+        </corranswer>
+        <stem>
+          <![CDATA[
+            A 55-year-old woman presents with a painless mass at the angle of the mandible 1 week after undergoing a dental procedure. On physical examination, her physician notes that the mass is draining pus and yellowish granules. A stained sample from the abscess shows branching gram-positive rods. She is treated with penicillin.
+          ]]>
+        </stem>
+        <image></image>
+        <imagecomment>
+          <![CDATA[]]>
+        </imagecomment>
+        <leadin>
+          <![CDATA[
+            What was the most likely causative organism?
+          ]]>
+        </leadin>
+        <fact1>
+          2007-143-4.jpg
+        </fact1>
+        <fact2></fact2>
+        <fact3></fact3>
+        <numdistractors>
+          5
+        </numdistractors>
+        <dist1>
+          <![CDATA[
+            <I>Actinomyces israeli</I>
+          ]]>
+        </dist1>
+        <expl1>
+          <![CDATA[
+            <b> 79% chose this. </b><i>Actinomyces israeli</i> is a microaerophilic organism that causes oral and facial abscesses, with characteristic "sulfur granules" that may drain through sinus tracts in skin.
+          ]]>
+        </expl1>
+        <dist2>
+          <![CDATA[
+            <I>Candida albicans</I>
+          ]]>
+        </dist2>
+        <expl2>
+          <![CDATA[
+            <b> 0% chose this. </b><i>Actinomyces'</i> long branched filaments can resemble fungi, such as <i>Candida albicans</i>. The oral lesions caused by <i>Candida</i>, known as thrush, usually occur on the mucous membranes such as the throat and tongue in immunocompromised patients and appear white. It would be an unlikely cause of an oral abscess in a patient with a healthy immune system.
+          ]]>
+        </expl2>
+        <dist3>
+          <![CDATA[
+            <I>Clostridium perfringens</I>
+          ]]>
+        </dist3>
+        <expl3>
+          <![CDATA[
+            <b> 3% chose this. </b><i>Clostridium perfringens</i> is also a gram-positive anaerobic rod; however, it typically causes food poisoning from meat dishes or myonecrosis (gas gangrene), not dental abscesses.
+          ]]>
+        </expl3>
+        <dist4>
+          <![CDATA[
+            <I>Nocardia asteroides</I>
+          ]]>
+        </dist4>
+        <expl4>
+          <![CDATA[
+            <b> 4% chose this. </b>Like <i>Actinomyces</i>, <i>Nocardia</i> is a filamentous, beaded, gram-positive bacterium. Unlike <i>Actinomyces</i>, <i>Nocardia</i> is not considered normal flora. It causes pulmonary infections in immunocompromised patients.
+          ]]>
+        </expl4>
+        <dist5>
+          <![CDATA[
+            <i>Staphylococcus epidermidis</I>
+          ]]>
+        </dist5>
+        <expl5>
+          <![CDATA[
+            <b> 4% chose this. </b><i>Staphylococcus epidermidis</i> is a gram-positive clustering coccus, not a rod. It is part of the normal skin flora and usually pathologic only in immunocompromised patients. <b><br/><br/>10% did not answer the question. </b>
+          ]]>
+        </expl5>
+      </question>
+      <question num="2">
+        <used>
+          true
+        </used>
+        <qid>
+          1679
+        </qid>
+        <marked>
+          -1
+        </marked>
+        <annotation>
+          0
+        </annotation>
+        <useranswer>
+          2
+        </useranswer>
+        <corranswer>
+          5
+        </corranswer>
+        <stem>
+          <![CDATA[
+            The patient whose smear is seen here has a lifelong history of episodes of pain involving the back and chest. These episodes often begin when the patient becomes dehydrated or hypoxic.
+          ]]>
+        </stem>
+        <image>
+          images/Step_1_060920/QID1679.jpg
+        </image>
+        <imagecomment>
+          <![CDATA[
+            Image courtesy of Images.MD.
+          ]]>
+        </imagecomment>
+        <leadin>
+          <![CDATA[
+            What is the genetic abnormality associated with this condition?
+          ]]>
+        </leadin>
+        <fact1>
+          2007-309-2.jpg
+        </fact1>
+        <fact2>
+          2007-308-1.jpg
+        </fact2>
+        <fact3></fact3>
+        <numdistractors>
+          5
+        </numdistractors>
+        <dist1>
+          <![CDATA[
+            Deletion of glutamic acid
+          ]]>
+        </dist1>
+        <expl1>
+          <![CDATA[
+            <b> 1% chose this. </b>Glutamic acid is substituted, not deleted, by valine.
+          ]]>
+        </expl1>
+        <dist2>
+          <![CDATA[
+            Frame-shift mutation
+          ]]>
+        </dist2>
+        <expl2>
+          <![CDATA[
+            <b> 1% chose this. </b>Hemoglobin S involves a substitution, not a deletion or an insertion, of a single amino acid; therefore no frame-shift occurs.
+          ]]>
+        </expl2>
+        <dist3>
+          <![CDATA[
+            Loss of promoter region
+          ]]>
+        </dist3>
+        <expl3>
+          <![CDATA[
+            <b> 0% chose this. </b>The sickle hemoglobin is produced; the promoter region remains intact.
+          ]]>
+        </expl3>
+        <dist4>
+          <![CDATA[
+            Substitution of lysine for glutamic acid
+          ]]>
+        </dist4>
+        <expl4>
+          <![CDATA[
+            <b> 4% chose this. </b>This is hemoglobin C (HbC), which involves a substitution of lysine for glutamic acid in the sixth position of the &#946;-globin chain. HbC occurs in individuals with relatives from western Africa, Italy, Greece, Turkey, and the Middle East. Association of HbC with the erythrocyte membrane causes red cell dehydration and a resulting increase in MCHC. This leads to a shortened red cell survival in HbC homozygotes and sickling complications in compound heterozygotes for HbS and HbC. Individuals with HbC disease have mild hemolytic anemia, microcytosis, and target cell formation. Episodes of joint and abdominal pain are attributed to HbC disease; however, they are much less common than in sickle cell disease. <b><br/><br/>21% did not answer the question. </b>
+          ]]>
+        </expl4>
+        <dist5>
+          <![CDATA[
+            Substitution of valine for glutamic acid
+          ]]>
+        </dist5>
+        <expl5>
+          <![CDATA[
+            <b> 72% chose this. </b>The patient has sickle cell anemia, a disease of autosomal recessive inheritance. Hemoglobin S (HbS) involves a substitution of valine for glutamic acid in the sixth position of the &#946;-globin chain. HbS occurs most frequently in populations previously exposed to falciparum malaria<b> </b>(ie, in Africa, India, the Mediterranean, and Saudi Arabia). HbS crystallizes with deoxygenation, causing distortion of the erythrocyte, and clinical problems result from microvascular occlusive events. Sickling is facilitated by increased temperature (fever), decreased pH (acidosis), and high mean corpuscular hemoglobin concentration (dehydration).
+          ]]>
+        </expl5>
+      </question>
+      <question num="3">
+        <used>
+          true
+        </used>
+        <qid>
+          2271
+        </qid>
+        <marked>
+          -1
+        </marked>
+        <annotation>
+          0
+        </annotation>
+        <useranswer>
+          2
+        </useranswer>
+        <corranswer>
+          3
+        </corranswer>
+        <stem>
+          <![CDATA[
+            A 32-year-old man presents to his primary care physician with a fever of 38.6 C (100.5 F), night sweats, and a weight loss of 4.5 kg (10 lb) over the last 4 months. A CT scan demonstrates the presence of mediastinal lymphadenopathy in multiple contiguous nodes. Biopsy of an enlarged node demonstrates the presence of large, binucleate cells with large nucleoli and many reactive lymphocytes.
+          ]]>
+        </stem>
+        <image></image>
+        <imagecomment>
+          <![CDATA[]]>
+        </imagecomment>
+        <leadin>
+          <![CDATA[
+            Which of the following is the most likely diagnosis?
+          ]]>
+        </leadin>
+        <fact1>
+          2006-301-3.jpg
+        </fact1>
+        <fact2>
+          2006-301-2.jpg
+        </fact2>
+        <fact3>
+          2006-302-1.jpg
+        </fact3>
+        <numdistractors>
+          6
+        </numdistractors>
+        <dist1>
+          <![CDATA[
+            Burkitt's lymphoma
+          ]]>
+        </dist1>
+        <expl1>
+          <![CDATA[
+            <b> 3% chose this. </b>Burkitt's lymphoma typically presents with palpable masses either in the mandible (most frequently in the endemic African subtype) or in the abdomen (nonendemic Burkitt's lymphoma). Histologically, it is characterized by medium-sized, deeply basophilic lymphoid cells with several nucleoli, distinct lipid vacuoles, and a high mitotic index. There are frequently light-colored benign macrophages interspersed in the basophilic background of closely packed lymphoma cells, creating a characteristic starry-sky pattern.
+          ]]>
+        </expl1>
+        <dist2>
+          <![CDATA[
+            Chronic myelogenous leukemia
+          ]]>
+        </dist2>
+        <expl2>
+          <![CDATA[
+            <b> 1% chose this. </b>Chronic myelogenous leukemia (CML) has an insidious onset of mild to moderate anemia, weakness, easy fatigability, weight loss, splenomegaly, and anorexia. CML is characterized by a bone marrow biopsy with hypercellularity and increased differentiated granulocytic precursors. Peripheral blood may show increased neutrophils, metamyelocytes and myelocytes, and few blasts. The pathognomonic feature in over 90% of CML cases is the presence of the Philadelphia chromosome, a (9:22) translocation resulting in the bcr-abl fusion gene.
+          ]]>
+        </expl2>
+        <dist3>
+          <![CDATA[
+            Hodgkin's lymphoma
+          ]]>
+        </dist3>
+        <expl3>
+          <![CDATA[
+            <b> 83% chose this. </b>The characteristic B symptoms of Hodgkin's lymphoma are night sweats, fever, and weight loss. Mediastinal lymphadenopathy is also associated with this condition. The large binucleate cells with large "owl-eye" nucleoli described in the question are Reed-Sternberg cells, which are required for a pathologic diagnosis of Hodgkin's disease.
+          ]]>
+        </expl3>
+        <dist4>
+          <![CDATA[
+            Non-Hodgkin's lymphoma
+          ]]>
+        </dist4>
+        <expl4>
+          <![CDATA[
+            <b> 4% chose this. </b>Non-Hodgkin's lymphoma presents less frequently with B symptoms. Lymphadenopathy is noncontiguous and mediastinal involvement is rare. Reed-Sternberg cells are not found on pathology.
+          ]]>
+        </expl4>
+        <dist5>
+          <![CDATA[
+            Sarcoidosis
+          ]]>
+        </dist5>
+        <expl5>
+          <![CDATA[
+            <b> 2% chose this. </b>Sarcoidosis has a variety of presentations but is characterized by bilateral hilar lymphadenopathy, respiratory abnormalities, and constitutional symptoms and can also include skin lesions, splenomegaly, or hepatomegaly. Histologically, sarcoidosis is characterized by noncaseating granulomas with tightly clustered epithelioid cells and multinucleated giant cells.
+          ]]>
+        </expl5>
+        <dist6>
+          <![CDATA[
+            Seminoma
+          ]]>
+        </dist6>
+        <expl6>
+          <![CDATA[
+            <b> 0% chose this. </b>Seminoma is a type of testicular cancer. It typically presents with swelling or palpable enlargement of the testicles and generally metastasizes to lymph nodes (particularly the retroperitoneal para-aortic nodes-remember that the testes start in the abdomen and descend during fetal development, and their lymph drainage reflects their anatomic origin) and later to lungs, liver, brain, and bones. Histologically, seminoma is characterized by large round cells with a distinct cell membrane, clear cytoplasm, and a large central nucleus with one or two prominent nucleoli; seminomas tend to have a lobulated organization.<b><br/><br/>7% did not answer the question. </b>
+          ]]>
+        </expl6>
+      </question>
+      <question num="4">
+        <used>
+          true
+        </used>
+        <qid>
+          1012
+        </qid>
+        <marked>
+          -1
+        </marked>
+        <annotation>
+          0
+        </annotation>
+        <useranswer>
+          2
+        </useranswer>
+        <corranswer>
+          5
+        </corranswer>
+        <stem>
+          <![CDATA[
+            A 63-year-old African-American woman with type 2 diabetes mellitus visits her physician because of chest pain on exertion. She smokes two packs of cigarettes a day. Physical examination shows a blood pressure of 155/105 mm Hg and a heart rate of 70/min. Blood tests reveal an LDL cholesterol level of 200 mg/dL and an HDL cholesterol level of 36 mg/dL. Her physician prescribes a popular drug that inhibits the rate-limiting step of molecules produced by the liver that have been implicated in the pathogenesis of coronary artery disease.
+          ]]>
+        </stem>
+        <image></image>
+        <imagecomment>
+          <![CDATA[]]>
+        </imagecomment>
+        <leadin>
+          <![CDATA[
+            Which of the following is the most common serious side effect associated with this medication?
+          ]]>
+        </leadin>
+        <fact1></fact1>
+        <fact2></fact2>
+        <fact3></fact3>
+        <numdistractors>
+          5
+        </numdistractors>
+        <dist1>
+          <![CDATA[
+            Constipation
+          ]]>
+        </dist1>
+        <expl1>
+          <![CDATA[
+            <b> 3% chose this. </b>Constipation is a side effect of bile acid sequestrants, which decrease the reabsorption of bile salts, thus reducing the levels of LDL cholesterol in the plasma.
+          ]]>
+        </expl1>
+        <dist2>
+          <![CDATA[
+            Diarrhea
+          ]]>
+        </dist2>
+        <expl2>
+          <![CDATA[
+            <b> 4% chose this. </b>Diarrhea is another adverse effect that is associated with HMG-CoA reductase inhibitors, but it is not as serious as myopathy.
+          ]]>
+        </expl2>
+        <dist3>
+          <![CDATA[
+            Flushing of the skin
+          ]]>
+        </dist3>
+        <expl3>
+          <![CDATA[
+            <b> 9% chose this. </b>Flushing of the skin is an adverse effect of nicotinic acid, which inhibits VLDL synthesis in hepatocytes.
+          ]]>
+        </expl3>
+        <dist4>
+          <![CDATA[
+            Gallstones
+          ]]>
+        </dist4>
+        <expl4>
+          <![CDATA[
+            <b> 6% chose this. </b>Gallstones are a side effect of gemfibrozil, which activates lipoprotein lipases to catabolize VLDL and IDL cholesterol.<b><br/><br/>8% did not answer the question. </b>
+          ]]>
+        </expl4>
+        <dist5>
+          <![CDATA[
+            Myopathy
+          ]]>
+        </dist5>
+        <expl5>
+          <![CDATA[
+            <b> 70% chose this. </b>Myopathy can occur with high doses of 5-hydroxy-3-methylglutaryl coenzyme A (HMG-CoA) reductase inhibitors. The occurrence of this side effect must be monitored when these drugs are used; they are also known as statins. When given in combination with gemfibrozil, a lipid lowering fibrate drug, the risk of myositis, myopathy, and rhabdomyolysis increases. HMG-CoA reductase inhibitors may also cause a reversible increase in liver transaminase levels.
+          ]]>
+        </expl5>
+      </question>
+      <question num="5">
+        <used>
+          true
+        </used>
+        <qid>
+          4172
+        </qid>
+        <marked>
+          -1
+        </marked>
+        <annotation>
+          0
+        </annotation>
+        <useranswer>
+          0
+        </useranswer>
+        <corranswer>
+          3
+        </corranswer>
+        <stem>
+          <![CDATA[
+            A 30-year-old woman is brought to the emergency department 4 hours after being elbowed in the left side during a pick-up basketball game. She says she was able to finish the game, but the pain became substantially worse afterward. She describes the pain as sharp and localized to the left flank region. It does not radiate, does not improve with any positional changes, and is exquisitely sensitive to touch. She denies nausea, vomiting, and lightheadedness. At her last doctor's visit, which was 2 years ago, she was told her blood pressure was slightly elevated, but she never followed up. Otherwise, she has no medical problems. On examination she is a well-developed young woman in considerable pain. She is afebrile, her blood pressure is 150/85 mm Hg, pulse is 105/min, and respiratory rate is 25/min. She has a circular bruise that is 10 cm (4 in) in diameter and considerably swollen below the lower border of her left rib cage posterior to the midaxillary line. A limited abdominal examination is performed because of pain on palpation, and reveals a left flank mass and no hepatosplenomegaly. An abdominal CT scan is shown in the image.
+          ]]>
+        </stem>
+        <image>
+          images/Step_1_070404/QID4172.jpg
+        </image>
+        <imagecomment>
+          <![CDATA[
+            Image courtesy of Images.MD
+          ]]>
+        </imagecomment>
+        <leadin>
+          <![CDATA[
+            What is the most likely diagnosis?
+          ]]>
+        </leadin>
+        <fact1>
+          2007-116-1.jpg
+        </fact1>
+        <fact2></fact2>
+        <fact3></fact3>
+        <numdistractors>
+          5
+        </numdistractors>
+        <dist1>
+          <![CDATA[
+            Acute pyelonephritis
+          ]]>
+        </dist1>
+        <expl1>
+          <![CDATA[
+            <b> 2% chose this. </b>Acute pyelonephritis can cause acute, sharp pain in the flank region and occurs more commonly in a patient with autosomal dominant polycystic kidney disease. However, there are no signs of infection, such as dysuria or hematuria. The onset shortly after trauma to the area makes this diagnosis less likely.
+          ]]>
+        </expl1>
+        <dist2>
+          <![CDATA[
+            Fractured rib
+          ]]>
+        </dist2>
+        <expl2>
+          <![CDATA[
+            <b> 4% chose this. </b>Although a rib fracture can easily result from being elbowed in the side, this patient's bruise is below her rib cage. In addition, she would have likely suffered from immediate pain and would have had difficulty continuing the game.
+          ]]>
+        </expl2>
+        <dist3>
+          <![CDATA[
+            Hemorrhage into a renal cyst
+          ]]>
+        </dist3>
+        <expl3>
+          <![CDATA[
+            <b> 69% chose this. </b>This patient's history of hypertension at a young age and the results of her CT scan suggest a diagnosis of autosomal dominant polycystic kidney disease (ADPKD). Her CT scan demonstrates bilateral polycystic kidneys, but the left kidney appears to be much larger and more affected. ADPKD is a multisystemic disorder marked by the formation and progressive enlargement of cysts in the kidneys and often other organs, including the liver, pancreas, and spleen. Most affected families (85%-90%) have a mutation in the PKD1 gene on chromosome 16, whereas some have a mutation in the PKD2 gene on chromosome 4. Cysts may be detectable in childhood or even in utero, but clinical features are often delayed until the third or fourth decade of life. The main feature is bilateral cystic dilation of renal tubules that leads to progressive renal failure and possibly end-stage renal disease. Patients often initially complain of a persistent, dull pain in the abdomen, flank, or back, which is believed to reflect either capsular stretching or traction on the renal pedicle. Acute pain suggests a complication such as hemorrhage into a cyst, cystic torsion, infection of a cyst, or obstruction with a stone. Hypertension is a common early manifestation and is seen in 50% to 75% of patients. In addition, urinary tract infections, hematuria, concentrating defects, and nephrolithiasis occur more commonly in patients with ADPKD. The main extrarenal manifestations include cerebral aneurysms, hepatic cysts, cardiac valvular disease, colonic diverticula, and abdominal wall and inguinal hernias. In this patient with ADPKD, the history of trauma to the area of the enlarged and polycystic kidney followed by acute pain suggests hemorrhage into a cyst.
+          ]]>
+        </expl3>
+        <dist4>
+          <![CDATA[
+            Ovarian torsion
+          ]]>
+        </dist4>
+        <expl4>
+          <![CDATA[
+            <b> 0% chose this. </b>Ovarian torsion usually presents with acute onset of lower abdominal pain combined with nausea and vomiting. Flank pain may occur but would be rare in this condition in the absence of lower abdominal pain. The CT findings and history suggest an alternate diagnosis.
+          ]]>
+        </expl4>
+        <dist5>
+          <![CDATA[
+            Ruptured spleen
+          ]]>
+        </dist5>
+        <expl5>
+          <![CDATA[
+            <b> 13% chose this. </b>A ruptured spleen is also possible from significant trauma, usually more severe than what this patient suffered. However, this patient did not have splenomegaly, which might be expected from an intracapsular bleed. There is also no evidence of intraperitoneal blood on the CT scan. The presence of polycystic kidneys makes this diagnosis more likely.<b><br/><br/>12% did not answer the question. </b>
+          ]]>
+        </expl5>
+      </question>
+    </node>

@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="noteUpdater()" 
+	xmlns:PDFTool="com.adams.dt.view.PDFTool.*" width="100%" height="100%" verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" creationPolicy="all" >
+
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Tasks;
+		
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import mx.effects.easing.Circular;
+			import mx.effects.Resize;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import mx.events.ListEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.ModelLocator;
+			import mx.events.ResizeEvent;
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var mainArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var tempArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			
+			private var shadow:DropShadowFilter = new DropShadowFilter();
+			private function noteUpdater():void{
+				
+
+				 shadow.distance = 4;
+				 shadow.blurX=shadow.blurY=6;
+				 shadow.alpha=0.8;
+				 shadow.angle = -90;
+				 menubar.filters=[shadow];
+				 commentList.filters=[shadow];
+				 dataProvideFunction();
+				 pdf2Btn.selected=true;
+				 commentList.pdffile=PDFMainContainer.PDF2;
+			}
+			[Bindable]
+			private var rowCo:Number=1;
+			[Bindable]
+			private var columnCo:Number=1;
+			private var _dataProvider:ArrayCollection = new ArrayCollection();
+			[Bindable(event="dataProviderChange")]
+			public function set dataProvider (value:ArrayCollection):void
+			{
+				if (value != _dataProvider)
+				{
+					if (_dataProvider)
+					{
+						_dataProvider.removeEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange);
+					}
+					
+					_dataProvider = value;
+					if (_dataProvider)
+					{
+						_dataProvider.addEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange);
+					}
+					dispatchEvent (new Event ("dataProviderChange"));
+				} 
+				dataProvideFunction()
+			}
+			
+			private function doubleViewAction(event:MouseEvent):void{
+				if(doubleView.selected){
+					if(compare.selected) compare.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+					if(playPause.selected) img1.playPauseFunc(event);
+					img1.selectedPDF=PDFMainContainer.PDF2;
+					doubleViewCon.img1.resetPage(0);
+					doubleViewCon.img2.resetPage(0);
+				}
+			}
+			
+			public function get dataProvider ():ArrayCollection
+			{
+				return _dataProvider;
+			}
+			private function onDataProviderChange (event:CollectionEvent):void
+			{
+				if ((event.kind == CollectionEventKind.ADD) ||
+					(event.kind == CollectionEventKind.REMOVE) ||
+					(event.kind == CollectionEventKind.REPLACE) ||
+					(event.kind == CollectionEventKind.RESET))
+				{
+					dispatchEvent (new Event ("dataProviderChange"));
+					dataProvideFunction()
+				}
+			}
+			
+			
+			
+			[Bindable(event="dataProviderChange")]
+			private function dataProvideFunction():void{
+				model.pdfTileList = true;
+				BackBtn.visible = true;
+			    if(dataProvider.length==1){			    	
+			    	if(!model.pdfDetailVO.localeBool){
+			    		model.pdfDetailVO.localeBool = true;
+			    		tileList.selectedItem = dataProvider.getItemAt(0);
+			    		tileList.selectedIndex = 0;
+			    		
+			    	}
+			    	tileList.rowCount=1;tileList.columnCount=1;
+			    	model.pdfTileList = false;
+			    	BackBtn.visible = false; 
+			    }
+                if(dataProvider.length==2){tileList.rowCount=1;tileList.columnCount=2;}
+                if(dataProvider.length>2 && dataProvider.length<=4){tileList.rowCount=2;tileList.columnCount=2;}
+                if(dataProvider.length>4 && dataProvider.length<=6){tileList.rowCount=2;tileList.columnCount=3;}
+                if(dataProvider.length>6 && dataProvider.length<=9){tileList.rowCount=3;tileList.columnCount=3;}
+                if(dataProvider.length>9 && dataProvider.length<=12){tileList.rowCount=3;tileList.columnCount=4;}
+                if(dataProvider.length>12){tileList.rowCount=3;tileList.columnCount=5;}
+                if(dataProvider.length>0){
+                	model.pdfloader = false;
+                }else{                	
+                	model.pdfloader = true;
+                }
+                dataProvider.refresh();
+			} 
+			private function tileList_itemClick(evt:ListEvent):void {
+				model.pdfTileList = false;
+				var event : CommentEvent = new CommentEvent(CommentEvent.GET_COMMENT);
+				if(model.compareTask.taskId != 0&&model.comaparePdfFileCollection.length>0){					
+					model.compareTask.taskFilesPath = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).filePath//TileList(evt.currentTarget).selectedItem.filePath;
+					event.compareFileFk = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).remoteFileFk;
+				}
+				model.currentTasks.previousTask.taskFilesPath = TileList(evt.currentTarget).selectedItem.filePath;
+				model.currentSwfFile = FileDetails(TileList(evt.currentTarget).selectedItem);
+				event.fileFk = model.currentSwfFile.remoteFileFk;	
+				trace("Cilcked Task")	
+				CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}
+			private function checkFileExist(path:String):Boolean{
+				var file:File = new File(path);
+				return file.exists;
+			}
+			private function resizeEvent(event:ResizeEvent):void{
+				if(pdfContainer.width>img1.width && pdfContainer.height>img1.height){
+					img1.x=(pdfContainer.width/2)
+				}
+			}
+			public function zoomNavSliderTooltip(val:String):String
+			{
+				return (Number(val) * 100) + "%";
+			}
+			private function SliderTooltip(val : String) : String
+			{
+				return String('Alpha : ' + Math.round(Number(val) * 100) + '%');
+			}
+			private function pdfAlphaControllerShowEffect() : void
+			{
+				var resizeEff : Resize = new Resize();
+				resizeEff.duration = 750;
+				resizeEff.easingFunction = Circular.easeOut;
+				//trace("Compare Data Changed... !");
+				if(PDFPageAlphaControllerContainer.width == 0){
+					resizeEff.widthTo = 300;
+					pdf1AlphaHSlider.value=pdf2AlphaHSlider.value=0;
+					DiffAlphaHSlider.value=1;
+					img1.imageCompareFunc();
+					if(doubleView.selected)doubleView.selected=false;	
+				}else{
+					pdf1AlphaHSlider.value=pdf2AlphaHSlider.value=1;
+					DiffAlphaHSlider.value=0;
+					resizeEff.widthTo = 0;
+					
+					img1.imgCompare.source=null;
+					img1.selectedPDF=PDFMainContainer.PDF1;
+					img1.externalCommentStatus=true;
+					img1.linkNoteFunc(); 
+					
+				}
+				//img1.compareSelectedInternal=compare.selected;
+				resizeEff.play([PDFPageAlphaControllerContainer]);
+			}
+			[Bindable]
+			public var noteListOpen:Boolean=true;
+			private function noteListShowEffect() : void
+			{
+				var resizeEff : Resize = new  Resize();
+				resizeEff.duration = 650;
+				resizeEff.easingFunction = Circular.easeOut;
+				if(commentList.width==0){
+					noteListOpen=true;
+					resizeEff.widthTo =220;
+					img1.externalCommentStatus=true;
+					img1.linkNoteFunc();
+				}else{
+					noteListOpen=false;
+					resizeEff.widthTo=0;
+					img1.externalCommentStatus=false;
+					img1.linkNoteFunc();
+				}
+				if(img1.selectedPDF==PDFMainContainer.PDF1) img1.note1.visible=!(img1.note2.visible=false);
+				if(img1.selectedPDF==PDFMainContainer.PDF2) img1.note1.visible=!(img1.note2.visible=true);
+				resizeEff.play([commentList]);
+			}
+			private function PDFAction(event:MouseEvent):void{
+				pdf1Btn.selected=pdf2Btn.selected=false;
+				if(doubleView.selected)doubleView.selected=false;
+				if(event.target.name=="pdf1Btn"){img1.selectedPDF=PDFMainContainer.PDF1;pdf1Btn.selected=true;}
+				else{img1.selectedPDF=PDFMainContainer.PDF2;pdf2Btn.selected=true;}
+			}
+			private function SVG_NoteAction(event:MouseEvent):void{
+				if(compare.selected) compare.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+				deselectAllComponent();
+				if(event.target.name=="eraseBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.ERASE;eraseBtn.selected=true;}
+				else if(event.target.name=="lineBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.LINE;lineBtn.selected=true;}
+				else if(event.target.name=="ovalBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.OVAL;ovalBtn.selected=true;}
+				else if(event.target.name=="rectangleBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.RECTANGLE;rectangleBtn.selected=true;}
+				else if(event.target.name=="brushBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.BRUSH;brushBtn.selected=true;}
+				else if(event.target.name=="regionCompareBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.NONE;img1.FOCUS_ACTION=PDFMainContainer.REGION_COMPARE;regionCompareBtn.selected=true;}
+				else if(event.target.name=="highlightBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.HIGHLIGHT;highlightBtn.selected=true;}
+				else if(event.target.name=="rectangleNoteBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.NONE;img1.selectedNote=doubleViewCon.selectedNote=PDFMainContainer.RECTANGLE;rectangleNoteBtn.selected=true;}
+				else if(event.target.name=="horizontalNoteBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.NONE;img1.selectedNote=doubleViewCon.selectedNote=PDFMainContainer.HORIZONTAL;horizontalNoteBtn.selected=true;}
+				else if(event.target.name=="verticalNoteBtn"){img1.DRAW=doubleViewCon.DRAW=SVGDrawTool.NONE;img1.selectedNote=doubleViewCon.selectedNote=PDFMainContainer.VERTICAL;verticalNoteBtn.selected=true;}
+			}
+			public function deselectAllComponent():void{
+				eraseBtn.selected=lineBtn.selected=ovalBtn.selected=rectangleBtn.selected=brushBtn.selected=highlightBtn.selected=regionCompareBtn.selected=false;
+				rectangleNoteBtn.selected=horizontalNoteBtn.selected=verticalNoteBtn.selected=false;
+			}
+			private function toggleControl():void
+			{
+				eraseBtn.selected=lineBtn.selected=ovalBtn.selected=rectangleBtn.selected=brushBtn.selected=highlightBtn.selected=false;
+				rectangleNoteBtn.selected=horizontalNoteBtn.selected=verticalNoteBtn.selected=false;
+				img1.toggleFunc();
+			}
+			private function savePdf():void{
+				var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+				if(model.currentTasks.previousTask.fileObj!=null){			
+					var result:SQLResult = delegate.getFileDetails(model.currentTasks.previousTask.fileObj);
+					var array:Array = [];
+					array = result.data as Array;
+					if(array!=null){						
+						onDownLoadComplete(array[0] as FileDetails);
+					}else{
+						model.filesToDownload.addItem(model.currentTasks.previousTask.fileObj);
+						model.bgDownloadFile.fileToDownload.list = model.filesToDownload.list;
+						model.bgDownloadFile.idle = true;
+					}	
+				}
+			}
+			private function onDownLoadComplete(fileObj:FileDetails):void {
+	        	var downLoadedfile:File = new File(fileObj.filePath); 
+	        	var copyToLocation:File = File.desktopDirectory.resolvePath(fileObj.fileName);
+	        	downLoadedfile.copyTo(copyToLocation,true);     
+	        	
+	       	}
+	       	private function playPauseFunc(event:MouseEvent):void{
+	       		if(doubleView.selected)doubleView.selected=false;
+	       		if(compare.selected) compare.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+	       		img1.playPauseFunc(event)
+	       	}
+	       	private function onComparePdfChange():void{
+	       		var tasks:Tasks = comparePdf.selectedItem.tasks;
+	       		if(tasks!=null){
+	       			model.compareTask = tasks;
+		       		var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+					if(model.compareTask.fileObj!=null){			
+						var result:SQLResult = delegate.getSwfFileDetails(model.compareTask.fileObj);
+						var array:Array = [];
+						array = result.data as Array;
+						if(array!=null){
+							model.comaparePdfFileCollection = new ArrayCollection(array);
+							model.compareTask.taskFilesPath = model.comaparePdfFileCollection.getItemAt(0).filePath;
+							
+						}else{
+							var fileEvents:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_SWFFILEDETAILS);
+							fileEvents.fileDetailsObj = model.compareTask.fileObj;
+							CairngormEventDispatcher.getInstance().dispatchEvent(fileEvents);
+							model.loadComareTaskFiles = true;
+						}
+		       		}
+	       		}
+	       	}
+	       	
+		]]>
+	</mx:Script>
+	<mx:Canvas id="pdfContainer" horizontalScrollPolicy="off" verticalScrollPolicy="off" left="0" 
+		right="{commentList.width}" top="0" bottom="{menubar.height}" resize="{resizeEvent(event)}">
+		
+		<PDFTool:PDFMainContainer id="img1" img1URL="{model.compareTask.taskFilesPath}" img2URL="{model.currentTasks.previousTask.taskFilesPath}"
+		 dataProvider="{model.pdfDetailVO.commentListArrayCollection}" selectedPDF="{commentList.pdffile}"
+		 img1Alpha="{pdf1AlphaHSlider.value}" externalComment="{externelComments}"/>
+		<PDFTool:ExternalCommentCanvas id="externelComments" width="100%" height="100%" verticalScrollPolicy="off"
+		horizontalScrollPolicy="off" mouseEnabled="false" clearExternelComment="{img1.exterCommentClear}"/>
+		<PDFTool:PDFDouble id="doubleViewCon" width="100%" height="100%" visible="{doubleView.selected}" focusAction="{img1.FOCUS_ACTION}"/>
+	</mx:Canvas>
+	<mx:VBox top="0" right="0" bottom="{menubar.height}" >
+		
+	<PDFTool:CommentList id="commentList" dataProvider="{model.pdfDetailVO.commentListArrayCollection}"
+		width="220" height="100%" backgroundColor="#222222" compareMode="{img1.COMPARE_MODE}" pdffile="{img1.selectedPDF}"/>
+	
+	</mx:VBox>
+	<mx:HBox id="menubar" backgroundColor="#333333" left="0" right="0" bottom="0" 
+		height="50" horizontalAlign="right" verticalAlign="middle" horizontalGap="4">
+		<mx:Button id="playPause" click="playPauseFunc(event)" styleName="PlayPauseBtn" visible="{img1.COMPARE_MODE}" includeInLayout="{img1.COMPARE_MODE}" selected="{img1.playPauseSelected}"/>
+		<mx:Button id="compare" toggle="true" styleName="CompareBtnSkin" visible="{img1.COMPARE_MODE}" includeInLayout="{img1.COMPARE_MODE}" change="{pdfAlphaControllerShowEffect();}"/>
+		<!--<mx:Button click="img1.FOCUS_ACTION=PDFMainContainer.ALTER_NOTE" label="Arrow"/>-->
+		<mx:HBox id="PDFPageAlphaControllerContainer"
+			width="0"
+			height="100%"
+			verticalAlign="middle"
+			verticalScrollPolicy="off"
+			horizontalScrollPolicy="off">
+			<mx:VRule strokeColor="#555555"
+				height="80%"/>
+			<mx:HBox>
+				<mx:Image
+					source="{ImageResourceEmbedClass.FIRSTPDFICON}"/> 
+				<mx:HSlider id="pdf1AlphaHSlider"
+					liveDragging="true"
+					maximum="1.0"
+					width="50"
+					minimum="0"
+					tickInterval="0.1"
+					dataTipFormatFunction="SliderTooltip"
+					value="1.0"
+					/>
+			</mx:HBox>
+			<mx:HBox>
+				<mx:Image
+					source="{ImageResourceEmbedClass.SECONDPDFICON}"/> 
+				<mx:HSlider id="pdf2AlphaHSlider"
+					liveDragging="true"
+					maximum="1.0"
+					width="50"
+					minimum="0"
+					tickInterval="0.1"
+					dataTipFormatFunction="SliderTooltip"
+					value="1.0"
+					change="img1.img2Alpha = pdf2AlphaHSlider.value;"
+					/>
+			</mx:HBox>
+			<mx:HBox>
+				<mx:Image
+					source="{ImageResourceEmbedClass.DIFFPDFICON}"/> 
+				<mx:HSlider id="DiffAlphaHSlider"
+					liveDragging="true"
+					maximum="1.0"
+					width="50"
+					minimum="0"
+					tickInterval="0.1"
+					dataTipFormatFunction="SliderTooltip"
+					value="1.0"
+					change="img1.imgDiffAlpha = DiffAlphaHSlider.value;"/>
+			</mx:HBox>
+		</mx:HBox>
+		<mx:Button click="toggleControl()" styleName="panSkin" selected="{img1.panSelected}"/>
+		<mx:Button id="verticalNoteBtn" click="SVG_NoteAction(event)" styleName="newNoteVerBtnSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="horizontalNoteBtn" click="SVG_NoteAction(event)" styleName="newNoteBtnSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="rectangleNoteBtn" click="SVG_NoteAction(event)" styleName="newNoteRecBtnSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="pdf1Btn" click="PDFAction(event)" selected="{(img1.selectedPDF==PDFMainContainer.PDF1)?true:false}" styleName="pdfBtnSkin1" visible="{img1.COMPARE_MODE}" includeInLayout="{img1.COMPARE_MODE}" buttonMode="true"/>
+		<mx:Button id="pdf2Btn" click="PDFAction(event)" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}" styleName="pdfBtnSkin2" visible="{img1.COMPARE_MODE}" includeInLayout="{img1.COMPARE_MODE}" buttonMode="true"/>
+		<mx:Button id="regionCompareBtn" styleName="regionCompareBtn" click="SVG_NoteAction(event)" visible="false" includeInLayout="false" buttonMode="true"/>
+		<!-- visible="{doubleView.selected}" includeInLayout="{doubleView.selected}" -->
+		<mx:Button id="doubleView" toggle="true" styleName="doublePageView"  click="doubleViewAction(event)" visible="{img1.COMPARE_MODE}" includeInLayout="{img1.COMPARE_MODE}" buttonMode="true"/>
+		<mx:Button id="eraseBtn" click="SVG_NoteAction(event)" styleName="EraseToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="lineBtn" click="SVG_NoteAction(event)" styleName="LineToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="ovalBtn" click="SVG_NoteAction(event)" styleName="OvalToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="rectangleBtn" click="SVG_NoteAction(event)" styleName="RectangleToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="brushBtn" click="SVG_NoteAction(event)" styleName="BrushToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="highlightBtn" click="SVG_NoteAction(event)" styleName="highlightToolSkin" selected="{(img1.selectedPDF==PDFMainContainer.PDF2)?false:false}" enabled="{(img1.selectedPDF==PDFMainContainer.PDF2)?true:false}"/>
+		<mx:Button id="clockwiseBtn" click="img1.rotateMe=PDFMainContainer.CLOCKWISE;doubleViewCon.rotateMe=PDFMainContainer.CLOCKWISE;" styleName="rotateClockwiseSkin"/>
+		<mx:Button id="counterClockwiseBtn" click="img1.rotateMe=PDFMainContainer.COUNTER_CLOCKWISE;doubleViewCon.rotateMe=PDFMainContainer.COUNTER_CLOCKWISE;" styleName="rotateCounterclockwiseSkin"/>
+		<mx:Button styleName="SaveToolSkin" click = "savePdf()" id="save_btn" useHandCursor="true" buttonMode="true"/>
+		<mx:Button id="notelistBtn" click="noteListShowEffect()" styleName="NoteBtnSkin" selected="{noteListOpen}"/>
+		
+	</mx:HBox>
+
+	<mx:VBox cornerRadius="5" backgroundAlpha="0.5" styleName="zoomSliderVBox" height="150"
+		width="30" verticalAlign="middle" horizontalAlign="center" top="40" left="10" paddingTop="5"
+		paddingBottom="5" visible="{!doubleViewCon.visible}">
+		<mx:filters>
+			<mx:Array>
+				<mx:DropShadowFilter alpha="0.25" angle="270" distance="5"
+					blurX="3" blurY="5" strength="2" quality="8"/>
+			</mx:Array>
+		</mx:filters>
+		<mx:Button id="ZoomInBtn" styleName="ZoomIn" useHandCursor="true"
+			buttonMode="true" click="{img1.zoomFromExternal(1);}"/>
+		<mx:VSlider id="zoomSlider" change="{img1.zoomFromExternalSlider();img1.scaleX=img1.scaleY=zoomSlider.value;}" tabEnabled="false"
+			value="{img1.scaleX}" height="90" minimum="0.5" maximum="14" width="18"
+			tickLength="0" dataTipFormatFunction="zoomNavSliderTooltip" liveDragging="true"
+			snapInterval="0.5"/>
+		<mx:Button id="ZoomOutBtn" styleName="ZoomOut" useHandCursor="true"
+			buttonMode="true" click="{img1.zoomFromExternal(-1);}"/>
+	</mx:VBox>
+	<!--<mx:VBox id="versionChk" borderStyle="solid" borderThickness="0.5" backgroundAlpha="0.5"
+		cornerRadius="5" left="5" top="250" verticalAlign="middle"  
+		horizontalAlign="center" backgroundColor="#2C2C2C" height="100"
+		visible="{model.compareTasksCollection.length>1?true:false}" includeInLayout="{versionChk.visible}">
+		<mx:Label text="Release Version"/>
+		)&&-->
+		<mx:ComboBox visible="{model.compareTasksCollection.length>2?true:false}" includeInLayout="{visible}" id="comparePdf" width="120" left="10" top="10" dataProvider="{model.compareTasksCollection}" change="onComparePdfChange()" labelField="label" selectedIndex="{model.compareTasksCollection.length-1}"/>	
+	<!--</mx:VBox>-->
+	<mx:Button id="BackBtn"
+			useHandCursor="true"
+			buttonMode="true" x="{(comparePdf.visible)?125:0}" y="10"
+			label="Back"
+			click="{model.pdfTileList = true}"/>
+	<mx:TileList id="tileList" visible="{model.pdfTileList}" includeInLayout="{tileList.visible}"
+		itemRenderer="{new ClassFactory(PDFTileItemRenderer)}"
+		liveScrolling="true"
+		themeColor="haloSilver"
+		verticalScrollPolicy="auto" dataProvider="{dataProvider}"
+		width="{this.width}" height="{this.height}" backgroundColor="#333333" color="#FFFFFF" textRollOverColor="#000000" textSelectedColor="#000000"
+		itemClick="tileList_itemClick(event);"  selectionColor="#CCCCCC" rollOverColor="#D6D6D6"/>
+</mx:Canvas>
+
+

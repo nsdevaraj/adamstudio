@@ -1,0 +1,321 @@
+/* CSS file */
+.deleteIcon{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#delete');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#delete');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#delete');
+}
+.replaceFileIcon{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#replaceFile');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#replaceFile');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#replaceFile');
+}
+.categoryBackBTN{ 
+	upSkin:Embed(source='assets/swf/General_Assets.swf#backArrow');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#backArrow');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#backArrow');
+}
+.communicationBtn{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#communication_btn');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#communication_btn');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#communication_btn');
+}
+.mailIcon
+{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#mailIcon");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#mailIcon");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#mailIcon");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#mailIcon");
+}
+.cancelMesg{
+	fontFamily: myFont;
+	icon: Embed(source='assets/swf/General_Assets.swf#cancelIcon');
+}
+.sendMesg{
+	fontFamily:myFont;
+	icon: Embed(source='assets/swf/General_Assets.swf#mailIcon');
+}
+.chatIcon
+{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#chatIcon");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#chatIcon");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#chatIcon");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#chatIcon");
+}
+.chatIconOnline
+{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#chatIconOnline");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#chatIconOnline");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#chatIconOnline");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#chatIconOnline");
+}
+.chatIconNew
+{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#chat");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#chat");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#chat");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#chat");
+}
+.attachBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#attachment');
+}
+.printer{
+    up-skin:Embed(source='assets/swf/General_Assets.swf#printer');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#printer_over');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#printer');
+    disabled-skin:  Embed(source='assets/swf/General_Assets.swf#printer_over');
+}   
+.deleteButton{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#deleteBtn");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#deleteBtn");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#deleteBtn");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#deleteBtn_disabled");
+}
+.editIcon{
+	icon:Embed('assets/swf/General_Assets.swf#edit');
+}
+.frBTN{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#fr');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#fr');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#fr');
+}
+.enBTN{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#en');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#en');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#en');
+}
+.settingsBTN{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#settings');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#settings');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#settings');
+}
+.uploadIcon{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#uploadIcon");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#uploadIcon");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#uploadIcon");
+}
+.downloadIcon{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#downloadIcon");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#downloadIcon");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#downloadIcon");
+}
+.fullScreenBtnSkin
+{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#fullScreen_over");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	
+	selected-up-skin: Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	selected-over-skin:  Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	selected-down-skin:  Embed(source="assets/swf/General_Assets.swf#fullScreen");
+	selected-disabled-skin: Embed(source="assets/swf/General_Assets.swf#fullScreen");
+}
+ 
+.addButton{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#addBtn");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#addBtn");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#addBtn");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#addBtn");
+}
+.mpvIcon{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#mpvIcon_small");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#mpvIcon_over");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#mpvIcon_small");
+}
+.backMPV{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#backToMPV");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#backToMPV");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#backToMPV");
+}
+.backTODO{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#backToTODO");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#backToTODO");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#backToTODO");
+}
+.backToDashboard {
+ upSkin: Embed(source="assets/swf/General_Assets.swf#backtoDashboard", scaleGridLeft=1, scaleGridRight=2, scaleGridTop=1, scaleGridBottom=2);
+ over-skin: Embed(source="assets/swf/General_Assets.swf#backtoDashboard",scaleGridLeft=1, scaleGridRight=2, scaleGridTop=1, scaleGridBottom=2);
+ down-skin: Embed(source="assets/swf/General_Assets.swf#backtoDashboard",scaleGridLeft=1, scaleGridRight=2, scaleGridTop=1, scaleGridBottom=2);
+}
+.ZoomIn{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	selected-up-skin:Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	selected-over-skin:	Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+	selected-down-skin:	Embed(source="assets/swf/General_Assets.swf#ZoomIn");
+}
+.ZoomOut{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	disabled-skin: Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	selected-up-skin:Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	selected-over-skin:	Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+	selected-down-skin:	Embed(source="assets/swf/General_Assets.swf#ZoomOut");
+}
+.courierStatusCheckIcon{
+	upSkin: Embed(source="assets/swf/General_Assets.swf#EditProfileIcon");
+	over-skin: Embed(source="assets/swf/General_Assets.swf#EditProfileIcon");
+	down-skin: Embed(source="assets/swf/General_Assets.swf#EditProfileIcon");
+}
+.saveBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#save_icon');
+}
+.cancelOrderBtn{ 
+	icon:Embed(source='assets/swf/General_Assets.swf#cancelOrder');
+}
+.submitOrderBtn{ 
+	icon:Embed(source='assets/swf/General_Assets.swf#submitOrder');
+}
+.submitOrderBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#submitOrder');
+}
+
+.previousBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#sendBack');
+}
+.nextBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#sendNext');
+}
+.jumbBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#jump');
+}
+.validateReqBtn{
+	up-skin :Embed(source='assets/swf/General_Assets.swf#jump');
+	down-skin:Embed(source='assets/swf/General_Assets.swf#jump');
+	over-skin:Embed(source='assets/swf/General_Assets.swf#jump');
+	disabled-skin:Embed(source='assets/swf/General_Assets.swf#jump_Disabled');
+}
+.loopIcon{
+	icon:Embed(source='assets/swf/General_Assets.swf#loop');
+}
+
+.refereshBtn{
+	up-skin :Embed(source='assets/swf/General_Assets.swf#loop');
+	down-skin:Embed(source='assets/swf/General_Assets.swf#loop');
+	over-skin:Embed(source='assets/swf/General_Assets.swf#loop');
+}
+
+.viewBtn{
+	icon:Embed(source='assets/swf/General_Assets.swf#view_icon');
+}
+
+.addNewIcon{
+	icon:Embed(source='assets/swf/General_Assets.swf#addNew');
+}
+ 
+.applyIcon{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#apply');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#apply');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#apply');
+}
+.techTempSettings{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#tech_template');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#tech_template');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#tech_template');
+}
+.plusBTN{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#plus');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#plus');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#plus');
+	disabled-skin:Embed(source='assets/swf/General_Assets.swf#plus');
+	selected-up-skin:Embed(source='assets/swf/General_Assets.swf#minus');
+	selected-over-skin:Embed(source='assets/swf/General_Assets.swf#minus');
+	selected-down-skin:Embed(source='assets/swf/General_Assets.swf#minus');
+	selected-disabled-skin:Embed(source='assets/swf/General_Assets.swf#minus');
+}
+.minusBTN{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#minus');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#minus');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#minus');
+}
+.chartViewerButton{
+	upSkin:Embed(source='assets/swf/General_Assets.swf#up_icon');
+	downSkin:Embed(source='assets/swf/General_Assets.swf#up_icon');
+	overSkin:Embed(source='assets/swf/General_Assets.swf#up_icon');
+	selected-over-skin:Embed(source='assets/swf/General_Assets.swf#down_icon');
+	selected-down-skin:Embed(source='assets/swf/General_Assets.swf#down_icon');
+	selected-up-skin:Embed(source='assets/swf/General_Assets.swf#down_icon');
+}
+.yearTopBtn
+{
+	top:0;
+	right:60;
+	upSkin: Embed(source="assets/swf/General_Assets.swf#move_up_icon");
+	downSkin: Embed(source="assets/swf/General_Assets.swf#move_up_icon");
+	overSkin: Embed(source="assets/swf/General_Assets.swf#move_up_icon");
+	disabledSkin: Embed(source="assets/swf/General_Assets.swf#disable_move_up_icon");
+}
+.yearBottomBtn
+{
+	bottom:0;
+	right:60;
+	upSkin: Embed(source="assets/swf/General_Assets.swf#move_down_icon");
+	downSkin: Embed(source="assets/swf/General_Assets.swf#move_down_icon");
+	overSkin: Embed(source="assets/swf/General_Assets.swf#move_down_icon");
+	disabledSkin: Embed(source="assets/swf/General_Assets.swf#disable_move_down_icon");
+}
+.monthLabelBtn
+{
+	vertical-center:0;
+	horizontal-center:0
+	
+}
+.yearLabelBtn
+{
+	vertical-center:0;
+}
+.monthTopBtn
+{
+	left:5;
+	top:10;
+	upSkin: Embed(source="assets/swf/General_Assets.swf#move_left_icon");
+	downSkin: Embed(source="assets/swf/General_Assets.swf#move_left_icon");
+	overSkin: Embed(source="assets/swf/General_Assets.swf#move_left_icon");
+	disabledSkin: Embed(source="assets/swf/General_Assets.swf#disable_move_left_icon");
+	
+}
+.monthBottomBtn
+{
+	right:10;
+	top:10;
+	upSkin: Embed(source="assets/swf/General_Assets.swf#move_right_icon");
+	downSkin: Embed(source="assets/swf/General_Assets.swf#move_right_icon");
+	overSkin: Embed(source="assets/swf/General_Assets.swf#move_right_icon");
+	disabledSkin: Embed(source="assets/swf/General_Assets.swf#disable_move_right_icon");
+}
+/**-------------------------PDFTool Skins-----------------------------*/
+.Innerpdf{
+    up-skin:Embed(source='assets/swf/General_Assets.swf#pdf');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#pdf_over');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#pdf');
+    disabled-skin:  Embed(source='assets/swf/General_Assets.swf#pdf_over');
+}
+
+
+.xlSheet{
+    up-skin:Embed(source='assets/swf/General_Assets.swf#xlSheet');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#xlSheet_over');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#xlSheet');
+    disabled-skin:  Embed(source='assets/swf/General_Assets.swf#xlSheet_over');
+} 
+
+.htmlIcon{
+	 up-skin:Embed(source='assets/swf/General_Assets.swf#html_icon');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#html_icon_over');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#html_icon');
+    disabled-skin:  Embed(source='assets/swf/General_Assets.swf#html_icon_over');
+}
+.textIcon{
+	 up-skin:Embed(source='assets/swf/General_Assets.swf#note_Icon');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#note_Icon_Over');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#note_Icon');
+    disabled-skin:  Embed(source='assets/swf/General_Assets.swf#note_Icon_Over');
+}
+.rssButton{
+	up-skin:Embed(source='assets/swf/General_Assets.swf#rss_btn');
+    over-skin:  Embed(source='assets/swf/General_Assets.swf#rss_btn');
+    down-skin:  Embed(source='assets/swf/General_Assets.swf#rss_btn');
+}

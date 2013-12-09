@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	BlogEntriesPanel
+	
+	This component displays a Panel of the blog entries with controls for them.
+-->
+
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" >
+
+	<mx:Metadata>
+		[Event(name="editArticle",type="com.adobe.blog.events.BlogEvent")]	
+		[Event(name="deleteArticle",type="com.adobe.blog.events.BlogEvent")]	
+		[Event(name="publishArticle",type="com.adobe.blog.events.BlogEvent")]	
+		[Event(name="unpublishArticle",type="com.adobe.blog.events.BlogEvent")]	
+	</mx:Metadata>
+	
+	<mx:Script>
+	<![CDATA[
+		import com.adobe.blog.data.Article;
+		import com.adobe.blog.events.BlogEvent;
+		import mx.collections.ArrayCollection;
+		
+		[Bindable] public var articles:ArrayCollection;
+		
+		[Bindable] private var enableControlButtons:Boolean = false;
+		[Bindable] private var enablePublish:Boolean = false;
+		
+		/**
+		 * editArticle
+		 *
+		 * This function takes the selected article and dispatches the EDIT_ARTICLE event
+		 * which will place the article into the EditorPanel.
+		 */
+		private function editArticle() : void
+		{
+			if( articleList.selectedItem == null ) return;
+			
+			var event:BlogEvent = new BlogEvent(BlogEvent.EDIT_ARTICLE);
+			event.article = articleList.selectedItem as Article;
+			dispatchEvent(event);
+		}
+		
+		/**
+		 * deleteArticle
+		 *
+		 * This function takes the article and dispatches the DELETE_ARTICLE event
+		 * which causes a data service call eventually deleting the article from the
+		 * database.
+		 */
+		private function deleteArticle() : void
+		{
+			if( articleList.selectedItem == null ) return;
+			
+			var event:BlogEvent = new BlogEvent(BlogEvent.DELETE_ARTICLE);
+			event.article = articleList.selectedItem as Article;
+			dispatchEvent(event);
+		}
+		
+		/**
+		 * publishArticle
+		 *
+		 * This function either publishes or un-publishes an article, depending on its
+		 * status. The article is put into an event and dispatched where, eventually, 
+		 * the database will change the article's published bit.
+		 */
+		private function publishArticle() : void
+		{
+			if( articleList.selectedItem == null ) return;
+			
+			var event:BlogEvent;
+			
+			if( enablePublish ) {
+				event = new BlogEvent(BlogEvent.PUBLISH_ARTICLE);
+				event.article = articleList.selectedItem as Article;
+				dispatchEvent(event);
+			} else {
+				event = new BlogEvent(BlogEvent.UNPUBLISH_ARTICLE);
+				event.article = articleList.selectedItem as Article;
+				dispatchEvent(event);
+			}
+		}
+	]]>
+	</mx:Script>
+	
+	<!-- 
+		These bindings set the destination variables to be either true or false, depending
+		on the outcome of the test in the source parameeter. The Buttons in the ControlBar
+		are then bound to the variables. This is easier than writing functions to check if
+		conditions are correct to enable or disable a button.
+	-->
+	<mx:Binding source="articleList.selectedIndex >= 0" destination="enableControlButtons" />
+	<mx:Binding source="articleList.selectedItem.published == false" destination="enablePublish" />
+
+	<!--
+		This formats the date for the DataGrid in-line itemRenderer
+	-->
+	<mx:DateFormatter id="dfmt" formatString="MM/DD/YYYY LL:NN A" />
+	
+	<mx:DataGrid id="articleList" left="0" right="0" top="0" bottom="0" 
+		showHeaders="true" 
+		variableRowHeight="true" 
+		dataProvider="{articles}" 
+		doubleClickEnabled="true" 
+		doubleClick="editArticle()">
+		
+		<mx:columns>
+			<mx:DataGridColumn headerText="Article Title" dataField="title">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:Text selectable="false" 
+							color="{data.published ? 0x000000 : 0xCC0000}"
+							htmlText="{'&lt;b&gt;'+data.title+'&lt;/b&gt;\n'+data.category}" />
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+			<mx:DataGridColumn headerText="Date" dataField="date" width="60" fontSize="8">
+				<mx:itemRenderer>
+					<mx:Component>
+						<mx:Text selectable="false" 
+							color="{data.published ? 0x000000 : 0xCC0000}" 
+							text="{outerDocument.dfmt.format(data.date)}" />
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid>
+	
+	<mx:ControlBar>
+		<mx:Button label="Edit" width="64" click="editArticle()" enabled="{enableControlButtons}"/>
+		<mx:Button label="Delete" width="64" click="deleteArticle()" enabled="{enableControlButtons}"/>
+		<mx:Spacer width="100%" />
+		<mx:Button label="{enablePublish?'Publish':'Unpublish'}" width="74" click="publishArticle()" enabled="{enableControlButtons}" />
+	</mx:ControlBar>
+</mx:Panel>

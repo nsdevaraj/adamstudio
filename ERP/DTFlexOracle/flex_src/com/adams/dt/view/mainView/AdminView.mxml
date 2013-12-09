@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:df="com.adams.dt.business.datafilter.data.*"
+	xmlns:f="com.adams.dt.business.datafilter.data.filters.*"
+	xmlns:searchView="com.adams.dt.view.*"
+	xmlns:view="com.adams.dt.view.components.*"
+	xmlns:newWorkFlowTemp="com.adams.dt.view.components.modifyWorkFlowTemp.*"
+	xmlns:teamLineView="com.adams.dt.view.components.newTeamlinetemplate.*"
+	 xmlns:comp="com.adams.dt.view.components.*"
+	styleName="contsWidth"
+	height="100%" creationCompleteEffect = "{ mx.effects.Fade }" 
+	xmlns:impremiurTemplate="com.adams.dt.view.components.impremiurTemplate.*"
+	creationComplete="{reportAllEvent.dispatch()}">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Reports;
+			import com.adams.dt.event.ReportEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.CategoriesEvent;
+			import com.adams.dt.model.vo.Categories;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.Phases;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Columns;
+			import flash.events.Event;
+			import flash.events.EventDispatcher;
+			
+			import mx.controls.Alert;
+			import mx.events.CollectionEvent;
+			import mx.events.CollectionEventKind;
+		
+			import mx.collections.ArrayCollection;
+			import mx.effects.Fade;
+		 	import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			private var _adminMonitorArr:ArrayCollection = new ArrayCollection();
+			
+			private var reportAllEvent:ReportEvent = new ReportEvent( ReportEvent.EVENT_GET_ALL_REPORTS );
+			[Bindable(event="adminCollectionChange")]
+			public function set adminMonitor(value:ArrayCollection):void
+			{		
+				if (value != _adminMonitorArr)
+				{
+					if (_adminMonitorArr)
+					{
+						_adminMonitorArr.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onCommentCollectionChange);
+					}
+					_adminMonitorArr = value; 
+					dispatchEvent (new Event ("adminCollectionChange"));
+				}	
+			}
+			public function get adminMonitor():ArrayCollection
+			{	
+				return _adminMonitorArr	;	
+			}
+		
+			private function onCommentCollectionChange (event:CollectionEvent):void
+		  	{
+		   		if ((event.kind == CollectionEventKind.ADD) ||
+		    	(event.kind == CollectionEventKind.REMOVE) ||
+		    	(event.kind == CollectionEventKind.REPLACE) ||
+		    	(event.kind == CollectionEventKind.RESET))
+		   		{
+		    		dispatchEvent (new Event ("adminCollectionChange"));
+		   		}
+		  	}
+		  	
+		  	
+		  	private function onAlarmClick():void {
+		  		var sort:Sort = new Sort(); 
+           		sort.fields = [new SortField("projectId")];
+		  		var evtarr:Array = [];
+		  		var projectSet:ArrayCollection = model.projectsCollection;
+		  		var loopLength:int = model.projectsCollection.length;
+		  		var resultCollection:ArrayCollection = new ArrayCollection();
+		  		for( var i:int = 0; i < loopLength; i++ ) {
+					var phasesSet:ArrayCollection = Projects( projectSet.getItemAt( i ) ).phasesSet;
+					for( var j:int = 0; j < phasesSet.length; j++ ) {
+						var currentValue:Number = model.currentTime.getTime();
+						var currentPhase:Number = Phases( phasesSet.getItemAt( j ) ).phaseEndPlanified.getTime();
+						var phaseEnd:Date = Phases( phasesSet.getItemAt( j ) ).phaseEnd; 
+						if( ( currentValue > currentPhase ) && ( phaseEnd == null ) ) {
+							resultCollection.addItem( Projects( projectSet.getItemAt( i ) ) );
+							var ev:TeamlineEvent = new TeamlineEvent(TeamlineEvent.EVENT_PUSH_DELAYSTATUS_TEAMLINE);
+							ev.projectId =  Projects( projectSet.getItemAt( i ) ).projectId;
+							evtarr.push(ev);
+							break;
+						}
+					}
+				}
+				model.delayedProjects = resultCollection;				
+          		model.delayedProjects.sort = sort;
+          		model.delayedProjects.refresh()
+				var handler:IResponder = new Callbacks( pushDelayResult, null )
+		 		var updatedelaySeq:SequenceGenerator = new SequenceGenerator(evtarr,handler)
+		  		updatedelaySeq.dispatch(); 
+			}
+			
+			private function pushDelayResult(obj:Object):void {
+				var updateBulkDelayedTasks:TasksEvent = new TasksEvent(TasksEvent.EVENT_BULKUPDATE_DELAYEDTASKS);
+				updateBulkDelayedTasks.dispatch()
+			}
+			
+			private function onTabNavigatorChange( event:Event ):void {
+				if( TabNavigator( event.currentTarget ).selectedIndex == 2 ) {
+					var handler:IResponder = new Callbacks(getAllReportResult);
+					var reportEvent:ReportEvent = new ReportEvent( ReportEvent.EVENT_GET_ALL_REPORTS,handler );
+					CairngormEventDispatcher.getInstance().dispatchEvent( reportEvent ); 
+				}
+			}
+			public function getAllReportResult( rpcEvent : Object ) : void{
+				reportId.closeForm();
+				var returnCollection:ArrayCollection = rpcEvent.result as ArrayCollection;
+				for each (var reportObj:Reports in returnCollection){
+					for each (var col:Columns in reportObj.columnSet){
+						reportObj.headerArray.push(col.columnName);
+						reportObj.fieldArray.push(col.columnField);
+						reportObj.widthArray.push(col.columnWidth);
+						reportObj.booleanArray.push(col.columnFilter);
+						reportObj.resultArray.push('');
+					}
+					model.reportAllColl.addItem(reportObj);
+				}  
+				reportId.setReportValue();
+			} 
+	]]>
+	</mx:Script>
+	
+		<mx:Text text="{model.loc.getString('AdminView')}"  styleName="mainProjectHeader" />
+		<mx:TabNavigator id="mesgStage" top="75" left="5" right="5" bottom="5" paddingTop="10"   creationPolicy="auto"
+				horizontalScrollPolicy="off" verticalScrollPolicy="off" change="{onTabNavigatorChange(event)}" >
+				<mx:Canvas width="100%" height="100%" label="{model.loc.getString('newActor')}" >
+					<view:NewActor />	
+				</mx:Canvas>
+				 
+				<!--New Workflow create purpose don't remove this line-->
+				<!--<view:NewWorkFlows label="{model.loc.getString('newWorkflow')}" width="100%" height="100%"/> -->
+				<mx:Canvas width="100%" height="100%" label="Workflow Viewer">
+					<newWorkFlowTemp:ModifyWFKTemp width="100%" height="100%" />	
+				</mx:Canvas>
+				<mx:Canvas width="100%" height="100%" label="Report Management" >
+					<view:AddNewReport id="reportId"  allReportCollection="{ model.reportAllColl }" />
+				</mx:Canvas>
+				<mx:Canvas width="100%" height="100%" label="Generic Templates">
+					<view:GenericImpTemplate />
+				</mx:Canvas>
+				<mx:Canvas width="100%" height="100%" label="RSS">
+					<view:RSSview />
+				</mx:Canvas>	
+				<!--Empty DB create purpose don't remove this line-->			
+				<!--<view:SetDateTime label="ResetDB" width="100%" height="100%"/>--> 
+			</mx:TabNavigator>
+			
+		  <!--<view:NewWorkFlows width="100%" height="100%"/>  
+				<teamLineView:NewTeamLineTemplate width="100%" height="100%"/>  
+				<view:SetDateTime width="100%" height="100%"/>  
+			<mx:Button label="Send Alarm" click="onAlarmClick()"/>
+			<mx:DataGrid id="admindatagrid" dataProvider="{model.modelAdminMonitorArrColl}"/>-->	
+			<view:bussinessCard right="5" id="buzCard" width="300" height="61" top="10"/> 
+	
+</mx:Canvas>

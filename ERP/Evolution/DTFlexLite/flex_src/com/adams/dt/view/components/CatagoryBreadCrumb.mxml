@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="443"
+	height="65">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+
+			import com.adams.dt.event.projectselection.PeopleDataEvent;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Categories;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.projectselection.BreadCrumbNameEvent;
+
+			import com.adams.dt.model.ModelLocator;
+			import mx.controls.Button;
+			
+			private var breadButton :Button ;
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			private var _catagoryBreadArray :Array;
+			private var _myBreadArrayStr :String;
+			
+			
+			[Bindable]
+			public function get catagoryBreadArray():Array {
+				return _catagoryBreadArray;
+			}
+			
+			public function set catagoryBreadArray( value:Array ):void {
+				_catagoryBreadArray  = value;
+				createBreadCumb( _catagoryBreadArray ) ;
+			}
+			
+			public function createBreadCumb( value:Array ) : void {
+				if(this.numChildren >
+		= 1){
+					 			this.removeAllChildren()
+					 		}
+					 		var value_Len:int=value.length-1;
+					 		for(var i:Number=0; i <=value_Len; i++) {	
+								    	breadButton = new Button();
+									    breadButton.width = 80;
+										breadButton.height = 25;
+										breadButton.label = checkButtonName(value[i]);
+										breadButton.name = value[i]+"_"+(i);
+										this.addChild( breadButton );
+										breadButton.addEventListener(MouseEvent.CLICK,butClick,false,0,true);
+							}
+						}
+					public function checkButtonName(name:String):String {
+						var buttonName:String
+						var peopleColl:ArrayCollection = new ArrayCollection();
+						peopleColl = model.peopleCollection  ;
+						var peopleColl_Len:int=peopleColl.length;
+							for(var i:int=0; i<peopleColl_Len; i++){ 
+									var category:Categories = peopleColl[i] as Categories
+										if( category.categoryId == name.split("_")[0] ){
+											buttonName = category.categoryName
+										}
+									}
+									return buttonName
+					}
+				 	public function butClick(event:MouseEvent) : void {
+				 			model.seletedView = 0;
+				 			var str:String = event.currentTarget.name;
+							var breadNumber : Number = Number ( str.split("_")[1]  ) 
+							var peopleColl:ArrayCollection = new ArrayCollection();
+							peopleColl = model.peopleCollection  ;
+							var peopleColl_Len:int=peopleColl.length;
+								for(var i:int=0; i<peopleColl_Len; i++){ 
+									var category:Categories = peopleColl[i] as Categories
+									if( category.categoryId == Number( str.split("_")[0]) ){
+										//ControlViewer.instance.build(category.categoryId)
+									}
+								} 
+								var breadEvent  : PeopleDataEvent  = new PeopleDataEvent ( PeopleDataEvent.EVENT_BREADCRUMB_DATA );
+								breadEvent.data = str.split("_")[0] 
+				            	CairngormEventDispatcher.getInstance().dispatchEvent( breadEvent );
+								removeBredCrumbButtons ( breadNumber ,  model.breadArray.length ,model.breadArray);
+								
+					} 
+					private function removeBredCrumbButtons( value:Number, breadLen:Number,arr:Array ) : void {
+						 for( var i:Number = ( model.breadArray.length )-1;i >= value;i--) {
+									this.removeChildAt(i);
+									arr.pop()
+						} 
+						model.breadArray = arr;
+					} 
+							
+						]]>
+		</mx:Script>
+	</mx:HBox>

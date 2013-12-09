@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalGap="1" paddingLeft="0" horizontalAlign="center" verticalAlign="middle">
+	<mx:Metadata>
+		[Event(name="onSendMail", type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			import com.adams.dt.view.components.todolistscreens.ValidationRequest;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import mx.controls.Label;
+			import mx.events.FlexEvent;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.model.ModelLocator;
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.view.components.todolistscreens.ValidationRequest;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+			public var mailVisibility:Boolean;
+			
+			[Bindable]
+			public var belongProfile:String;
+			
+			[Bindable]
+			public var personStore:Persons;
+			
+			private var _text:String;
+			[Bindable]
+			public function get text():String {
+				return _text;
+			}
+			public function set text( value:String ):void {
+				_text = value;				
+				changeStatus();
+			}
+			
+			private var _fromConfirmationCheck:String;
+			[Bindable]
+			public function get fromConfirmationCheck():String {
+				return _fromConfirmationCheck;
+			}
+			public function set fromConfirmationCheck( value:String ):void {
+				_fromConfirmationCheck = value;
+				var code:Array = value.split( "_" );
+				if( code[ 0 ] == belongProfile ) {
+					text = code[ 1 ];
+				}
+			}
+			
+			private function changeStatus():void {
+				for( var i:int = 0; i < numChildren; i++ ) {
+					if(getChildAt( i ) is Image){
+						if( i.toString() == text ) {
+							Image( getChildAt( i ) ).source = getCorrespondImage( i.toString() );
+						} 
+						else {
+							Image( getChildAt( i ) ).source = ImageResourceEmbedClass.blankLabel
+						}
+					}
+				}
+			}			
+			private function getCorrespondImage( index:String ):Class {
+				if( index == "0" ) {
+					return ImageResourceEmbedClass.maybeLabel;
+				}
+				else if( index == "1" ) {
+					return ImageResourceEmbedClass.noLabel;
+				}
+				else {
+					return ImageResourceEmbedClass.yesLabel;
+				}
+				return null;
+			} 
+			
+			private function loadValidateRequest():void {
+				if( correctPerson ) {
+					var validationRequest:ValidationRequest = new ValidationRequest();
+					validationRequest.personsValidation = correctPerson; //personStore;		
+					validationRequest.profilesValidation = belongProfile;
+						
+					validationRequest.addEventListener( "statusUpadate", setStatusPanel ,false,0,true);	
+					validationRequest.addEventListener( "technicalUpadate", onTechnicalUpdate,false,0,true );
+					PopUpManager.addPopUp( validationRequest, model.mainClass, true );
+					PopUpManager.centerPopUp( validationRequest );
+				}
+			}
+			
+			private function onTechnicalUpdate( event:Event ):void {
+				dispatchEvent( new Event( "onSendMail" ) );
+			}
+			
+			private function setStatusPanel( event:Event ):void {
+				var selectedName:String = belongProfile;
+				model.fromConfirmation = selectedName + "_" + "1";							
+			}
+			
+			private function correspondingPerson( personsVo:Persons, profileCode:String ):Persons {
+				var perSon:Persons;
+				if( model.currentUserProfileCode == "FAB" ) {	
+					switch( profileCode ) {
+						case 'CHP':
+							personStore = model.CP_Person;
+							perSon = model.CP_Person;
+							return perSon;
+						break;	
+						case 'CPP':
+							personStore = model.CPP_Person;
+							perSon = model.CPP_Person;
+			    			return perSon;
+			    		break;
+			    		case 'COM':
+							personStore = model.comPerson;
+							perSon = model.comPerson;		    		
+			    			return perSon;
+			    		break;
+			    		case 'AGN':		
+							personStore = model.agencyPerson;
+							perSon = model.agencyPerson;		    		    			
+			    			return perSon;
+			    		break;
+			    		case 'IND':
+							personStore = model.indPerson;
+							perSon = model.indPerson;
+			    			return perSon;
+			    		break;
+			    		case 'EPR':		    
+							personStore = model.impPerson;
+							perSon = model.impPerson;
+			    			return perSon;
+			    		break;
+			    		default:
+			    			return new Persons();
+			    			break;
+					}				
+				}
+				else {					
+					validationBtnId.enabled = false;
+					return new Persons();
+				}
+			}
+			
+			private var _correctPerson:Persons;
+			[Bindable]
+			public function get correctPerson():Persons {
+				return _correctPerson;
+			}
+			public function set correctPerson( value:Persons ):void {
+				_correctPerson = value;
+			} 
+			
+			private function setEnabled( personsVo:Persons, profileCode:String, editValue:Boolean ):Boolean {
+				if( ( correspondingPerson( personsVo, profileCode ).personId != 0 ) && editValue ) {
+					return true;
+				}
+				return false;
+			}
+			
+		]]>
+	</mx:Script>   
+		<mx:Image id="noImage" width="20" height="16" maintainAspectRatio="false"/>
+		<mx:Image id="yesImage" width="20" height="16" maintainAspectRatio="false"/>
+		<mx:Image id="maybeImage" width="20" height="16" maintainAspectRatio="false"/>
+		<mx:Button id="validationBtnId" styleName="validateReqBtn" click="loadValidateRequest()" visible="{ mailVisibility }"  
+			       		enabled="{ setEnabled( correctPerson, belongProfile, model.editForm ) }" />
+</mx:HBox>  

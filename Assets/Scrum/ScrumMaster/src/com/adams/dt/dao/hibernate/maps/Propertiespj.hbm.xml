@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Propertiespj" table="properties_pj">
+        <id name="propertyPjId" type="integer" column="property_pj_ID">
+            <generator class="increment" />
+        </id>
+        <property name="propertyPresetFk">
+            <column name="property_preset_FK" />
+        </property>
+        <property name="projectFk">
+            <column name="project_FK" />
+        </property>
+        <property name="fieldValue">
+            <column name="field_value" />
+        </property>
+    </class> 
+    <query name="Propertiespj.findById">
+        select u from Propertiespj u where u.propertyPjId = ?
+    </query>
+    <query name="Propertiespj.findByName">
+        select u from Propertiespj u where u.fieldValue= ?
+    </query>
+</hibernate-mapping>

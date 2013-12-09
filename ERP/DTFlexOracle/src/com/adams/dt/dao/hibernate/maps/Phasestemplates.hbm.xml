@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Phasestemplates" table="phases_templates">
+        <id name="phaseTemplateId" type="integer" column="phase_template_ID">
+            <generator class="increment" />
+        </id>
+        <property name="phaseName">
+            <column name="phase_name" />
+        </property>
+        <property name="phaseDurationDays">
+            <column name="phase_duration_days" />
+        </property>
+        <property name="workflowId">
+            <column name="workflow_FK" />
+        </property>
+    </class> 
+    <query name="Phasestemplates.findById">
+        select u from Phasestemplates u where u.phaseTemplateId = ?
+    </query>
+    <query name="Phasestemplates.findByWorkFlowId">
+        select u from Phasestemplates u where u.workflowId = ?
+    </query>
+    <query name="Phasestemplates.findByName">
+        select u from Phasestemplates u where u.phaseName = ?
+    </query>
+</hibernate-mapping>

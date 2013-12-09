@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Swiz:Swiz xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:swiz="org.swizframework.core.*"
+		   xmlns:Swiz="org.swizframework.core.mxml.*"
+		   xmlns:dao="com.adams.swizdao.dao.*"
+		   xmlns:collections="com.adams.swizdao.model.collections.*"
+		   xmlns:vo="com.adams.swizdao.model.vo.*"
+		   xmlns:response="com.adams.swizdao.response.*"
+		   xmlns:signals="com.adams.swizdao.signals.*" 
+		   xmlns:processors="com.foomonger.swizframework.processors.*"
+		   xmlns:controller="com.adams.swizdao.controller.*"
+		   xmlns:storage="org.swizframework.storage.*" 
+		   xmlns:mediators="com.adams.dt.view.mediators.*"
+		   xmlns:processor="com.adams.dt.model.processor.*"  
+		   xmlns:services="org.swizframework.utils.services.*" 
+		   xmlns:mediateview="com.briankotek.mediateview.*" 
+		   xmlns:signalprocess="com.nsdevaraj.swiz.processors.*"
+		   activate="initializeHandler(event)" xmlns:util="com.adams.dt.util.*" 
+		   xmlns:limoges="com.adams.dt.*" 
+		   xmlns:service="com.adams.dt.service.*"
+		   xmlns:control="com.adams.dt.control.*"
+		   xmlns:signal="com.adams.dt.signal.*" xmlns:components="com.adams.dt.view.components.*" >
+	
+	<fx:Script>
+		<![CDATA[  
+			import com.adams.dt.model.AbstractDAO;
+			import com.adams.dt.model.vo.*;
+			import com.adams.dt.util.Utils;
+			import com.adams.dt.view.components.FileUploadTileList;
+			
+			import mx.logging.targets.TraceTarget;
+			
+			import org.swizframework.utils.logging.AbstractSwizLoggingTarget;
+			import org.swizframework.utils.logging.SwizLogEventLevel;
+			
+			protected function initializeHandler( event:Event ):void { 
+				var target:TraceTarget = new TraceTarget();
+				target.includeCategory = true; 
+				//target.level = LogEventLevel.ALL;    
+				var targets:AbstractSwizLoggingTarget = new AbstractSwizLoggingTarget();
+				targets.level = SwizLogEventLevel.INFO;
+				//SwizLogger.addLoggingTarget( targets );    
+				messenger.beanFactory = this.beanFactory;
+			}
+		]]> 
+	</fx:Script>
+	
+	<fx:Declarations>
+		<storage:SharedObjectBean/>		
+	</fx:Declarations>
+	
+	<Swiz:config>
+		<swiz:SwizConfig viewPackages="com.adams.dt.view.*" tearDownEventType="{ Event.REMOVED_FROM_STAGE }"/>
+	</Swiz:config>
+	
+	<Swiz:customProcessors>
+		<mediateview:MediateViewProcessor/>		
+		<signalprocess:SignalsProcessor strictArgumentTypes="true" signalPackages='com.adams.dt.signal'/>
+		<signalprocess:MediateSignalProcessor signalPackages="{['com.adams.swizdao.signals']}" strictArgumentTypes="true"/>
+	</Swiz:customProcessors>
+	
+	<Swiz:beanProviders> 
+		<swiz:BeanProvider>
+			
+			<!-- Service Begin-->
+			<util:NativeMessenger id="messenger"/>
+			<services:ServiceHelper swiz="{ this }" />
+			<!-- Service End -->
+			
+			<signal:ControlSignal/>
+			<signals:AbstractSignal/>
+			<signals:ResultSignal/>
+			<signals:PushRefreshSignal/>
+			<!-- Signals End -->
+			
+			<!-- Response Begin -->
+			<service:ServiceResult/>
+			<response:SignalSequence/>
+			<!-- Response End --> 
+			
+			<!-- // Processors Begin -->
+			<processor:CommentVOProcessor id='CommentVOProcessor'/>
+			<processor:WorkflowstemplatesProcessor id='WorkflowstemplatesProcessor'/>
+			<processor:WorkflowsProcessor id='WorkflowsProcessor'/>
+			<processor:TeamTemplatesProcessor id='TeamTemplatesProcessor'/>
+			<processor:TeamlinestemplatesProcessor id='TeamlinestemplatesProcessor'/>
+			<processor:TeamlinesProcessor id='TeamlinesProcessor'/>
+			<processor:TasksProcessor id='TasksProcessor'/>
+			<processor:StatusProcessor id='StatusProcessor'/>
+			<processor:ReportsProcessor id='ReportsProcessor'/>
+			<processor:ReportColumnsProcessor id='ReportColumnsProcessor'/>
+			<processor:ProppresetstemplatesProcessor id='ProppresetstemplatesProcessor'/>
+			<processor:PropertiespresetsProcessor id='PropertiespresetsProcessor'/>
+			<processor:PropertiespjProcessor id='PropertiespjProcessor'/>
+			<processor:ProjectsProcessor id='ProjectsProcessor'/>
+			<processor:ProfilesProcessor id='ProfilesProcessor'/>
+			<processor:ProfileModulesProcessor id='ProfileModulesProcessor'/>
+			<processor:PresetstemplatesProcessor id='PresetstemplatesProcessor'/>
+			<processor:PhasestemplatesProcessor id='PhasestemplatesProcessor'/>
+			<processor:PersonsProcessor id='PersonsProcessor'/>
+			<processor:PhasesProcessor id='PhasesProcessor'/>
+			<processor:GroupsProcessor id='GroupsProcessor'/>
+			<processor:GroupPersonsProcessor id='GroupPersonsProcessor'/>
+			<processor:FileDetailsProcessor id='FileDetailsProcessor'/>
+			<processor:EventsProcessor id='EventsProcessor'/>
+			<processor:DomainWorkflowProcessor id='DomainWorkflowProcessor'/>
+			<processor:DefaultTemplateValueProcessor id='DefaultTemplateValueProcessor'/>
+			<processor:ColumnsProcessor id='ColumnsProcessor'/>
+			<processor:CompaniesProcessor id='CompaniesProcessor'/>
+			<processor:DefaultTemplateProcessor id='DefaultTemplateProcessor'/>
+			<processor:CategoriesProcessor id='CategoriesProcessor'/>
+			<!-- Processors End -->  
+			
+			<!-- // DAO Begin -->
+			<swiz:Prototype name='{Utils.COMMENTVODAO}' constructorArguments='{[Utils.COMMENTVOKEY,CommentVO,CommentVOProcessor,Utils.COMMENTVODAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.WORKFLOWSTEMPLATESDAO}' constructorArguments='{[Utils.WORKFLOWSTEMPLATESKEY,Workflowstemplates,WorkflowstemplatesProcessor,Utils.WORKFLOWSTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.WORKFLOWSDAO}' constructorArguments='{[Utils.WORKFLOWSKEY,Workflows,WorkflowsProcessor,Utils.WORKFLOWSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.TEAMTEMPLATESDAO}' constructorArguments='{[Utils.TEAMTEMPLATESKEY,TeamTemplates,TeamTemplatesProcessor,Utils.TEAMTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.TEAMLINESTEMPLATESDAO}' constructorArguments='{[Utils.TEAMLINESTEMPLATESKEY,Teamlinestemplates,TeamlinestemplatesProcessor,Utils.TEAMLINESTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.TEAMLINESDAO}' constructorArguments='{[Utils.TEAMLINESKEY,Teamlines,TeamlinesProcessor,Utils.TEAMLINESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.TASKSDAO}' constructorArguments='{[Utils.TASKSKEY,Tasks,TasksProcessor,Utils.TASKSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.STATUSDAO}' constructorArguments='{[Utils.STATUSKEY,Status,StatusProcessor,Utils.STATUSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.REPORTSDAO}' constructorArguments='{[Utils.REPORTSKEY,Reports,ReportsProcessor,Utils.REPORTSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.REPORTCOLUMNSDAO}' constructorArguments='{[Utils.REPORTCOLUMNSKEY,ReportColumns,ReportColumnsProcessor,Utils.REPORTCOLUMNSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROPPRESETSTEMPLATESDAO}' constructorArguments='{[Utils.PROPPRESETSTEMPLATESKEY,Proppresetstemplates,ProppresetstemplatesProcessor,Utils.PROPPRESETSTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROPERTIESPRESETSDAO}' constructorArguments='{[Utils.PROPERTIESPRESETSKEY,Propertiespresets,PropertiespresetsProcessor,Utils.PROPERTIESPRESETSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROPERTIESPJDAO}' constructorArguments='{[Utils.PROPERTIESPJKEY,Propertiespj,PropertiespjProcessor,Utils.PROPERTIESPJDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROJECTSDAO}' constructorArguments='{[Utils.PROJECTSKEY,Projects,ProjectsProcessor,Utils.PROJECTSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROFILESDAO}' constructorArguments='{[Utils.PROFILESKEY,Profiles,ProfilesProcessor,Utils.PROFILESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PROFILEMODULESDAO}' constructorArguments='{[Utils.PROFILEMODULESKEY,ProfileModules,ProfileModulesProcessor,Utils.PROFILEMODULESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PRESETSTEMPLATESDAO}' constructorArguments='{[Utils.PRESETSTEMPLATESKEY,Presetstemplates,PresetstemplatesProcessor,Utils.PRESETSTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PHASESTEMPLATESDAO}' constructorArguments='{[Utils.PHASESTEMPLATESKEY,Phasestemplates,PhasestemplatesProcessor,Utils.PHASESTEMPLATESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PERSONSDAO}' constructorArguments='{[Utils.PERSONSKEY,Persons,PersonsProcessor,Utils.PERSONSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.PHASESDAO}' constructorArguments='{[Utils.PHASESKEY,Phases,PhasesProcessor,Utils.PHASESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.GROUPSDAO}' constructorArguments='{[Utils.GROUPSKEY,Groups,GroupsProcessor,Utils.GROUPSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.GROUPPERSONSDAO}' constructorArguments='{[Utils.GROUPPERSONSKEY,GroupPersons,GroupPersonsProcessor,Utils.GROUPPERSONSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.FILEDETAILSDAO}' constructorArguments='{[Utils.FILEDETAILSKEY,FileDetails,FileDetailsProcessor,Utils.FILEDETAILSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.EVENTSDAO}' constructorArguments='{[Utils.EVENTSKEY,Events,EventsProcessor,Utils.EVENTSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.DOMAINWORKFLOWDAO}' constructorArguments='{[Utils.DOMAINWORKFLOWKEY,DomainWorkflow,DomainWorkflowProcessor,Utils.DOMAINWORKFLOWDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.DEFAULTTEMPLATEVALUEDAO}' constructorArguments='{[Utils.DEFAULTTEMPLATEVALUEKEY,DefaultTemplateValue,DefaultTemplateValueProcessor,Utils.DEFAULTTEMPLATEVALUEDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.COLUMNSDAO}' constructorArguments='{[Utils.COLUMNSKEY,Columns,ColumnsProcessor,Utils.COLUMNSDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.COMPANIESDAO}' constructorArguments='{[Utils.COMPANIESKEY,Companies,CompaniesProcessor,Utils.COMPANIESDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.DEFAULTTEMPLATEDAO}' constructorArguments='{[Utils.DEFAULTTEMPLATEKEY,DefaultTemplate,DefaultTemplateProcessor,Utils.DEFAULTTEMPLATEDAO]}' type='{AbstractDAO}' singleton='true'/>
+			<swiz:Prototype name='{Utils.CATEGORIESDAO}' constructorArguments='{[Utils.CATEGORIESKEY,Categories,CategoriesProcessor,Utils.CATEGORIESDAO]}' type='{AbstractDAO}' singleton='true'/>  
+			<swiz:Prototype name='{Utils.BASICFILETYPE}' type='{FileUploadTileList}' singleton='true'/>
+			<swiz:Prototype name='{Utils.TASKFILETYPE}'  type='{FileUploadTileList}' singleton='true'/>
+			<swiz:Prototype name='{Utils.RELEASEFILETYPE}'  type='{FileUploadTileList}' singleton='true'/>
+			<dao:PagingDAO/>
+			<!-- DAO End --> 
+			<!-- // Controller Begin -->
+			<control:SignalsCommand/>
+			<control:ReportsCommand/>
+			<control:StatesCommand/>
+			<control:GetAllCommand/> 
+			<control:ProjectCommand/> 
+			<control:NotesCommand/> 
+			<control:TaskCommand/>  
+			<control:FilesCommand/> 
+			<control:PersonsCommand/> 
+			<control:PropertiesCommand/>
+			
+			<vo:CurrentInstance/> 
+			<controller:ServiceController/>
+			<limoges:BootStrapCommand/>
+			<!-- Controller End --> 
+			<mediators:MainViewMediator id='mainview' skinClass='com.adams.dt.view.MainSkinView' width='100%' height='100%'/>
+		</swiz:BeanProvider>
+	</Swiz:beanProviders>
+</Swiz:Swiz>

@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	EditorPanel
+	
+	This is the main interface for the Blog Editor application. The panel consists of three components:
+	The RichText editor, the HTML editor, and the InsertForm.
+	
+	The CubeRotate effect is used to switch between these components. This eliminates the need for pop-ups
+	as well as making better use of real estate.
+-->
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+	xmlns:mxeffects="com.adobe.ac.mxeffects.*" 
+	xmlns:blogedit="com.adobe.blog.editor.*"
+	creationComplete="initComp()">
+
+	<mx:Metadata>
+		[Event(name="saveArticle",type="com.adobe.blog.events.BlogEvent")]
+	</mx:Metadata>
+	
+	<mx:Script>
+	<![CDATA[
+		import com.adobe.blog.data.Category;
+		import com.adobe.blog.data.Article;
+		import com.adobe.blog.events.BlogEvent;
+		
+		import mx.events.CloseEvent;
+		import mx.core.IFlexDisplayObject;
+		import mx.controls.textClasses.TextRange;
+		import mx.core.UIComponent;
+		import mx.controls.ComboBox;
+		import mx.controls.Alert;
+		import mx.collections.ArrayCollection;
+		import mx.events.ListEvent;
+		import mx.managers.PopUpManager;
+		
+		[Bindable] public var blogCategories:ArrayCollection;
+		
+		/**
+		 * editor
+		 *
+		 * Returns the current editor (RichTextEditor or TextArea).
+		 */
+		private var _editor:UIComponent;
+		public function get editor() : UIComponent {
+			return _editor;
+		}
+		
+		/**
+		 * article
+		 *
+		 * The article being edited (or null if a new article)
+		 */
+		[Bindable]
+		private var _article:Article;
+		public function set article(a:Article) : void
+		{
+			_article = a;
+			invalidateProperties();
+		}
+		public function get article() : Article
+		{
+			return _article;
+		}
+		
+		/**
+		 * htmlText
+		 *
+		 * The raw HTML for the article.
+		 */
+		private var _htmlText:String;
+		public function set htmlText(s:String) : void
+		{
+			_htmlText = s;
+			invalidateProperties();
+		}
+		public function get htmlText() : String
+		{
+			if( _editor == richEditor ) return richEditor.text;
+			else return htmlEditor.text;
+		}
+		
+		/**
+		 * initComp
+		 *
+		 * This function is called from the component's creationComplete event. The RTE is modified
+		 * to hold a ComboBox of simple formatting rules.
+		 */
+		private function initComp() : void
+		{
+			var test:ComboBox = new ComboBox();
+			test.prompt = "Format...";
+			test.dataProvider = new ArrayCollection( [{label:"Code", fontFamily:"Courier New", fontSize:12, fontWeight:"normal", color:null},
+			                                          {label:"Heading", fontFamily:"Arial", fontSize:14, fontWeight:"bold", color:0x0099CC}] );
+			test.addEventListener(ListEvent.CHANGE, applyFormat);
+			richEditor.toolbar.addChild( test );	
+		}
+		
+		/**
+		 * commitProperties
+		 *
+		 * This override is called once all of the properties have been set. Now the properties can
+		 * be used. In this case, the article's properties set the text and other components.
+		 */
+		override protected function commitProperties():void
+		{
+			super.commitProperties();
+			
+			if( _article != null ) {
+				richEditor.text = _article.content;
+				htmlEditor.text     = _article.content;
+				articleTitle.text   = _article.title;
+				showCategory( _article.category );
+			} else {
+				richEditor.text = "";
+				htmlEditor.text     = "";
+				articleTitle.text   = "";
+				category.selectedIndex = -1;
+			}
+		}
+		
+		/**
+		 * showCategory
+		 *
+		 * This function selects the category which matches what was in the article.
+		 */
+		private function showCategory( categoryLabel:String ) : void
+		{
+			for(var i:int=0; i < blogCategories.length; i++) {
+				var c:Category = blogCategories[i] as Category;
+				if( categoryLabel == c.label ) {
+					category.selectedIndex = i;
+					break;
+				}
+			}
+		}
+		
+		/**
+		 * switchEditors
+		 *
+		 * Switches between the RTE and TextArea editors. The latter shows the raw htmlText in 
+		 * the RTE.
+		 */
+		private function switchEditors() : void
+		{
+			if( editStack.selectedChild == richCanvas )
+				_editor = richEditor;
+			else
+				_editor = htmlEditor;
+		}
+		
+		/**
+		 * syncEditors
+		 *
+		 * This function makes sure that what's in the RTE shows up in the HTML editor (TextArea).
+		 */
+		private function syncEditors() : void
+		{
+			htmlEditor.text = richEditor.text;
+		}
+		
+		/**
+		 * applyFormat
+		 *
+		 * Applys one of the special formats that were added in the init method. The
+		 * currently selected text is changed.
+		 */
+		private function applyFormat( event:ListEvent ) : void
+		{
+			var sel:TextRange = richEditor.selection;
+			var selLen:int = sel.endIndex - sel.beginIndex;
+			if( selLen ) {
+				sel.fontFamily = event.target.selectedItem.fontFamily;
+				sel.fontSize   = event.target.selectedItem.fontSize;
+				sel.fontWeight = event.target.selectedItem.fontWeight;
+				if( event.target.selectedItem.color != null ) {
+					sel.color = event.target.selectedItem.color;
+				}
+			}
+			
+			event.target.selectedIndex = -1;
+		}
+		
+		/**
+		 * insertUploadLink
+		 *
+		 * This method handles the INSERT_LINK event from the InsertForm. The link is inserted
+		 * as HTML <a> (anchor) tag along with font color and underlining. Ideally the color would
+		 * come from a style sheet.
+		 */
+		private function insertUploadLink( event:BlogEvent ) : void
+		{
+			var sel:TextRange = richEditor.selection;
+			sel.htmlText = "<font color='#0066cc'><u><a href='"+event.linkURL+"'>"+event.linkLabel+"</a></u></font> ";
+			syncEditors();
+			
+			insertToggle.selected = false;
+			flipIn.target = insertCanvas;
+			editStack.selectedChild = richCanvas;
+			htmlToggle.enabled = true;
+			flipIn.direction = "RIGHT";
+		}
+		
+		/**
+		 * insertSWF
+		 *
+		 * This method handles the INSERT_SWF event from the InsertForm. Like the link, the information
+		 * about the SWF or image is inserted directly into the text stream. However, there isn't an
+		 * HTML equivalent for this (<img> doesn't really work too well yet), so the notation:
+		 *
+		 *		[swf url="http://urlto.swf" width="#" height="#"]
+		 *
+		 * is used to indicate the location where the image or swf should appear.
+		 */
+		private function insertSWF( event:BlogEvent ) : void
+		{
+			var sel:TextRange = richEditor.selection;
+			var swfCode:String = "[swf url=\""+event.swfURL+"\" align=\""+event.swfAlign+"\"";
+			if( event.swfWidth.length > 0 ) swfCode += " width=\""+event.swfWidth+"\"";
+			if( event.swfHeight.length> 0 ) swfCode += " height=\""+event.swfHeight+"\"";
+			swfCode += "]";
+			sel.htmlText = swfCode;
+			syncEditors();
+			
+			insertToggle.selected = false;
+			flipIn.target = insertCanvas;
+			editStack.selectedChild = richCanvas;
+			htmlToggle.enabled = true;
+			flipIn.direction = "RIGHT";
+		}
+		
+		/**
+		 * cancelEdits
+		 *
+		 * Removes any changes made and resets the forms. If askFirst is true, then an Alert box
+		 * is displayed asking if the user really wants to do it. Note that when the Alert box is
+		 * displayed it is asynchronous; the response from the user is handled in the cancelEditsResponse
+		 * function.
+		 */
+		private function cancelEdits( askFirst:Boolean=true ) : void
+		{
+			if( askFirst && richEditor.text.length > 0 ) {
+				mx.controls.Alert.show("Do you want to save your changes first?", 
+						"Cancel Edit", 
+						Alert.YES|Alert.NO, 
+						this, 
+						cancelEditsResponse);
+				return;
+			}
+			
+			article = null;
+			invalidateProperties();
+		}
+		
+		/**
+		 * cancelEditsResponse
+		 *
+		 * This function is called when the user picks Yes or No from the Alert Box presented in cancelEdits().
+		 * If the user picks No, then cancelEdits is called again, but this time with false as its parameter.
+		 */
+		private function cancelEditsResponse( event:CloseEvent ) : void
+		{
+			if( event.detail == Alert.NO ) {
+				cancelEdits(false);
+			}
+		}
+		
+		/**
+		 * saveChanges
+		 *
+		 * When the form has been completely filled out, the article is placed into an event
+		 * and the event is set to the BlogEditor to be saved.
+		 */
+		private function saveChanges() : void
+		{
+			if( category.selectedIndex < 0 ) return;
+			if( richEditor.text.length == 0 ) return;
+			if( articleTitle.text.length == 0 ) return;
+			
+			var event:BlogEvent = new BlogEvent(BlogEvent.SAVE_ARTICLE);
+			event.articleId = article == null ? "0" : article.id;
+			event.articleTitle = articleTitle.text;
+			event.articleContent = richEditor.text;
+			event.categoryCode = category.selectedItem.code;
+			dispatchEvent( event );
+			
+			cancelEdits(false);
+		}
+		
+		/**
+		 * showHTMLEditor
+		 *
+		 * This function switches to the HTML editor view, copying the htmlText from the RTE to
+		 * the TextArea.
+		 */
+		private function showHTMLEditor( event:Event ) : void
+		{
+			insertToggle.enabled = false;
+			if( event.target.selected ) {
+				flipOut.target = editStack.selectedChild;
+				flipOut.siblings = [ htmlCanvas ];
+				editStack.selectedChild = htmlCanvas;
+				flipOut.direction = "RIGHT";
+			} else {
+				flipIn.target = htmlCanvas;
+				editStack.selectedChild = richCanvas;
+				insertToggle.enabled = true;
+				flipIn.direction = "LEFT";
+			}
+		}
+		
+		/**
+		 * showInsertForm
+		 *
+		 * Shows the InsertForm component.
+		 */
+		private function showInsertForm( event:Event ) : void
+		{
+			htmlToggle.enabled = false;
+			if( event.target.selected ) {
+				flipOut.target = editStack.selectedChild;
+				flipOut.siblings = [ insertCanvas ];
+				editStack.selectedChild = insertCanvas;
+				flipOut.direction = "LEFT";
+			} else {
+				flipIn.target = insertCanvas;
+				editStack.selectedChild = richCanvas;
+				htmlToggle.enabled = true;
+				flipIn.direction = "RIGHT";
+			}
+		}
+	]]>
+	</mx:Script>
+
+	<!--
+		Alex Uhlmann's special effects. CubeRotate spins the contents as if they were on the
+		face of a cube.
+	-->
+	
+	<mxeffects:CubeRotate 
+		id="flipOut" 
+		target="{ richCanvas }" siblings="{ [ htmlCanvas ] }" 
+		direction="RIGHT" duration="1000"/>
+	<mxeffects:CubeRotate 
+		id="flipIn" 
+		target="{ htmlCanvas }" siblings="{ [ richCanvas ] }" 
+		direction="LEFT" duration="1000"/>
+		
+	<!--
+		Article Title
+	-->
+	<mx:StringValidator source="{articleTitle}" property="text" 
+		required="true"
+		minLength="1" />
+		
+	<mx:Label x="38" y="10" text="Title:" fontWeight="bold"/>
+	<mx:TextInput id="articleTitle" right="10" left="79" top="8"/>
+	
+	<!-- 
+		Article Category
+	-->
+	<mx:NumberValidator source="{category}" property="selectedIndex" minValue="0" maxValue="1000"
+		required="true"
+		lowerThanMinError="You must select a category to save the Article"
+		/>
+	
+	<mx:Label x="10" y="36" text="Category:" fontWeight="bold"/>
+	<mx:ComboBox id="category" left="79" top="34" right="327"
+		prompt="Select..."
+		dataProvider="{blogCategories}"
+		/>
+	
+	<!--
+		Edit Mode Buttons
+	-->
+	<mx:Button id="insertToggle" label="Insert..." right="110" top="34" 
+		toggle="true" 
+		selected="false"
+		toolTip="Inserts a link to a file or an image/SWF"
+		click="showInsertForm(event)"/>
+	<mx:Button id="htmlToggle" label="HTML Editor" right="10" top="34"
+		toggle="true" 
+		selected="false" 
+		toolTip="Switches to the HTML editor"
+		click="showHTMLEditor(event)"/>
+	
+	<!--
+		Article Editors
+	-->
+	<mx:ViewStack id="editStack" right="10" left="10" bottom="10" top="64"
+		change="switchEditors()" 
+		creationPolicy="all">
+	
+		<mx:Canvas id="richCanvas" width="100%" height="100%" hideEffect="flipOut" effectStart="htmlEditor.text=richEditor.text">
+			<mx:RichTextEditor id="richEditor" dropShadowEnabled="false" borderColor="#ffffff" left="0" right="0" bottom="0" top="0" title="Edit Article" alpha="1.0">
+			</mx:RichTextEditor>
+		</mx:Canvas>
+		
+		<mx:Panel id="htmlCanvas" layout="absolute" title="HTML Editor" styleName="HTMLEditor" width="100%" height="100%" hideEffect="flipIn" effectStart="richEditor.text=htmlEditor.text">
+			<mx:TextArea id="htmlEditor" left="0" right="0" top="0" bottom="0"/>
+		</mx:Panel>
+		
+		<blogedit:InsertForm id="insertCanvas" width="100%" height="100%" hideEffect="flipIn"
+			insertLink="insertUploadLink(event)"
+			insertSWF="insertSWF(event)"
+			/>
+		
+	</mx:ViewStack>
+		
+	<!--
+		Control Buttons
+	-->
+	<mx:ControlBar>
+		<mx:Button label="Save" width="64" click="saveChanges()"/>
+		<mx:Button label="Cancel" width="64" click="cancelEdits(true)"/>
+	</mx:ControlBar>
+</mx:Panel>

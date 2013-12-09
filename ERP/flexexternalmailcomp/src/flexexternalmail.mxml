@@ -1,0 +1,1087 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+	currentState="{getState(model.expiryState)}" backgroundColor="#363636"
+	xmlns:util="com.adams.dt.business.*" 
+	xmlns:business="com.adams.dt.business.*" 
+	xmlns:control="com.adams.dt.control.*" 
+	xmlns:view="com.adams.dt.view.*"
+	xmlns:todo="com.adams.dt.view.components.*" initialize="{currentState = 'loadState'}" creationComplete="creationComplete();"> 
+	<mx:Binding source="model.messageFileCollection" destination="this.messageFileDownload"/>
+	
+	<mx:Style source="assets/css/Main.css"/>                      
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.PhasestemplatesEvent;
+			import com.adams.dt.event.PresetTemplateEvent;
+			import com.adams.dt.event.CategoriesEvent;
+			import com.adams.dt.event.StatusEvents;
+			import com.adams.dt.event.PropertiespresetsEvent;
+			import com.adams.dt.event.ProfilesEvent;
+			import com.adams.dt.event.ChannelSetEvent;
+			import com.adams.dt.model.vo.LoginVO;
+			import mx.controls.LinkButton;
+			import com.adams.dt.event.LangEvent;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adobe.cairngorm.control.CairngormEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.generator.SequenceGenerator; 
+			
+			import mx.rpc.IResponder;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.PropertiespjEvent;
+			import mx.binding.utils.BindingUtils;
+			import com.adams.dt.event.ProjectsEvent;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Categories;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.core.Application; 
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.ModelLocator;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import mx.core.ApplicationGlobals;
+			import mx.core.IFlexDisplayObject;			
+			import mx.rpc.remoting.RemoteObject;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.events.PropertyChangeEvent;
+
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			import mx.messaging.events.ChannelEvent;
+			
+			import mx.core.Repeater;
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			import flash.net.FileReference;
+			import flash.net.FileFilter;
+	        import flash.utils.ByteArray;
+	        import flash.display.Loader;
+	        import flash.display.LoaderInfo;
+	        import mx.events.*;
+			import flash.events.*;
+	        
+			import com.adams.dt.model.vo.Tasks;						
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.event.WorkflowstemplatesEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.business.util.Utils;
+			
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();	
+			private var sep:String = "&#$%^!@";	
+			private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}
+			/* private function getBody(str:String):String{
+				return String(str.split(sep)[2]).substr(6);
+			} */
+			private function getBody(str:String):String{
+				return String(str.split(sep)[2]);
+			} 
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+			
+			private var channelSet:ChannelSet;
+			
+			[Bindable]
+			private var taskLocalId:Number;
+			
+			[Bindable]
+			private var impProjectLocalId:Number;
+			
+			[Bindable]
+			private var personLocalId:Number;
+			
+			[Bindable]
+			private var taskLocalEmailId:String;
+			
+			[Bindable]
+			private var fileLocalId:Number;	
+			
+			[Bindable]
+			private var urlvalue:String;
+			
+			[Bindable]
+			private var commonUserName:String;
+			[Bindable]
+			private var commonPassword:String;
+			
+			private var fileReference:FileReference;
+			private var sendFileReference:FileReference;
+			private var superbFileReference:FileReference;
+			
+			private var storeFileReference:FileReference;
+			private var dataByteArray:ByteArray = new ByteArray();
+			private var mLoader:Loader;
+			private var allTypeFilter:FileFilter = new FileFilter("All Files (*.*)","*.*");
+			
+			private var mailArrColl:ArrayCollection = new ArrayCollection();
+			private var parentFolderName:String = "c:/temp/";
+			private var _strUploadScript:String = "c:/temp/";
+			
+			[Bindable]
+    		[Embed("assets/iBrief/skins/Preloader.swf#preloader")]
+   			private var LOADING:Class;
+   			
+   			private var upArray:Array;
+   			[Bindable]
+   			private var displyType:Boolean = false;
+   			   			
+			
+			private function getState(cState:String):String{
+								
+				if(cState=="datafoundState"){
+					currentState = "datafoundState";
+				}
+				else if(cState=="loadState"){ 
+					currentState = "loadState";			
+				}
+				else if(cState=="expireState"){ 
+					currentState = "expireState";			
+				}
+				else if(cState=="sentState"){ 
+					currentState = "sentState";			
+				}
+				else if(cState=="todoState"){ 
+					currentState = "todoState";			
+				}
+				else if(cState=="impState"){ 
+					currentState = "impState";			
+				}
+				else if(cState=="mailState"){ 
+					currentState = "mailState";	
+					model.businessCard = model.person;		
+				}
+				else if(cState=="delaySendState"){ 
+					currentState = "delaySendState";			
+				}	
+				//Alert.show("getState :"+currentState);			
+				return currentState;
+			}
+						
+			public function creationComplete():void
+			{
+				model.mainClass = this;
+				//initAuthChannel();
+				initChannel();
+			} 
+			private function initAuthChannel():void {
+				var channel:AMFChannel = new AMFChannel("my-amf", model.serverLocation+"spring/messagebroker/amf");
+ 				var channelSet:ChannelSet = new ChannelSet([channel]);
+				model.channelSet =  channelSet;
+			}
+			private function initChannel():void{ 
+				var url:String = Application.application.parameters.htmlURL; 
+				var urlsvalues:String = Application.application.parameters.htmlURL; 
+				urlvalue = urlsvalues.substring(0,urlsvalues.indexOf("DTFlex/")+7);   	
+							
+				url = url.split("#amp").join("&"); 
+				
+				//http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Prop&IMPtaskId=74&IMPprojId=20
+				//http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?msgId=70&projId=19
+				//Martin@gmail.com
+				//Thierry@gmail.com
+				//http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?msgId=75
+				//var tempurl:String = "http://192.168.1.14:8181/DTFlex/ExternalMailV1/flexexternalmailcomponent.html?type=Prop&IMPtaskId=74&IMPprojId=20"
+				
+				/* MAIL */
+				//var tempurl:String = "http://192.168.1.11:8181/DTFlex/ExternalMailV1/flexexternalmailcomponent.html?type=Mail&msgId=75";
+				//var tempurl:String = "http://192.168.1.11:8181/DTFlex/ExternalMailV1/flexexternalmailcomponent.html?type=Mail&user=ovalmy&pass=acv&msgId=76";
+				
+				/* IMPPROPERTIES */
+				//http://192.168.1.11:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Prop&IMPtaskId=77&IMPprojId=12
+				//var tempurl:String = "http://192.168.1.11:8181/DTFlex/ExternalMailV1/flexexternalmailcomponent.html?type=Prop&user=martin&pass=bro&IMPtaskId=77&IMPprojId=12"
+				
+				/* MAIL TODOLIST */
+				//var tempurl:String = "http://192.168.1.11:8181/DTFlex/ExternalMailV1/flexexternalmailcomponent.html?type=EMailId&mailId=Martin@gmail.com"
+
+				//var tempurl:String = "http://192.168.1.11:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Prop&IMPtaskId=4&IMPprojId=1";
+				//var tempurl:String = "http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?type=EMailId#ampmailId=kutti.kumar@gmail.com";
+				
+				//var tempurl:String = "http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Prop#ampIMPtaskId=8#ampIMPprojId=2";
+				//var tempurl:String = "http://192.168.1.16:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Mail#ampmsgId=5";
+			
+				/* var tempurl:String = "http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Prop#ampIMPtaskId=4#ampIMPprojId=1";
+			
+				
+				//var tempurl:String = "http://192.168.1.14:8181/DTFlex/ExternalMail/flexexternalmail.html?type=Reader#ampReadtaskId=8#ampReadFileId=2";
+
+				
+				var url:String = tempurl; 
+				urlvalue = tempurl; 
+				urlvalue = urlvalue.substring(0,urlvalue.indexOf("DTFlex/")+7);  
+				url = url.split("#amp").join("&");   
+				 */
+				model.serverLocation = urlvalue;
+				model.editForm = true;	   			
+				
+				//initAuthChannel();
+				
+				var langchannel:AMFChannel = new AMFChannel("my-streaming-amf", model.serverLocation+"spring/messagebroker/amfstream");
+   				var channelSetlang:ChannelSet = new ChannelSet();
+   				channelSetlang.addChannel(langchannel);
+   				model.langChannelSet = channelSetlang; 
+							
+ 				var channel:AMFChannel = new AMFChannel("my-streaming-amf", model.serverLocation+"spring/messagebroker/amfstream");
+ 				channelSet = new ChannelSet();
+				channelSet.addChannel(channel); 
+				model.channelSet = channelSet; 
+				
+				var pushchannel:AMFChannel = new AMFChannel("my-longpolling-amf", model.serverLocation+"spring/messagebroker/amflongpolling");
+   				var pushchannelSet:ChannelSet = new ChannelSet();
+   				pushchannelSet.addChannel(pushchannel);
+   				model.pushchannelset = channelSet; 
+				loginService.lang.setCredentials('joel','arc')
+				model.parentFolderName = parentFolderName;
+								
+				var rootFile:String = url.split(".html?")[1];			    									
+				var viewtype:String = rootFile.split("&")[0];	
+				var typeName:String = viewtype.split("type=")[1];
+				model.typeName = typeName;
+					
+				status("url :"+url+"\n");
+				status("viewtype :"+viewtype+"\n");
+				status("typeName :"+typeName+"\n"); 	
+				if(typeName == 'Mail') 	
+				{						
+					var setMessage:String = rootFile.split("&")[1];
+					status("Mail -- setMessage :"+setMessage+"\n");
+					taskLocalId = setMessage.split("msgId=")[1];
+					status("Mail -- taskLocalId :"+taskLocalId+"\n"); 
+										
+				//	authendications(commonUserName,commonPassword); 
+					
+					planView.selectedIndex = 0;
+					displyType = false;
+					
+					getMailTaskId(taskLocalId);
+				}
+				else if(typeName == 'Prop')
+				{
+					var setMessageDetails:String = rootFile.split("&")[1];
+					status("prop -- setMessageDetails :"+setMessageDetails+"\n");
+									
+					taskLocalId = setMessageDetails.split("IMPtaskId=")[1];
+					status("prop -- taskLocalId :"+taskLocalId+"\n");					
+					
+					var setProjectDetails:String = rootFile.split("&")[2];	
+					status("prop -- setProjectDetails :"+setProjectDetails+"\n");
+					
+					impProjectLocalId = setProjectDetails.split("IMPprojId=")[1];	
+					status("prop -- impProjectLocalId :"+impProjectLocalId+"\n"); 
+								
+				//	authendications(commonUserName,commonPassword); 
+					
+					planView.selectedIndex = 0;
+					displyType = true;
+					getIMPInitTask(taskLocalId);
+				}
+				else if(typeName == 'EMailId') 
+				{					
+					var setmailId:String = rootFile.split("&")[1];
+					status("EMailId -- setmailId :"+setmailId+"\n");
+					
+					taskLocalEmailId = setmailId.split("mailId=")[1];
+					status("EMailId -- setmailId :"+taskLocalEmailId+"\n");
+										
+					planView.selectedIndex = 0;
+					displyType = true;
+					getEmailSearch(taskLocalEmailId);
+				} 
+				else if(typeName == 'Reader')
+				{
+					var setMessageRead:String = rootFile.split("&")[1];
+					status("Reader -- setMessageRead :"+setMessageRead+"\n");
+									
+					taskLocalId = setMessageRead.split("ReadtaskId=")[1];
+					status("Reader -- taskLocalId :"+taskLocalId+"\n");					
+					
+					var setProjectRead:String = rootFile.split("&")[2];	
+					status("Reader -- setProjectRead :"+setProjectRead+"\n");
+					
+					impProjectLocalId = setProjectRead.split("ReadFileId=")[1];	
+					status("Reader -- impProjectLocalId :"+impProjectLocalId+"\n"); 
+					planView.selectedIndex = 0;
+					displyType = true;
+					getIMPReader(taskLocalId);
+				}
+					
+			}
+			private function authendications(user:String,pass:String):void
+			{
+				var loginVO : LoginVO = new LoginVO();
+  				loginVO.userName = user;
+  				loginVO.password = pass;
+   				var csevent:ChannelSetEvent = new ChannelSetEvent( ChannelSetEvent.SET_CHANNEL );
+  				csevent.loginVO = loginVO;
+ 	 			var eventsArr:Array = [csevent]
+  				var handler:IResponder = new Callbacks(result,fault)
+  				var loginSeq:SequenceGenerator = new SequenceGenerator(eventsArr,handler)
+  				loginSeq.dispatch();
+			}			
+	       	public function result(ev:Event):void {
+	       	}
+	       	public function fault(ev:Event):void {
+	       	}
+			//impremier project disply
+			private function getIMPInitTask(taskLocalId:Number):void
+			{			
+				
+				
+				var levent :LangEvent = new LangEvent(LangEvent.EVENT_GET_ALL_LANGS);
+    			var eventconsumer:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CONSU_STATUSONLINE);
+    			
+    			var getAllPhaseTemp:PhasestemplatesEvent = new PhasestemplatesEvent(PhasestemplatesEvent.EVENT_GET_ALL_PHASESTEMPLATESS,handler);
+    			var prof_event:ProfilesEvent = new ProfilesEvent(ProfilesEvent.EVENT_GET_ALL_PROFILESS);
+	   	 		var pevent:PropertiespresetsEvent = new PropertiespresetsEvent(PropertiespresetsEvent.EVENT_GET_ALLPROPERTY);
+	   	 		var getAllStatus:StatusEvents = new StatusEvents(StatusEvents.EVENT_GET_ALL_STATUS,handler);
+	 			var workflowTemplateEv:WorkflowstemplatesEvent = new WorkflowstemplatesEvent(WorkflowstemplatesEvent.EVENT_GET_ALL_WORKFLOWSTEMPLATESS);
+	 			var cataEvent:CategoriesEvent = new CategoriesEvent(CategoriesEvent.EVENT_GET_ALL_CATEGORIES);
+	 			var personEvt:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GET_ALL_PERSONSS);
+	 			var getAllpresetTemp:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_GETALL_PRESETTEMPLATE,handler);
+	 			
+				var event:TasksEvent = new TasksEvent(TasksEvent.EVENT_GET_TASKS);
+				event.tasks = new Tasks();
+				event.tasks.taskId = taskLocalId;
+
+				var evtArr:Array = [levent,getAllPhaseTemp,getAllpresetTemp,cataEvent,personEvt,event,eventconsumer,getAllStatus,workflowTemplateEv,prof_event,pevent]
+				         		
+			 	var handler:IResponder = new Callbacks(Resultsview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch();
+			}
+			
+			private function getEmailSearch(taskEmailId:String):void
+			{	
+				var levent :LangEvent = new LangEvent(LangEvent.EVENT_GET_ALL_LANGS);
+				var getAllpresetTemp:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_GETALL_PRESETTEMPLATE,handler);
+				var event:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GET_PERSONS);
+				//event.emailId = taskEmailId;
+				event.loginName = taskEmailId;   //martin2  //wvalmy //ovalmy  
+          		var eventconsumer:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CONSU_STATUSONLINE);
+    			var evtArr:Array = [levent,getAllpresetTemp,event,eventconsumer]
+    			
+			 	var handler:IResponder = new Callbacks(Resultsview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch();			
+			}  
+			private function getIMPReader(taskreaderId:Number):void
+			{
+				var levent :LangEvent = new LangEvent(LangEvent.EVENT_GET_ALL_LANGS);
+				var eventconsumer:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CONSU_STATUSONLINE);
+				var event:TasksEvent = new TasksEvent(TasksEvent.EVENT_GET_TASKS);
+				event.tasks = new Tasks();
+				event.tasks.taskId = taskLocalId;
+
+				var evtArr:Array = [levent,eventconsumer,event]
+				         		
+			 	var handler:IResponder = new Callbacks(Resultsview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch();
+			}
+			public function Resultsview(rpcEvent : Object):void{       	
+				model.loc.language=="Fr"?frCheck.selected = true:enCheck.selected = true;
+	        }
+			public function saveSettings():void { 
+		 		model.loc.language = enCheck.selected?"En":"Fr";
+		 	} 
+		 	
+		 	public function messageSettings():void { 
+		 		currentState = "sentState";
+		 	} 
+		 	public function status(msg:String):void
+			{
+				//statusArea.text += msg;
+				//statusArea.validateNow();
+				//statusArea.verticalScrollPosition = statusArea.textHeight;
+			}
+			private function onTabNavigatorChangeIMP( event:Event ):void {				
+				impfileView.tileFileCollection = model.modelTileFileCollection;
+			}
+			
+			private function onTabNavigatorChange( event:Event ):void {
+				
+				fileView.tileFileCollection = model.modelTileFileCollection;
+			}
+			private function onTabChange( event:Event ):void {
+				//model.propertiespresetsCollection.refresh();				
+			}
+			private function setToDoName():void{
+				currentState = 'todoState';
+				this.planView.selectedIndex = 0;
+	        	model.workflowState=0;
+	        	//todoLabel.text = model.loc.getString('toDoList');
+        	}
+        	[Bindable]
+			private var messageCollection:ArrayCollection = new ArrayCollection();
+			
+			private var _messageDownloadCollection:ArrayCollection;
+			public function set messageFileDownload (value:ArrayCollection):void
+			{
+				_messageDownloadCollection = value;
+				currentDisplyFile(_messageDownloadCollection);
+			}
+			[Bindable]
+			public function get messageFileDownload():ArrayCollection
+			{
+				return _messageDownloadCollection;
+			}
+			
+			private function currentDisplyFile(value:ArrayCollection):void
+			{
+				messageCollection = new ArrayCollection();
+				for each(var item:FileDetails in messageFileDownload)
+				{	
+					if(item.taskId == taskLocalId){
+						messageCollection.addItem(item);
+					}
+				}
+				
+				repdownload.dataProvider = messageCollection;
+				repdownload.dataProvider.refresh();
+			} 
+			private function getMailTaskId(taskLocalId:Number):void
+			{				
+				var event:TasksEvent = new TasksEvent(TasksEvent.EVENT_GETMAILTASKID_TASKS);
+				event.tasks = new Tasks();
+				event.tasks.taskId = taskLocalId;
+          		CairngormEventDispatcher.getInstance().dispatchEvent( event );	   			
+			}  
+			public function onReplyClick():void{
+				
+				var personEvent:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GETMSG_SENDER);
+				var person:Persons = new Persons();
+				trace("onReplyClick personId:"+model.currentTasks.personDetails.personId);
+				//Alert.show("\n onReplyClick personId:"+model.currentTasks.personDetails.personId);
+				person.personId = model.currentTasks.personDetails.personId;
+				var profiles:Profiles = new Profiles();
+				//Alert.show("onReplyClick profileId:"+model.currentTasks.workflowtemplateFK.profileObject.profileId);
+				profiles.profileId = model.currentTasks.workflowtemplateFK.profileObject.profileId;
+				personEvent.persons = person;
+				personEvent.profiles = profiles;
+				///////////////CairngormEventDispatcher.getInstance().dispatchEvent(personEvent); 
+				
+				trace("onReplyClick :"+person.personId+" , "+profiles.profileId);
+				
+				contentArea.editable = false;
+			}
+			private function replyMessage(event:MouseEvent):void
+			{
+				updateCurrentTask();			
+				
+				var localperson:Persons = model.messageSender;				
+				var localprofile:Profiles = model.senderProfile; 
+				trace("\n replyMessage personId :"+model.messageSender.personId+", profileId :"+model.senderProfile.profileId);
+
+				var taskData:Tasks = new Tasks();
+				//taskData = model.currentTasks; // new
+				taskData.taskId = NaN;
+				taskData.previousTask = model.currentTasks;
+				taskData.projectObject = model.currentProjects;
+				taskData.personDetails = localperson;
+				//add by kumar July 23 	
+				var domain:Categories = getDomains(model.currentProjects.categories);
+				model.messageDomain = domain;
+				//taskData.personDetails.personId = model.currentTasks.taskFilesPath.split(",")[0];				
+				//taskData.taskFilesPath = model.messageSender.personId+","+model.senderProfile.profileId;
+				
+				taskData.personDetails.personId = getReplyID(String(model.currentTasks.taskComment)).split(",")[0];
+				//Alert.show("1st replyMessage personId :"+getReplyID(String(model.currentTasks.taskComment)).split(",")[0]+"  , profileId :"+getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				//Alert.show("2nd replyMessage personId :"+localperson.personId+", profileId :"+localprofile.profileId);
+				
+				var by:ByteArray = new ByteArray();
+				//var str:String = replyTo.text+sep+subjectTo.text+sep+replyText.text+sep+(getReplyID(String(model.currentTasks.taskComment)).split(",")[0])+","+(getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				var str:String = replyFrom.text+sep+subjectTo.text+sep+replyText.text+sep+(getReplyID(String(model.currentTasks.taskComment)).split(",")[0])+","+(getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				by.writeUTFBytes(str)
+				taskData.taskComment = by;
+				var status:Status = new Status();
+				status.statusId = TaskStatus.WAITING;
+				taskData.taskStatusFK = status.statusId;
+				taskData.tDateCreation = new Date();
+				taskData.tDateInprogress = new Date();
+				taskData.tDateEnd = new Date();
+				//taskData.tDateEndEstimated = new Date();
+				//taskData.tDateDeadline = new Date();
+				taskData.workflowtemplateFK = getMessageTemplate(localprofile.profileId);	
+				
+				trace("replyMessage :"+taskData.taskId);
+				trace("replyMessage :"+taskData.workflowtemplateFK.workflowFK);
+				trace("replyMessage :"+taskData.projectObject.projectId);
+				trace("replyMessage :"+taskData.taskComment);
+				trace("replyMessage :"+taskData.taskStatusFK);
+				trace("replyMessage :"+taskData.tDateCreation);
+				trace("replyMessage :"+taskData.tDateInprogress);
+				trace("replyMessage :"+taskData.personDetails.personId);
+				//trace("replyMessage :"+taskData.previousTask.taskId);
+								
+				var tevent:TasksEvent = new TasksEvent(TasksEvent.CREATE_MSG_TASKS);	
+				tevent.tasks = taskData;
+				///////////////CairngormEventDispatcher.getInstance().dispatchEvent(tevent);		
+				
+				replyText.editable = false; 
+				model.expiryState = "loadState";				
+				
+				if(displyAttachId.getChildren().length!=0)
+				{
+					///////////////sendUpload();
+				}
+				else
+				{
+					model.expiryState = "sentState";	
+				}
+			}	
+			public function updateCurrentTask():void{
+				var status:Status = new Status()
+				status.statusId =  TaskStatus.FINISHED;
+				model.currentTasks.taskStatusFK = status.statusId;
+				model.currentTasks.tDateInprogress = new Date();
+				model.currentTasks.tDateEnd = new Date();
+				/* var event:TasksEvent = new TasksEvent( TasksEvent.EVENT_MAILUPDATE_TASKS);
+				event.tasks = new Tasks();
+				event.tasks = model.currentTasks;
+				event.tasks.tDateInprogress = new Date();
+				event.tasks.tDateEnd = new Date();
+				CairngormEventDispatcher.getInstance().dispatchEvent(event); */				
+			} 	
+			public function getMessageTemplate(pro:int):Workflowstemplates
+			{
+				var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.messageTemplatesCollection,model.currentProjects.workflowFK);
+				for each(var item:Workflowstemplates in  messageTemplateCollection){
+					if(item.profileObject.profileId == pro){
+						return item;
+					}
+				}
+				return null;
+			}
+			public function getDomains(categories : Categories) : Categories
+			{
+				var tempCategories : Categories = new Categories(); 
+				if(categories.categoryFK != null)
+				{
+					tempCategories = getDomains(categories.categoryFK);
+				}else
+				{
+					return categories;
+				}
+	
+				return tempCategories;
+			}
+			private function downloadAttechments(event:MouseEvent):void
+			{
+				getDownloadFilePath(int(event.currentTarget.name));
+			}
+			private function getDownloadFilePath(fileLocalId:Number):void
+			{
+				var event:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_FILEDETAILS);
+				event.filedetailsVo = new FileDetails();
+				event.filedetailsVo.fileId = fileLocalId;
+          		CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}
+			public function SaveMessage(event:MouseEvent):void
+			{	
+          		fileReference = new FileReference();
+				fileReference.save(model.modelByteArrray);				
+			}
+			private function replyMessageAttechments(event:MouseEvent):void
+			{
+				sendFileReference = new FileReference();
+				sendFileReference.addEventListener(Event.SELECT,selectHandler);
+				sendFileReference.addEventListener(Event.COMPLETE, completeHandler);
+				try
+				{
+					sendFileReference.browse();
+				}
+				catch(err:Error)
+				{
+				}	
+			}
+			private function selectHandler(event:Event):void 
+			{
+				sendFileReference.addEventListener(Event.COMPLETE, onFileLoaded);
+				sendFileReference.load();	
+        	}
+        	public function onFileLoaded(event:Event):void
+			{
+			    storeFileReference = event.target as FileReference;
+            	dataByteArray = storeFileReference["data"];
+            	//storeFileReference = FileReference(event.target);
+            	 var linkUp:LinkButton = new LinkButton();
+	            linkUp.name = storeFileReference.name;
+	            linkUp.label = storeFileReference.name;
+	            linkUp.addEventListener(MouseEvent.CLICK,removeAttachFiles);
+	            displyAttachId.addChild(linkUp); 	
+	            
+	            //upArray.push(linkUp);	            
+			}
+        	public function completeHandler(event:Event):void
+			{
+			}
+			private function removeAttachFiles(event:MouseEvent):void
+			{
+	                     
+				var linkUp:LinkButton = new LinkButton();
+	            linkUp.name = event.currentTarget.name;
+	            linkUp.label = event.currentTarget.name;
+				displyAttachId.removeChild(linkUp);
+				
+				//dataByteArray = null;
+			}
+			public function sendUpload():void
+			{	
+	          	var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_UPLOAD_FILE);
+				fileEvent.storeByteArray = dataByteArray;
+				//var pathstr:String = "c:/temp/UNICOPA/2009/Jun/recentproject/Basic/";
+				//fileEvent.filePath = pathstr;
+					
+				var pathstr:String = categoryDomainAllocate();
+				fileEvent.filePath = pathstr;				
+				fileEvent.fileName = storeFileReference.name.toString();
+				
+				var filevo:FileDetails  = new FileDetails();
+				filevo.fileId = NaN;
+				filevo.fileName = storeFileReference.name.toString();
+				filevo.filePath = pathstr+storeFileReference.name.toString();
+				filevo.taskId = taskLocalId;
+				filevo.fileDate = new Date();
+				filevo.categoryFK = 0;
+				filevo.type = "Message";
+				filevo.storedFileName = storeFileReference.name;
+				filevo.projectFK = 25;
+				filevo.visible = 1;
+				filevo.releaseStatus = 0;
+				//filevo.miscelleneous = '';
+				//filevo.fileCategory = ''; 	
+				//filevo.page = 0; 
+				fileEvent.filedetailsVo = filevo;				
+				CairngormEventDispatcher.getInstance().dispatchEvent(fileEvent); 
+				/* var evtArr:Array = [fileEvent]
+			 	var handler:IResponder = new Callbacks(sentMailview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch(); */
+												
+			}
+			private function sentMailview(rpcEvent : Object):void
+			{
+				currentState = "sentState";
+			}
+			private function categoryDomainAllocate():String
+			{
+				var returnpath:String = '';
+				var currProject:Projects = model.currentTasks.projectObject;
+				//item.destinationpath = model.currentDir;
+				var localRoot:String = model.parentFolderName; // c:/temp/
+				var domainName:String = model.messageDomain.categoryName; // UNICOPA
+				var domainYear:String = currProject.categories.categoryFK.categoryName; // 2009
+				var domainMonth:String = currProject.categories.categoryName; // Jul
+				var domainProject:String = currProject.projectName; // JHTOOL
+				
+				//returnpath = localRoot+domainName+File.separator+domainYear+File.separator+domainMonth+File.separator+domainProject;
+				returnpath = localRoot+domainName+"/"+domainYear+"/"+domainMonth+"/"+domainProject+"/"+"Message/";
+				
+				return returnpath;
+			}
+			
+					
+			private function onIOError(event:IOErrorEvent):void
+			{
+				Alert.show(event.text);
+			}
+
+			private function onSecurityError(event:Event):void
+			{
+				Alert.show(event.toString());
+			}
+				
+			
+		]]>
+	</mx:Script>
+
+	<business:Services id="loginService"/>
+	<control:DTController id="controller"/> 
+	<mx:states>	
+		<mx:State name="loadState">	
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="true"/>	
+		</mx:State>	
+				
+		<mx:State name="expireState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="true"/>
+		</mx:State>	
+		
+		<mx:State name="sentState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="true"/>
+		</mx:State>	
+		
+		<mx:State name="todoState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="true"/>	
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="true"/>
+		</mx:State>			
+		
+		<mx:State name="impState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="true"/>	
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="true"/>	
+		</mx:State>	
+		
+		<mx:State name="mailState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="true"/>				
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="true"/>	
+			<mx:SetProperty target="{replyField}" name="visible" value="false"/>
+			<mx:SetProperty target="{replyField}" name="includeInLayout" value="false"/>	
+		</mx:State>	
+		
+		<mx:State name="replyState">
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="true"/>				
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="true"/>	
+			<mx:SetProperty target="{replyField}" name="visible" value="true"/>
+		</mx:State>
+		
+		<!--<mx:State name="inBoxState">
+			<mx:SetProperty target="{replyField}" name="visible" value="false"/>
+			<mx:SetProperty target="{replyField}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expire}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expire}" name="visible" value="false"/>
+		</mx:State>
+		<mx:State name="replyState">
+			<mx:SetProperty target="{replyField}" name="visible" value="true"/>
+			<mx:SetProperty target="{expire}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expire}" name="visible" value="false"/>
+		</mx:State>-->
+		
+		<mx:State name="datafoundState">			
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>				
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="true"/>
+		</mx:State>	
+		
+		<mx:State name="delaySendState">	
+			<mx:SetProperty target="{sentalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{sentalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{expirealert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{todoalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{todoalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{languagealert}" name="visible" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{foundalert}" name="visible" value="false"/>
+			<mx:SetProperty target="{impalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{impalert}" name="visible" value="false"/>	
+			<mx:SetProperty target="{mailalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{mailalert}" name="visible" value="false"/>		
+			<mx:SetProperty target="{loadalert}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{loadalert}" name="visible" value="false"/>			
+			<mx:SetProperty target="{delayloadalert}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{delayloadalert}" name="visible" value="true"/>			
+		</mx:State>	
+		
+	</mx:states> 
+	<mx:ApplicationControlBar id="languagealert" width="100%" height="35" top="0" cornerRadius="0" paddingRight="5">
+		<mx:Spacer width="20%"/>
+		<mx:Text text="Mail Impremier" styleName="menuText" width="100%"/>
+		<mx:Spacer width="100%"/>
+		<mx:HBox width="100%" left="35" right="35" horizontalAlign="right" verticalAlign="middle" visible="{displyType}">
+			<mx:FormItem label="{model.loc.getString('selectLanguage')}" width="100%" >
+		 		<mx:HBox height="100%">
+		 			<mx:RadioButton id="enCheck" click="saveSettings()" />
+		 			<mx:Button styleName="enBTN" id="enBtn"/>
+					<mx:RadioButton selected="true" id="frCheck" click="saveSettings()" />
+		 			<mx:Button styleName="frBTN" id="frBtn"/>
+		 		</mx:HBox>	 			 		
+		 	</mx:FormItem >
+		 </mx:HBox>	 	
+	</mx:ApplicationControlBar>
+	<mx:HBox width="100%" id="delayloadalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Image id="delayimage" verticalCenter="0" horizontalCenter="0" source="{LOADING}" width="22"	height="22"/>
+		<mx:Text id="delayTxt" text="{model.delayUpdateTxt}" styleName="menuText" selectable="false"/>
+	</mx:HBox>   
+	<mx:HBox width="100%" id="loadalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Image id="image" verticalCenter="0"	horizontalCenter="0" source="{LOADING}" width="22"	height="22"/>
+		<mx:Text text="Loading" styleName="menuText" selectable="false"/>
+	</mx:HBox>
+	<mx:HBox width="100%" id="expirealert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Text text="Your message has expired" styleName="menuText"  selectable="false"/>
+	</mx:HBox>
+	<mx:HBox width="100%" id="foundalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Text text="Data not Found" styleName="menuText"  selectable="false"/>
+	</mx:HBox>
+	<mx:HBox id="sentalert" width="100%" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Text text="Your message has been sent" styleName="menuText"  selectable="false"/>
+		<mx:VBox  horizontalCenter="0" verticalCenter="0" label="ID DETAIL" includeInLayout="false" visible="false" >
+			<mx:TextArea id="statusArea" width="600" height="400" editable="false" verticalScrollPolicy="auto" includeInLayout="false" visible="false"/>
+		</mx:VBox>
+	</mx:HBox>	
+	<mx:VBox id="mailalert" width="100%" top="40" left="35" right="35" bottom="20" horizontalAlign="center" verticalAlign="middle">
+		<mx:HBox id="project" width="100%" top="0" left="0">
+			<mx:Canvas label="Mail" width="100%" height="100%">	
+				<mx:VBox width="100%"  height="100%">		
+					<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="menuText" />
+					<!--<mx:Text text="{model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname+''}" selectable="false" left="35" textAlign="left" styleName="menuText" />-->
+				</mx:VBox>
+				<!--<mx:Image source="@Embed(source='assets/images/logo.png')" right="45" maintainAspectRatio="false" />-->
+				<mx:HBox id="projectbus" width="100%" top="0" left="0" horizontalAlign="right">
+					<mx:Canvas right="0" id="buzCard" width="300" height="61" top="40">			
+						<view:bussinessCard width="100%" height="100%" right="10" />
+					</mx:Canvas>
+				</mx:HBox>
+			</mx:Canvas>		
+		</mx:HBox>
+		<!--<mx:HBox id="projectbus" width="100%" top="0" left="0" horizontalAlign="right">
+			<mx:Canvas right="0" id="buzCard" width="300" height="61" top="40">			
+				<view:bussinessCard width="100%" height="100%" right="10" />
+			</mx:Canvas>
+		</mx:HBox>-->	
+		<mx:Canvas label="Mail" width="100%" height="100%">
+			<mx:VBox width="100%"  height="100%">		
+			    <mx:Text id="fromName" text="{'From : '+getFromName(String(model.currentTasks.taskComment))}" styleName="menuText" fontSize="12" width="100%"/>
+			    <mx:Text id="subjectText" text="{'Subject : '+getSubject(String(model.currentTasks.taskComment))}" styleName="menuText" width="100%"/>
+			    
+			    <mx:VBox width="100%" id="downloadfile" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}">
+					<mx:Tile width="100%" height="100%" id="downloadFileDisplay" >
+						<mx:Repeater id="repdownload">
+							<mx:Label id="downloadId" text="{repdownload.currentItem.fileName}" name="{repdownload.currentItem.fileId}" click="downloadAttechments(event)"/>
+						</mx:Repeater>
+					</mx:Tile>
+					<mx:Button id="saveid" label="Save" click="SaveMessage(event);" />
+				</mx:VBox>
+				
+				<mx:TextArea id="contentArea" text="{getBody(String(model.currentTasks.taskComment))}" width="100%" height="100" editable="false"/>
+				<mx:Button label="Reply" click="currentState='replyState',onReplyClick()"/>			
+				
+				<mx:VBox id="replyField" width="100%">
+					<mx:HBox width="100%">
+						<mx:Label id="replyFromLab" styleName="menuText" text="From :" width="80"/>
+						<mx:Label id="replyFrom" styleName="menuText" text="{model.currentTasks.personDetails.personFirstname}" width="100%"/>
+					</mx:HBox>
+					<mx:HBox width="100%">
+						<mx:Label id="replyToLab" styleName="menuText" text="To :" width="80"/>
+						<mx:Label id="replyTo" styleName="menuText" text="{getFromName(String(model.currentTasks.taskComment))}" width="100%"/>
+					</mx:HBox>
+					<mx:HBox width="100%">
+						<mx:Label id="subjectToLab" styleName="menuText" text="Subject :" width="80"/>
+						<mx:Label id="subjectTo" styleName="menuText" text="{getSubject(String(model.currentTasks.taskComment))}" width="100%"/>
+					</mx:HBox>
+					<mx:TextArea id="replyText" width="100%" height="100"/>
+					<mx:VBox width="100%" id="displyAttachId">	
+						<!--<view:FileUpload id="uploadId" width="100%" height="100%" uploadUrl="{_strUploadScript}"/>-->			
+					</mx:VBox>
+					<mx:LinkButton label="Attachments" click="replyMessageAttechments(event)"/>
+					<mx:Button label="Send" click="replyMessage(event);" enabled="{replyText.text.length!=0}" />
+				</mx:VBox>			
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:VBox>
+	<mx:VBox id="impalert" width="100%" top="40" left="35" right="35" bottom="20" horizontalAlign="center" verticalAlign="middle">
+		<mx:VBox id="projDetails" width="100%" top="0" left="0">
+			<mx:Canvas label="Mail" width="100%" height="100%">	
+				<mx:VBox width="100%"  height="100%">	
+					<mx:Form width="100%" height="100%" top="45">
+						<mx:FormItem label="ProjectName" styleName="mainOrangeTitle">
+							<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="Sender" styleName="subBlueTitle">
+							<mx:Text text="{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="Receiver" styleName="subBlueTitle">
+							<mx:Text text="{model.impPerson.personFirstname+' '+model.impPerson.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+					</mx:Form>	
+					<!--
+					<mx:Text text="ProjectName :{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+					<mx:Text text="Sender :{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname+' '+model.currentTasks.previousTask.personDetails.company.companyname+''}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+					<mx:Text text="Receiver :{model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname+' '+model.currentTasks.personDetails.company.companyname+''}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+					-->
+				</mx:VBox>
+				<mx:Image source="@Embed(source='assets/images/logo.png')" right="45" maintainAspectRatio="false" />
+				<mx:Text text="Date :{model.currentTasks.tDateCreation+' '}" selectable="false" bottom="5" right="45" textAlign="right" styleName="dateText" />
+			</mx:Canvas>		
+		</mx:VBox>
+		<!--<mx:Canvas right="5" id="buzCard" width="300" height="61" top="10" >
+			<view:bussinessCard width="100%" height="100%" />
+		</mx:Canvas>-->
+		<mx:TabNavigator width="100%" height="100%" id="imptabView" backgroundColor="#363636" creationPolicy="auto" change="onTabNavigatorChangeIMP( event )">
+			<mx:Canvas label="Properties" width="100%" height="100%">
+				<view:TimesheetChalkBoard id="impTimeSheet" width="100%" height="100%" projectProperty="{model.propertiespresetsCollection}"/>
+			</mx:Canvas>
+			<mx:Canvas label="Files" width="100%" height="100%">
+				<view:FileView id="impfileView" width="100%" height="100%" tileFileCollection="{model.modelTileFileCollection}"  />
+			</mx:Canvas>
+		</mx:TabNavigator>	
+	</mx:VBox>
+	<mx:HBox id="todoalert" width="100%" top="40" left="35" right="35" bottom="20" horizontalAlign="center" verticalAlign="middle">
+		<mx:ViewStack id="planView" width="100%" height="100%" backgroundColor="#363636" top="10" bottom="5" change="onTabChange( event )">
+			<mx:Canvas label="TodoList" width="100%" height="100%">
+				<view:TodoListMain width="100%" height="100%" />				
+			</mx:Canvas>			
+			<mx:VBox id="PropertiesFilesvbox" width="100%" top="0" left="0">	
+				<mx:Canvas label="PropertiesFiles" width="100%" height="100%">
+					<mx:VBox width="100%"  height="100%">	
+						<mx:Form width="100%" height="100%" top="45">
+							<mx:FormItem label="ProjectName" styleName="mainOrangeTitle">
+								<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+							</mx:FormItem>						
+							<mx:FormItem label="Sender" styleName="subBlueTitle">
+								<mx:Text text="{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+							</mx:FormItem>						
+							<mx:FormItem label="Receiver" styleName="subBlueTitle">
+								<mx:Text text="{model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+							</mx:FormItem>						
+						</mx:Form>						
+					</mx:VBox>			
+					<mx:Button styleName="backTODO" click="setToDoName()" right="30" id="backTotoDoList" />						
+					<mx:TabNavigator width="100%" height="100%" top="20" id="tabView" backgroundColor="#363636" creationPolicy="auto" change="onTabNavigatorChange( event )">
+						<mx:Canvas label="Properties" width="100%" height="100%">
+							<view:TimesheetChalkBoard id="TimeSheet" width="100%" height="100%" projectProperty="{model.propertiespresetsCollection}"/>
+						</mx:Canvas>
+						<mx:Canvas label="Files" width="100%" height="100%">
+							<view:FileView id="fileView" width="100%" height="100%" tileFileCollection="{model.modelTileFileCollection}"  />
+						</mx:Canvas>
+					</mx:TabNavigator>	
+				</mx:Canvas>
+			</mx:VBox>				
+		</mx:ViewStack>	
+	</mx:HBox>	
+</mx:Application>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:components="com.adams.dt.view.components.*">
+	<mx:Metadata>
+		[Event(name="fileItemRollOver",type="flash.events.Event")]
+		[Event(name="outSideCalling",type="flash.events.Event")]
+		[Event( name="deleteReleaseItem", type="com.adams.dt.event.fileManagement.RemoveFileEvent")]
+		[Event( name="replaceReleaseItem", type="com.adams.dt.event.fileManagement.RemoveFileEvent")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.view.filemanagement.renderers.ImageRenderer;
+			import mx.containers.VBox;
+			import com.adams.dt.event.PDFTool.PDFInitEvent;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.view.PDFTool.MiniPDFReader;
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import mx.events.ListEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.fileManagement.RemoveFileEvent;
+			import com.adams.dt.view.filemanagement.FileContainer;
+			import mx.controls.Label;
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			import mx.containers.HBox;
+			private var _tasksFileCollection:ArrayCollection;
+			
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance(); 	
+		
+		public static const OUT_SIDE_CALLING:String = "outSideCalling";
+		public static const FILE_ITEM_ROLL_OVER:String = "fileItemRollOver"; 
+		
+		public var outSidePopUpOn:Boolean;
+		public var selectedFileDetail:FileDetails = new FileDetails();
+		 
+		private var currentSWF:FileDetails = new FileDetails();
+		public var currentFileDetail:FileDetails = new FileDetails();
+		private var currentPDF:FileDetails = new FileDetails();
+		 		
+		
+		 
+		private var totalDataProvider:ArrayCollection = new ArrayCollection();
+		private var firstRelease:ArrayCollection = new ArrayCollection();
+		private var otherRelease:ArrayCollection = new ArrayCollection();
+		 
+		private var _dataProvider:ArrayCollection;
+		public function get dataProvider():ArrayCollection {
+			return _dataProvider;
+		} 
+		
+		private var _taskFiles:ArrayCollection;
+		[Bindable]
+		public function get taskFiles():ArrayCollection {
+			return _taskFiles;
+		} 
+		public function set taskFiles( value:ArrayCollection ):void {
+			_taskFiles = value;
+			updateContainer();
+		}
+		
+		protected function updateContainer():void {
+			totalDataProvider.removeAll();
+			firstRelease.removeAll();
+			otherRelease.removeAll();
+			
+			for each( var fd:FileDetails in taskFiles ) {
+				if( fd.visible ) {
+					if( fd.releaseStatus == 1 ) {
+						firstRelease.addItem( fd );
+					}
+					else if( fd.releaseStatus == 2 ) {
+						otherRelease.addItem( fd );
+					}
+				}
+			}
+			
+			firstRelease.refresh();
+			otherRelease.refresh();
+			
+			makeTotalDataProvider();
+		}
+		
+		protected function makeTotalDataProvider():void {
+			if( firstRelease.length > 0 ) {
+				var firstReleaseObj:Object = { headerLabel:'Release V1', filesCollection:firstRelease };
+				totalDataProvider.addItem( firstReleaseObj );
+			}
+			
+			var tempId:int;
+			var releaseCount:int = 1;		
+			
+			for each( var fd:FileDetails in otherRelease ) {				
+				if( tempId != fd.taskId ) {
+					releaseCount++;
+					var arrc:ArrayCollection = getTasks( fd.taskId );
+					var otherReleaseObj:Object = { headerLabel: ( 'Release V' + releaseCount.toString() ), filesCollection:arrc };
+					totalDataProvider.addItem( otherReleaseObj );
+				}
+				tempId = fd.taskId;
+			}
+			
+			constructComponent();
+		}
+		
+		private function getTasks( id:int ):ArrayCollection {
+			var arrc:ArrayCollection = new ArrayCollection();
+	        for each( var fd:FileDetails in otherRelease ) {
+	        	if( fd.taskId == id ) {
+	        		arrc.addItem( fd );
+	        	} 
+	        }
+	        return arrc;
+		}
+		
+		protected function constructComponent():void {
+			removeAllChildren();
+			
+			for each( var release:Object in totalDataProvider ) {
+				var header:Label = new Label();
+				header.text = release.headerLabel;
+				header.styleName = "subHeader";
+			    addChild( header );
+				
+				var filesContainer:FileContainer = new FileContainer();
+				filesContainer.itemRenderer = new ClassFactory( ImageRenderer );
+				filesContainer.dataSource = release.filesCollection;
+				filesContainer.percentWidth = 95;
+				filesContainer.height = 100;
+				filesContainer.addEventListener( RemoveFileEvent.SHOW_ITEM, onShowItem, false, 0, true ); 
+			    filesContainer.addEventListener( RemoveFileEvent.DELETE_ITEM, onDelete, false, 0, true ); 
+			    filesContainer.addEventListener( RemoveFileEvent.REPLACE_ITEM, onReplace, false, 0, true ); 
+			    filesContainer.addEventListener( ListEvent.ITEM_ROLL_OVER, onItemRollOver, false, 0, true ); 
+				addChild( filesContainer );
+			}
+		}
+		
+		protected function onShowItem( event:RemoveFileEvent ):void {
+			var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+			var selectedFile:FileDetails = event.fileItem;
+			currentFileDetail = event.fileItem;;
+			var result:SQLResult = delegate.getSwfFileDetails( selectedFile ); 
+			var array:Array = result.data as Array;
+			var tempFilePath:String = "";
+			currentSWF = new FileDetails();
+			if( array ) {
+				currentSWF = array[ 0 ] as FileDetails;
+				model.currentSwfFile = currentSWF;
+				openPopup( currentSWF );
+			}
+			else {
+				var fileEvents:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_SWFFILEDETAILS );
+				fileEvents.fileDetailsObj = selectedFile;
+				fileEvents.dispatch();
+				model.currentPDFFile = selectedFile;
+				model.loadMPVFiles = true;
+			}
+		}
+		
+		private function openPopup( currentSWF:FileDetails ):void {
+			if( !outSidePopUpOn ) {
+				var pop1:MiniPDFReader = MiniPDFReader( PopUpManager.createPopUp( model.mainClass, MiniPDFReader, true ) );
+				pop1.pdfTool.imgURL = currentSWF.filePath;
+				var commentEvent : CommentEvent = new CommentEvent( CommentEvent.GET_COMMENT );
+				commentEvent.fileFk = currentSWF.remoteFileFk; 
+				commentEvent.dispatch();			  
+				pop1.x = ( Capabilities.screenResolutionX / 2 ) - ( ( Capabilities.screenResolutionX * 0.9 ) / 2 );
+				pop1.y = ( Capabilities.screenResolutionY / 2 ) - ( ( Capabilities.screenResolutionY * 0.9 ) / 2 );
+				model.workflowState = 0;
+			}
+			else {
+				selectedFileDetail = currentSWF;
+				this.dispatchEvent( new Event( OUT_SIDE_CALLING ) );
+			}
+		}
+		
+		private function onItemRollOver( event:ListEvent ):void {
+			event.currentTarget.selectedIndex = event.currentTarget.indicesToIndex( event.rowIndex, event.columnIndex );
+			selectedFileDetail = event.currentTarget.selectedItem;
+			this.dispatchEvent( new Event( FILE_ITEM_ROLL_OVER ) );
+		}
+		
+		private function onDelete( event:RemoveFileEvent ):void {
+			var releaseDeleteEvent:RemoveFileEvent = new RemoveFileEvent( RemoveFileEvent.RELEASE_DELETE );
+			releaseDeleteEvent.fileItem = event.fileItem;
+			_dataProvider = event.releaseContainer.dataProvider as ArrayCollection;
+			releaseDeleteEvent.releaseContainer = event.releaseContainer;
+			dispatchEvent( releaseDeleteEvent );
+		}
+		
+		private function onReplace( event:RemoveFileEvent ):void {
+			var releaseReplaceEvent:RemoveFileEvent = new RemoveFileEvent( RemoveFileEvent.REPLACE_RELEASE_ITEM );
+			releaseReplaceEvent.fileItem = event.fileItem;
+			_dataProvider = event.releaseContainer.dataProvider as ArrayCollection;
+			releaseReplaceEvent.releaseContainer = event.releaseContainer;
+			dispatchEvent( releaseReplaceEvent );
+		}
+		]]>
+	</mx:Script>
+</mx:VBox>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="open()">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.SimpleEncryptionKeyGenerator;
+
+			import mx.controls.Alert; 
+			import flash.data.SQLConnection; 
+			import flash.data.SQLMode; 
+			import flash.events.SQLErrorEvent; 
+			import flash.events.SQLEvent;  
+			import flash.filesystem.File;
+			private function open():void{
+				openEncyprtedDb()
+			}
+			private function openEncyprtedDb():void{
+				var conn:SQLConnection = new SQLConnection(); 
+				var dbFile:File = File.applicationDirectory.resolvePath("config.db");
+				var encryption:SimpleEncryptionKeyGenerator = new SimpleEncryptionKeyGenerator();				
+				var encryptedKey:ByteArray = encryption.getEncryptionKey("Adams2009");
+				try 
+				{ 
+				    conn.open(dbFile, SQLMode.CREATE, false, 1024, encryptedKey); 
+				    trace("the database was created successfully");
+				    
+				} 
+				catch (error:SQLError) 
+				{ 
+				    trace("Error message:", error.message); 
+				    trace("Details:", error.details); 
+				}  
+			}
+
+		]]>
+	</mx:Script>
+</mx:WindowedApplication>

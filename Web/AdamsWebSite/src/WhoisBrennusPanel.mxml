@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" styleName="transparentBackground"
+	 width="100%" height="100%" >
+	 <mx:Script>
+	 	<![CDATA[
+	 		import mx.core.Application;
+	 	]]>
+	 </mx:Script>
+	
+
+     	<mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" click="{Application.application.homeComp.backtoHome()}"/>
+     <mx:VBox top="15" left="15" right="20" bottom="30" paddingLeft="6"  verticalGap="8">
+	 <mx:Text text="Who is Brennus?" styleName="introTitle" fontSize="24"/>
+		<mx:HRule width="100%" />
+		<mx:TextArea borderStyle="none" backgroundAlpha="0" width="100%" height="200" id="three" editable="false" 
+		 styleName="contFont" selectable="false" >
+			<mx:htmlText><![CDATA[<h1>The group :</h1><li>Stable and experienced management team</li><li>€m revenue (2009 est.)</li><li>68 employees</li><li>Global presence in: New York, London, Paris, Dublin , Pondicherry and Chennai</li><li>Adobe Partner</li><li>Cross-technolgy partnerships with industry leaders and Flex labs</li>
+<h1>The management team:</h1><li>14 years of experience in application design and delivery<li><li>innovative leaders in most successful web based technologies</li>]]>
+	     </mx:htmlText>
+		</mx:TextArea>
+		<mx:Image source="@Embed('assets/images/pic.png')"/>
+		
+		<mx:TextArea borderStyle="none"  backgroundAlpha="0" width="100%"  editable="false"
+		 styleName="contFont"	height="100" id="teamText" selectable="false" >
+			<mx:htmlText><![CDATA[<h1>Teams organization and distribution</h1><li>architects</li><li>dev-designers</li><li>Java engineers</li><li>Flex engineers</li>]]>
+	     </mx:htmlText>
+		</mx:TextArea>
+		  
+	</mx:VBox>
+		
+</mx:Canvas>

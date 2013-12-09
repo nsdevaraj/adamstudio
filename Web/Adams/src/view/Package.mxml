@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 styleName="transparentBackground" width="100%" height="100%" initialize="vbox1_initializeHandler(event)"
+		 minHeight="500" >
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.formats.WhiteSpaceCollapse;
+			import spark.utils.TextFlowUtil;
+			
+			XML.ignoreWhitespace = false;
+			
+			protected var ldr:URLLoader;
+			
+			import mx.events.FlexEvent;
+			private function sendMailto(emailStr:String):void{
+				var emailURL:URLRequest = new URLRequest("mailto:" + emailStr );
+				//see: http://livedocs.macromedia.com/flex/2/langref/flash/net/package.html#navigateToURL()
+				navigateToURL(emailURL)
+			}
+			
+
+			protected function vbox1_initializeHandler(event:FlexEvent):void
+			{
+					ldr = new URLLoader();
+					ldr.dataFormat = URLLoaderDataFormat.TEXT;
+					ldr.addEventListener(Event.COMPLETE, ldr_complete);
+					ldr.load(new URLRequest("data/PackageText.xml"));
+			}
+			
+			protected function ldr_complete(evt:Event):void {
+				richTxt.textFlow = TextFlowUtil.importFromString(ldr.data);
+			}
+
+		]]>
+	</fx:Script>
+	
+	<mx:Text text="Package" styleName="introTitle" fontSize="24"/>
+	<mx:HRule width="100%" />
+	<s:Group >
+		<s:RichText width="900" id="richTxt" fontSize="12" leadingModel="romanUp" lineHeight="200%" >
+		</s:RichText>
+	</s:Group>
+		
+	
+	
+	
+</mx:VBox>

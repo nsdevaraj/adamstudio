@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+  <videos autoplay="No-always" looping="false" randomPlay="false" mediaLink="false" linkTarget="_blank">
+	<video>
+		<streams>kishna_flute.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video> 
+	<video>
+		<streams>123Mp3.flv</streams>
+		<link>http://components.earthscienceagency.com/</link>
+	</video> 
+	<video>
+		<streams>anjane.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video>
+	<video>
+		<streams>dilhai.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video>
+	<video>
+		<streams>guitar.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video>
+	<video>
+		<streams>kabiaar.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video>
+	<video>
+		<streams>kabiaar_ori.flv</streams>
+		<link>http://components.earthscienceagency.com/components/</link>
+	</video>
+
+ </videos>

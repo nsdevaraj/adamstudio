@@ -1,0 +1,48 @@
+<data>
+  <num>3</num>
+  <row>
+    <pk_task>4</pk_task>
+    <label>JH7865_test168</label>
+    <comments>bla bla bla</comments>
+    <status>2</status>
+    <creator>2</creator>
+    <datetime_of_creation>2008-08-12 09:12:22</datetime_of_creation>
+    <number_of_images>22</number_of_images>
+    <dedline>2009-02-08 09:12:00</dedline>
+    <datetime_of_estimated>2009-04-08 09:30:00</datetime_of_estimated>
+    <date_of_delivery>2008-08-16 09:03:00</date_of_delivery>
+    <datetime_archive>2008-08-16 11:10:00</datetime_archive>
+    <time_spending>345</time_spending>
+    <activated>1</activated>
+  </row>
+  <row>
+    <pk_task>5</pk_task>
+    <label>JH7865_test69</label>
+    <comments>bla bla blafddsfdsf</comments>
+    <status>1</status>
+    <creator>2</creator>
+    <datetime_of_creation>2008-08-12 09:12:22</datetime_of_creation>
+    <number_of_images>22</number_of_images>
+    <dedline>2009-02-08 09:12:00</dedline>
+    <datetime_of_estimated>2009-04-23 09:31:00</datetime_of_estimated>
+    <date_of_delivery>2008-08-16 09:03:00</date_of_delivery>
+    <datetime_archive>2008-08-16 11:10:00</datetime_archive>
+    <time_spending>345</time_spending>
+    <activated>1</activated>
+  </row>
+  <row>
+    <pk_task>208</pk_task>
+    <label>d</label>
+    <comments>d</comments>
+    <status>1</status>
+    <creator>2</creator>
+    <datetime_of_creation>0000-00-00 00:00:00</datetime_of_creation>
+    <number_of_images>1</number_of_images>
+    <dedline>2008-11-04 09:30:00</dedline>
+    <datetime_of_estimated>0000-00-00 00:00:00</datetime_of_estimated>
+    <date_of_delivery>2008-11-04 09:30:00</date_of_delivery>
+    <datetime_archive>0000-00-00 00:00:00</datetime_archive>
+    <time_spending/>
+    <activated/>
+  </row>
+</data>

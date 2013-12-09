@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	styleName="innerBorder" >
+<mx:Metadata> 
+        [Event(name="close", type="flash.events.Event")] 
+</mx:Metadata> 
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.DefaultTemplateValueEvent;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.controls.DataGrid;
+			import com.adams.dt.model.vo.DefaultTemplateValue;
+			[Bindable]
+			public var parenRef:DefaultTemplateValue;
+			
+			[Bindable]
+			public var parenList:DataGrid;
+			
+			
+			private function onCancel():void {
+          		this.removeAllChildren();
+        	}
+        	private function onSaveChanges():void {
+	            parenRef.defaultTemplateValue = String(checkBoxId.selected);
+	            var defTempValEvent:DefaultTemplateValueEvent = new DefaultTemplateValueEvent(DefaultTemplateValueEvent.UPDATE_DEFAULT_TEMPLATE_VALUE)
+	            defTempValEvent.defaultTemplateValues = parenRef
+	            defTempValEvent.dispatch()
+	          	parenList.dataProvider.refresh();
+	          	dispatchEvent( new Event( Event.CLEAR ) );
+	          	this.removeAllChildren();
+        	}
+        	private function checkValue():void {
+        		// to set the label for the
+        		checkBoxId.label = String( GetVOUtil.getPropertiesPresetObject(parenRef.propertiesPresetFK).fieldOptionsValue)
+        		if(parenRef.defaultTemplateValue == "true" ){
+	    			checkBoxId.selected = true;
+        		}else if( parenRef.defaultTemplateValue == "false") {
+        			checkBoxId.selected = false;
+        		} 
+        	}
+		]]>
+	</mx:Script>
+	<mx:Form>
+		<mx:FormItem label="Selection">
+			<mx:CheckBox id="checkBoxId" label="{parenRef.defaultTemplateValue}"   creationComplete="checkValue()" />	
+		</mx:FormItem>
+		<mx:FormItem direction="horizontal">
+			<mx:Button label="Save" click="onSaveChanges()" styleName="saveBtn"/>
+			<mx:Button label="Cancel" styleName="cancelOrderBtn" click="onCancel()"/>	
+		</mx:FormItem>
+	</mx:Form>
+</mx:VBox>

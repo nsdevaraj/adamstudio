@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow layout="absolute" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	showCloseButton="true" close="removePopUp()" creationComplete="addSprintRow()" 
+	styleName="bgContainer"  
+	mouseDownOutside="removePopUp()" 
+	headerHeight="30" width="800" height="500"  >
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.event.SprintsEvent;
+		import mx.managers.PopUpManager;
+		import com.adams.dt.model.vo.Sprints;
+		import com.adams.dt.view.components.SprintRow;
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+	[Event(name="deleteRow", type="com.adams.dt.event.SprintEvent")]
+	
+	private var sprintCollection:ArrayCollection = new ArrayCollection();
+	private var sprint:SprintRow;
+	
+	private function addSprintRow():void{
+		sprint = new SprintRow();
+		sprint.setStyle("addedEffect",fadeIn);
+		sprint.setStyle("removedEffect",fadeOut);
+		sprint.percentWidth = 100;
+		sprint.addEventListener("deleteRow",deleteSprint,false,0,true);
+		box.addChild(sprint);
+	}
+	
+	private function deleteSprint(event:Event):void{
+		box.removeChild(SprintRow(event.currentTarget));
+		SprintRow(event.currentTarget).removeEventListener("deleteRow",deleteSprint);
+	} 
+	
+	private function updateSprints():void{
+		var validated:Boolean = true;
+		for(var i:int=0;i<box.numChildren;i++){
+			if(!SprintRow(box.getChildAt(i)).validateSprint()){
+				validated = false;
+				break;
+			}
+		}
+		!validated?Alert.show("Not Updated"):onUpdateSprints();
+	}
+	
+	private function onUpdateSprints():void{
+		for(var i:int=0;i<box.numChildren;i++){
+			var spRowCollection:Sprints = SprintRow(box.getChildAt(i)).sprints
+			sprintCollection.addItem(spRowCollection);	
+		}
+		var updateEvent:SprintsEvent = new SprintsEvent( SprintsEvent.EVENT_BULK_UPDATE_SPRINTS );
+		updateEvent.updateCollection = sprintCollection;
+		updateEvent.dispatch();
+	}
+	
+	private function removePopUp():void{
+		PopUpManager.removePopUp(this);
+	}
+	]]>
+</mx:Script>
+
+ <mx:Fade id="fadeOut" duration="300" alphaFrom="1.0" alphaTo="0.0"/>
+ <mx:Fade id="fadeIn" duration="500" alphaFrom="0.0" alphaTo="1.0"/>
+    
+	<mx:Button label="Add New" top="5" right="5" click="addSprintRow()" />
+	<mx:VBox id="box"   width="100%"   backgroundColor="#232323" top="35" height="388"  />
+	<mx:Button label="Update" click="updateSprints()" bottom="5" right="5" />		
+	 
+</mx:TitleWindow>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*" 
+		xmlns:textEditor="com.adams.dt.view.components.*">	
+	<s:states>
+		<s:State name="Message"/>
+		<s:State name="Standby"/>
+		<s:State name="ProjectClose"/>
+	</s:states>
+	<s:Group>
+		<s:Form id="commentForm" >
+			<s:FormItem id="commentFormItem" label="Comments" >
+				<s:TextArea id="receivedCommTxt" heightInLines="3" editable="false"/>
+			</s:FormItem>
+			<s:FormItem excludeFrom="Standby,ProjectClose,Message">
+				<textEditor:TextEditor id="replyCommTxt" />
+			</s:FormItem>
+		</s:Form>
+		<s:HGroup top="{commentForm.y+commentForm.height+5}" horizontalAlign="center">
+			<s:Button label="Archive" id="archiveBtn" includeIn="Message,ProjectClose"/>
+			<s:Button label="Activate" id="resumeBtn" includeIn="Standby"/>
+			<s:Button label="Reply" id="replyBtn" visible="false"/>
+		</s:HGroup>
+	</s:Group>
+</s:Skin>

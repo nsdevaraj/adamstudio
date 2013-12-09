@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	xmlns="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:view="com.adams.dt.view.PDFTool.*"
+	xmlns:components="com.adams.dt.view.PDFTool.components.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.business.util.Utils;
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.ModelLocator;
+			import mx.events.CloseEvent;
+			import com.adams.dt.model.ModelLocator;
+			
+			import flash.utils.ByteArray;
+					
+		override public function gotoLoopTask():void{
+			var tasks:Tasks = new Tasks();
+			tasks.workflowtemplateFK = model.workflowstemplates.loopFk;
+			tasks.projectObject = model.currentTasks.projectObject;
+			tasks.previousTask = model.currentTasks;
+			model.currentTasks.tDateEnd = model.currentTime;
+			
+			var status1 : Status = new Status();
+			
+			tasks.previousTask = model.currentTasks;
+			tasks.fileObj = model.currentTasks.fileObj;
+			if(model.currentTasks.previousTask!=null)
+				model.currentTasks.fileObj = model.currentTasks.previousTask.fileObj;
+			var status : Status = new Status();
+			status.statusId = TaskStatus.WAITING;
+			tasks.taskStatusFK = status.statusId;
+			tasks.tDateCreation = model.currentTime;
+			tasks.tDateEndEstimated =Utils.getCalculatedDate(model.currentTime,tasks.workflowtemplateFK.defaultEstimatedTime); 
+			tasks.estimatedTime = tasks.workflowtemplateFK.defaultEstimatedTime;
+			model.currentTasks.taskComment = getComment();
+			tasks.onairTime = 0;
+			if(model.currentTasks.nextTask == null&&model.currentTasks.taskStatusFK!=TaskStatus.FINISHED){
+				model.currentTasks.nextTask = tasks;
+				status1.statusId = TaskStatus.FINISHED;
+				model.currentTasks.taskStatusFK = status1.statusId;
+				var event : TasksEvent = new TasksEvent( TasksEvent.EVENT_CREATE_TASKS);
+				event.tasks = tasks;
+				CairngormEventDispatcher.getInstance().dispatchEvent(event);
+			}
+        }
+        public static function trimSpace(v:String):String{
+			return v.replace(/\s+/g, '');
+		} 
+        
+		/* private function showConfirmationAlert( eventlbl:String):void {
+			var title:String = model.currentProjects.projectName+" "+ Utils.dateFormat(model.currentTime);
+			Alert.yesLabel = 'Confirmation';
+			Alert.buttonWidth = 120;
+			var alertStr:String = model.loc.getString('pleaseDoYouConfirm')+" "+eventlbl+". "+model.loc.getString('thanks');
+			Alert.show(alertStr,title,Alert.YES|Alert.NO,this,confirmationHandler);
+		}
+		private function confirmationHandler(event:CloseEvent):void{
+			if (event.detail == Alert.YES) {
+				switch(btn_id){				
+					case "Previous":
+						gotoPrevious();
+					break;
+					case "Next":
+						gotoNext();
+					break;						
+				}
+				model.windowsCloseConfirmation = "No";	
+			}
+		} */
+		public function commenTaskCommant() : void 
+		{
+			//model.currentTasks.taskComment = getTaskComments();
+		}
+		/* public function getTaskComments() : ByteArray
+		{
+			var by : ByteArray = new ByteArray();
+			by.writeUTFBytes(replyText.text);
+			return by;
+		} */
+		private function getPropertyString( value:String ):String {
+    		var returnValue:String;
+    		switch( value ) {
+    			case 'CHP':
+    				returnValue ="chp_validation";
+    			break;
+    			case 'CPP':
+    				returnValue ="cpp_validation";
+    			break;
+    			case 'EPR':
+    				returnValue ="imp_validation";
+    			break;
+    			case 'IND':
+    				returnValue ="ind_validation";
+    			break;
+    			case 'AGN':
+    				returnValue ="agn_validation";
+    			break;
+    			case 'COM':
+    				returnValue ="comm_validation";
+    			break;	    			
+    			default:
+    			break;
+    		}
+    		return returnValue;
+    	}	
+		
+		private function assignValidation(validationName:String,actionName:String):Propertiespj
+		{
+			var propPreset:Propertiespresets = getPropPreset( validationName );
+			var cppvalidPropertyPj:Propertiespj = Utils.getPropertyPj( propPreset.propertyPresetId, model.currentPropertiespjSingle );
+			if(actionName == "Next")
+				cppvalidPropertyPj.fieldValue = "2";
+			else
+				cppvalidPropertyPj.fieldValue = "1";
+				
+			return cppvalidPropertyPj;
+		}
+		private function getPropPreset( value:String ):Propertiespresets {
+			for each( var item:Propertiespresets in model.propertiespresetsCollection ) {
+				if( item.fieldName == value ) {
+					return item;
+				}
+			}
+			return null;
+		}
+		public function gotoNext() : void 
+		{
+			model.expiryState = "delaySendState";
+			model.delayUpdateTxt = "Message Process";
+			
+			var currentWorkflowFk:Workflowstemplates = GetVOUtil.getWorkflowTemplate(model.currentTasks.wftFK);
+			var itemValidation:String = getPropertyString(currentWorkflowFk.profileObject.profileCode);
+							
+			if(model.currentTasks!=null)
+				commenTaskCommant();
+			
+			/* model.modelMessageTasks = createMessage('FAB');
+			var messageEvent:TasksEvent = new TasksEvent(TasksEvent.CREATE_PROPERTYMSG_TASKS);
+			messageEvent.tasks = model.modelMessageTasks;						
+			CairngormEventDispatcher.getInstance().dispatchEvent(messageEvent); */			
+			//**********Newly change for Task***********
+			
+			var dynamicPropertyPj:Propertiespj = assignValidation(itemValidation,"Next");
+			var arrC:ArrayCollection = new ArrayCollection();	
+			arrC.addItem(dynamicPropertyPj);			
+			model.propertiespjCollection = arrC;
+			model.currentTasks.projectObject.propertiespjSet = arrC;
+			
+			model.modelMessageTasks = createINDTask('FAB','next');
+			var messageEvent:TasksEvent = new TasksEvent(TasksEvent.CREATE_PROPERTYMSG_TASKS);
+			messageEvent.tasks = model.modelMessageTasks;			
+			CairngormEventDispatcher.getInstance().dispatchEvent(messageEvent);
+		}
+		public function gotoPrevious() : void 
+		{
+			model.expiryState = "delaySendState";
+			model.delayUpdateTxt = "Message Process";
+			
+			var currentWorkflowFk:Workflowstemplates = GetVOUtil.getWorkflowTemplate(model.currentTasks.wftFK);
+			var itemValidation:String = getPropertyString(currentWorkflowFk.profileObject.profileCode);
+							
+			if(model.currentTasks!=null)
+				commenTaskCommant();
+			
+			/* model.modelMessageTasks = createMessage('FAB');
+			var messageEvent:TasksEvent = new TasksEvent(TasksEvent.CREATE_PROPERTYMSG_TASKS);
+			messageEvent.tasks = model.modelMessageTasks;						
+			CairngormEventDispatcher.getInstance().dispatchEvent(messageEvent); */
+			
+			//**********Newly change for Task***********
+			var dynamicPropertyPj:Propertiespj = assignValidation(itemValidation,"Previous");
+			var arrC:ArrayCollection = new ArrayCollection();
+			arrC.addItem(dynamicPropertyPj);
+			model.propertiespjCollection = arrC;
+			model.currentTasks.projectObject.propertiespjSet = arrC;
+			
+			model.modelMessageTasks = createINDTask('FAB','prev');
+			var messageEvent:TasksEvent = new TasksEvent(TasksEvent.CREATE_PROPERTYMSG_TASKS);
+			messageEvent.tasks = model.modelMessageTasks;					
+			CairngormEventDispatcher.getInstance().dispatchEvent(messageEvent);
+			
+		}
+		/* private function createMessage(profile:String):Tasks{
+			
+			var taskData:Tasks = new Tasks();
+			taskData.taskId = NaN;
+			//taskData.previousTask = model.currentTasks;
+			//taskData.projectObject = model.currentProjects;
+			taskData.projectObject = model.currentTasks.projectObject;
+			trace("model.currentProjects :"+model.currentProjects+ '\n');
+			var domain:Categories = Utils.getDomains(model.currentProjects.categories);
+			model.messageDomain = domain;
+			trace("domain :"+domain+ '\n');
+			//taskData.personFK = model.tempIndPreviousTask.personFK;
+			taskData.personFK = model.currentTasks.previousTask.personFK;			
+			//taskData.personDetails = model.person;
+			//taskData.personDetails.personId = getReplyID(String(model.currentTasks.taskComment)).split(",")[0];
+			var by:ByteArray = new ByteArray()
+			var sep:String = "&#$%^!@";
+			var replySubject:String = model.currentProjects.projectName;
+			//OLD not use//var str:String = model.person.personFirstname+sep+replySubject+sep+details+sep+model.person.personId+","+model.person.defaultProfile;
+			var str:String = model.impPerson.personFirstname+sep+replySubject+sep+replyText.text+sep+model.impPerson.personId+","+model.impPerson.defaultProfile;
+			trace("str :"+str+ '\n');			
+			by.writeUTFBytes(str)
+			taskData.taskComment = by;
+			taskData.taskStatusFK = TaskStatus.WAITING;;
+			taskData.tDateCreation = model.currentTime;
+			taskData.workflowtemplateFK = getMessageTemplate(getProfileId(profile));	//FAB
+			trace("taskData.workflowtemplateFK :"+taskData.workflowtemplateFK+ '\n');
+			
+			taskData.fileObj = model.modelFileDetailsPDFVo;
+			
+			if(taskData.workflowtemplateFK!=null)
+			{			
+				taskData.tDateEndEstimated = Utils.getCalculatedDate(model.currentTime,taskData.workflowtemplateFK.defaultEstimatedTime); 
+				taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;
+			}
+			return taskData;
+		} */
+		private function getProfileId(str:String):int{
+			for each(var pro:Profiles in model.teamProfileCollection)
+			{
+				if(pro.profileCode == str){
+					return pro.profileId;
+				}
+			}
+			return 0;
+		}
+		public function getMessageTemplate(pro:int):Workflowstemplates
+		{
+			var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.indReaderMailTemplatesCollection,model.currentProjects.workflowFK);
+			for each(var item:Workflowstemplates in  messageTemplateCollection){
+				if(item.profileObject.profileId == pro){
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		/*****  IND Task ********/
+		private function createINDTask(profile:String,navigate:String):Tasks{
+			
+			var taskData:Tasks = new Tasks();
+			taskData.taskId = NaN;
+			taskData.previousTask = model.currentTasks;
+			taskData.projectObject = model.currentTasks.projectObject;
+			trace("model.currentProjects :"+model.currentProjects+ '\n');
+			var domain:Categories = Utils.getDomains(model.currentProjects.categories);
+			model.messageDomain = domain;
+			trace("domain :"+domain+ '\n');
+			taskData.personFK = model.currentTasks.previousTask.personFK;
+			taskData.taskStatusFK = TaskStatus.WAITING;;
+			taskData.tDateCreation = model.currentTime;
+			var wft:Workflowstemplates = GetVOUtil.getWorkflowTemplate(model.currentTasks.wftFK);
+			if(navigate=='prev'){
+				taskData.wftFK = wft.prevTaskFk.workflowTemplateId;
+			}else{
+				taskData.wftFK = wft.nextTaskFk.workflowTemplateId;
+			}
+			trace("taskData.workflowtemplateFK :"+taskData.wftFK+ '\n');
+			
+			taskData.fileObj = model.modelFileDetailsVo;
+			
+			if(taskData.workflowtemplateFK!=null)
+			{			
+				taskData.tDateEndEstimated = Utils.getCalculatedDate(model.currentTime,taskData.workflowtemplateFK.defaultEstimatedTime); 
+				taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;
+			}
+			return taskData;
+		}
+		
+		
+	]]>
+	</mx:Script>
+	<mx:VBox width="100%" height="100%" visible="{model.typeINDFilefound}" includeInLayout="{model.typeINDFilefound}">
+		<components:FSDisplay width="100%"
+			height="95%"
+			id="fsScreen"
+			backgroundColor="#333333"
+			verticalScrollPolicy="off"
+			horizontalScrollPolicy="off">
+			<mx:Canvas width="100%"
+				height="100%"
+				backgroundColor="#333333">
+					<view:PDFToolSimpleArc id="pdfTool" width="100%" height="100%" dataProvider="{model.pdfFileCollection}"/>
+					<!--<mx:Button label="FS"
+					click="{fsScreen.fullScreen()}"
+					top="5"
+					right="5"  visible="{!pdfTool.tileList.visible}" includeInLayout="{!pdfTool.tileList.visible}"
+					styleName="fullScreenBtnSkin"/>-->
+			</mx:Canvas>
+		</components:FSDisplay> 
+		<!--<mx:HBox width="100%" height="5%" verticalGap="0" >						
+			<mx:Form labelWidth="150" id="replycodForm" width="100%" height="100%">
+				<mx:FormItem label="{model.loc.getString('replyCommentsFlex')}" width="100%">
+					<mx:VBox width="100%">							
+						<mx:HBox width="100%">
+							<mx:TextArea id="replyText" width="90%" height="80%"/>
+						</mx:HBox>
+						<mx:HBox width="100%">
+							<mx:Button id="Previous" label="Demande incomplète" name="Previous" styleName="previousBtn" right="50" width="250" click="showAlert(event)"/>
+							<mx:Button id="Next" label="VALIDATION" name="Next" styleName="nextBtn" left="50" width="200" click="showAlert(event)"/>
+						</mx:HBox>
+					</mx:VBox>
+				</mx:FormItem>						
+			</mx:Form>
+		</mx:HBox>-->	
+	</mx:VBox>
+	<mx:Label text="File Not Found" fontSize="11" fontWeight="bold" verticalCenter="0" horizontalCenter="0" visible="{!model.typeINDFilefound}" includeInLayout="{!model.typeINDFilefound}"/>
+</TodoList>

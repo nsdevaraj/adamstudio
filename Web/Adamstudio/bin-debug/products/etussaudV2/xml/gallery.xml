@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<galleries>
+	<gallery>
+		<image title="Flex" place="Nicolas Sarkozy" name="Nicolas Sarkozy"	thumbnailImage="assets/gallery/sarkozy1.png"/>
+		<image title="Flex" place="Nicolas Sarkozy" name="Nicolas Sarkozy"	thumbnailImage="assets/gallery/sarkozy2.png"/>
+		<image title="Flex" place="Nicolas Sarkozy" name="Nicolas Sarkozy"	thumbnailImage="assets/gallery/sarkozy3.png"/>
+		<image title="Flex" place="Barack Obama" name="Barack Obama"	thumbnailImage="assets/gallery/obama1.png"/>
+		<image title="Flash" place="Barack Obama" name="Barack Obama"	thumbnailImage="assets/gallery/obama2.png"/>
+		<image title="Illustrator" place="Barack Obama" name="Barack Obama" thumbnailImage="assets/gallery/obama3.png"/>
+		<image title="Flex" place="Sarah Palin" name="Sarah Palin"	thumbnailImage="assets/gallery/sarahpalin.png"/>
+		<image title="Flex" place="McCain" name="McCain"	thumbnailImage="assets/gallery/mccain.png"/>
+		
+	</gallery>
+</galleries>

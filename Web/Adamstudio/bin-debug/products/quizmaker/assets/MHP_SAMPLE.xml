@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<node label="root">
+<testdrive></testdrive>
+<testid>186985</testid>
+<status>0</status>
+<loginid>1</loginid>
+<totalquestions>3</totalquestions>
+<totalquestions>3</totalquestions>
+<totaltime>216</totaltime>
+<remainingtime>216</remainingtime>
+<questions>
+<question num="1">
+<used>true</used>
+<qid>1348</qid>
+<marked>-1</marked>
+<annotation>0</annotation>
+<useranswer>0</useranswer>
+<corranswer>2</corranswer>
+<stem><![CDATA[In a clinical study  examining the properties of &#946;-blockers, it is found that the atrioventricular  node is targeted and that the PR interval on ECG is lengthened. ]]></stem>
+<image>lab_bg.png</image>
+<imagecomment><![CDATA[]]></imagecomment>
+<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+<fact1>2007-256-1.jpg</fact1>
+<fact2>2007-254-1.jpg</fact2>
+<fact3></fact3>
+<numdistractors>5</numdistractors>
+<dist>
+<dist1><![CDATA[Receptors utilize the inositol triphosphate  mechanism]]></dist1>
+<dist2><![CDATA[Blockers cause a decrease in Na<font face='GG Superscript' >+</font> and Ca<font face='GG Superscript' >+</font>  currents]]></dist2>
+<dist3><![CDATA[Blockers cause a decrease in protein kinase C]]></dist3>
+<dist4><![CDATA[Blockers cause an increase in cyclic adenosine monophosphate]]></dist4>
+<dist5><![CDATA[Blockers cause an increase in protein kinase A]]></dist5>
+</dist>
+</question>
+<question num="2">
+<qid>1353</qid>
+<marked>-1</marked>
+<annotation>0</annotation>
+<useranswer>-1</useranswer>
+<corranswer>2</corranswer>
+<stem><![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]></stem>
+<image>http://farm1.static.flickr.com/99/313939341_9ce6dac6a6.jpg</image>
+<imagecomment><![CDATA[]]></imagecomment>
+<leadin><![CDATA[Which of the following diuretics would be most effective in treating this patient's pulmonary edema?]]></leadin>
+<fact1>2007-405-3.jpg</fact1>
+<fact2></fact2>
+<fact3></fact3>
+<numdistractors>5</numdistractors>
+<dist>
+<dist1><![CDATA[Acetazolamide]]></dist1>
+<dist2><![CDATA[Furosemide]]></dist2>
+<dist3><![CDATA[Hydrochlorothiazide]]></dist3>
+<dist4><![CDATA[Mannitol]]></dist4>
+<dist5><![CDATA[Nitroglycerin]]></dist5>
+</dist>
+</question>
+<question num="3">
+<qid>1010</qid>
+<marked>-1</marked>
+<annotation>0</annotation>
+<useranswer>-1</useranswer>
+<corranswer>2</corranswer>
+<stem><![CDATA[A dysfunctional myocardial endothelium underlies oneform of heart disease. In patients with this common disease process, there is a lack of autoregulatory coronary artery vasodilation needed to provide increased blood flow in states of increased physical exertion or emotional stress. The pathogenesis is most often from severe narrowing of atherosclerotic coronary vessels and typically manifests as chest pain, relieved by rest or nitroglycerin tablets.]]></stem>
+<image></image>
+<imagecomment><![CDATA[]]></imagecomment>
+<leadin><![CDATA[Which of the following is a soluble metabolite that mediate the compensatory coronary artery vasodilation during periods of increased myocardial oxygen demand?]]></leadin>
+<fact1>2007-244-2.jpg</fact1>
+<fact2></fact2>
+<fact3></fact3>
+<numdistractors>5</numdistractors>
+<dist>
+<dist1><![CDATA[Acetylcholine]]></dist1>
+<dist2><![CDATA[Adenosine]]></dist2>
+<dist3><![CDATA[Carbon dioxide]]></dist3>
+<dist4><![CDATA[Lactate]]></dist4>
+<dist5><![CDATA[Norepinephrine]]></dist5>
+</dist>
+
+</question>
+</questions>
+</node>

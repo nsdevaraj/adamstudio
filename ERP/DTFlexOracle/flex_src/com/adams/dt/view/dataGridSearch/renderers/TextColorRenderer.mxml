@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Label xmlns:mx="http://www.adobe.com/2006/mxml">
+ 
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+			import mx.controls.dataGridClasses.DataGridListData;
+			import com.adams.dt.view.dataGridSearch.mainComponent.DashBoardGrid;
+			import mx.core.UIComponent;
+			import mx.controls.textClasses.TextRange;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			
+			private var textRange:TextRange;
+			private var clrtextRange:TextRange;
+			private var specificText:String;
+			private var isDashBoard:Boolean;
+			private var defColor:String = '#959595';
+			 
+			 override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value;
+					setStyle('color',defColor);
+					if(DashBoardGrid( listData.owner ).isDashBoard){
+					if( value.hasOwnProperty( 'Status' ) ) {
+						switch( value.Status ) {
+							case ProjectStatus.URGENT:
+								setStyle( "color", "#ff0000" );
+								break;
+							 case ProjectStatus.STANDBY:
+								setStyle( "color", "#0000ff" );
+								break;
+							case ProjectStatus.ARCHIVED:
+								setStyle( "color", "#00b4e0" );
+								break;
+							case ProjectStatus.ABORTED:
+								setStyle( "color", "#d800e0" );
+								break;	 
+							default:
+								break;
+						}
+						}
+					} 
+				}
+			} 
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				if( data && text != '') {
+					if(!DashBoardGrid( listData.owner ).isDashBoard){
+						textRange = new TextRange( this, false, -1, -1 );
+        				textRange.color = defColor;
+					}
+					specificText = DashBoardGrid( listData.owner ).specificText.toLowerCase();
+					if ( specificText != '' ) {
+						var begin:int = this.text.toLowerCase().indexOf( specificText );
+		        		if( begin > -1 ) {
+		        			textRange = new TextRange( this, false);
+		        			textRange.beginIndex = begin
+		        			textRange.endIndex =begin+specificText.length
+		        			try{
+		    					textRange.color = '#ff0000';
+		        			}
+		        			catch(er:Error){
+		        				
+		        			}
+		    			}
+		      		}
+    			} 
+    			super.updateDisplayList( unscaledWidth, unscaledHeight );
+    		}  
+
+    	]]>
+	</mx:Script>
+</mx:Label>

@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+    horizontalAlign="left"
+    verticalGap="0" borderStyle="none" backgroundColor="white" width="100%" height="100%">
+    <mx:Script>
+    	<![CDATA[
+    	[Bindable]
+    		[Bindable]
+    		[Embed("assets/icons/inprogress.png")]
+   			private var INPROGRESS:Class;
+   			[Bindable]
+    		[Embed("assets/icons/waiting.png")]
+   			private var WAITING:Class;
+   			[Bindable]
+    		[Embed("assets/icons/deliverd.png")]
+   			private var DELIVERED:Class; 
+   			[Bindable]
+    		[Embed("assets/icons/ad.png")]
+   			private var ARCHIVED:Class;
+   			
+    		private function getImage(dataStr:String):Class{
+    			switch(dataStr){
+    				case "waiting":
+    					return WAITING;
+    				break ;
+    				case "inprogress":
+    					return INPROGRESS;
+    				break;
+    				case "archived":
+    					return ARCHIVED;
+    				break;
+    				case "delivered":
+    					return DELIVERED;
+    				break;
+    			}
+    			return new Class();;
+    		}
+    	]]>
+    </mx:Script>
+    <mx:Label text="{data.label}" width="50%" textAlign="left"/>
+    <mx:Image id="image" source="{getImage(data.status)}" width="50%" verticalAlign="bottom" horizontalAlign="center"/>
+</mx:HBox>

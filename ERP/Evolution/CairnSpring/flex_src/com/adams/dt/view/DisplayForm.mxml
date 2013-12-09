@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	backgroundAlpha="0"
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" creationComplete="initDataGrid()">
+	<mx:Script>
+		<![CDATA[
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.PagingEvent;
+			import mx.events.PropertyChangeEvent;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			import com.adams.dt.model.ModelLocator;
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.event.LangEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+		/**
+		 * ModelLocator look-up and common references
+		 */
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			/**
+		     * Method Name initDataGrid.
+		     * get the all language list from database through langEvent
+			 * dispatch LangEvent			
+			 * return type void
+		     */
+			
+			private function initDataGrid():void{
+			 	var handler:IResponder = new Callbacks(null,fault)
+			 	var langEvent:LangEvent = new LangEvent(LangEvent.EVENT_GET_ALL_LANGS)
+		 		var initSeq:SequenceGenerator = new SequenceGenerator([langEvent],handler)
+		  		initSeq.dispatch();
+			} 
+			/**
+		     * Method Name login.
+		     * Event Listener listen property change event then call checkLogin method
+			 * return type void
+		     */
+						
+			private function login():void{
+				model.channelSet.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE , checkLogin);
+				model.channelSet.login(usernameTxt.text,passwordTxt.text)
+			}
+			/**
+		     * Method Name changeLanguage.
+		     * set the language 
+			 * return type void
+		     */
+							
+			private function changeLanguage():void{
+				if(lang.selected){
+					lang.label = "En"
+				}else{
+					lang.label = "Fr"
+				}
+				model.loc.language = lang.label;
+			}
+			/**
+		     * Method Name fault.
+		     * if the server communication failed,fault event show the alert 
+		     * return type void
+		     */
+				
+			private function fault(info:Object = null):void{
+				Alert.show('server not accessible');
+			}
+			/**
+		     * Method Name checkLogin.
+		     * set the login status 
+		     * return type void 
+		     */			
+			public function checkLogin(ev : PropertyChangeEvent) : void
+			{
+				if(ev.currentTarget.authenticated)
+				{
+					model.loginStatus = true;
+					model.loginErrorMesg = ""; 
+					Alert.show('logged in with java security');
+				}
+				setTimeout(showErrorLogin , 2000);
+			}
+			/**
+		     * Method Name showErrorLogin.
+		     * check the login status 
+		     * return type void 
+		     */			
+			public function showErrorLogin() : void
+			{
+				if( !model.loginStatus)
+				{
+					if(model.loc.language == 'en')
+					{
+						model.loginErrorMesg = "Incorrect UserName and password"
+					}else
+					{
+						model.loginErrorMesg = "Nom d'utilisateur et votre mot de passe incorrect"		
+					}
+				}
+			}
+		]]>
+	</mx:Script>
+<mx:Form id="loginForm"
+		verticalCenter="35"
+		horizontalCenter="20"
+		verticalGap="15">
+		<mx:FormItem label="{model.loc.getString('select')}">
+			<mx:Button toggle="true" id="lang" label="Fr" click="changeLanguage()"/>
+		</mx:FormItem>
+		<mx:FormItem id="usernameLabel"
+			label="{model.loc.getString('username')}"
+			fontSize="12">
+			<mx:TextInput id="usernameTxt" text="deva" />
+		</mx:FormItem>
+		<mx:FormItem id="passwordLabel"
+			label="{model.loc.getString('password')}"
+			fontSize="12">
+			<mx:TextInput id="passwordTxt" 
+				displayAsPassword="true" text="raj"
+				enter="login()"/>
+		</mx:FormItem>
+		<mx:FormItem horizontalAlign="right">
+			<mx:Button id="loginLabel"
+				label="{model.loc.getString('login')}"
+				click="login()"/>
+		</mx:FormItem>
+	</mx:Form>
+	<mx:Label text="{model.loginErrorMesg}"/>
+</mx:Canvas>

@@ -1,0 +1,70 @@
+/* CSS file */
+
+/*  Application {
+	background-color: #ffffff;
+	background-gradient-colors: #e6e4d9,#c6bca6;
+}  */
+
+.TitleBox {
+	background-color: #c6bca6;
+	corner-radius: 8;
+	border-style:solid;
+	font-size: 36;
+	font-weight: bold;
+}
+
+.SubTitleBox {
+	font-size: 14;
+}
+
+.Copyright {
+	font-size: 9;
+	font-weight: normal;
+	color: #ffffff;
+	text-align: right;
+}
+
+.ContentBox {
+	background-color: #ffffff;
+	border-style: solid;
+	border-color: #999999;
+	border-thickness: 1;
+}
+
+
+.NewsTitle {
+	font-weight: bold;
+	font-size: 12;
+	color: #ffffff;
+	background-color: #c6bca6;
+}
+
+.NewsBox {
+	background-color: #ffffff;
+	border-style: solid;
+	border-color: #999999;
+	border-thickness: 1;
+}
+
+.LoadingNotice {
+	font-size: 12;
+	color: #aaaaaa;
+	font-weight: bold;
+}
+
+/* SeparatorBar {
+	background-color: #666666;
+} */
+
+.FormLabel {
+	font-weight: bold;
+}
+
+.ArticleTitle {
+	font-weight: bold;
+	font-size: 14;
+}
+
+.ArticleDate {
+	color: #0099cc;
+}

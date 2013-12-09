@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:view="com.adams.dt.view.components.*">
+	<s:BorderContainer width="100%" height="40" styleName="projectHeaderBC">
+		<s:layout><s:HorizontalLayout horizontalAlign="left" verticalAlign="middle" paddingLeft="10" paddingRight="10"/></s:layout>
+		<s:ButtonBar id="projectTab" styleName="generalButtonBar" requireSelection="true" selectedIndex="0"/>
+		<s:Label id="projectNameLabel" styleName="headerLabel" fontSize="18" width="100%" textAlign="center"/>
+		<s:Button id="correctionBack" visible="false" label="Back"/>
+		<s:Label text="Priority :" />
+		<view:PriorityComponent id="priority"/>
+	</s:BorderContainer>
+</s:Skin>

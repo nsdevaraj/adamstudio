@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:comp="com.adams.scrum.views.components.*" 
+						  focusEnabled="true" autoDrawBackground="false" width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.scrum.models.vo.Sprints;
+			import com.adams.scrum.models.vo.Stories;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeDatagrid;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.core.mx_internal;
+			
+			use namespace mx_internal;
+			
+			[Bindable]
+			private var lblVisible:Boolean = true;
+			[Bindable]
+			private var btnVisible:Boolean = true;
+			
+			private var story:Stories;
+			
+			override public function set data( value:Object ):void {
+				super.data = value;
+				if( value ) {
+					story = value as Stories;
+					if( !( value is DataGridColumn )  && Object( owner ) is NativeDatagrid && ( story.processed ) ) {
+						processData( value );
+					}
+				}
+			}
+			
+			private function processData( value:Object ):void {
+				switch( dataGridListData.dataField ) {
+					case 'IWantToLabel':
+					case 'soThatICanLabel':
+					case 'storypoints':
+					case 'priority':
+						onlyLabel();
+						lblData.text = value[ dataGridListData.dataField ];
+						break;
+					case 'asLabel':
+						onlyLabel();
+						if( ( story.productObject ) && ( story.productObject.productRolesArr.length != 0 ) ) {
+							lblData.text = story.productObject.productRolesArr[ story.asLabel ];
+						}
+						break;
+					case 'version':
+						onlyLabel();
+						if( story.versionObject ) {
+							lblData.text = story.versionObject.versionLbl;
+						}
+						break;
+					case 'istaskReady':
+						onlyLabel();
+						if( story.taskSet.length != 0 ) {
+							lblData.text = "Yes";
+						}
+						else {
+							lblData.text = "No";
+						}
+						break;
+					case 'edit':
+						onlyImage();
+						imageButton.label = "Edit";
+						imageButton.styleName = "EditIcon";
+						break;
+					case 'status':
+						onlyImage();
+						imageButton.styleName = Utils.getStatusSkinName( story.storyStatusFk, Utils.STORY );
+						break;
+					case 'letSprintAdd':
+						onlyImage();
+						if( !Object( owner ).selectedSprint ) {
+							btnVisible = false;
+						}
+						else {
+							imageButton.label = getLabel( Object( owner ).selectedSprint.storySet );
+						} 
+						break;
+					case 'delete':
+						onlyImage();
+						imageButton.styleName = "DeleteSkin";
+						break;
+					case 'storyId':
+						onlyLabel();
+						lblData.text = value[ dataGridListData.dataField ];
+						break;
+					default:
+						break;	
+				}
+			}
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				super.updateDisplayList( unscaledWidth, unscaledHeight );
+				if( data && imageButton && ( Object( owner ) is NativeDatagrid ) && Object( owner ).selectedSprint ) {
+					if( dataGridListData.dataField == "letSprintAdd" ) {
+						imageButton.label = getLabel( Object( owner ).selectedSprint.storySet );
+					}
+				}
+			}
+			
+			private function onlyLabel():void {
+				btnVisible = false;
+				lblVisible = true;
+				lblData.text = '';
+			}
+			
+			private function onlyImage():void {
+				btnVisible = true;
+				lblVisible = false;
+				imageButton.label = '';
+				imageButton.styleName = null;
+			}
+			
+			private function getLabel( storySet:ArrayCollection ):String {
+				for each( var iterStory:Stories in storySet ) {
+					if( iterStory.storyId == story.storyId ) {
+						return 'Remove';
+					}
+				}	 
+				return 'Add';
+			}
+			
+			private function button_clickHandler( event:MouseEvent ):void {
+				switch( dataGridListData.dataField ) {
+					case 'edit':
+						Object( owner ).renderSignal.dispatch( NativeList.STORYMODIFY, story );
+						break;
+					case 'delete':
+						Object( owner ).renderSignal.dispatch( NativeList.STORYDELETE, story );
+						break;
+					case 'letSprintAdd':
+						if( imageButton.label == "Add" ) { 
+							Object( owner ).renderSignal.dispatch( NativeList.STORYSPRINTSELECTED, story );
+						}
+						else { 
+							Object( owner ).renderSignal.dispatch( NativeList.STORYDESELECTED, story );
+						} 
+						break;
+					default:
+						break;	
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Label id="lblData" textAlign="left" verticalAlign="middle" horizontalCenter="0" verticalCenter="0" left="5" right="5" top="5" bottom="5"
+			 visible="{ lblVisible }" includeInLayout="{ lblData.visible }" maxDisplayedLines="-1" showTruncationTip="true"/>
+	<s:Button id="imageButton" visible="{ btnVisible }" includeInLayout="{ imageButton.visible }" click="button_clickHandler( event )"
+			  horizontalCenter="0" verticalCenter="0" />
+</s:MXDataGridItemRenderer>

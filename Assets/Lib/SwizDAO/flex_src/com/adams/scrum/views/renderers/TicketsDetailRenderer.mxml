@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:components="com.adams.scrum.views.components.*"
+				width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[ 			  
+			import com.adams.scrum.models.vo.Persons;
+			import com.adams.scrum.models.vo.Tickets;
+			import com.adams.scrum.utils.GetVOUtil;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.IList;
+			import mx.formatters.DateFormatter; 
+			
+			
+			/**
+			 * The function to handle delete version event
+			 * 
+			 * <p>
+			 * In addition, it dispatches signal to the owner of the renderer
+			 * </p>
+			 */
+			protected function infoClickHandler(event:MouseEvent):void
+			{
+				Object(owner).renderSignal.dispatch(NativeList.TICKETMODIFY);
+			}
+			/**
+			 * <p>
+			 * The renderer data initiated
+			 * </p>
+			 */	
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if(value){
+					var ticket:Tickets = value as Tickets;
+					var person:Persons = GetVOUtil.getVOObject(ticket.personFk,Object(owner).collection as IList,Utils.PERSONKEY,Persons) as Persons
+					personName.text = person.personFirstname;
+					hours.text = ticket.ticketTimespent.toString();
+					date.text = dateFormate(ticket.ticketDate);
+					notes.text = ticket.ticketComments.toString();
+					
+					infoButton.visible = visibleEditButton();
+				}
+			}
+			private var df:DateFormatter = new DateFormatter();
+			private function dateFormate(date:Date):String{
+				df.formatString = "MMM,DD,YYYY";
+				var str:String = df.format(date);
+				return str;
+			}
+			private function visibleEditButton():Boolean{				
+				return Object(owner).editRendererProperty;
+			}			
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:BasicLayout />
+	</s:layout>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:HGroup  height="100%" verticalAlign="middle" left="2" right="2">
+		<s:Label id="personName"  maxDisplayedLines="1" showTruncationTip="true" width="30%"/>
+		<s:Label id="hours" maxDisplayedLines="1" showTruncationTip="true" width="10%"/>
+		<s:Label id="date" maxDisplayedLines="1" showTruncationTip="true" width="20%"/>
+		<s:Label id="notes" maxDisplayedLines="1" showTruncationTip="true" width="30%"/>
+		<components:NativeButton id="infoButton" styleName="ConfigIcon" visible="{visibleEditButton()}" click="infoClickHandler(event)" width="10%"/>
+	</s:HGroup>
+</s:ItemRenderer>

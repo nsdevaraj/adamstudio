@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Calendar
+	
+	The Calendar, extending DateChooser, shows which days have blog entries. You can also
+	select a date and see what entries were made on that day.
+-->
+<mx:DateChooser xmlns:mx="http://www.adobe.com/2006/mxml" change="fixSelection(event)" >
+	
+	<mx:Metadata>
+		[Event(name="datePick",type="com.adams.blog.events.BlogEvent")]
+	</mx:Metadata>
+	
+	<mx:Script>
+	<![CDATA[
+		import com.adams.blog.events.BlogEvent;
+		import mx.collections.ArrayCollection;
+		
+		/**
+		 * originalRanges
+		 *
+		 * This is the set of ranges originally loaded from the server.
+		 */
+		private var _originalRanges:Array;
+		
+		/**
+		 * blogDays
+		 *
+		 * Given the data for the days from the server, this function builds an Array
+		 * of date ranges so the are highlighted properly on the control.
+		 */
+		public function set blogDays( a:ArrayCollection ) : void
+		{
+			if( a == null ) return;
+						
+			var ranges:Array = [];
+			
+			for(var i:Number=0; i < a.length; i++) {
+				var d:Date = a.getItemAt(i) as Date;
+				ranges.push( {rangeStart:d, rangeEnd:d} );
+			}
+			
+			_originalRanges = ranges.slice();
+			
+			selectedRanges = ranges;
+		}
+		
+		/**
+		 * fixSelection
+		 *
+		 * Normally when you pick a day on the DateChooser the current selections are erased and
+		 * the date picked becomes the new selection. In this application we don't want that - we 
+		 * want the calendar to always show the days with blog entries. This function simply puts
+		 * back the original selection, making it look like you cannot replace those dates.
+		 */
+		private function fixSelection( event:Event ) : void
+		{
+			var evt:BlogEvent = new BlogEvent(BlogEvent.DATE_PICK);
+			evt.selectedDate = selectedDate;
+			dispatchEvent(evt);
+			
+			selectedRanges = _originalRanges.slice();
+		}
+	]]>
+	</mx:Script>
+</mx:DateChooser>

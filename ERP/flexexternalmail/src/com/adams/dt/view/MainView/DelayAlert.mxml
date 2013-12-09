@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:HBox width="100%" id="delayloadalert" label="delayloadalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+		<mx:Image id="delayimage" verticalCenter="0" horizontalCenter="0" source="{LOADING}" width="22"	height="22"/>
+		<mx:Text id="delayTxt" text="{model.delayUpdateTxt}" styleName="menuText" selectable="false"/>
+	</mx:HBox>   
+</mx:Canvas>

@@ -1,0 +1,332 @@
+/* CSS file */
+global{
+modalTransparency: 0.5;
+modalTransparencyBlur: 5;
+modalTransparencyColor: #272727;
+modalTransparencyDuration: 100;
+}
+Application
+{
+	color: #959494;
+	fontSize: 11;
+	corner-radius: 0;
+	border-style:solid;
+	border-thickness: 0;
+	border-color: black;
+	font-sharpness: 100;
+	font-thickness: -100;
+	background-alpha:0;
+}
+Alert{
+	background-color: #3e3e3e;
+	border-color: #22201e;
+	header-height:60;
+	border-alpha: 1;
+	corner-radius: 10;
+	dropShadowStyleName: panelDropShadow;
+	border-skin: ClassReference("assets.iBrief.skins.SmartPanelSkin");
+	dropShadowEnabled: false;
+	title-style-name: headerStyle;
+	 creationCompleteEffect: alertCreationCompleteEffect;
+	/* headerSkin: ClassReference("assets.skins.HeaderSkin"); */
+}
+.panelDropShadow
+{
+	distance:5;
+	size:28;
+	alpha:0.7;
+}
+.headerStyle
+{
+	text-align:center;
+	font-size: 15;
+	fontFamily:myGothic;
+	border-skin: Embed(source='assets/iBrief/skins/header_bg.png', scaleGridLeft=20, scaleGridRight=200, scaleGridTop=40,scaleGridBottom=42);
+}
+.previousBtn{
+	icon:Embed('assets/images/sendBack.png');
+}
+.nextBtn{
+	icon:Embed('assets/images/sendNext.png');
+}
+ 
+.menuText{
+	fontFamily: myFont;
+	color: #ffffff;
+	fontSize: 14;	
+}
+ 
+.frBTN{
+	upSkin:Embed(source='assets/locale/fr.png');
+	downSkin:Embed(source='assets/locale/fr.png');
+	overSkin:Embed(source='assets/locale/fr.png');
+}
+.enBTN{
+	upSkin:Embed(source='assets/locale/en.png');
+	downSkin:Embed(source='assets/locale/en.png');
+	overSkin:Embed(source='assets/locale/en.png');
+}
+.settingsBTN{
+	upSkin:Embed(source='assets/locale/settings.png');
+	downSkin:Embed(source='assets/locale/settings.png');
+	overSkin:Embed(source='assets/locale/settings.png');
+}
+ 
+ScrollBar{
+	trackSkin: Embed(source='assets/track.png', scaleGridLeft=6, scaleGridRight=7, scaleGridTop=26,scaleGridBottom=330);
+	thumbUpSkin:Embed(source='assets/thumb_up.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120);
+	thumbOverSkin:Embed(source='assets/thumb_over.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120);
+	thumbDownSkin:Embed(source='assets/thumb_over.png', scaleGridLeft=8, scaleGridRight=9, scaleGridTop=8,scaleGridBottom=120); 
+	upArrowUpSkin:Embed(source='assets/top_arrow_up.png');
+	upArrowDownSkin:Embed(source='assets/top_arrow_over.png');
+	upArrowOverSkin:Embed(source='assets/top_arrow_over.png');
+	downArrowUpSkin:Embed(source='assets/bottom_arrow_up.png');
+	downArrowDownSkin:Embed(source='assets/bottom_arrow_over.png');
+	downArrowOverSkin:Embed(source='assets/bottom_arrow_over.png'); 
+}
+
+Button{ 
+	font-family:myFont;
+	upSkin:Embed(source='assets/btn.png', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/btn.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/btn_over.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	disabled-skin:Embed(source='assets/btn_disabled.png', scaleGridLeft=10, scaleGridRight=12,scaleGridTop=3,scaleGridBottom=5);
+	selected-up-skin:Embed(source='assets/btn_over.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-over-skin:Embed(source='assets/btn_over.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	selected-down-skin:Embed(source='assets/btn_over.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	color: #959595;
+	
+    textRollOverColor: #959595;
+    textSelectedColor: #ffffff;
+}
+  
+TextArea
+{
+	focus-alpha:0;
+	border-skin: Embed(source='assets/input_bg.png', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	disabled-skin: Embed(source='assets/disabled_bg.png', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:12; 
+}
+ 
+.itemText{
+	font-family: myFont;
+	font-size:14;
+	color: "#000000";
+}
+.technicalFormHeader{
+	backgroundColor:#303030;
+	verticalAlign:middle;
+	paddingLeft:15;
+	borderStyle:solid;
+	borderColor:#000000;	
+}
+
+.technicalFormContainer{
+	top:30;
+	borderStyle:solid;
+	borderColor:#000000;
+	horizontal-center:0;
+}
+.chartViewerButton{
+	upSkin:Embed(source='assets/images/up_icon.png');
+	downSkin:Embed(source='assets/images/up_icon.png');
+	overSkin:Embed(source='assets/images/up_icon.png');
+	selected-over-skin:Embed(source='assets/images/down_icon.png');
+	selected-down-skin:Embed(source='assets/images/down_icon.png');
+	selected-up-skin:Embed(source='assets/images/down_icon.png');
+}
+.disabledText{
+	focus-alpha:1;
+ 	border-skin: Embed(source='assets/images/readerArea_bg.png', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+}
+.tabStyle {
+    upSkin:Embed(source='assets/images/tab.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15, scaleGridBottom=16);
+    downSkin:Embed(source='assets/images/tab_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    overSkin:Embed(source='assets/images/tab_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    disabledSkin: Embed(source='assets/images/tab_disabled.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedUpSkin: Embed(source='assets/images/tab_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedOverSkin:Embed(source='assets/images/tab_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    color:#444444;
+    font-size: 11;
+}
+ComboBox, PopUpButton
+{
+	upSkin:Embed(source='assets/images/comboBox_up.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	downSkin:Embed(source='assets/images/comboBox_up.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	overSkin:Embed(source='assets/images/comboBox_over.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	disabledSkin: Embed(source='assets/images/comboBox_disabled.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=3, scaleGridBottom=4);
+	padding-left: 10;
+	color:#959595;
+	dropdownStyleName: dropdownStyleName;
+}
+PopUpButton{
+	padding-right: 10;
+	popUpDownSkin: Embed(source='assets/images/comboBox_up.png', scaleGridLeft=10, scaleGridRight=82, scaleGridTop=19,scaleGridBottom=20);
+	popUpOverSkin: Embed(source='assets/images/comboBox_over.png', scaleGridLeft=10, scaleGridRight=82, scaleGridTop=19,scaleGridBottom=20);
+}
+.dropdownStyleName
+{
+	background-color: #2b2a2a;
+	border-color: #2e2821;
+	selectionColor:#3e3d3d;
+	rollOverColor:#3e3d3d;
+	textRollOverColor:#ffffff;
+	textSelectedColor:#ffffff; 
+	color: #ffffff;
+	font-weight:normal;
+	dropShadowEnabled: true;
+}
+TextInput,TextArea
+{
+/* borderStyle: solid;
+   borderColor: #7e7e7e;
+   backgroundColor: #5e5e5e;
+   color: #cdcdcd;
+    */
+   focus-alpha:0;
+ 	border-skin: Embed(source='assets/images/input_bg.png', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+ 	disabled-skin: Embed(source='assets/images/disabled_bg.png', scaleGridLeft=8, scaleGridRight=20, scaleGridTop=8,scaleGridBottom=9);
+	padding-top:2;
+	padding-left:2;
+	font-size:11; 
+}
+ 
+.itemText{
+	font-family: myFont;
+	font-size:14;
+	color: "#000000";
+}
+.mainProjectHeader{
+	font-family: myFont;
+	color:#ffffff;
+	top:30;
+	font-size:22;
+	left:15;
+}
+.editable
+{
+	font-weight:normal;
+	color: #eeeeee;
+	fillColors: #e5b421, #e5b421;
+	fillAlphas: 1,1;
+	border-color: #e5b421;
+}
+ColorPicker
+{
+	upSkin: Embed(source='assets/images/ColorPicker_upSkin.png');
+	downSkin: Embed(source='assets/images/ColorPicker_downSkin.png');
+	overSkin: Embed(source='assets/images/ColorPicker_overSkin.png');
+	disabledSkin: Embed(source='assets/images/ColorPicker_disabledSkin.png');
+}
+.AVProductLogo{
+	upSkin: Embed(source="assets/images/logo.png");
+	over-skin: Embed(source="assets/images/logo.png");
+	down-skin: Embed(source="assets/images/logo.png");
+}
+Accordion {
+    backgroundColor: #363636;
+    headerStyleName: accordionHeader;
+    borderColor: #22201E;
+    fontSize: 10;
+    color:#959494;
+}
+
+.accordionHeader {
+    fillColors: #D19A48, #D17C01;    
+    upSkin:Embed(source='assets/iBrief/skins/acc.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15, scaleGridBottom=16);
+    downSkin:Embed(source='assets/iBrief/skins/acc_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    overSkin:Embed(source='assets/iBrief/skins/acc_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedUpSkin: Embed(source='assets/iBrief/skins/acc_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    selectedOverSkin:Embed(source='assets/iBrief/skins/acc_selected.png', scaleGridLeft=10, scaleGridRight=96, scaleGridTop=15,scaleGridBottom=16);
+    fontSize: 10;
+    fontFamily:myFont;
+    paddingTop: 3;
+    paddingLeft: 10;
+    paddingBottom: 1;
+    paddingRight: 10;
+    color:#959494;
+}
+.backTODO
+{
+	upSkin: Embed(source="assets/iBrief/skins/backToTODO.png");
+	over-skin: Embed(source="assets/iBrief/skins/backToTODO.png");
+	down-skin: Embed(source="assets/iBrief/skins/backToTODO.png");
+}
+.todoListBg
+{
+	border-skin: Embed(source='assets/iBrief/skins/todo_bg.png', scaleGridLeft=6, scaleGridRight=7, scaleGridTop=5,scaleGridBottom=6);
+}
+.todoRedBTN{
+	upSkin:Embed(source='assets/iBrief/skins/red_bg.png', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/iBrief/skins/red_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/iBrief/skins/red_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+.todoGreenBTN{
+	upSkin:Embed(source='assets/iBrief/skins/green_bg.png', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/iBrief/skins/green_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/iBrief/skins/green_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+.todoBlueBTN{
+	upSkin:Embed(source='assets/iBrief/skins/blue_bg.png', scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	downSkin:Embed(source='assets/iBrief/skins/blue_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+	overSkin:Embed(source='assets/iBrief/skins/blue_bg.png',scaleGridLeft=10, scaleGridRight=12, scaleGridTop=3, scaleGridBottom=5);
+}
+NumericStepper
+{
+	upArrowUpSkin: Embed(source='assets/iBrief/skins/NS_upArrowUpSkin.png');
+	upArrowOverSkin: Embed(source='assets/iBrief/skins/NS_upArrowOverSkin.png');
+	upArrowDownSkin: Embed(source='assets/iBrief/skins/NS_upArrowDownSkin.png');
+	downArrowUpSkin: Embed(source='assets/iBrief/skins/NS_downArrowUpSkin.png');
+	downArrowOverSkin: Embed(source='assets/iBrief/skins/NS_downArrowOverSkin.png');
+	downArrowDownSkin: Embed(source='assets/iBrief/skins/NS_downArrowDownSkin.png');
+}
+TabBar
+{
+	font-family: myFont;
+	tabStyleName: buttonStyleName;
+	background-color: #3e3e3e;
+	
+}
+.buttonStyleName
+{
+	upSkin:Embed(source='assets/iBrief/skins/button_bar2_up.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	downSkin:Embed(source='assets/iBrief/skins/button_bar2_up.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	overSkin:Embed(source='assets/iBrief/skins/button_bar2_selected.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedUpSkin:Embed(source='assets/iBrief/skins/button_bar2_selected.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedOverSkin:Embed(source='assets/iBrief/skins/button_bar2_selected.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	selectedDownSkin:Embed(source='assets/iBrief/skins/button_bar2_selected.png', scaleGridLeft=5, scaleGridRight=6, scaleGridTop=11,scaleGridBottom=12);
+	font-weight: normal;
+	textRollOverColor:#888888;
+	color: #888888;
+	font-size:12;
+}
+.mainOrangeTitle
+{
+	fontFamily: myFont;
+	color: #d97328;
+	fontSize: 14;
+}
+.subBlueTitle
+{	
+	fontFamily: myFont;
+	color: #006cb5;
+	fontSize: 12;
+}
+.dateText
+{
+	fontFamily: myFont;
+	color: #ed1b36;
+	fontSize: 12;
+}
+
+ @font-face {
+    fontFamily: myFont;
+    src: url("assets/fonts/verdana.TTF"); 
+} 
+ 
+

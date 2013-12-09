@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" xmlns:PDFTool="com.adams.dt.view.PDFTool.*" 
+	creationPolicy="all" creationComplete="resetPage()">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			private var _rotateMe:Number;
+			
+			public function set rotateMe (value:Number):void
+			{
+				_rotateMe = value;
+				img1.rotateMe=img2.rotateMe=value;
+			}
+	
+			public function get rotateMe ():Number
+			{
+				return _rotateMe;
+			}
+			private var _focusAction:Number;
+			[Bindable]
+			public function set focusAction (value:Number):void
+			{
+				_focusAction = value;
+				img1.FOCUS_ACTION=img2.FOCUS_ACTION=value;
+			}
+	
+			public function get focusAction ():Number
+			{
+				return _focusAction;
+			}
+			
+			private var _selectedNote:Number;
+			[Bindable]
+			public function set selectedNote (value:Number):void
+			{
+				_selectedNote = value;
+			}
+	
+			public function get selectedNote ():Number
+			{
+				return _selectedNote;
+			}
+			
+			private var _DRAW:Number;
+			[Bindable]
+			public function set DRAW(value:Number):void{
+				_DRAW=value;
+			}
+			public function get DRAW():Number{
+				return _DRAW;
+			}
+			public function resetPage():void{
+				
+				//img1.imgURL="";
+				//img2.imgURL="";
+				//img1.imgURL=model.compareTask.taskFilesPath;
+				//img2.imgURL=model.currentTasks.previousTask.taskFilesPath; 
+				img2.resetPage();img1.resetPage();
+				//trace("ResetPage Coming img1 : "+img1.scaleValue+"{Scale Value}"+img1.scaleX+"{Sx}"+img1.scaleY+"{Sy}"+img2.scaleValue+"{Scale Value}"+img2.scaleX+"{Sx}"+img2.scaleY+"{Sy}");
+				
+			}
+			public function resetInnerPages(){
+				
+			}
+			/* imgURL="{MailTestProject}" 
+			imgURL="{model.currentTasks.previousTask.taskFilesPath}"  */
+			private function RegionSelectCompleteEvent(event:Event):void{
+				//trace(event.target.name)
+				if(event.target.name=="img1")
+					img2.compareBoxPosition(img1.compareBoxX,img1.compareBoxY,img1.compareBoxWidth,img1.compareBoxHeight);
+				else
+					img1.compareBoxPosition(img2.compareBoxX,img2.compareBoxY,img2.compareBoxWidth,img2.compareBoxHeight);
+			}
+		]]>
+	</mx:Script>
+	<mx:Canvas id="img1Con" width="50%" height="100%" left="0" backgroundColor="#333333" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:filters>
+			<mx:DropShadowFilter inner="true" blurX="8" blurY="4" distance="8" alpha="0.5">
+				
+			</mx:DropShadowFilter>
+		</mx:filters>
+		<PDFTool:PDFSinglePageMainContainer id="img1"  x="{img2.xPos}" y="{img2.yPos}"
+			scaleX="{img2.scaleValue}" scaleY="{img2.scaleValue}" RegionSelectComplete="{RegionSelectCompleteEvent(event)}" 
+			imgURL="{model.compareTask.taskFilesPath}" action="{img2.action}"
+			dataProvider="{model.pdfDetailVO.commentListArrayCollection}" selectedNote="{selectedNote}" DRAW="{DRAW}"
+			selectPDF="1"/>
+	</mx:Canvas>
+	<mx:Canvas id="img2Con" width="50%" height="100%" right="0" backgroundColor="#333333" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<mx:filters>
+			<mx:DropShadowFilter inner="true" blurX="8" blurY="4" distance="8" alpha="0.5"/>
+		</mx:filters>
+		<PDFTool:PDFSinglePageMainContainer id="img2" x="{img1.xPos}" y="{img1.yPos}" 
+			scaleX="{img1.scaleValue}" scaleY="{img1.scaleValue}" RegionSelectComplete="{RegionSelectCompleteEvent(event)}" 
+			imgURL="{model.currentTasks.previousTask.taskFilesPath}" action="{img1.action}"
+			dataProvider="{model.pdfDetailVO.commentListArrayCollection}" selectedNote="{selectedNote}" DRAW="{DRAW}"
+			selectPDF="2"/>
+	</mx:Canvas>
+</mx:Canvas>

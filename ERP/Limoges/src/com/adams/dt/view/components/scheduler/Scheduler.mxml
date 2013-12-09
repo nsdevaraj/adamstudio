@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:com="com.adams.dt.view.components.scheduler.*">
+	<fx:Binding source="gridComponent.isVScrollerVisible" destination="this.makeValidation"/>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import com.adams.dt.util.GridUtils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			
+			private var maskObj:UIComponent;
+			private var listMask:UIComponent;
+			
+			private var _dataChanged:Boolean;
+			private var _rowsToShowChanged:Boolean;
+			
+			private var _schedulerInput:ArrayCollection;
+			[Bindable]
+			public function get schedulerInput():ArrayCollection {
+				return _schedulerInput;
+			}
+			public function set schedulerInput( value:ArrayCollection ):void {
+				_schedulerInput = value;
+				_dataChanged = true;
+				invalidateProperties();
+				invalidateDisplayList();
+			}
+			
+			private var _rowHeight:Number = 30;
+			[Bindable]
+			public function get rowHeight():Number {
+				return _rowHeight;
+			} 	
+			public function set rowHeight( value:Number ):void {
+				_rowHeight = value;
+				invalidateDisplayList();
+			}
+			
+			private var _rowsToShow:Number = 10;
+			[Bindable]
+			public function get rowsToShow():Number {
+				return _rowsToShow;
+			} 	
+			public function set rowsToShow( value:Number ):void {
+				_rowsToShow = value;
+				_rowsToShowChanged = true;
+				invalidateProperties();
+				invalidateDisplayList();
+			}
+			
+			protected function modeSet( value:Number ):String {
+				var returnValue:String = '';
+				switch( value ) {
+					case 100 :
+						returnValue = GridUtils.YEAR_MODE;
+						break;
+					case 200 :
+						returnValue = GridUtils.MONTH_MODE;
+						break;
+					case 300 :
+						returnValue = GridUtils.WEEK_MODE;
+						break;
+					case 400 :
+						returnValue = GridUtils.DAY_MODE;
+						break;
+					case 500 :
+						returnValue = GridUtils.HOUR_MODE;
+						break;
+					case 600 :
+						returnValue = GridUtils.MINUTE_MODE;
+						break;
+					default:
+						break;
+				} 
+				return returnValue;
+			}
+			
+			private var _makeValidation:Boolean;
+			[Bindable]
+			public function get makeValidation():Boolean {
+				return _makeValidation;
+			}
+			public function set makeValidation( value:Boolean ):void {
+				_makeValidation = value;
+				invalidateDisplayList();
+			} 	
+			
+			override protected function createChildren():void {
+				super.createChildren();
+				if( !maskObj ) {
+					maskObj = new UIComponent();
+					addElement( maskObj );
+				}
+				if( !listMask ) {
+					listMask = new UIComponent();
+					addElement( listMask );
+				}
+			}
+			
+			override protected function commitProperties():void {
+				super.commitProperties();
+				if( _dataChanged ) {
+					_dataChanged = false;
+					if( !isNaN( rowsToShow )  && rowsToShow > schedulerInput.length ) {
+						rowsToShow = schedulerInput.length;
+					}
+				}
+				if( _rowsToShowChanged ) {
+					_rowsToShowChanged = false;
+					if( schedulerInput && schedulerInput.length < rowsToShow ) {
+						rowsToShow = schedulerInput.length;
+					}
+				}
+			}
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				if( schedulerInput && !isNaN( rowHeight ) && !isNaN( rowsToShow ) ) {
+					if( gridComponent && maskObj ) {
+						maskObj.graphics.clear();
+						maskObj.graphics.lineStyle( 1, 0x000000 );
+						maskObj.graphics.beginFill( 0xFFFFFF, 0 );
+						
+						var maskWidth:Number = gridComponent.width - gridComponent.scrollerShowAdjustment;
+						maskObj.graphics.drawRect( gridComponent.x, gridComponent.y, maskWidth, gridComponent.headerHeight );
+						maskObj.graphics.endFill();
+						
+						maskObj.graphics.beginFill( 0xFFFFFF, 0 );
+						var maskheight:Number = ( rowsToShow * rowHeight )  + gridComponent.heightAdjustment + gridComponent.scrollerShowAdjustment;
+						var coverWidth:Number;
+						if( gridComponent.isVScrollerVisible ) {
+							coverWidth = gridComponent.width;
+						}
+						else {
+							coverWidth = maskWidth;
+						}
+						maskObj.graphics.drawRect( gridComponent.x, gridComponent.headerHeight, coverWidth, maskheight );
+						maskObj.graphics.endFill();
+						
+						gridComponent.mask = maskObj;
+					}
+					if( listComponent && listMask ) {
+						listMask.graphics.clear();
+						listMask.graphics.lineStyle( 1, 0x000000 );
+						listMask.graphics.beginFill( 0xFFFFFF, 0 );
+						listMask.graphics.drawRect( listComponent.x, listComponent.y, listComponent.width, listComponent.height );
+						listMask.graphics.endFill();
+						
+						listComponent.mask = listMask;
+					}
+				}
+				super.updateDisplayList( unscaledWidth, unscaledHeight );
+			}
+			
+			private function showPeriod( value:Number ):Object {
+				switch( value ) {
+					case 100:
+						return 'YEAR';
+						break;
+					case 200:
+						return 'MONTH';
+						break;
+					case 300:
+						return 'WEEK';
+						break;
+					case 400:
+						return 'DAY';
+						break;
+					case 500:
+						return 'MINUTE';
+						break;
+					default:
+						break;
+				} 
+				return null;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Label id="header" top="0" left="10" height="{ rowHeight }"/>
+	<com:ListComponent id="listComponent" left="0" y="{ gridComponent.headerHeight }"
+					   width="150"  rowHeight="{ rowHeight }" rowsToShow="{ rowsToShow }"
+					   dataProvider="{ schedulerInput }" lineColor="#515154"
+					   verticalScroll="{ gridComponent.verticalScrollPosition }" />
+	<com:GridComponent id="gridComponent" x="{ listComponent.x + listComponent.width }" heightAdjustment="0" dateColor="#bebebe"
+					   width="{ width - listComponent.width }" dataProvider="{ schedulerInput }" lineColor="#515154"
+					   mode="{ modeSet( slider.value ) }" rowHeight="{ rowHeight }" rowsToShow="{ rowsToShow }"/>
+	<s:HGroup x=" { ( gridComponent.x + gridComponent.width ) - ( slider.width + periodLabel.width + 30 ) }" 
+			  y="{ ( gridComponent.y + gridComponent.height + gridComponent.heightAdjustment )  + 40 }" gap="10">
+		<s:Label id="periodLabel" text="Period Adjustment" paddingTop="10"/>
+		<s:HSlider id="slider" width="400" minimum="100" maximum="500" dataTipFormatFunction="showPeriod"
+				   value="300" liveDragging="true" snapInterval="100"	showDataTip="true"/>
+	</s:HGroup>
+</s:Group>

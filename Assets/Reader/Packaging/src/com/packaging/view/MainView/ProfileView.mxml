@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   styleName="transparentBackground" minHeight="700"	width="100%" height="100%"
+		   horizontalScrollPolicy="off" verticalGap="3">
+	<mx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+		]]>
+	</mx:Script>
+	 
+	<mx:Label styleName="introTitle" text="Company profile" fontSize="24" left="15" top="15"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+	<!--<mx:Canvas width="100%">
+		<mx:Image id="scrumImg" left="0" top="0" source="@Embed('assets/images/Scrum.png')"/>
+		<mx:Image  right="0" top="30" source="@Embed('assets/images/rugby.png')"/>	
+	</mx:Canvas>-->
+	
+	
+	<mx:VBox width="100%"  height="100%" paddingTop="0">
+		<mx:Canvas backgroundColor="0x4e86b5" height="224" width="100%">
+			<mx:Image source="assets/images/Team.png" left="0" top="0"/>
+		</mx:Canvas>
+		<mx:Text 	fontSize="12"	 width="100%" styleName="contFont" height="100%" id="three" 
+					 selectable="false" >
+			<mx:htmlText><![CDATA[<p textAlign="justify">International brand design agency <b>Adama's Studio India</b> in Puducherry creates consumer brand identities and packaging designs. It is basically a French based pre-press packaging offshore outsourcing company. We have clients around the world especially European countries providing world class service, since 2004..</p><br></br>
+<p textAlign="justify">Our creative designers and production resources use years of experience to provide you with superior service and value. Adam's Studio India provides you with superior packaging services. It has a unique place in International sectors. Our fresh and innovative approach is acting as a liaison between the endurer and the provider. Our goal is to exceed the expectations of every client by offering outstanding customer service, increased flexibility and greater value.</p><br></br>
+<p textAlign="justify">Adama's Studio India is managed by Adama's Studio Ireland, has its production studios in Puducherry and Chennai. ASI has been for more than 6 years in this market and proposes a consumer solution for services in pre-press and graphic industry. Adama's Studio manages to its client's commercial and technical European interface. These studios are fully equipped with highly sophisticated hardwares and softwares fulfilling the European needs.</p> <p textAlign="justify">Adam's Studio India has five different teams Administration, IT, Packaging, Infographie and Edition. It manages a continuous training and quality improvement of its team through the expertise of European production Managers.</p><br></br>
+				]]>
+			</mx:htmlText>
+		</mx:Text>
+		
+		<mx:Text 	fontSize="12"	 width="100%" styleName="contFont" height="100%"  
+					selectable="false" >
+			<mx:htmlText><![CDATA[<b>Welfare :</b><br>
+<p>Adama's studio offers some recreational activities for the employees to refresh their mind body. The employees can utilize the opportunity and show their talents in sports events like. Carom, Chess, Cricket. Basketball etc. The Studio even encourages and brings out the hidden talents of the employees and helps them to develop and unleash their full artistic potential in painting and drawing and other creative arts.</p><br></br>
+<p>Adama's Studio provides a satisfactory work environment, labor management relation and employee welfare. We maintain harmonious relationships between superior and subordinates. Provision of welfare amenities like safety and security of working condition, medical facitility, Employee Welfare Policy all these are the benefits that the Studio offers to the employees.</p><br></br>
+<p>As we know that an organization in the present world cannot be successful without taking into account of moral and social responsibility. We made ourselves equipped with this insight and the employees of Adama's studio had made a visit to an orphanage and offered a day meal to those inmates of the orphanage. This is an act one step towards the philanthropic activity.</p><br></br>
+]]>
+			</mx:htmlText>
+		</mx:Text>
+		
+		 
+		
+	</mx:VBox>	
+</mx:VBox>
+

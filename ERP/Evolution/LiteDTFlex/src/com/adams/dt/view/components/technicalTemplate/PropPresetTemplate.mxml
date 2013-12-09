@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"  
+	            showCloseButton="true" horizontalAlign="center" width="800"  title="Technical Template" 
+	            close="closeWindow( event )" layout="vertical" headerHeight="30" horizontalScrollPolicy="off"
+	            styleName="bgContainer" creationComplete="loadDataGrid()" resizeEffect="Resize" verticalScrollPolicy="off" 
+	            mouseDownOutside="onMousedownOutside()" xmlns:technicalTemplate="com.adams.dt.view.components.technicalTemplate.*">
+	<mx:Script>
+		<![CDATA[
+			import org.alivepdf.colors.CMYKColor;
+			import mx.events.FlexEvent;
+			import mx.core.Container;
+			import com.adams.dt.model.vo.Presetstemplates;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.Categories;
+			import mx.controls.Label;
+			import com.adams.dt.model.vo.Companies;
+			import com.adams.dt.business.util.Utils;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.rpc.events.ResultEvent;
+			import com.adams.dt.event.PropPresetTemplateEvent;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import mx.events.DataGridEvent;
+			import mx.collections.IList;
+			import mx.events.ListEvent;
+			import mx.events.CollectionEventKind;
+			import com.adams.dt.view.components.impremiurRenderer.CheckBoxSelectContent;
+			import mx.collections.IViewCursor;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.events.CollectionEvent;
+			import mx.managers.DragManager;
+			import mx.events.DragEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.event.DefaultTemplateValueEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.DefaultTemplateValue;
+			import mx.core.UIComponent;
+			import com.adams.dt.view.components.impremiurRenderer.ComboSelectContent;
+			import com.adams.dt.view.components.impremiurRenderer.FieldSelectContent;
+			import com.adams.dt.view.components.impremiurRenderer.TextSelectContent;
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			import mx.events.CloseEvent;
+			
+		 	
+		 	[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	
+		 	[Bindable]
+		 	private var _deletedPropPresTempColl:ArrayCollection = new ArrayCollection();
+		 	[Bindable]
+		 	private var _selectedPropPresTempColl:ArrayCollection = new ArrayCollection();
+		 	private var _updateTempColl:ArrayCollection = new ArrayCollection();
+		 	private var finalTempColl:ArrayCollection = new ArrayCollection();
+		 	
+		 	
+		 	
+		 	
+		 	/**
+		    * Close the window when user click the close Button.
+		    */
+		 	private function closeWindow( event:CloseEvent ) :void {
+		 		PopUpManager.removePopUp(this);
+		 		var propPresetUpdateEvt:TasksEvent = new TasksEvent(TasksEvent.PUSH_ALL_PROJECT_PRESETTEMP);
+		 		propPresetUpdateEvt.dispatch();
+		 		delPropPresTempDG.visible = false;
+			 	delPropPresTempDG.includeInLayout = false
+		 	}
+			/**
+		    * Close the window on MouseDownOutSide
+		    */	
+			private function onMousedownOutside():void {
+	    		dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+	    	}
+	    	
+	    	/**
+		    * TO show the data Grid fro temperoroy Purpose.
+		    */
+    		private function loadDataGrid(obj:Object=null) :void {
+    			var selectedPresetTemp:Presetstemplates = Presetstemplates(model.presetTempCollection.getItemAt(0))
+    			_selectedPropPresTempColl = selectedPresetTemp.propertiesPresetSet;
+    			checkRemovedPropPresets(selectedPresetTemp.propertiesPresetSet)
+    		}
+		 	
+		 	
+    		/**
+		    * check the items which is not available in the _selectedPropPresTempColl arrayCollection
+		    */
+    		private function checkRemovedPropPresets( value:ArrayCollection ) :void {
+    			var oldListArr:ArrayCollection = new ArrayCollection();
+    			for each( var totalPropPreset:Propertiespresets in model.propertiespresetsCollection){
+    				var newPropPresetTemp:Proppresetstemplates = new Proppresetstemplates();
+					newPropPresetTemp.presetstemplatesFk = 1 ;
+					newPropPresetTemp.propertypresetFK = totalPropPreset.propertyPresetId;
+				 	newPropPresetTemp.fieldLabel = totalPropPreset.fieldName
+				 	newPropPresetTemp.fieldOptionsValue = totalPropPreset.fieldOptionsValue;
+				 	oldListArr.addItem( newPropPresetTemp );
+				}
+    			_deletedPropPresTempColl = modifyItems(oldListArr,_selectedPropPresTempColl);
+    			delPropPresTempDG.dataProvider = _deletedPropPresTempColl;
+    			if(_deletedPropPresTempColl.length>0){
+    				addBtn.enabled = true;
+    			}
+    			
+    		}
+    		private function modifyItem( item:Proppresetstemplates, arrc:ArrayCollection ):int {
+				var returnValue:int = -1;
+				var sort:Sort = new Sort(); 
+			    sort.fields = [ new SortField( 'propertypresetFK' ) ];
+			    arrc.sort = sort;
+			    arrc.refresh(); 
+				var cursor:IViewCursor = arrc.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if( found ) {
+					returnValue = arrc.getItemIndex( cursor.current );
+				}
+				return returnValue;
+			}
+		
+			private function modifyItems( oldList:ArrayCollection, newList:ArrayCollection ):ArrayCollection {
+				var finalArr:ArrayCollection = new ArrayCollection()
+				for ( var i:int = 0; i < oldList.length; i++ ) {
+					var isItem:int =  modifyItem( Proppresetstemplates( oldList.getItemAt( i ) ), newList  );
+					if( isItem == -1 ) {
+						finalArr.addItem( oldList.getItemAt( i ));
+					}
+				}
+				return finalArr;
+			}
+			
+    		
+    		
+	    	/**
+		    * Show the Edit Panel when user click the Edit Buttom
+		    */
+		    [Bindable]
+		    private var clickedPropPresetTemp:Proppresetstemplates;
+		    [Bindable]
+		    private var clonedPropPresetTemp:Proppresetstemplates;
+		    
+	    	public function onDoubleClick():void {
+	    		editPanel.visible = true;
+          		editPanel.includeInLayout = true;
+          		clonedPropPresetTemp = clonePropPresetTemp(Proppresetstemplates(propPresTempDG.selectedItem))
+          		clickedPropPresetTemp = Proppresetstemplates(propPresTempDG.selectedItem)
+          		var selectedType:String = GetVOUtil.getPropertiesPresetFieldType(clickedPropPresetTemp.propertypresetFK);
+	          	switch( selectedType ) {
+	          		case "textfield":
+						textContentCreation(  );
+					break;
+					case "radio":
+						comboContentCreation(  );
+					break;
+					case "popup":
+						comboContentCreation(  );
+					break;
+					case "checkbox":
+						checkBoxContentCreation(  )
+					break; 
+					case "numstepper":
+						 numstepperCreation(  ); 
+					break;
+					default:
+					break;
+	          	}  
+	          	var obj:Categories = new Categories()
+          		obj.categoryName=''
+          		var catArr:Array =[]
+          		catArr.push(obj) 
+          		for each (var cat:Categories in model.collectAllDomains){
+          			catArr.push(cat);
+          		}
+          		compLbl.tempPropPresetTemp = clonedPropPresetTemp;
+          		compLbl.companyCollProvider = new ArrayCollection(catArr);
+          		var curCompany:Companies = GetVOUtil.getCompanyObject(clickedPropPresetTemp.companyFK);
+          	 	var curCategory:Categories = GetVOUtil.getCategoryObjectCode(curCompany.companycode)
+          	 	
+          	 	compLbl.curCategory = curCategory;
+          	 	compLbl.curCompany = curCompany;
+	          	
+	          	
+	          	
+         	}
+         	/**
+		    * Show the Edit Panel for the Text Editor
+		    */ 
+        	
+         	private function textContentCreation(  ):void {
+         		editPanel.setVisibility(true,false,false,false,false);
+         		editPanel.parenRef = _selectedPropPresTempColl.getItemAt(propPresTempDG.selectedIndex) as Proppresetstemplates;
+	          	editPanel.parenList = propPresTempDG;
+         	}
+         	/**
+		    * Show the Edit Panel for the Label Editor
+		    */
+	        private function numstepperCreation( ):void {
+	        	editPanel.setVisibility(false,false,false,true,false);
+	         	editPanel.parenRef = _selectedPropPresTempColl.getItemAt(propPresTempDG.selectedIndex) as Proppresetstemplates;
+	          	editPanel.parenList = propPresTempDG;
+	         }
+	        /**
+		    * Show the Edit Panel for the Combo Editor
+		    */
+         	private function comboContentCreation(   ):void {
+	          	editPanel.setVisibility(false,true,false,false,false);
+	          	editPanel.parenRef = _selectedPropPresTempColl.getItemAt(propPresTempDG.selectedIndex) as Proppresetstemplates;
+	          	editPanel.parenList = propPresTempDG;
+	          	var str:String = String( propPresTempDG.selectedItem.fieldOptionsValue )
+	          	var aValues:Array = str.split(",") 
+	          	var arrayColl:ArrayCollection = new ArrayCollection(aValues) ;
+				editPanel.dp = arrayColl
+	          	
+        	}
+        	/**
+		    * Show the Edit Panel for the Check Box Editor
+		    */
+         	private function checkBoxContentCreation(   ):void {
+         		editPanel.setVisibility(false,false,false,false,true);
+	          	editPanel.parenRef = clickedPropPresetTemp;
+	          	editPanel.parenList = propPresTempDG;
+        	} 
+        	 /**
+			 * when Duplicate button Triggers.. 
+			 **/
+			 private function onUpdate( bol :Boolean ) :void {
+			 	var selectedType:String = GetVOUtil.getPropertiesPresetFieldType(clickedPropPresetTemp.propertypresetFK);
+	          	switch( selectedType ) {
+	          		case "textfield":
+						updateDuplicate(clickedPropPresetTemp , bol , editPanel._DefaultValue.text);
+					break;
+					case "radio":
+						updateDuplicate(clickedPropPresetTemp , bol , editPanel.dp.toString());
+					break;
+					case "popup":
+						updateDuplicate(clickedPropPresetTemp , bol , editPanel.dp.toString());
+					break;
+					case "checkbox":
+						updateDuplicate( clickedPropPresetTemp , bol , String(editPanel.checkBoxId.selected) ); 
+					break; 
+					case "numstepper":
+						 updateDuplicate( clickedPropPresetTemp , bol , String(editPanel.numericStepper.value) ); 
+					break;
+					default:
+					break;
+	          	}  
+			 }   
+			 
+			 /**
+			 * Colne the Selected propPresetTemplate function.....
+			 **/
+			 private function clonePropPresetTemp(source:Object):* {
+		        var propPresetTemp:ByteArray = new ByteArray();
+		        propPresetTemp.writeObject(source);
+		        propPresetTemp.position = 0;
+		        return(propPresetTemp.readObject());
+	         } 
+			 /**
+			 * Check Whether company available for the selected PropPresetTemplate....
+			 **/
+			 private function checkCompanyFK( prop : Proppresetstemplates,companyFK:int =0 ) : Boolean {
+			 	var retVal:Boolean
+    			var selectedPresetTemp:Presetstemplates = Presetstemplates(model.presetTempCollection.getItemAt(0))
+    			_selectedPropPresTempColl = selectedPresetTemp.propertiesPresetSet;
+				 	for each ( var PropPresetTemp:Proppresetstemplates in _selectedPropPresTempColl ) {
+				 		if( PropPresetTemp.propertypresetFK == prop.propertypresetFK ) {
+				 			if( PropPresetTemp.companyFK == compLbl.companyFK ) { 
+				 				retVal = true
+				 			}
+				 		}
+				 	}
+			 	return retVal
+			 }
+			 /**
+			 * Update and duplicate the Selected propertoes Preset Template......
+			 **/
+			 private function updateDuplicate( prop:Proppresetstemplates , duplicate:Boolean , fieldString:String = null ) :void {
+			 	var defTempValEvent:PropPresetTemplateEvent  
+			 	if(duplicate){
+				 		var newPropPresetTemp:Proppresetstemplates = clonePropPresetTemp(prop)
+				 		newPropPresetTemp.proppresetstemplatesId = 0
+				 		newPropPresetTemp.companyFK = compLbl.companyFK;
+				 		newPropPresetTemp.fieldOptionsValue = fieldString;
+				 		defTempValEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_CREATE_PROPPRESET_TEMPLATE)
+				 		defTempValEvent.prop_PesetTemp = newPropPresetTemp;
+					 	if(!compLbl.presetCompany ){
+					 		defTempValEvent.dispatch();
+					 		onCancel( );
+					 	}else {
+							Alert.show("Company is Already Available for this Properties"); 		
+					 	}
+			 	}else{
+				 		prop.fieldOptionsValue = fieldString;
+				 		prop.companyFK = compLbl.companyFK;
+				 		if(prop.companyFK != 0 ){
+					 		if(!compLbl.presetCompany ){
+		              			defTempValEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_UPDATE_PROPPRESET_TEMPLATE)
+		              			defTempValEvent.prop_PesetTemp = prop;
+		              			defTempValEvent.dispatch();
+		              			onCancel( );
+		              			}else {
+		              				Alert.show("Company is Already Available for this Properties"); 
+		              			}
+			     			}else {
+			     				defTempValEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_UPDATE_PROPPRESET_TEMPLATE)
+		              			defTempValEvent.prop_PesetTemp = prop;
+		              			defTempValEvent.dispatch();
+		              			onCancel( );
+			     			}
+	            }
+			 	
+			 	
+			 }
+			 /**
+			 * when Cancel button Triggers.. 
+			 **/
+			 private function onCancel( ) :void {
+			 	editPanel.visible = false;
+			 	editPanel.includeInLayout = false;
+			 }
+	        /**
+		    * Label function to display the properties preset label in the data grid
+		    */
+	        private function getPropertiesPresetLabel(item:Object, column:DataGridColumn):String {
+	 		  var propType:String
+			  	for each( var propPreset:Propertiespresets in model.techPropPresetCollection ){
+			  		if(propPreset.propertyPresetId == DefaultTemplateValue(item).propertiesPresetFK ) {
+			  			propType = propPreset.fieldLabel
+			  		}
+			  	}
+		  	return propType
+		    }
+		    /**
+		    * when delete button trigger 
+		    */
+		   	public function onDelete() :void {
+        	 	Alert.show('Do U Really Want To Delete "'+Proppresetstemplates(propPresTempDG.selectedItem).fieldLabel +
+        	 	'" ?', 'Delete Label', Alert.OK  | Alert.CANCEL, null, deleteCheck );
+            }
+            
+            private function deleteCheck( event:CloseEvent ):void {
+				if( event.detail == Alert.OK ) {
+					
+					var Proppreset:Proppresetstemplates = Proppresetstemplates(_selectedPropPresTempColl.getItemAt(propPresTempDG.selectedIndex));
+					_selectedPropPresTempColl.removeItemAt(propPresTempDG.selectedIndex);
+					
+					var deletEvt:PropPresetTemplateEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_DELETE_PROPPRESET_TEMPLATE_BYID);
+		         	deletEvt.prop_PesetTemp = Proppreset;
+		         	deletEvt.dispatch();
+					
+					// update to show the value in the data grid
+					_deletedPropPresTempColl.addItem(Proppreset);
+					addBtn.enabled = true;
+				}
+        	}
+        	
+        	private function getPropertyId(item:Object, column:DataGridColumn):String {
+	 		  var sLabel:String
+	 		  var sHeaderText:String = column.headerText;    
+				   	switch (sHeaderText)  {
+				     case "Id":
+				       sLabel = String(Proppresetstemplates(item).propertypresetFK);
+				       break;
+				    }
+				 return sLabel;	
+		  }
+		  /**
+		    * Drag Enter Function
+		    */
+			private function doDragEnter(event:DragEvent):void {
+				finalTempColl.removeAll();
+                _updateTempColl.removeAll();  
+                var dropTarget:DataGrid = DataGrid(event.currentTarget);
+                var dataInfo:ArrayCollection = dropTarget.dataProvider as ArrayCollection;
+                var items:Array = event.dragSource.dataForFormat("items") as Array;
+                DragManager.acceptDragDrop(dropTarget);
+                DragManager.showFeedback(DragManager.MOVE);
+
+            }
+			/**
+		    * Drop Enter Function
+		    */
+            private function doDragDrop(event:DragEvent):void {        
+            	var dropTarget:DataGrid = DataGrid(event.currentTarget);  
+                var items:Array = event.dragSource.dataForFormat("items") as Array;
+                var dropLoc:int = dropTarget.calculateDropIndex(event); 
+				for(var i:int = 0; i < items.length; i++)
+                {                 
+                   _deletedPropPresTempColl.removeItemAt( _deletedPropPresTempColl.getItemIndex(items[i] ) )
+                    _updateTempColl.addItem(items[i]);
+                }
+                doDragExit(event); 
+            }
+            /**
+		    * DragExit Function
+		    */
+            private function doDragExit(event:DragEvent):void {
+                var dropTarget:DataGrid = DataGrid(event.currentTarget);          
+                dropTarget.hideDropFeedback(event);
+                model.updateTemplateColl.removeAll();
+               for each( var newPropPresTemp:Proppresetstemplates in _updateTempColl) {
+               		var newPropPresetTemp:Proppresetstemplates = new Proppresetstemplates();
+	            	newPropPresetTemp.propertypresetFK = newPropPresTemp.propertypresetFK;
+					newPropPresetTemp.presetstemplatesFk = newPropPresTemp.presetstemplatesFk;
+					newPropPresetTemp.fieldLabel = newPropPresTemp.fieldLabel
+					newPropPresetTemp.fieldOptionsValue = newPropPresTemp.fieldOptionsValue;
+					newPropPresetTemp.fieldLabel = newPropPresTemp.fieldLabel;
+					model.updateTemplateColl.addItem(newPropPresetTemp);
+                }
+                var updateEvt:PropPresetTemplateEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_BULK_UPDATE_PROPPRESET_TEMPLATE)
+                var handler:IResponder = new Callbacks(createResult,null)
+                updateEvt.callbacks = handler;
+                updateEvt.dispatch();
+            }
+            private function createResult(resultEv:ResultEvent):void{
+            	model.updateTemplateColl.removeAll();
+			 	var updatedPropPresTemp:ArrayCollection = resultEv.result as ArrayCollection
+			 	for each(var defPropPresTemp:Proppresetstemplates in updatedPropPresTemp){
+			 		_selectedPropPresTempColl.addItem(defPropPresTemp);
+                }
+			 }
+			
+			
+		]]>
+	</mx:Script>
+		<mx:HBox  id="dgBox" width="100%" verticalAlign="middle" horizontalGap="2">
+ 		<mx:DataGrid id="propPresTempDG"  dataProvider="{_selectedPropPresTempColl}" 
+			doubleClickEnabled="true"    height="300"
+			dragMoveEnabled="true" width="100%"   
+            dragEnter="doDragEnter(event);"            
+            dragExit="doDragExit(event);"             
+            dragDrop="doDragDrop(event);" 
+            dragEnabled="true"  resizeEffect="Resize"  >
+			<mx:columns>
+                <mx:DataGridColumn headerText="Id" dataField="propertiespresetsFk" width="30" labelFunction="getPropertyId"/>
+                <mx:DataGridColumn headerText="Field Label" dataField="fieldLabel"/>
+                <mx:DataGridColumn headerText="Options Value" dataField="fieldOptionsValue"/>
+                <mx:DataGridColumn id="ItemRen" width="140"  headerText="FieldType" >
+                	<mx:itemRenderer>
+                		<mx:Component>
+                		<mx:HBox paddingLeft="10" paddingRight="10" verticalAlign="middle">
+                			<mx:Script>
+                				<![CDATA[
+                					import com.adams.dt.business.util.GetVOUtil;
+                					import com.adams.dt.model.vo.Proppresetstemplates;
+                				]]>
+                			</mx:Script>
+                			<mx:Image left="0" source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(Proppresetstemplates( data ).propertypresetFK)]}"   width="50"/>
+                			<mx:Button styleName="deleteIcon"  click="outerDocument.onDelete()" />
+                			<mx:Label text="edit" textDecoration="underline" useHandCursor="true"  buttonMode="true" click="outerDocument.onDoubleClick()"/>
+                		</mx:HBox>
+                		</mx:Component>
+                	</mx:itemRenderer>
+                </mx:DataGridColumn>
+			</mx:columns>  
+	    </mx:DataGrid>
+	    
+	   <mx:Button name="ButtAdd"    id="addBtn"  toggle="true" styleName="plusBTN"   click="{delPropPresTempDG.visible=!delPropPresTempDG.visible}" />
+ 		
+ 		<mx:DataGrid id="delPropPresTempDG"  dataProvider="{_deletedPropPresTempColl}" width="100%" height="{propPresTempDG.height}"
+	    	  allowMultipleSelection="true" dragEnabled="true" visible="false" includeInLayout="{delPropPresTempDG.visible}" >
+			<mx:columns>
+                <mx:DataGridColumn headerText="Field Label" dataField="fieldLabel"/>
+                <mx:DataGridColumn id="ItemRen1" headerText="FieldType"  width="100" dataField="field_type">
+            	<mx:itemRenderer>
+            		<mx:Component>
+            		<mx:HBox paddingLeft="10" paddingRight="10" verticalAlign="middle">
+            			<mx:Script>
+            				<![CDATA[
+            					import com.adams.dt.business.util.GetVOUtil;
+            					import com.adams.dt.model.vo.Proppresetstemplates;
+            					
+            				]]>
+            			</mx:Script>
+            			<mx:Image source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(Proppresetstemplates( data ).propertypresetFK)]}" />
+            		</mx:HBox>
+            		</mx:Component>
+            	</mx:itemRenderer>
+            </mx:DataGridColumn>
+		</mx:columns>        
+	    </mx:DataGrid>
+	 </mx:HBox>
+	<technicalTemplate:CompanyEditor id="compLbl" visible="{editPanel.visible}" includeInLayout="{editPanel.visible}"  width="100%"/>
+	<technicalTemplate:EditPanel width="100%" id="editPanel" visible="false" includeInLayout="false" />
+	<mx:HBox visible="{editPanel.visible}" includeInLayout="{editPanel.includeInLayout}" width="100%" horizontalAlign="right">
+		<mx:Button label="Duplicate" click="onUpdate(true)" visible="{Proppresetstemplates(propPresTempDG.selectedItem).companyFK!=0}" />
+		<mx:Button label="Save" click="onUpdate(false)"/>
+		<mx:Button label="Cancel" click="onCancel()" />
+	</mx:HBox>
+</mx:TitleWindow>

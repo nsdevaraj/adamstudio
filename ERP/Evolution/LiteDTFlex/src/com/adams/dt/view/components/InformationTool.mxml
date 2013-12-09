@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="com.adams.dt.view.components.*" xmlns:Gview="com.adams.dt.view.dataGridSearch.mainComponent.*" 
+	            showCloseButton="true" title="Person Information" layout="vertical" headerHeight="30" width="900" horizontalScrollPolicy="off"
+	            styleName="bgContainer" verticalScrollPolicy="off" mouseDownOutside="onMousedownOutside()" 
+	            close="closePerson()" creationComplete="onCreationComplete()" >
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.model.vo.Companies;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.vo.Persons;
+		import mx.managers.PopUpManager;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private var _selectedPerson:Persons;
+		
+		private var _selectedProfile:String;
+		[Bindable]
+		public function get selectedProfile():String {
+			return _selectedProfile;
+		} 
+		public function set selectedProfile( value:String ):void {
+			_selectedProfile = value;
+			if( value.length != 0 ) {
+				switch( value ) {
+					case 'EPR' :
+						_selectedPerson = model.impPerson;
+					break;
+					case 'IND' :
+						_selectedPerson = model.indPerson;
+					break;
+					case 'COM' :
+						_selectedPerson = model.comPerson;
+					break;
+					case 'AGN' :
+						_selectedPerson = model.agencyPerson;
+					break;
+					case 'CPP' :
+						_selectedPerson = model.CPP_Person;
+					break;
+					case 'CHP' :
+						_selectedPerson = model.CP_Person;
+					break;
+					case 'BAT' :
+						_selectedPerson = model.techPerson;
+					break;
+					default:
+					break;
+				}
+			}
+		}
+		
+		private function onCreationComplete():void {
+			_selectionForm.makeEditing = false;
+			if( _selectedPerson ) {
+				var company:Companies = GetVOUtil.getCompanyObject( _selectedPerson.companyFk ); 
+				
+				_selectionForm._firstName.text = _selectedPerson.personFirstname;
+				_selectionForm._lastName.text = _selectedPerson.personLastname;
+				_selectionForm._email.text = _selectedPerson.personEmail;
+				_selectionForm._phone.text = _selectedPerson.personPhone;
+				_selectionForm._mobile.text = _selectedPerson.personMobile;
+				_selectionForm._userName.text = _selectedPerson.personLogin;
+				_selectionForm._password.text = _selectedPerson.personPassword;
+				
+				_selectionForm._companyName.text = company.companyname;
+				_selectionForm._code.text = company.companycode;
+				_selectionForm._category.text = company.companyCategory;
+				_selectionForm._address.text = company.companyAddress;
+				_selectionForm._companyPhone.text = company.companyPhone;
+				_selectionForm._postalcode.text = company.companyPostalCode;
+				_selectionForm._city.text = company.companyCity;
+				_selectionForm._country.text = company.companyCountry;
+			}
+		}
+		
+		private function onMousedownOutside():void {
+			PopUpManager.removePopUp( this );
+		}
+		
+		private function onCancel():void {
+			PopUpManager.removePopUp( this );
+		}
+		
+		private function closePerson():void {
+        	PopUpManager.removePopUp( this ); 
+  		}	
+		
+	]]>
+</mx:Script>
+<view:SelectionForm id="_selectionForm" cancel="onCancel()"/>
+</mx:TitleWindow>

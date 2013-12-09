@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Text xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+			
+			import mx.controls.dataGridClasses.DataGridListData;
+			
+			override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value;
+					var myListData:DataGridListData = DataGridListData( listData );
+    				var fieldName : String = myListData.dataField;
+					htmlText = data[ fieldName ] as String;
+    			}
+    		}
+		]]>
+	</mx:Script>
+</mx:Text>

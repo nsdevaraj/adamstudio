@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:components="com.adams.scrum.views.components.*"
+				 width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[ 			  
+			import com.adams.scrum.views.components.NativeList; 
+			
+
+			/**
+			 * The function to handle delete version event
+			 * 
+			 * <p>
+			 * In addition, it dispatches signal to the owner of the renderer
+			 * </p>
+			 */
+	 		protected function deleteBtn_clickHandler(event:MouseEvent):void
+			{
+				Object(owner).renderSignal.dispatch(NativeList.VERSIONDELETED);
+			}
+			private function visibleRemoveButton():Boolean{				
+				return Object(owner).removeRendererProperty;
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:HorizontalLayout verticalAlign="middle"
+							paddingLeft="0" paddingRight="0"
+							paddingTop="1" paddingBottom="0" />
+	</s:layout>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:Group width="100%" height="100%">
+		<s:Label id="versionNameLbl" text="{data.versionLbl}" 
+				 right="{versionDeleteBtn.width+10}" left="5" verticalCenter="0"
+				 maxDisplayedLines="1"
+				 showTruncationTip="true" />  
+		<components:NativeButton id="versionDeleteBtn" label="Delete" right="5" verticalCenter="0" 
+				 styleName="DeleteSkin" 
+				 visible="{visibleRemoveButton()}"
+				 click="deleteBtn_clickHandler(event)" />
+	</s:Group>
+</s:ItemRenderer>

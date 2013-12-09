@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Projects" table="projects">
+        <id name="projectId" type="integer" column="Project_ID">
+            <generator class="increment" />
+        </id>
+        <property name="projectName">
+            <column name="Project_Name" />
+        </property>
+        <property name="categoryFKey">
+            <column name="Category_FK" />
+        </property> 
+        <property name="projectStatusFK">
+            <column name="project_status" />
+        </property>
+        <property name="projectQuantity">
+            <column name="project_quantity" />
+        </property>
+        <property name="projectCommentBlob">
+            <column name="project_comment" />
+        </property>
+        <property name="projectDateStart">
+            <column name="project_date_start" />
+        </property>
+        <property name="projectDateEnd">
+            <column name="project_date_end" />
+        </property>
+         <property name="presetTemplateID">
+            <column name="presets_templates_FK" />
+        </property>
+         <property name="workflowFK">
+            <column name="workflow_FK" />
+        </property> 
+         <set name="propertiespjSet" table="propertiespj" inverse="true" cascade="none" lazy="false">
+            <key column="project_FK" />
+            <one-to-many class="com.adams.dt.pojo.Propertiespj" />
+        </set>
+        <set name="phasesSet" table="phases" order-by="phase_ID" inverse="true" cascade="none" lazy="false">
+            <key column="project_FK" />
+            <one-to-many class="com.adams.dt.pojo.Phases" />
+        </set>
+        <set name="teamSet" table="teamlines" order-by="teamline_ID" inverse="true" cascade="none" lazy="false">
+            <key column="project_FK" />
+            <one-to-many class="com.adams.dt.pojo.Teamlines" />
+        </set>
+    </class>
+    <query name="Projects.findAll">
+        select p,t from Projects p,Tasks t, Status s where t.taskId = (select max(t.taskId) from Tasks t where t.projectFK= p.projectId and p.projectStatusFK = s.statusId and s.type = 'project_status' and (s.statusLabel='waiting' or s.statusLabel='in_progress' or s.statusLabel='urgent')) 
+    </query> 
+    <query name="Projects.findPersonsList">
+     	 select distinct p,t from Projects p, Tasks t, Teamlines tl where t.taskId = (select max(t.taskId) from Tasks t where t.projectFK= p.projectId and tl.projectID = p.projectId and tl.personID = ?)
+    </query>
+    <query name="Projects.findProjectId">
+        select p,t from Projects p,Tasks t where t.taskId = (select max(t.taskId) from Tasks t where t.projectFK= p.projectId  and p.projectId = ?)
+    </query>
+</hibernate-mapping>

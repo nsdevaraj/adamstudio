@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Projects" table="projects">
+        <id name="projectId" type="integer" column="Project_ID">
+            <generator class="increment" />
+        </id>
+        <property name="projectName">
+            <column name="Project_Name" />
+        </property>
+        <property name="categoryFKey">
+            <column name="Category_FK" />
+        </property> 
+        <property name="projectStatusFK">
+            <column name="project_status" />
+        </property>
+        <property name="projectQuantity">
+            <column name="project_quantity" />
+        </property>
+        <property name="projectCommentBlob">
+            <column name="project_comment" />
+        </property>
+        <property name="projectDateStart">
+            <column name="project_date_start" />
+        </property>
+        <property name="projectDateEnd">
+            <column name="project_date_end" />
+        </property>
+         <property name="presetTemplateID">
+            <column name="presets_templates_FK" />
+        </property>
+         <property name="workflowFK">
+            <column name="workflow_FK" />
+        </property> 
+         <set name="propertiespjSet" table="propertiespj" inverse="true" cascade="none" lazy="false">
+            <key column="project_FK" />
+            <one-to-many class="com.adams.dt.pojo.Propertiespj" />
+        </set>
+        <set name="phasesSet" table="phases" order-by="phase_ID" inverse="true" cascade="none" lazy="false">
+            <key column="project_FK" />
+            <one-to-many class="com.adams.dt.pojo.Phases" />
+        </set>
+    </class> 
+    <sql-query name="Projects.findPersonsListCount" >
+		select count(*) from projects p, tasks t 
+		where t.task_Id = (select max(t0.task_Id) 
+				from tasks t0, group_persons g1, group_persons g2, teamlines tl, workflow_templates w 
+				where t0.project_Fk= p.project_Id and tl.project_fk = p.project_Id 
+				and tl.person_fk = g2.person_Fk
+			    and w.workflow_template_ID = t0.workflow_template_FK
+				and g1.group_Fk = g2.group_Fk
+				and w.task_code not like 'pdf%' 
+				and w.task_code not like 'm0%'
+				and g1.person_Fk = ?)
+    </sql-query>
+    <query name="Projects.findPersonsList">
+		select p,t from Projects p, Tasks t where t.taskId = (select max(t0.taskId) from Tasks t0, Grouppersons g1, Grouppersons g2, Workflowstemplates w, Teamlines tl where t0.projectFk= p.projectId and tl.projectID = p.projectId 
+		and tl.personID = g2.personFk
+        and g1.groupFk = g2.groupFk
+        and w.workflowTemplateId = t0.wftFK 
+		and not (w.taskCode ='pdf01B' or  w.taskCode ='pdf01A' or  w.taskCode ='m01'or  w.taskCode ='pdf02A' or  w.taskCode ='pdf02b')
+       	and g1.personFk = ?)	
+    </query>
+     <query name="Projects.findPersonsListOracle">
+		select prj, task from Projects prj, Tasks task 
+		where prj.projectId = task.projectFk and 
+		task.taskId in (
+			select max(t.taskId) from Teamlines tl, Tasks t, Grouppersons gp1, Grouppersons gp2 
+			where  gp1.personFk = ? and gp2.groupFk = gp1.groupFk and tl.personID = gp2.personFk
+			and t.projectFk = tl.projectID group by t.projectFk
+			)
+    </query>
+    <query name="Projects.findProjectId">
+        select p,t from Projects p,Tasks t where t.taskId = (select max(t.taskId) from Tasks t, Workflowstemplates w where 
+        t.projectFk= p.projectId  
+        and w.workflowTemplateId = t.wftFK
+        and not (w.taskCode ='pdf01B' or  w.taskCode ='pdf01A' or  w.taskCode ='m01'or  w.taskCode ='pdf02A' or  w.taskCode ='pdf02b')
+		and p.projectId = ?)
+    </query>
+</hibernate-mapping>

@@ -1,0 +1,21 @@
+<mx:Object 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:flextag="org.spicefactory.parsley.flex.tag.*"
+	xmlns:cinnamon="org.spicefactory.parsley.cinnamon.*">
+	
+	<mx:Script>
+		<![CDATA[
+		]]>
+	</mx:Script>
+	
+	<cinnamon:MxmlChannelTag 
+	    id="mainChannel"
+	    url="http://localhost/test/service/"
+	    timeout="3000"
+	/>
+	<cinnamon:MxmlServiceTag
+	    name="echoService"
+	    type="{EchoServiceImpl}"
+	/>
+	
+</mx:Object> 

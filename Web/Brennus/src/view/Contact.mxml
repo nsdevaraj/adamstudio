@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	 styleName="transparentBackground" width="100%" height="100%"  minHeight="500">
+ <mx:Script>
+	 <![CDATA[
+		 import flash.net.navigateToURL;
+		 private function sendMailto(emailStr:String):void{
+		 	var emailURL:URLRequest = new URLRequest("mailto:" + emailStr );
+		 	//see: http://livedocs.macromedia.com/flex/2/langref/flash/net/package.html#navigateToURL()
+		 	navigateToURL(emailURL)
+		 }
+		 
+	 ]]>
+ </mx:Script>
+ 
+<mx:Text text="Contact US" styleName="introTitle" fontSize="24"/>
+<mx:HRule width="100%" />
+	<mx:VBox  width="100%" horizontalAlign="center" verticalGap="0">
+		<mx:Image source="@Embed('assets/images/richard.png')"/>
+		<mx:Text text="Richard Pool-Jones, Chairman"    textAlign="center"/>
+		<mx:Label text="rpj@brennus-software.com" textDecoration="underline" selectable="false"
+			 buttonMode="true"  useHandCursor="true"	click="sendMailto('rpj@brennus-software.com')"  textAlign="center"/>
+		
+	</mx:VBox>
+ 
+		<mx:HBox width="100%" horizontalAlign="center">
+		<mx:Canvas >
+			<mx:Canvas left="0" top="25" bottom="0"  backgroundColor="#eaeaea" borderStyle="solid" borderColor="#d4d4d4">
+				<mx:Text  left="114"  verticalCenter="0" fontSize="12">
+					<mx:htmlText>
+						<![CDATA[<p align='center'>Embassy House, Herbert Park Lane <br>Ballsbridge, Dublin 4, Ireland.<br>Tel: +353 (0) 14 40 41 92 Fax: +353 (0) 14 43 07 54<br><a href="mailto:rpj@brennus-software.com"><u>rpj@brennus-software.com</u></a></p>]]>
+					</mx:htmlText>
+				</mx:Text>
+			</mx:Canvas>
+			<mx:Image source="@Embed('assets/map/dublin.png')"  left="0" top="0"/>	
+		</mx:Canvas>
+			<mx:Canvas >
+				<mx:Canvas left="0" top="25" bottom="0"  backgroundColor="#eaeaea" borderStyle="solid" borderColor="#d4d4d4">
+					<mx:Text selectable="false"  left="114"  verticalCenter="0" fontSize="12">
+						<mx:htmlText>
+							<![CDATA[<p align='center'>71, avenue Kléber 75016 Paris <br>Tel. : +33 1 45 53 06 71<br>Mobile : +33 6 21 15 65 67 Fax : +33 1 53 01 36 52<br><a href="mailto:info@brennus-software.com"><u>info@brennus-software.com</u></a></p>]]>
+						</mx:htmlText>
+					</mx:Text>
+				</mx:Canvas>
+				<mx:Image source="@Embed('assets/map/paris.png')"  left="0" top="0"/>	
+			</mx:Canvas>
+		
+		</mx:HBox>
+	<!--<mx:HBox width="100%" horizontalAlign="center">
+		
+		<mx:Canvas >
+			<mx:Canvas left="0" top="25" bottom="0"  backgroundColor="#eaeaea" borderStyle="solid" borderColor="#d4d4d4">
+				<mx:Text  left="114"  verticalCenter="0" fontSize="12">
+					<mx:htmlText>
+						<![CDATA[<p align='center'>Flat No 4, Naihaa Building<br>Gandhi Nagar 1st Main Road,Adyar, Chennai 600 020<br>Tel. : +44 2446 1737 Mob : +91 99620 83601<br><a href="nsdevaraj@adam-studio.com"><u>nsdevaraj@adam-studio.com</u></a></p>]]>
+					</mx:htmlText>
+				</mx:Text>
+			</mx:Canvas>
+			<mx:Image source="@Embed('assets/map/chennai.png')"  left="0" top="0"/>	
+		</mx:Canvas>
+	</mx:HBox>
+	<mx:HBox width="100%" horizontalAlign="center">
+		<mx:Canvas >
+			<mx:Canvas left="0" top="25" bottom="0"  backgroundColor="#eaeaea" borderStyle="solid" borderColor="#d4d4d4">
+				<mx:Text  left="114"  verticalCenter="0" fontSize="12">
+					<mx:htmlText>
+						<![CDATA[<p align='center'>Embassy House, Herbert Park Lane <br>Ballsbridge, Dublin 4, Ireland.<br>Tel: +353 (0) 14 40 41 92 Fax: +353 (0) 14 43 07 54<br><a href="info@brennus-software.com"><u>info@brennus-software.com</u></a></p>]]>
+					</mx:htmlText>
+				</mx:Text>
+			</mx:Canvas>
+			<mx:Image source="@Embed('assets/map/chennai.png')"  left="0" top="0"/>	
+		</mx:Canvas>
+	</mx:HBox>-->
+		
+ 
+	
+</mx:VBox>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			import @namespace@.util.Utils;
+			
+			import org.osflash.signals.Signal;
+			public var alertSignal:Signal = new Signal(String);
+			private var _contentText:String;
+			private const YES_NO:String='yesNoView';
+			private const OK:String='okView';
+			public function get contentText():String{
+				return _contentText;
+			}
+			[Bindable]
+			public function set contentText(value:String):void{
+				_contentText = value;
+			}
+			private var _titleText:String;
+			
+			public function get titleText():String{	
+				return _titleText;
+			}
+			[Bindable]
+			public function set titleText(value:String):void{
+				_titleText = value;
+			}
+			
+			public function showAlert(title:String,content:String,type:int):void{
+				titleText = title;
+				contentText = content;
+				if( type == Utils.ALERT_YES) {
+					currentState = YES_NO;
+				}else {
+					currentState = OK;
+				} 
+			}
+			
+			private function onControlClick(event:MouseEvent):void{
+				alertSignal.dispatch(event.currentTarget.name);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="yesNoView"/>
+		<s:State name="okView"/>
+	</s:states> 
+	<s:TitleWindow title="{titleText}" width="300">
+		<s:TextArea text="{contentText}" contentBackgroundAlpha="0" editable="false" 
+					selectable="false" borderVisible="false" width="100%" textAlign="center"/>
+		<s:controlBarContent>
+			<s:Button label="Yes" name="{Utils.ALERT_YES}" id="yesBtn" styleName="labelButton" buttonMode="true" 
+					  includeIn="yesNoView" click="onControlClick(event)"/>
+			<s:Label text="/" includeIn="yesNoView"/> 
+			<s:Button label="No" name="{Utils.ALERT_NO}" id="noBtn" styleName="labelButton" buttonMode="true" 
+					  includeIn="yesNoView" click="onControlClick(event)"/>
+			<s:Button label="OK" name="{Utils.ALERT_OK}"
+					  includeIn="okView" id="okBtn" styleName="labelButton" buttonMode="true" click="onControlClick(event)"/>
+		</s:controlBarContent>
+	</s:TitleWindow>
+</s:Group>

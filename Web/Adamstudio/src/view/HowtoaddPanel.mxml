@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"	
+	  horizontalScrollPolicy="off" styleName="transparentBackground">
+	 <mx:Script>
+	 	<![CDATA[
+			import mx.core.FlexGlobals;
+	 	]]>
+	 </mx:Script>
+	
+	 <mx:Label styleName="introTitle" text="How to add value?" fontSize="24" left="15" top="15"/>
+     	<mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" 
+				   click="{parentDocument.backtoHome()}"/>
+     <mx:HRule left="15" right="15" top="50" strokeColor="#999999" strokeWidth="1"/>
+     <mx:Image left="15" top="60" source="@Embed('assets/images/Animation_img2.png')"/>
+     <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+     	width="100%" styleName="contFont" height="100%" id="three" 
+     	editable="false" selectable="false" left="230" top="60" right="40" 
+     	verticalScrollPolicy="off">
+			<mx:htmlText><![CDATA[<h2>Use Flex to develop RIA's</h2><br>
+<h1>Appeallng design</h1><br><br><li>Commercial applications</li><li>Informational / institutional websites</li><li>Entertainment</li>
+<h1>Ergonomy</h1><br>
+<li>Professional applications</li><li>Archiving / datamining website</li><li>Virtual reality</li>
+<h1>Decision environment</h1><br>
+<li>Dashboards</li><li>Intuitive information display</li>
+<h2>Ask Brennus for a personnalized help<h2><br>
+<li>Business graphical environments centered on the operators' concerns</li><li>Browse information and statuses like on a 
+map</li><li>Self-learning environments</li><li>Have all users like their new system, because they can keep all 
+their uses,just being helped by the tool in doing their usual jobs</li>]]>
+	     </mx:htmlText>
+		</mx:TextArea>
+		
+</mx:Canvas>

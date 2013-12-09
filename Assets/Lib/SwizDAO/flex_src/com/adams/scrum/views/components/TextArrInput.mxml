@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:components="com.adams.scrum.views.components.*">
+	<s:layout>
+		<s:HorizontalLayout verticalAlign="middle"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import assets.skins.TextArrInputSkin;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.IVisualElement;
+			import mx.events.FlexEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.utils.StringUtil;
+			import mx.validators.StringValidator;
+			import mx.validators.Validator;
+			
+			import org.osflash.signals.Signal;
+			
+			import spark.components.TextInput;
+			import spark.events.TextOperationEvent;
+			private var inputTxtElementsArr:Array =[];
+			
+			[Bindable]
+			public var txtOutput:String='';
+			protected var commonValidator:StringValidator;
+			public var validationSignal:Signal = new Signal();
+			[Bindable]
+			public var validateBoolean:Boolean = false; 
+			[Bindable]
+			public var newClickEnabled:Boolean =true;
+			
+			/**
+ 			 * Text Component width for the Component 
+			 */				
+						
+			private var _txtInputWidth:int;
+			public function get txtInputWidth():int
+			{
+				return _txtInputWidth;
+			}
+			
+			public function set txtInputWidth(value:int):void
+			{
+				_txtInputWidth = value;
+			}
+			
+			/**
+			 * Text Component editable for the Component 
+			 */		
+			private var _txtInputEditable:Boolean;
+			public function get txtInputEditable():Boolean
+			{
+				return _txtInputEditable;
+			}
+			
+			public function set txtInputEditable( value:Boolean ):void
+			{
+				_txtInputEditable = value;
+			}
+			
+			/**
+			 * Text Component selectable for the Component 
+			 */		
+			private var _txtInputSelectable:Boolean;
+			public function get txtInputSelectable():Boolean
+			{
+				return _txtInputSelectable;
+			}
+			
+			public function set txtInputSelectable( value:Boolean ):void
+			{
+				_txtInputSelectable = value;
+			}
+			
+			private var _txtArr:Array =[];
+			
+			[Bindable]
+			public function get txtArr():Array
+			{
+				return _txtArr;
+			}
+			 
+			/**
+ 			 * TxtArr is initated with the value set for the component
+ 			 * Button is added for the text component
+ 			 * <p>
+ 			 * The Component, is initiated with TxtArr with new Array in case of new product
+ 			 * The TxtArr is set with array for the component
+ 			 * </p>
+			 */	
+			public function set txtArr(value:Array):void
+			{
+				_txtArr = [];
+				inputTxtElementsArr=[];
+				_txtArr = value;  
+				removeAllElements();
+				addElement(addTxtBtn);
+				addTxtBtn.clicked.add(addTxtInputHandler);
+				// fill the first text box by ststic values 
+				if(_txtArr.length==0) {
+					var stringArr:Array = this.id.split( "Component" );
+					_txtArr[0] = stringArr[0]
+					
+				};
+				txtOutput = _txtArr.join(',');
+				for each(var str:String in _txtArr){
+					addTxtComponent(str);
+				}
+			}
+			
+			/**
+ 			 * Event Handler for any text input of text Array changed
+ 			 * validateBoolean a property to find stringValidation of minimum 3 Characters
+ 			 * validationSignal is dispatched every time to initiate the validation check
+ 			 * if validator failed to validate the old text is retained
+ 			 * <p>
+ 			 * In addition, Validator status is stored
+ 			 * </p>
+			 */				
+			protected function textChanged(ev:TextOperationEvent):void{ 
+				var currntTexInput:TextInput = TextInput(ev.target);
+				validateBoolean = isTextInputFieldValid(currntTexInput,commonValidator); 
+				validationSignal.dispatch();
+				var txtArr:Array = txtOutput.split(',');
+				var txtinputIndex:int =inputTxtElementsArr.indexOf(currntTexInput);
+				if(validateBoolean){
+					valueChanged = true;
+					txtArr[txtinputIndex] = currntTexInput.text;
+					addTxtBtn.enabled = txtArr[txtArr.length-1].length>0;
+				}else{
+					if(txtArr[txtinputIndex].length>2){
+						currntTexInput.text = txtArr[txtinputIndex];
+						currntTexInput.selectRange(currntTexInput.text.length, currntTexInput.text.length + 1);
+						currntTexInput.setFocus();
+					}
+				}
+				txtOutput =txtArr.join(','); 
+			}
+			
+			/**
+ 			 * Event Handler for New click of button, 
+ 			 * the new text component is added at the element before Button
+ 			 * <p>
+ 			 * In addition, the txtOutput array String added with empty element
+ 			 * </p>
+			 */				
+			protected function addTxtInputHandler(ev:MouseEvent):void{
+				txtOutput+=',';
+				addTxtComponent();
+			}
+			public var valueChanged:Boolean;
+			
+			/**
+ 			 * the new text component is assigned with properties, width, text
+ 			 * and EventListeners
+ 			 * <p>
+ 			 * In addition, the txtOutput array String added with empty element
+ 			 * </p>
+			 */				
+			protected function addTxtComponent(str:String=''):void{ 				
+				var inputTxt:CustomTextInput = new CustomTextInput();	
+				inputTxt.editable = txtInputEditable;								
+				inputTxt.width = txtInputWidth;
+				inputTxt.text =str;
+				inputTxt.selectable = txtInputSelectable;
+				inputTxt.setStyle("skinClass",Class(TextArrInputSkin));
+				inputTxt.addEventListener(TextOperationEvent.CHANGE,textChanged);
+				inputTxt.addEventListener(TextOperationEvent.CHANGE,textChanged);
+				createFormValidators();
+				 
+				inputTxtElementsArr.push(inputTxt);
+				addTxtBtn.enabled=str.length>0;
+				addElementAt(inputTxt,numElements-1);
+				inputTxt.validateNow();
+				inputTxt.setFocus();
+				//inputTxt.addEventListener(MouseEvent.MOUSE_OVER , checkVisibility)
+				//inputTxt.addEventListener(MouseEvent.MOUSE_OUT , removeVisibility)
+				inputTxt.deletedSignal.addOnce(findItems)
+			} 
+			public function findItems( object:IVisualElement , str:String ) :void
+			{
+				var removedArr:Array =  txtOutput.split(",");
+				var myArr:ArrayCollection = new ArrayCollection(removedArr)
+				if(myArr.length>1){
+					var deletedIndex:int = this.getElementIndex(object)
+					this.removeElementAt(this.getElementIndex(object))
+					myArr.removeItemAt(deletedIndex);
+					txtOutput = myArr.toString();
+					txtArr = txtOutput.split(",");
+				}else{
+					Alert.show("Alteast Have More Than One Element");
+				}
+			}
+			public function checkVisibility( event:MouseEvent ) :void
+			{
+				CustomTextInput(event.currentTarget).closeButton.visible = true
+			}
+			public function removeVisibility( event:MouseEvent ) :void
+			{
+				CustomTextInput(event.currentTarget).closeButton.visible = false
+			}
+			
+			/**
+ 			 * <p>
+ 			 * The String Validator function, for 3 minimum characters
+ 			 * </p>
+			 */	
+			 protected function createFormValidators():void
+			{ 
+				commonValidator = new StringValidator();
+				commonValidator.tooShortError = "Please enter minimum 3 characters";
+				commonValidator.tooLongError = "This string is longer than the maximum allowed length of 20.";
+				commonValidator.maxLength = 20;
+				commonValidator.minLength = 3;
+				commonValidator.property = "text";				
+			}
+			/**
+ 			 * <p>
+ 			 * checking the validitor, assigning validator
+ 			 * </p>
+			 */			 	
+			protected function isTextInputFieldValid(textInput:spark.components.TextInput, validator:Validator):Boolean
+			{
+				textInput.errorString = "";				
+				var resultEvent:ValidationResultEvent = validator.validate(textInput.text);
+				if (resultEvent.type != ValidationResultEvent.VALID)
+				{
+					textInput.errorString = resultEvent.message;
+				}
+				return (resultEvent.type == ValidationResultEvent.VALID);
+			}
+		]]>
+	</fx:Script> 
+	<fx:Declarations>  
+		<components:NativeButton id="addTxtBtn" width="50" label="Add" styleName="NewIcon" visible="{newClickEnabled}"  />
+	</fx:Declarations>
+</s:Group>

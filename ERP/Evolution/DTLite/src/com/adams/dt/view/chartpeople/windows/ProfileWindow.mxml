@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container:WindowShade xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:container="com.adams.dt.view.components.*"
+		   			   label="{ profileObject.headerLabel }" layout="absolute" opened="true" 
+		               openedChanged="onOpenChange()" width="200" 
+		   			   creationComplete="onCreationComplete()">
+	<mx:Metadata>
+		[Event(name="openChanged", type="flash.events.Event")]
+	</mx:Metadata>	   
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			
+			private var _profileObject:Object;
+			[Bindable]
+			public function get profileObject():Object {
+				return _profileObject;
+			}
+			public function set profileObject( value:Object ):void {
+				_profileObject = value;
+			}
+			
+			private function onOpenChange():void {
+				dispatchEvent( new Event( "openChanged" ) );
+			}
+			
+			private function onCreationComplete():void {
+				_personList.addEventListener( "showMessageWindow", onMessgeWindowShow,false,0,true );
+			}
+			
+			private function onMessgeWindowShow( event:Event ):void {
+				Alert.show("Message Window Clicked" );
+			}
+			
+		]]>
+	</mx:Script>	   
+	<mx:List dataProvider="{ profileObject.children }" rowCount="{ profileObject.children.length }"
+    		 itemRenderer="com.adams.dt.view.chartpeople.renderers.CommunicationRenderer"
+    		 id="_personList" variableRowHeight="true"/>
+</container:WindowShade>

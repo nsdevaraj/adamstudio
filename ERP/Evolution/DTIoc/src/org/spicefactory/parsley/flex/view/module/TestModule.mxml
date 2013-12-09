@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module 	
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:view="org.spicefactory.parsley.flex.view.*"
+	xmlns:parsley="org.spicefactory.parsley.flex.modules.*"
+	layout="absolute"
+    width="100%"
+	height="100%"
+	addedToStage="FlexContextBuilder.build(TestModuleContainer, this);"
+>    
+    <mx:Script>
+        <![CDATA[
+        	import org.spicefactory.parsley.flex.view.module.TestModuleContainer;
+        	import org.spicefactory.parsley.flex.FlexContextBuilder;
+        ]]>
+    </mx:Script>    
+    
+    <view:Panel3 width="100%" height="100%"/>
+	
+</mx:Module>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()" width="170" height="215">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			private var _url:String;
+			[Embed(source="assets/category/swf/additionalAssetsReader.swf", symbol="preloader")]
+			private var preloader:Class;
+			[Embed(source="assets/category/swf/additionalAssetsReader.swf", symbol="noimage")]
+			private var noimage:Class;
+			private var loader:URLLoader = new URLLoader();
+			
+			private function init():void{
+				loader.dataFormat = URLLoaderDataFormat.BINARY; 
+				loader.addEventListener(Event.COMPLETE, onComplete_loader,false,0,true);
+				loader.addEventListener(ProgressEvent.PROGRESS,onUploadProgress,false,0,true);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, onError,false,0,true);
+				loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError,false,0,true);
+			}
+			private function onError(event:ErrorEvent):void {
+				test.x=5;
+				test.y=7.5;
+				test.width=150;
+				test.height=187;
+				test.source=noimage;
+			}
+			private function onComplete_loader(event:Event):void {
+				test.x=5;
+				test.y=7.5;
+				test.width=150;
+				test.height=187;
+				test.source=url;
+			}
+			private function onUploadProgress(event:ProgressEvent):void {
+				test.x=65
+				test.y=85;
+				test.width=test.height=30
+				test.source=preloader;
+				//trace(Math.round((event.bytesLoaded / event.bytesTotal) * 100));
+			}
+			public function set url (value:String):void
+			{
+				if(value!=null && trimAll(value).length!=0){
+					loader.load(new URLRequest(value));
+				}else{
+					test.x=5;
+					test.y=7.5;
+					test.width=150;
+					test.height=187;
+					test.source=noimage;
+				}
+				_url = value;
+			}
+			public function get url ():String
+			{
+				return _url;
+			}
+			private function trimAll(str:*):String
+			{
+				return ((str!=null)?str:"").split(" ").join("");
+			}
+		]]>
+	</mx:Script>
+	<mx:Canvas width="160" height="200" x="10" y="15" backgroundColor="#424242"  borderStyle="solid" borderThickness="0.5">
+		<mx:filters>
+			<mx:DropShadowFilter blurX="5" blurY="3" distance="8" alpha="0.5"/>
+		</mx:filters>
+		<mx:SWFLoader id="test" verticalAlign="middle" horizontalAlign="center"/>
+	</mx:Canvas>
+</mx:Canvas>

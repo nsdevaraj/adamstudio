@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox  xmlns:mx="http://www.adobe.com/2006/mxml"
+	  borderStyle="solid" borderColor="#232323">
+		<mx:Script>
+			<![CDATA[ 
+				import com.adams.dt.model.vo.Profiles;
+				import mx.controls.Alert;
+				import com.adams.dt.business.util.Utils;
+				import com.adams.dt.model.vo.Status;
+				import mx.managers.PopUpManager;
+				import mx.core.IFlexDisplayObject;
+				import mx.collections.ArrayCollection;
+				import com.adams.dt.event.WorkflowstemplatesEvent;
+				import mx.rpc.IResponder;
+				import com.universalmind.cairngorm.events.Callbacks;
+				import com.adams.dt.model.vo.Workflowstemplates;
+				import com.adams.dt.model.ModelLocator;
+				import com.adams.dt.business.util.GetVOUtil;
+				import com.adams.dt.model.vo.WorkFlowset;
+				import mx.events.CloseEvent;
+				[Bindable]
+				public var model:ModelLocator = ModelLocator.getInstance();
+				
+				[Bindable]
+				public var _selectedWFTemp:WorkFlowset; 
+				
+				override public function set data(value:Object):void {
+                	super.data = value;
+                	_selectedWFTemp = WorkFlowset( value );
+                }
+				
+				/* private function checkData (  ) : void {
+					aBox.data = _selectedWFTemp;
+                	bBox.data = _selectedWFTemp;
+				} */ 
+				
+				public function get selectedWFTemp():WorkFlowset {
+					return _selectedWFTemp
+				}
+				public function set selectedWFTemp( value:WorkFlowset):void {
+					_selectedWFTemp = value; 
+					/* aBox.data = _selectedWFTemp;
+                	bBox.data = _selectedWFTemp; */
+				}  
+				
+				
+				
+				private function getWindow(event:Event):void {
+					var front:Boolean 
+					(event.target.name) == 'aBox' ? front = true : front =false
+					front ? model.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).frontWorkFlowId : model.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).backWorkFlowId;
+					getWFTWindow( WorkFlowset(event.currentTarget.data) ,front);
+				}
+				[Bindable]
+				public var currentWFTemp:WorkFlowset;
+				public var workFlowArr:ArrayCollection = new ArrayCollection();
+				private var wfView:WFTempViewer
+				private function getWFTWindow(clickedFrontWFTask:WorkFlowset,frontTask:Boolean):void { 
+					workFlowArr = Utils.getAllWorkflowTemplatesSet(model.setWorkFlowId);
+					wfView = new WFTempViewer();
+					wfView.clickedWFTemp = clickedFrontWFTask;
+					wfView.data = workFlowArr;
+					wfView.styleName = 'panelStyle';
+					PopUpManager.addPopUp(wfView, model.mainClass, true);
+					PopUpManager.centerPopUp(wfView);
+		             frontTask ? wfView.aBtn.alpha = 1.0 :  wfView.bBtn.alpha = 1.0
+					wfView.addEventListener(CloseEvent.CLOSE,removeViewer,false,0,true);
+				}
+			private function removeViewer(event:CloseEvent):void{
+				PopUpManager.removePopUp( wfView );
+			}
+			private function setValue( ):void{
+				aBox.data = _selectedWFTemp
+			}
+			private function setData( ):void{
+				bBox.data = _selectedWFTemp
+			}
+  			]]>
+		</mx:Script>
+		
+		<mx:HBox width="100%" id="workFlowColor" backgroundColor="{uint(GetVOUtil.getProfileObject(_selectedWFTemp.frontWFTask.profileFK).profileColor)}">
+			<!--<mx:Label   text="-" top="5" width="15" click="toDelete()" />-->
+			<mx:Label id="workflowLabel" color="0xffffff" text="{GetVOUtil.getProfileObject(_selectedWFTemp.frontWFTask.profileFK).profileLabel}"/>
+		</mx:HBox>
+		
+		<mx:Label id="titleTxt"   text="{_selectedWFTemp.frontWFTask.taskLabel}" top="10" width="120"/>
+		<mx:HBox width="100%" horizontalGap="5"   id="box"  >
+			<mx:Button width="50" id="aBox"  creationComplete="setValue()"  click="getWindow(event)" styleName="nextBtn" alpha="{model.selectedWFTemplateID == WorkFlowset(aBox.data).frontWorkFlowId ? 1 : 0.5}"  visible="{_selectedWFTemp.frontWFTask != null}"/>
+			<mx:Spacer width="100%"/>
+			<mx:Button width="50" id="bBox" click="getWindow(event)" creationComplete="setData()" styleName="previousBtn"  alpha="{model.selectedWFTemplateID == WorkFlowset(bBox.data).backWorkFlowId ? 1 : 0.5}" visible="{_selectedWFTemp.backWFTask != null}"/>
+		</mx:HBox>
+</mx:VBox>

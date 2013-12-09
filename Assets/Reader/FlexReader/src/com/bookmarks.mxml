@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="40" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalGap="0">
+		<mx:Script>
+			<![CDATA[
+				import mx.core.Application;
+				[Bindable]public var checkboxPageNo:String=new String();
+				[Bindable]public var pageNo:Number;
+				private function gotoPage():void{
+					Application.application.myBook.gotoPageWOF(pageNo);   
+				}
+				 /* public function get pageNo():String{
+					return notesCheck.label;
+				}
+				public function set pageNo(val:String):void{
+					notesCheck.label=val;
+				} */ 
+			]]>
+		</mx:Script>
+		<mx:Style>
+			.goDetailsBtn{
+				upSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsUp"); 
+				downSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsDown");
+				overSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsOver");
+								
+				selectedUpSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsUp");
+				selectedDownSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsDown");
+				selectedOverSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsOver");
+			}
+			.checkBox{
+				fillAlphas: 1, 1, 1, 1;
+   				fillColors: #ffffff, #ffffff, #ffffff, #ffffff;
+			}
+		</mx:Style>
+		<mx:Canvas width="100%" height="30" backgroundColor="#222222">
+			<mx:VBox left="5" verticalCenter="0">
+				<mx:CheckBox id="bookmarkCheck" styleName="checkBox" selected="false" color="#FFFFFF" label="{checkboxPageNo}"  fontSize="12" fontWeight="bold" textRollOverColor="#FFFFFF" textSelectedColor="#FFFFFF"/>
+			</mx:VBox>
+			<mx:HBox right="5" verticalCenter="0">
+				<mx:Button styleName="goDetailsBtn" click="gotoPage()"/>
+			</mx:HBox>
+		</mx:Canvas>
+</mx:VBox>	

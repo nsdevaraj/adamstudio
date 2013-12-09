@@ -1,0 +1,54 @@
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" creationComplete="onCreationComplete()">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.business.util.StringUtils;
+		import com.adams.dt.business.util.EncryptUtil;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.ModelLocator; 
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private var encryptor:EncryptUtil = new EncryptUtil() 
+		private function onCreationComplete():void{
+			var dpRss:ArrayCollection = new ArrayCollection();
+			for each( var person:Persons in  model.personsArrCollection){
+			var url:String = model.serverLocation+"todolistfeeder?"
+								+"&eun="+ StringUtils.replace(escape(encryptor.encrypt(person.personLogin)),'+','%2B')
+								+"&eps="+ StringUtils.replace(escape(encryptor.encrypt(person.personPassword)),'+','%2B');
+				person.personRSSLink = url;
+				dpRss.addItem(person);
+			}
+			rss.dataProvider =dpRss;		
+		}
+		
+		
+	]]>
+</mx:Script>
+
+<mx:DataGrid id="rss"   width="100%" height="100%" >
+	<mx:columns>
+		<mx:DataGridColumn headerText="UserName" dataField="personLogin"  />
+		<mx:DataGridColumn headerText="Password" dataField="personPassword" />
+		<mx:DataGridColumn headerText="FirstName" dataField="personFirstname" />
+		<mx:DataGridColumn headerText="RSS Link" dataField="personRSSLink" >
+			<mx:itemRenderer>
+				<mx:Component>
+					<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" >
+					<mx:Script>
+						<![CDATA[
+							import flash.net.navigateToURL;
+							private function navURL():void{
+								var urlReq:URLRequest = new URLRequest(data.personRSSLink);
+								navigateToURL(urlReq); 
+							}
+							
+						]]>
+					</mx:Script> 
+						<mx:Button click="navURL()" styleName="rssButton"/>
+					</mx:Canvas>
+				</mx:Component>
+			</mx:itemRenderer>
+		</mx:DataGridColumn>
+	</mx:columns>
+</mx:DataGrid>
+</mx:Canvas>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				autoDrawBackground="true">
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+			import com.adams.scrum.models.vo.Themes;
+			import com.adams.scrum.utils.Utils;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			
+			import spark.components.List;
+			/**
+ 			 * <p>
+ 			 * The Button handler, shows a delete theme alert
+ 			 * </p>
+			 */				
+			protected function clickHandler(evt:MouseEvent):void {
+				Alert.show(Themes(data).themeLbl,Utils.DELETEITEMALERT,Alert.YES|Alert.CANCEL,null,alrtCloseHandler);
+			}
+			/**
+ 			 * the Alert selection close handler
+ 			 * the selected theme is deleted from the list
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */
+			protected function alrtCloseHandler(evt:CloseEvent):void {
+				switch (evt.detail) {
+					case Alert.YES:
+					case Alert.OK:
+						Object(owner).dataProvider.removeItemAt(itemIndex);
+						break;
+					case Alert.CANCEL:
+					case Alert.NO:
+						Object(owner).selectedIndex = -1;
+						break;
+					default:
+						break;
+				}
+			}
+			private function visibleRemoveButton():Boolean{				
+				return Object(owner).removeRendererProperty;
+			}
+		]]>
+	</fx:Script>
+	<s:Group height="30">
+		<s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#cccccc" /></s:fill></s:Rect>
+		<s:Label id="lbl" text="{Themes(data).themeLbl}" verticalCenter="0" horizontalCenter="0" paddingLeft="10" paddingRight="12"/>
+		<s:Button label="remove" verticalCenter="0" right="0" 
+				  styleName="DeleteSkin" emphasized="true"
+				  includeIn="hovered"
+				  visible="{visibleRemoveButton()}"
+				  width="12" height="12" click="clickHandler(event)"/>
+	</s:Group>
+</s:ItemRenderer>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	NewsArticle
+	
+	This is the 'renderer' used to display a news article in the Blog Reader.
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" verticalScrollPolicy="off" horizontalScrollPolicy="off" >
+
+	<mx:Script>
+	<![CDATA[
+		import mx.controls.Alert;
+		import com.adams.blog.data.NewsHeadline;
+		
+		[Bindable] private var content:String;
+		
+		/**
+		 * data
+		 *
+		 * This override of the set data function places the date and content into
+		 * the htmlText variable, content, bound to the Text control.
+		 */
+		override public function set data(value:Object):void
+		{
+			super.data = value;
+			var n:NewsHeadline = value as NewsHeadline;
+			content = n.content;
+			headText.text = dfmt.format(n.date);
+		}
+		private function setSize():void{
+			var nLines:uint = newsArea.mx_internal::getTextField().numLines;                      
+			newsArea.height=Number(nLines)*18;
+		}
+	]]>
+	</mx:Script>
+	
+	<mx:DateFormatter id="dfmt" formatString="MMM DD, YYYY LL:NN A" />
+	<mx:VBox width="100%">
+	<mx:Text id="headText" fontSize="14" selectable="false"/>
+	<mx:TextArea id="newsArea" creationComplete="setSize()" selectable="false" editable="false" x="0" y="0" left="10" right="10" htmlText="{content}"/>
+	</mx:VBox>
+</mx:Canvas>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	 width="100%" height="100%"	horizontalCenter="0" horizontalScrollPolicy="off"
+	 styleName="transparentBackground">
+	 <mx:Script>
+	 	<![CDATA[
+	 		import mx.core.Application;
+	 	]]>
+	 </mx:Script>
+	 <mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" 
+	 	click="{Application.application.homeComp.backtoHome()}"/>
+   
+	 <mx:VBox paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15" width="100%" height="100%">
+	 <mx:Label styleName="introTitle" text="What Do We Do" fontSize="24" left="15" top="15"/>
+     	  <mx:HRule width="100%"/>
+     <mx:HBox width="100%" height="100%">
+	     <mx:Image left="15" top="50" source="@Embed('assets/images/Animation_img1.png')"/>
+	     <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+	     	width="100%" styleName="contFont" height="100" id="three" 
+	     	editable="false" selectable="false"  
+	     	>
+				<mx:htmlText><![CDATA[<h2><p align="justify">Most online applications can take advantage of the appropriate use of the RIA technologies.</h2>
+	<br/></p>]]>
+		     </mx:htmlText>
+			</mx:TextArea>
+		</mx:HBox>
+		 
+		 
+		  <mx:HBox width="100%" height="100%">
+				 <mx:Image left="15" top="200" source="@Embed('assets/images/eshop.png')"/>
+				 <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+		     	width="100%" styleName="contFont" height="100" 
+		     	editable="false" selectable="false"  
+		     	>
+					<mx:htmlText><![CDATA[<p align="justify"><h1>Public audience websites or site elements</h1><h1>an example: Stade Français eShop</h1></p>]]>
+			     </mx:htmlText>
+				</mx:TextArea>
+		</mx:HBox>
+		  <mx:HBox width="100%" height="100%">
+						<mx:Image left="15" top="300" source="@Embed('assets/images/dashboard.png')"/>
+						 <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+				     	width="100%" styleName="contFont" height="100" 
+				     	editable="false" selectable="false"  >
+							<mx:htmlText><![CDATA[<p align="justify"><h1>Professional dedicated applications an example: Doctrack for prep-press companies.</h1><h1>Tailor made applications</h1><h1> an example: process followup application and dashboard</h1></p>]]>
+					     </mx:htmlText>
+						</mx:TextArea>
+			</mx:HBox>
+			 <mx:HBox width="100%" height="100%">
+		<mx:Image left="15" top="400" source="@Embed('assets/images/reader.png')"/>
+		 <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+     	width="100%" styleName="contFont" height="100" 
+     	editable="false" selectable="false"  
+     	>
+			<mx:htmlText><![CDATA[<p align="justify"><h1>Online collaboration environments PDF sharing, videoconference,realtime communication components.</h1><h1> Knowledge sharing Flex development training (Adobe Authorised Training Center Status prending)</h1></p>]]>
+	     </mx:htmlText>
+		</mx:TextArea>
+		</mx:HBox>
+		</mx:VBox>
+</mx:Canvas>

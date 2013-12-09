@@ -1,0 +1,56 @@
+/* CSS file */
+
+Application {
+	background-color: #ffffff;
+	background-gradient-colors: #bfb9aa,#7c735c;
+}
+
+
+EditorPanel {
+	background-color: #c6bca6;
+}
+
+.HTMLEditor {
+	border-alpha: .4;
+	drop-shadow-enabled: false;
+}
+
+InsertForm {
+	border-alpha: .4;
+	drop-shadow-enabled: false;
+}
+
+.InsertFormPreview {
+	border-style: solid;
+	border-color: #cccccc;
+	border-thickness: 1;
+}
+
+
+.NewsTitle {
+	font-weight: bold;
+	font-size: 12;
+	color: #ffffff;
+	background-color: #c6bca6;
+}
+
+.NewsBox {
+	background-color: #ffffff;
+	border-style: solid;
+	border-color: #999999;
+	border-thickness: 1;
+}
+
+
+.FormLabel {
+	font-weight: bold;
+}
+
+.ArticleTitle {
+	font-weight: bold;
+	font-size: 14;
+}
+
+.ArticleDate {
+	color: #0099cc;
+}

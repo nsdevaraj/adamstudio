@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:flex="http://www.springframework.org/schema/flex" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/flex 
+		http://www.springframework.org/schema/flex/spring-flex-1.0.xsd
+		http://www.springframework.org/schema/security 
+		http://www.springframework.org/schema/security/spring-security-2.0.1.xsd">
+ 	
+ 	<flex:message-broker  id="_messageBroker" >
+	<flex:message-service
+			default-channels="my-amf,my-streaming-amf,my-polling-amf" />
+	 <flex:secured>
+	 	<flex:secured-channel channel="my-amf" access="ROLE_ADMIN" />
+	 </flex:secured>  
+	</flex:message-broker>
+	
+	<!-- Maps request paths at /* to the BlazeDS MessageBroker my-longpolling-amf-->
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+	    <property name="mappings">
+	        <value>
+	            /*=mySpringManagedMessageBroker
+	        </value>
+	    </property>
+	</bean>
+	<bean id="mySpringManagedMessageBroker" class="org.springframework.flex.messaging.MessageBrokerFactoryBean" />	
+	<flex:message-destination id="chatmessage" />
+ 	<flex:message-destination id="chatonline" />
+
+ 	<!-- Database Configuration-->
+ 	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location"
+			value="/WEB-INF/config/jdbc.properties" />
+	</bean> 
+    
+    <bean id="dataSource"  
+	  class="org.apache.commons.dbcp.BasicDataSource"> 
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>  
+	<!-- Hibernate Configuration-->
+	<bean id="sessionFactory"
+		 class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mappingResources">
+			<list> 
+				<value>
+					com/adams/dt/dao/hibernate/maps/Languages.hbm.xml
+				</value>
+			</list>
+		</property>	
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					${hibernate.dialect}
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.generate_statistics">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<!-- configuration pool via c3p0-->
+				<prop key="c3p0.acquire_increment">1</prop>
+				<prop key="c3p0.idle_test_period">100</prop><!-- seconds -->
+				<prop key="c3p0.max_size">100</prop>
+				<prop key="c3p0.max_statements">0</prop>
+				<prop key="c3p0.min_size">10</prop>
+				<prop key="c3p0.timeout">100</prop><!-- seconds --> 			
+			</props>
+		</property>
+		<property name="eventListeners">
+			<map>
+				<entry key="merge">
+					<bean
+						class="org.springframework.orm.hibernate3.support.IdTransferringMergeEventListener" />
+				</entry>
+			</map>
+		</property>	
+		 
+	</bean>
+
+    <bean id="pagingDAO"
+		class="com.adams.dt.dao.hibernate.DTPageDAO">
+		<flex:remoting-destination />
+		<property name="sessionFactory">
+			<ref local="sessionFactory" />
+		</property>
+	</bean>
+	
+   	<bean id="abstractDao"
+		class="org.springframework.aop.framework.ProxyFactoryBean"
+		abstract="true">
+		<property name="proxyInterfaces">
+			<value>com.adams.dt.dao.DTInterface</value>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>finderIntroductionAdvisor</value>
+				<value>MyTransactionInterceptor</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="finderIntroductionAdvisor"
+		class="com.adams.dt.dao.hibernate.finder.impl.FinderIntroductionAdvisor" />
+
+	<bean id="abstractDaoTarget"
+		class="com.adams.dt.dao.hibernate.DTDaoHibernateImpl"
+		abstract="true">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property> 
+		<property name="namingStrategy">
+			<ref bean="extendedFinderNamingStrategy" />
+		</property>
+	</bean>
+	
+	<bean id="namingStrategy"
+		class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+		<property name="staticField">
+			<value>
+				org.hibernate.cfg.ImprovedNamingStrategy.INSTANCE
+			</value>
+		</property>
+	</bean>
+
+	<bean id="extendedFinderNamingStrategy"
+		class="com.adams.dt.dao.hibernate.finder.impl.ExtendedFinderNamingStrategy" />
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="MyTransactionInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<property name="transactionAttributeSource"
+			ref="transactionAttributes" />
+	</bean>
+	
+	<bean id="transactionAttributes"
+		class="org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource">
+		<property name="properties">
+			<value>
+				create*=PROPAGATION_REQUIRED
+				find*=PROPAGATION_REQUIRED,readOnly
+				read*=PROPAGATION_REQUIRED,readOnly
+				delete*=PROPAGATION_REQUIRED
+				update*=PROPAGATION_REQUIRED
+				create*=PROPAGATION_REQUIRED
+			</value>
+		</property>
+	</bean>
+	 <bean id="nativeJdbcExtractor" class="org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor"/>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+	
+</beans>

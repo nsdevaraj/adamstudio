@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+				xmlns:tempScreen = "com.adams.dt.view.components.impremiurTemplate.*"
+				  horizontalScrollPolicy="off"  verticalGap="0" paddingTop="5" paddingLeft="5" paddingRight="5" 
+				  paddingBottom="5" currentState="newClsState"
+				verticalScrollPolicy="off" styleName="innerBorder" >
+	 <!--TITLE="template selection"--> 
+	<mx:Metadata>
+		[Event(name = "bindTechnicalProperties" , type = "com.adams.dt.event.imptemplates.BindTechPropEvent")]
+		[Event(name = "addDefaultTemplate" , type = "flash.events.Event")]
+	</mx:Metadata>			
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.view.components.todolistscreens.TimesheetChalkBoard;
+			import com.adams.dt.event.PropertiespjEvent;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.Persons;
+			import mx.collections.IViewCursor;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import com.adams.dt.business.util.Utils;
+			import mx.controls.TextInput;
+			import mx.controls.Label;
+			import com.adams.dt.view.components.impremiurRenderer.ComboSelectContent;
+			import mx.core.UIComponent;
+			import com.adams.dt.view.components.impremiurRenderer.FieldSelectContent;
+	 		import mx.managers.PopUpManager;
+	 		import com.adams.dt.view.components.impremiurRenderer.TextSelectContent;
+			import mx.controls.dataGridClasses.DataGridDragProxy;
+			import mx.events.CloseEvent;
+			import com.adams.dt.event.DefaultTemplateValueEvent;
+			import com.adams.dt.model.vo.DefaultTemplateValue;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Companies;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.controls.Button;
+			import com.adams.dt.model.vo.DefaultTemplate;
+			import mx.controls.Alert;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+			import mx.managers.PopUpManager;
+            import mx.containers.TitleWindow;
+            import mx.events.FlexMouseEvent;
+			import com.adams.dt.view.components.impremiurTemplate.*;
+		    
+			[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+			import com.adams.dt.event.DefaultTemplateEvent;
+			
+			
+		    
+		    [Bindable]
+		 	public var defaultTemplateCollection:ArrayCollection;
+		 	[Bindable]
+		 	public var defaultTemplateValueColl:ArrayCollection = new ArrayCollection();
+		 	[Bindable]
+		 	public var deleteDefaultTemplateValueColl:ArrayCollection = new ArrayCollection();
+		 	private var editDefaultTemplate:DefaultTemplate
+		 	private var defaultTempWindow:TitleWindow;
+		 	private var technicalTemplate:TechnicalTemplate = new TechnicalTemplate();
+		 	[Bindable]
+		 	public var timesheetChalk:TimesheetChalkBoard;
+		 	
+		 	private var _filledPresetCollection:ArrayCollection;
+			[Bindable]
+			public function get filledPresetCollection():ArrayCollection {
+				return _filledPresetCollection;
+			}
+			public function set filledPresetCollection( value:ArrayCollection ) : void {
+				_filledPresetCollection =  value;
+			}
+			
+		    public function fault(faultEvt:Object):void {
+	 		}
+	 		
+            /**
+		    * when user select the dataGrid  ....
+		    */
+			private function editDefaultTemplateEvent( event:Event) : void {
+				editDefaultTemplate = defaultTemp.clickedDefaultTemplate;
+				if(editDefaultTemplate!= null){
+					editDefaultTempBtn.enabled  = true
+					if(editDefaultTemplate.companyFK== model.clientCompanyId && GetVOUtil.getProfileObject(model.person.defaultProfile).profileCode != 'ADM')	
+					editDefaultTempBtn.enabled  = false
+				}else{
+					editDefaultTempBtn.enabled  = false
+				}
+			}
+			
+			/**
+		    * reset the collection after edit the values ....
+		    */
+		    private function editBtnClicked( event :MouseEvent ) :void {
+		    	PopUpManager.addPopUp( technicalTemplate,model.mainClass);
+		   		PopUpManager.centerPopUp( technicalTemplate );
+		   		var handler:IResponder = new Callbacks(editDefaultTempValueHandler,fault);
+				var defaultTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent ( DefaultTemplateValueEvent.GET_DEFAULT_TEMPLATE_VALUE,handler);
+				defaultTempValueEvt.defaultTemplateValuesID = editDefaultTemplate.defaultTemplateId;
+				CairngormEventDispatcher.getInstance().dispatchEvent( defaultTempValueEvt );
+			}
+		    
+			private function editDefaultTempValueHandler( data :Object ) : void {
+				defaultTemplateValueColl = data.result as ArrayCollection;
+				deleteDefaultTemplateValueColl.removeAll();
+				if(defaultTemplateValueColl.length>0){
+				var tempId:int =   DefaultTemplateValue(defaultTemplateValueColl.getItemAt( 0 )).defaultTemplateFK;
+				compareItems(model.techPropPresetCollection , tempId , data.result as ArrayCollection );
+				}
+				/* Alert.show(deleteDefaultTemplateValueColl.length+'   dddd   ' +defaultTemplateValueColl.length) */; 
+				technicalTemplate.defaultTemplateValueProvider = defaultTemplateValueColl
+				technicalTemplate.deletedTemplateValueProvider = deleteDefaultTemplateValueColl;
+			}
+			
+			/**
+		    * compare the objects between the techPropertiesPreset and defaultTemplateValue collection.
+		    */
+			private function compareItems( newList:ArrayCollection ,tempFK:int , techArr:ArrayCollection):void {
+				for each( var propPreset:Propertiespresets in newList ){
+					var delDefaultTempValue:DefaultTemplateValue = new DefaultTemplateValue()
+					delDefaultTempValue.defaultTemplateFK = tempFK
+					delDefaultTempValue.propertiesPresetFK = propPreset.propertyPresetId;
+					delDefaultTempValue.defaultTemplateValue = propPreset.fieldDefaultValue
+					modifyItem(delDefaultTempValue,techArr);
+				}
+			}
+			private function modifyItem( item:DefaultTemplateValue, arrColl:ArrayCollection ):void {
+				var returnValue:int = -1;
+				var sort:Sort = new Sort(); 
+			    sort.fields = [ new SortField( 'propertiesPresetFK' ) ];
+			    arrColl.sort = sort;
+			    arrColl.refresh(); 
+				var cursor:IViewCursor = arrColl.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if( !found ) {
+					deleteDefaultTemplateValueColl.addItem( item );
+				} 	
+			}
+			
+			/**
+		    * When user click the  "DELETE" Button
+		    */
+			private function deleteDefaultTemplateEvent (event:Event ):void {
+				if( editDefaultTempBtn.enabled ) {
+					editDefaultTempBtn.enabled = false;
+				}
+			}
+			
+			/**
+		    * When user click the  "ADD NEW" Button
+		    */
+		    public var defaultTemplateText:String ="";
+			private function createNewDefaultTemp (event:Event) :void {
+				
+		   		/* defaultPopUp = new NewDefaultTeamplate();
+		   		defaultPopUp.parentApp = this;
+		   		PopUpManager.addPopUp( defaultPopUp, this );
+		   		PopUpManager.centerPopUp( defaultPopUp );
+		   		defaultPopUp.addEventListener( CloseEvent.CLOSE, saveNewDefaultTemp,false,0,true ); */
+			}
+			
+			/**
+		    * create the defaultTemplate collection by the current person company.
+		    */	
+			private function saveNewDefaultTemp():void {
+					dispatchEvent( new Event( "addDefaultTemplate" ) );
+					var newdefaultTemp:DefaultTemplate = new DefaultTemplate();
+					newdefaultTemp.defaultTemplateLabel = addNewField.text;
+					newdefaultTemp.companyFK = model.impPerson.companyFk;
+		 			var handler:IResponder = new Callbacks( savedefaultTempHandler, fault );
+		 			var defaultTempEvt:DefaultTemplateEvent = new DefaultTemplateEvent( DefaultTemplateEvent.EVENT_CREATE_DEFAULT_TEMPLATE, handler );
+		 			defaultTempEvt.defaultTemplates = newdefaultTemp;
+		 			defaultTempEvt.dispatch();  
+		 			addNewField.text = '';
+			}
+			
+			/**
+		    * save the new DefaultTemplate .
+		    */	
+			private function savedefaultTempHandler( data:Object ):void {
+				// to create the value for defaultTemplateValue ....
+				var tempValueArr:ArrayCollection = new ArrayCollection();
+				for each( var propPJ:Propertiespj in filledPresetCollection ){
+					var newdefaultTempValue:DefaultTemplateValue = new DefaultTemplateValue()
+					newdefaultTempValue.defaultTemplateFK = DefaultTemplate(data.result).defaultTemplateId
+					newdefaultTempValue.propertiesPresetFK = propPJ.propertyPreset.propertyPresetId;
+					newdefaultTempValue.defaultTemplateValue = propPJ.fieldValue
+					tempValueArr.addItem(newdefaultTempValue);
+				}
+				var defaultTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent ( DefaultTemplateValueEvent.BULK_UPDATE_DEFAULT_TEMPLATE_VALUE);
+				defaultTempValueEvt.defaultTempValuesArr = tempValueArr;
+				CairngormEventDispatcher.getInstance().dispatchEvent( defaultTempValueEvt );
+			}
+			
+        	private function saveNewTemp( event:Event ):void {
+            	if( addNewField.text.length > 0 ) {
+            		currentState = 'newClsState';
+            		saveNewDefaultTemp();
+            	}
+            	else {
+            		Alert.show("Please enter the Value");
+            	}
+            }
+        	
+		]]>
+	</mx:Script>
+	<mx:states>
+		<mx:State name="newState">
+			<mx:SetProperty target="{newCon}" name="visible" value="true"/>
+			<mx:SetProperty target="{newCon}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{addNew}" name="visible" value="false"/>
+			<mx:SetProperty target="{addNew}" name="includeInLayout" value="false"/>
+			
+		</mx:State>
+		<mx:State name="newClsState">
+			<mx:SetProperty target="{newCon}" name="visible" value="false"/>
+			<mx:SetProperty target="{newCon}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{addNew}" name="visible" value="true"/>
+			<mx:SetProperty target="{addNew}" name="includeInLayout" value="true"/>
+		</mx:State>
+	</mx:states>
+	
+	<mx:Label text="Template Selection" fontWeight="bold"/>
+	<tempScreen:DefaultTemplateScreen  id="defaultTemp" height="100%" 
+								       						editClicked="editDefaultTemplateEvent( event )" 
+		                               						deleteClicked="deleteDefaultTemplateEvent( event )" 
+					                   						applyClicked="defaultTemp.resultCollection = timesheetChalk.getPropertiespjSet()"/>
+	<mx:HBox id="Add_Edit"  width="100%" horizontalAlign="right" paddingLeft="10" >
+		<mx:Canvas  id="newCon"	width="100%" showEffect="Fade"  >
+			<mx:HBox width="100%" horizontalAlign="right" verticalAlign="middle" 
+				paddingRight="0" paddingLeft="0" paddingTop="0" paddingBottom="0">
+				<mx:Label text="Template Label"/>
+				<mx:TextInput id="addNewField" width="100"/>
+				<mx:Button id="saveNewItem" styleName="saveBtn" label="save" click="saveNewTemp(event)" />	
+			</mx:HBox>
+			<mx:Button id="clsBtn" styleName="closeButton" top="0" right="0" click="currentState = 'newClsState'" />
+		</mx:Canvas>			
+		<mx:Button id="addNew"  label="Add New"  styleName="addNewIcon" click="currentState = 'newState'" />
+		<mx:Button id="editDefaultTempBtn"   enabled="false" label="EDIT" styleName="editIcon" click="editBtnClicked(event)" />
+	</mx:HBox>
+	
+</mx:VBox>

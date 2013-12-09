@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="setDefaultTheme(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			import mx.core.FlexGlobals;
+			import mx.events.ColorPickerEvent;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable]
+			private var textColor:uint;
+			private var chromeColor:uint;
+			private var symbolColor:uint;
+			private var contentBackgroundColor:uint;
+			private var focusColor:uint;
+			
+			private var projectHeaderBC:uint;
+			private var bgColor:uint;
+			private var listALColors:Array;
+			private var innerBgColor:uint;
+			private var selectionColor:uint;
+			private var borderColor:uint;
+			private var headerLabelColor:uint;
+			
+			private var alterColor1:uint;
+			private var alterColor2:uint;
+			
+			private var blueThemeAL:ArrayList = new ArrayList([
+				{textColor:0xffffff},
+				{chromeColor:0x124566},
+				{contentBackgroundColor:0x223341},
+				{symbolColor:0xffffff},
+				{focusColor:0x817152},
+				
+				{projectHeaderBC:0x091f31},
+				{bgColor:0x081e2f},
+				{listALColors:[0x333f4b,0x293541]},
+				{selectionColor:0x505c68},
+				{innerBgColor:0x2c3844},
+				{borderColor:0x515154},
+				{headerLabelColor:0xb6b6b6}]);
+			private var redThemeAL:ArrayList = new ArrayList([
+				{textColor:0xffffff},
+				{chromeColor:0x663312},
+				{contentBackgroundColor:0x413022},
+				{symbolColor:0xffffff},
+				{focusColor:0x817152},
+				
+				{projectHeaderBC:0x311b09},
+				{bgColor:0x2f1908},
+				{listALColors:[0x473b2f,0x3d3125]},
+				{selectionColor:0x64584c},
+				{innerBgColor:0x44382c},
+				{borderColor:0x515154},
+				{headerLabelColor:0xb6b6b6}]);
+			private var greenThemeAL:ArrayList = new ArrayList([
+				{textColor:0xffffff},
+				{chromeColor:0x666012},
+				{contentBackgroundColor:0x414022},
+				{symbolColor:0xffffff},
+				{focusColor:0x817152},
+				
+				{projectHeaderBC:0x313009},
+				{bgColor:0x292806},
+				{listALColors:[0x3e4028,0x34361e]},
+				{selectionColor:0x5b5d45},
+				{innerBgColor:0x42442c},
+				{borderColor:0x515154},
+				{headerLabelColor:0xb6b6b6}]);
+			private var greyThemeAL:ArrayList = new ArrayList([
+				{textColor:0xbdbdbd},
+				{chromeColor:0x2d3239},
+				{contentBackgroundColor:0x313235},
+				{symbolColor:0xffff00},
+				{focusColor:0xefefef},
+				
+				{projectHeaderBC:0x000000},
+				{bgColor:0xffffff},
+				{listALColors:[0x323334,0x3c3d3f]},
+				{selectionColor:0x3f646b},
+				{innerBgColor:0x313235},
+				{borderColor:0x515154},
+				{headerLabelColor:0xb6b6b6}]);
+			private function applyStyles():void{
+				FlexGlobals.topLevelApplication.setStyle("color", textColor);
+				FlexGlobals.topLevelApplication.setStyle("chromeColor", chromeColor);
+				FlexGlobals.topLevelApplication.setStyle("contentBackgroundColor", contentBackgroundColor);
+				FlexGlobals.topLevelApplication.setStyle("symbolColor", symbolColor);
+				FlexGlobals.topLevelApplication.setStyle("focusColor", focusColor);	
+				
+				
+				styleManager.getStyleDeclaration( ".projectHeaderBC").setStyle("backgroundColor",projectHeaderBC);
+				styleManager.getStyleDeclaration( ".bgColor").setStyle("backgroundColor",bgColor);
+				styleManager.getStyleDeclaration( ".headerLabel").setStyle("color",headerLabelColor);
+				
+				
+				styleManager.getStyleDeclaration( "com.adams.dt.view.components.TitledBorderBox").setStyle("backgroundColor",innerBgColor);
+				
+				
+				/* BorderContainer */
+				var style:CSSStyleDeclaration = new CSSStyleDeclaration();
+				styleManager.setStyleDeclaration( "spark.components.BorderContainer", style, false );
+				style.setStyle( "backgroundColor",innerBgColor);
+				style.setStyle( "borderColor", borderColor);
+				
+				/*Panel */
+				var panelStyle:CSSStyleDeclaration = new CSSStyleDeclaration();
+				styleManager.setStyleDeclaration( "spark.components.Panel", panelStyle, false );
+				panelStyle.setStyle( "backgroundColor",innerBgColor);
+				
+				/* List */
+				var listStyle:CSSStyleDeclaration = new CSSStyleDeclaration();
+				styleManager.setStyleDeclaration( "spark.components.List", listStyle, false );
+				listStyle.setStyle( "alternatingItemColors",listALColors);
+				listStyle.setStyle( "selectionColor", selectionColor);
+				
+				var mxListStyle:CSSStyleDeclaration = new CSSStyleDeclaration();
+				styleManager.setStyleDeclaration( "mx.controls.List", mxListStyle, false );
+				mxListStyle.setStyle( "alternatingItemColors",listALColors);
+				mxListStyle.setStyle( "selectionColor", selectionColor);
+				/* DataGrid */
+				var datagridStyle:CSSStyleDeclaration = new CSSStyleDeclaration();
+				styleManager.setStyleDeclaration( "spark.components.DataGrid", datagridStyle, false );
+				datagridStyle.setStyle( "alternatingItemColors",listALColors);
+				datagridStyle.setStyle( "selectionColor", selectionColor);
+			}
+			private function onThemeChange(al:ArrayList):void{
+				for each(var theme:Object in al.source){
+					for (var str:String in theme) {
+						this[str] = theme[str];	
+					}
+				} 
+				applyStyles();
+				setPickerColor(al);
+				
+			}
+			private function setPickerColor(al:ArrayList):void{
+				for each(var theme:Object in al.source){
+					for (var str:String in theme) {
+						if(str == "listALColors"){
+							listALColorsPic1.selectedColor = listALColors[0];
+							listALColorsPic2.selectedColor = listALColors[1];
+						}else{
+							ColorPicker(this[str+"Pic"]).selectedColor = theme[str];	
+						}
+					}
+				} 
+			}
+			
+			private function onColorChange(event:ColorPickerEvent):void{
+				switch(event.currentTarget){
+					case textColorPic:
+						textColor = event.color;
+						break;
+					case chromeColorPic:
+						chromeColor = event.color;
+						break;
+					case contentBackgroundColorPic:
+						contentBackgroundColor = event.color;
+						break;
+					case symbolColorPic:
+						symbolColor = event.color;
+						break;
+					case focusColorPic:
+						focusColor = event.color;
+						break;
+					case projectHeaderBCPic:
+						projectHeaderBC = event.color;
+						break;
+					case bgColorPic:
+						bgColor = event.color;
+						break;
+					case listALColorsPic1:
+						alterColor1 = event.color;
+						break;
+					case listALColorsPic2:
+						alterColor2 = event.color;
+						break;
+					case selectionColorPic:
+						selectionColor = event.color;
+						break;
+					case innerBgColorPic:
+						innerBgColor = event.color;
+						break;
+					case borderColorPic:
+						borderColor = event.color;
+						break;
+					case headerLabelColorPic:
+						headerLabelColor = event.color;
+						break;
+				}
+				if(alterColor1)listALColors[0] =alterColor1; 
+				if(alterColor2)listALColors[1] = alterColor2;
+				applyStyles();
+			}
+			
+			protected function onThemeSelectHandler(currentTheme:String):void{
+				switch(currentTheme){
+					case "Blue":
+						onThemeChange(blueThemeAL);
+						break;
+					case "Green":
+						onThemeChange(greenThemeAL);
+						break;
+					case "Red":
+						onThemeChange(redThemeAL);
+						break;
+				}
+			}
+			
+			protected function setDefaultTheme(event:FlexEvent=null):void{
+				onThemeChange(greyThemeAL);
+			}
+			private function moreOptionVisible():void{
+				moreOptions.includeInLayout = !moreOptions.includeInLayout;
+				moreOptions.visible = !moreOptions.visible
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect id="shadow" left="0" right="-2" top="0" bottom="-4"  radiusX="8" radiusY="8" >
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x000000" alpha=".2" />
+				<s:GradientEntry color="0x000000" alpha=".3"  />
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<s:BorderContainer width="100%" height="100%" cornerRadius="5" />
+	<s:VGroup width="100%" horizontalAlign="left" top="5" paddingLeft="15" paddingRight="15" paddingBottom="15" paddingTop="15">
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="right">
+			<s:Button label="Admin" id="adminBtn" styleName="rssIcon" visible="true"/>	
+			<s:Button label="Delete All Projects" id="deleteAllProjectsBtn"/>
+			<s:Button label="RSS" id="rssBtn" styleName="rssIcon"/>
+		</s:HGroup>
+		<s:Label text="Theme" fontSize="15" styleName="headerLabel"/>
+		<s:HGroup verticalAlign="middle" gap="1">
+			<s:Button label="Blue" click="onThemeSelectHandler('Blue')"/>
+			<s:Button label="Green" click="onThemeSelectHandler('Green')"/>
+			<s:Button label="Red" click="onThemeSelectHandler('Red')"/>
+			<s:Button label="Original" click="setDefaultTheme()" />
+		</s:HGroup>
+		<s:Line width="100%" >
+			<s:stroke>
+				<s:SolidColorStroke color="#000000" />
+			</s:stroke>
+		</s:Line>
+		<s:Label text="Custom Colors" fontSize="15" styleName="headerLabel"/>
+		<s:Scroller width="100%">
+			<s:VGroup gap="3" >
+				<s:HGroup verticalAlign="middle">
+					<mx:ColorPicker id="textColorPic" change="onColorChange(event)"/>
+					<s:Label text="Text Color" />
+				</s:HGroup>
+				
+				<s:HGroup verticalAlign="middle">
+					<mx:ColorPicker id="chromeColorPic" change="onColorChange(event)"/>
+					<s:Label text="Chrome Color"/>
+				</s:HGroup>
+				
+				<s:HGroup verticalAlign="middle">
+					<mx:ColorPicker id="bgColorPic" change="onColorChange(event)"/>
+					<s:Label text="BackgroundColor"/>
+				</s:HGroup>
+				
+				<s:HGroup verticalAlign="middle">
+					<mx:ColorPicker id="innerBgColorPic" change="onColorChange(event)"/>
+					<s:Label text="Container BackgroundColor"/>
+				</s:HGroup>
+				<s:VGroup gap="3" id="moreOptions" includeInLayout="false" visible="false">
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="contentBackgroundColorPic" change="onColorChange(event)"/>
+						<s:Label text="Content BackgroundColor"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="headerLabelColorPic" change="onColorChange(event)"/>
+						<s:Label text="Header Label Color"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="symbolColorPic" change="onColorChange(event)"/>
+						<s:Label text="Symbol Color"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="focusColorPic" change="onColorChange(event)"/>
+						<s:Label text="Focus Color"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="projectHeaderBCPic" change="onColorChange(event)"/>
+						<s:Label text="Project Header Background"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="listALColorsPic1" change="onColorChange(event)"/>
+						<mx:ColorPicker id="listALColorsPic2" change="onColorChange(event)"/>
+						<s:Label text="List AlterenateColors"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="selectionColorPic" change="onColorChange(event)"/>
+						<s:Label text="List SelectionColor"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<mx:ColorPicker id="borderColorPic" change="onColorChange(event)"/>
+						<s:Label text="BorderColor"/>
+					</s:HGroup>
+				</s:VGroup>
+				<s:Button buttonMode="true" label="v" toolTip="more options.." width="100%" height="15" click="moreOptionVisible()"/>
+			</s:VGroup>
+		</s:Scroller>
+	</s:VGroup>
+</s:Group>

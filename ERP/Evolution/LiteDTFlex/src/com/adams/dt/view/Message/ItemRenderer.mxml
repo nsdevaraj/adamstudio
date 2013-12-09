@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.List;
+
+			[Bindable] private var displayName:String;
+
+ 			override public function set data(value:Object):void {
+				super.data = value;
+				trace("\n\n ItemRenderer :"+value+" , "+value.fileName);
+				displayName = value as String;
+
+				var list:List = this.parent.parent as List;
+				checkbox.selected = (list.selectedItems.indexOf(value) > -1);
+			}
+
+			private function flipSelectedSwitch():void {
+				this.checkbox.selected = !this.checkbox.selected;
+				this.onSelectedChange();
+			}
+
+			private function onSelectedChange():void {
+				if (checkbox.selected)
+					dispatchEvent(new ListItemEvent("ItemChecked", this.data, true, true));
+				else
+					dispatchEvent(new ListItemEvent("ItemUnchecked", this.data, true, true));
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Label width="100%" text="{data.fileName}"/>
+	<mx:Label width="100%" text="{displayName}" click="flipSelectedSwitch();" />
+	<mx:CheckBox id="checkbox" change="onSelectedChange();" paddingRight="10" />
+</mx:HBox>

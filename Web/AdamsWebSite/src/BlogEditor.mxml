@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
+	pageTitle="Flex 2 Blog Editor"
+	xmlns:editor="com.adobe.blog.editor.*"
+	xmlns:adobesrv="com.adobe.blog.service.*"
+	xmlns:adobecomps="com.adobe.blog.components.*"
+	creationComplete="initApp()">
+	
+	<mx:Style source="styles/editor_styles.css" />
+
+	<mx:Script>
+	<![CDATA[
+		import com.adobe.blog.data.Article;
+		import com.adobe.blog.events.BlogEvent;
+		
+		/** 
+		 * currentArticle - the article being edited.
+		 */
+		private var currentArticle:Article = null;
+			
+		/**
+		 * initApp
+		 *
+		 * Requests the full set of articles, links, and categories from the server
+		 */
+		private function initApp() : void
+		{
+			blogPhp.getArticles();
+			blogPhp.getLinks();
+			blogPhp.getCategories();
+		}
+		
+		/**
+		 * saveArticle
+		 *
+		 * This function is called when the Save button is picked on the EditorPanel.
+		 */
+		public function saveArticle( event:BlogEvent ) : void
+		{
+			blogPhp.insertArticle(event.articleId, event.articleTitle, 
+			                      event.categoryCode, event.articleContent);
+			editorPanel.article = null;
+		}
+		
+		/**
+		 * editSelectedArticle
+		 *
+		 * This function is called when the BlogEntries DataGrid is either double-clicked
+		 * or selected and the Edit button is picked.
+		 */
+		private function editSelectedArticle( event:BlogEvent ) : void
+		{		
+			var a:Article = event.article;
+			if( a != null ) {
+				currentArticle = a;
+				editorPanel.article = a;
+			}
+		}
+		
+		/**
+		 * deleteArticle
+		 *
+		 * This function is called when an article is selected for deletion in
+		 * the BlogEntries component.
+		 */
+		private function deleteArticle( event:BlogEvent ) : void
+		{			
+			var a:Article = event.article;
+			if( a != null ) {
+				blogPhp.deleteArticle( a.id );
+			}
+			editorPanel.article = null;
+		}
+		
+		/**
+		 * publishArticle
+		 *
+		 * This function is called in response to the Publish or Unpublish button being
+		 * picked in the BlogEntries panel.
+		 */
+		private function publishArticle( event:BlogEvent, publishFlag:Boolean=true ) : void
+		{			
+			var a:Article = event.article;
+			if( a != null ) {
+				blogPhp.publishArticle( a.id, publishFlag );
+			}
+			editorPanel.article = null;
+		}
+		
+		private function addLink( event:BlogEvent ) : void
+		{
+			blogPhp.addLink( event.linkLabel, event.linkURL );
+		}
+		
+		private function deleteLink( event:BlogEvent) : void
+		{
+			blogPhp.deleteLink( event.linkLabel, event.linkURL );
+		}
+	]]>
+	</mx:Script>
+	
+	<adobesrv:BlogService id="blogPhp" includeNewsCategory="true" includeAllCategories="false" />
+	
+	<!--
+		This is the main editing area. The RichTextControl, the HTML viewer/editor, and the
+		insert form are here.
+	-->
+	<editor:EditorPanel id="editorPanel" left="330" right="35" bottom="25" top="25"
+		title="Blog Editor"
+		blogCategories="{blogPhp.categories}"
+		saveArticle="saveArticle(event)"
+		/>
+	
+	<!--
+		The blog entries panel (at the top) and the links (at the bottom) share this space. The
+		entries can be selected to edit, delete, publish, or unpublish.
+	-->
+	<mx:VDividedBox width="293" bottom="25" left="10" top="25">
+		<editor:BlogEntriesPanel id="articlePanel"
+			width="100%"
+			height="100%" minHeight="250"
+			title="Blog Entries"
+			articles="{blogPhp.articles}"
+			editArticle="editSelectedArticle(event)"
+			deleteArticle="deleteArticle(event)"
+			publishArticle="publishArticle(event,true)"
+			unpublishArticle="publishArticle(event,false)"
+			/>
+		
+		<editor:LinksPanel id="linkPanel" 
+			width="100%" 
+			height="200" minHeight="100"
+			title="Blog Links"
+			links="{blogPhp.links}"
+			addLink="addLink(event)"
+			deleteLink="deleteLink(event)"
+			/>
+	</mx:VDividedBox>
+	
+</mx:Application>

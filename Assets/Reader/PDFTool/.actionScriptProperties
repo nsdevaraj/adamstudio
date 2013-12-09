@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="DTFlex.mxml" projectUUID="519949c3-ea17-4700-8f25-db6c854d4b72" version="7">
+  <compiler additionalCompilerArguments="-locale=fr_FR -use-network=false" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 3.5" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" sourceFolderPath="flex_src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="1">
+      <libraryPathEntry kind="4" path=""/>
+      <libraryPathEntry kind="1" linkType="1" path="flex_libs"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="DTFlex.mxml">
+      <airExcludes/>
+    </application>
+  </applications>
+  <modules/>
+  <buildCSSFiles>
+    <buildCSSFileEntry destPath="bin-debug" sourcePath="flex_src/assets/iBrief/css/WhiteStyle.css"/>
+    <buildCSSFileEntry destPath="bin-debug" sourcePath="flex_src/assets/iBrief/css/DTStyle.css"/>
+    <buildCSSFileEntry destPath="bin-debug" sourcePath="flex_src/assets/iBrief/css/DFStyle.css"/>
+    <buildCSSFileEntry destPath="bin-debug" sourcePath="flex_src/assets/iBrief/css/CFStyle.css"/>
+  </buildCSSFiles>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+  <buildTargets>
+    <buildTarget buildTargetName="default">
+      <airSettings airCertificatePath="E:/Workspace/ScrumAIR/src/adams.p12" airTimestamp="true" version="1">
+        <airExcludes/>
+      </airSettings>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+  </buildTargets>
+</actionScriptProperties>

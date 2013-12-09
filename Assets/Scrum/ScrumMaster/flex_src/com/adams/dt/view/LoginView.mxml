@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"  
+		 width="100%" height="100%" creationComplete="login.setFocus()"> 
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import com.adams.dt.model.vo.CurrentInstanceVO;
+			import com.adams.dt.signals.DTApplicationStartedSignal;
+			import com.adams.dt.signals.LoginSignal;
+			
+			import flash.events.MouseEvent;
+			
+			[Inject]
+			public var currentInstance:CurrentInstanceVO; 
+			[Inject]
+			public  var loginSign:LoginSignal; 
+			protected function loginClickHandler(event:MouseEvent):void
+			{
+				currentInstance.config.login = login.text;
+				currentInstance.config.password = password.text;
+				
+				loginSign.dispatch();
+			}
+		]]>
+	</fx:Script>
+ 	<s:layout>
+		<s:VerticalLayout>
+			
+		</s:VerticalLayout>
+	</s:layout>
+	<mx:TextInput id="login" />
+	<mx:TextInput id="password" />
+	<mx:Button label="login"  click="loginClickHandler(event)"/>
+</s:Group>

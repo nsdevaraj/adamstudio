@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Column" table="columns">
+        <id name="columnId" type="integer" column="Column_ID">
+            <generator class="increment" />
+        </id> 
+        <property name="columnName">
+            <column name="Column_Name" />
+        </property>
+        <property name="columnField">
+            <column name="Column_Field" />
+        </property>
+        <property name="columnWidth">
+            <column name="Column_Width" />
+        </property>
+        <property name="columnFilter">
+            <column name="Column_Filter" />
+        </property> 
+    </class> 
+</hibernate-mapping>

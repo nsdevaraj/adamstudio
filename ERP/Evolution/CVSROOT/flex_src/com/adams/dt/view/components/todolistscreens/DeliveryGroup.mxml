@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.vo.Companies;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.model.ModelLocator;
+		import mx.controls.CheckBox;
+		import mx.controls.RadioButton;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		[Bindable]
+		public var isItEditing:Boolean;
+		
+		private var _selectedIndices:Array;
+		[Bindable]
+		public function get selectedIndices():Array {
+			_selectedIndices = [];
+			for( var i:int = 0; i < numChildren; i++ ) {
+				if( CheckBox( getChildAt( i ) ).selected ) {
+				 	_selectedIndices.push( 1 );
+				}
+				else {
+					_selectedIndices.push( 0 );
+				}		
+			}
+			for( var j:int = 0; j < _selectedIndices.length; j++ ) {
+				if( _selectedIndices[ j ] == 1 ) {
+					_selectedIndices.push( CheckBox( getChildAt( j ) ).label );
+				}
+			}
+			return _selectedIndices;
+		} 
+		public function set selectedIndices( value:Array ):void {
+			_selectedIndices = value;
+			if( value.length > 0 ) {
+				for( var i:int = 0; i < numChildren;i++ ) {
+					if( value[ i ] == 0 )
+						CheckBox( getChildAt( i ) ).selected = false;
+					else
+						CheckBox( getChildAt( i ) ).selected = true;	
+				}
+			}
+			else {
+				for( var j:int = 0; j < numChildren;j++ ) {
+					CheckBox( getChildAt( j ) ).selected = false;
+				}
+			}
+		}
+		
+		private function getCompanyAddress( obj:Persons ):String {
+      		var company:Companies = GetVOUtil.getCompanyObject( obj.companyFk ) as Companies;
+          	var str:String = company.companyname + ' - ' + obj.personLastname + ' - ' + company.companyAddress;
+          	return str;
+      	}
+		
+	]]>
+</mx:Script>
+	<mx:CheckBox enabled="{ isItEditing }" label="{ ( model.cltPersonId == 0 ) ? 'CLIENT NOT YET SELECTED' : getCompanyAddress( model.cltPerson ) }"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="{ ( model.impPersonId == 0 ) ? 'IMP NOT YET SELECTED' : getCompanyAddress( model.impPerson ) }"
+		         visible="{ ( model.impPersonId != 0 ) }" includeInLayout="{ ( model.impPersonId != 0 ) }"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="{ ( model.indPersonId == 0 ) ? 'IND NOT YET SELECTED' : getCompanyAddress( model.indPerson ) }"
+		         visible="{ ( model.indPersonId != 0 ) }" includeInLayout="{ ( model.indPersonId != 0 ) }"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="autre"/>
+</mx:VBox>

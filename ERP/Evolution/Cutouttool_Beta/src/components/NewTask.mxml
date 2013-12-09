@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents"  xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:upload="components.*" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center"
+		creationComplete="{init(),Controller.getInstance().registerView = this}" xmlns:cmp="components.textInput.*"
+			xmlns:popText="components.pouptextcomponent.*" creationPolicy="all">
+		<mx:Metadata>
+			[Event(name="newTaskCreationComplete", type="flash.events.Event")]
+		</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import business.mail.SmtpSocket;
+		import business.mail.SendMail;
+		import mx.managers.PopUpManager;
+		import controller.Controller;
+		import events.TaskEvent;
+		import data.UploadDeatils;
+		import mx.collections.ArrayCollection;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import business.DateFormatterClass;
+		import business.newDataEntry;
+		import data.Interface.IModel;
+		import data.Tasks;
+		import mx.controls.Alert;
+		import mx.core.Application;
+		private var _refAddFiles:FileReferenceList;	
+		private var _arrUploadFiles:Array;
+		private var newTaskObj:Tasks;
+		private var arrFoundList:Array = new Array();
+		private var popUp:PopUp_upload = new PopUp_upload();
+		private var taskFieldObj:Object = {pk_task:'',
+									   	label:'',
+									   	userid:'',									   
+										comments:'',
+										status:'',
+										creator:'',
+										datetime_of_creation:'',
+										number_of_images:'',
+										dedline:'',
+										datetime_of_estimated:'',
+										date_of_delivery:'',
+										datetime_archive:'',
+										time_spending:'',
+										activated:''
+									 }
+						
+		public function init():void{
+			newtaskCancel();
+		}
+		
+		public function garbageCollection():void{
+		}
+		private function newtaskCancel():void{
+			task.text = ''
+			qtimages.value = 0;
+			deatils.text = '';
+			deadlineDate.text = ''
+			deadlineTime.text ='09:30';
+			if(popUp.fileUpload_client!=null)
+			popUp.fileUpload_client.listFiles.dataProvider = new ArrayCollection();
+		}
+		public function updatePopupDataGrid():void{
+			if(!popUp.uploadBool){
+				popUp.fileUpload_client.listFiles.dataProvider = new ArrayCollection();
+				popUp.fileUpload_client.exsitingData = [];
+			}
+		}
+		private function validate():Boolean{
+			var state:Boolean			
+			if(task.text==""||task.text==null){
+				Alert.show("Enter the Task Name");
+				return false;
+			}
+			if(qtimages.value==0){
+				Alert.show("Number of Image uploaded shuld not be Zero");
+				return false;
+			}
+			if(deadlineDate.text==""||deadlineDate.text==null){
+				Alert.show("Please Select Date");
+				return false;
+			}
+			if(popUp.fileUpload_client!=null){
+				if(popUp.fileUpload_client.listFiles.dataProvider.length==0||!popUp.uploadBool){
+					Alert.show("Please Upload Atleast One File");
+					return false; 
+				}
+			}else{
+					Alert.show("Please Click UploadFiles Button to upload  Files");
+					return false;
+			}
+			return true;
+		}
+		private function tasksubmit(event:MouseEvent):void{
+			if(validate()){
+				var newTaskObject:Tasks = updateNewTask();
+				updateQuery = getUpdateStr(newTaskObject,taskFieldObj);
+				updateTable();
+			}
+		}
+		private function updateNewTask():Tasks{
+			var date:Date = new Date;
+			newTaskObj = new Tasks();
+			newTaskObj.label = escape(task.text);
+			newTaskObj.creator = Controller.getInstance().userObj.group_id;
+			newTaskObj.number_of_images = String(qtimages.value) ;
+			newTaskObj.comments = escape(deatils.text);
+			newTaskObj.dedline = DateFormatterClass.backendFormat(deadlineDate.text +" "+ deadlineTime.text);
+			newTaskObj.datetime_of_creation= popUp.fileUpload_client.dateStr;
+			newTaskObj.userid =  Controller.getInstance().userObj.pk_user;
+			newTaskObj.status = "1";
+			return newTaskObj;
+		}
+		private const TASKS:String = "tasks";
+		public function getUpdateStr(obj:IModel,fieldObj:Object):String{
+			var fieldVal:String = ""
+			var dataVal:String = ""
+			for(var i:String in fieldObj){
+				if(obj[i]==null||obj[i]==undefined){					
+				}else{
+					fieldVal+=i+",";
+					dataVal+="'"+obj[i]+"' ,";
+				}
+			}
+			fieldVal = fieldVal.substring(0,fieldVal.length-1);
+			dataVal = dataVal.substring(0,dataVal.length-1);
+			var query:String = 'insert into '+TASKS+' (	'+fieldVal+') values ('+dataVal+')';
+			return query;
+		}
+		[Bindable]
+		private var query:String;
+		public function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		public function get updateQuery():String{
+			return query;
+		}	
+		public function updateTable():void{
+			connect.addEventListener(ResultEvent.RESULT,resultHandler);
+			connect.getOperation('updateTable').send();		
+		}
+		private function resultHandler(event:ResultEvent):void{
+			if(event.result!=null||event.result!=false){
+					newTaskObj.pk_task = String(event.result);
+					updateMailData();
+					updateImageTable(String(event.result))
+					Controller.getInstance().currentTaskObj = newTaskObj;
+					Controller.getInstance().updateHistoryData('SUBMIT')
+					dispatchEvent(new TaskEvent(TaskEvent.NEWTASK)); 
+					dispatchEvent(new Event("newTaskCreationComplete"));
+			}
+		}
+		[Bindable]
+		private var mailTo:String = 'ksathishbalaji@gmail.com';
+		[Bindable]
+		private var subject:String = 'New Task Created';
+		[Bindable]
+		private var body:String = '';
+		[Bindable]
+		private var header:String = 'Hi';
+		public function updateMailData() : void {		
+				 body = 'Hi,\n\nThe New Task has been created by '+Controller.getInstance().userObj.firstname
+				 			+'\n Task Name : '+task.text;
+				mailConnect.getOperation('sendMail').send();	
+				mailConnect.addEventListener(ResultEvent.RESULT,mailResultHandler);
+		} 
+		private function mailResultHandler(event:ResultEvent):void{
+			if(event.result == true){
+				Alert.show("mail has been sent to your id");
+			}else{
+				mailConnect.getOperation('sendMail').send();	
+				//Alert.show("mail sending failed");
+			}
+		}
+		private function updateImageTable(id:String):void{
+			var imageFIles:Array = popUp.fileUpload_client.uploadedImages;
+			var imageCollection:ArrayCollection = new ArrayCollection();
+			for(var i:int=0;i<imageFIles.length;i++){
+				var uploadedImageDeatils:UploadDeatils = new UploadDeatils();
+				uploadedImageDeatils.imagename = imageFIles[i]["name"];
+				uploadedImageDeatils.pk_task = id;				
+				uploadedImageDeatils.imagesize = imageFIles[i]["size"];
+				uploadedImageDeatils.status = "uploaded"
+				imageCollection.addItem(uploadedImageDeatils);
+				updateQuery = "insert into uploadeddetails (imagename, imagesize, pk_task, status) values" + 
+					"('"+imageFIles[i]["name"]+"', '"+imageFIles[i]["size"]+"', '"+id+"', '1')";
+				connect.getOperation('updateTable').send();
+			}
+			newTaskObj.uploadedImageData = imageCollection;
+			var obj:Object = new Object();
+			obj["task"] = newTaskObj;
+			Controller.getInstance().taskObj.addItem(obj);
+			connect.removeEventListener(ResultEvent.RESULT,resultHandler);
+			connect.addEventListener(ResultEvent.RESULT,imageResultHandler);
+			
+		}
+		private function imageResultHandler(event:ResultEvent):void{
+			Controller.getInstance().currentTaskObj = newTaskObj;
+			dispatchEvent(new TaskEvent(TaskEvent.NEWTASK));
+			
+		}
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("-fault-->"+event.fault);
+		}
+		private function updateNoOfImages():void{
+			//qtimages.value = fileUpload_client.listFiles.dataProvider.length;
+		}
+		private var bool:Boolean = false;
+		private function formateDate(date:Date):String{
+			var currentDate:Date = new Date();			
+			if(date!=null&&bool){
+				if(Number(date.valueOf())>Number(currentDate.valueOf())){
+					var dateArr:Array = date.toString().split(" ");
+					var dateStr:String = dateArr[2]+"-"+dateArr[1]+"-"+dateArr[5];
+				}else{
+					Alert.show("The selected date should not be less than the current date");
+				}
+				
+			}	
+			return dateStr;
+		}
+		private function openPopup():void{
+			ExternalInterface.call("Show",20,48,346,260);
+			PopUpManager.removePopUp(popUp);
+			PopUpManager.addPopUp(popUp, this, true);
+			PopUpManager.centerPopUp(popUp);
+			//PopUpManager.
+			updatePopupDataGrid()
+			popUp.fileUpload_client.newTask = true;
+			popUp._visiBool = true;
+			//Application.application.moveEvent(popUp.fileUpload_client.dragArea);		
+			popUp.addEventListener("closed",removeActiveListener);
+			popUp.width = stage.width/2
+			popUp.x = stage.width/2-popUp.width/2
+			popUp.height = Application.application.height-20;
+			popUp.y = 10 
+			popUp.initiate();
+			popUp.fileUpload_client.dragArea.moveIFrame();
+			Application.application.showApplet();	
+			stage.addEventListener(Event.RESIZE,checkPopup);
+		}
+		private function removeActiveListener(event:Event):void{
+			popUp.removeListener();
+			stage.removeEventListener(Event.RESIZE,checkPopup);
+		}
+		private function checkPopup(event:Event):void{
+			//popUp.width =
+			openPopup(); 
+		}
+	]]>
+</mx:Script>
+			<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+					<mx:method name="updateTable">
+						<mx:arguments>
+							<query>{updateQuery}</query>
+						</mx:arguments>
+					</mx:method>
+					<!--<mx:method name="sendMail">
+						<mx:arguments>
+							<mailTo>{mailTo}</mailTo>
+							<subject>{subject}</subject>
+							<body>{body}</body>
+							<header>{header}</header>
+						</mx:arguments>
+					</mx:method>-->
+			</mx:RemoteObject>
+			<mx:RemoteObject id="mailConnect" showBusyCursor="false" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+					<mx:method name="sendMail">
+						<mx:arguments>
+							<mailTo>{mailTo}</mailTo>
+							<subject>{subject}</subject>
+							<body>{body}</body>
+							<header>{header}</header>
+						</mx:arguments>
+					</mx:method>
+			</mx:RemoteObject>
+			<mx:Panel title="New Task"  id="ntPanel" width="60%" height="100%" horizontalAlign="center" paddingTop="15" paddingBottom="15" paddingLeft="15" paddingRight="15">
+				<mx:VBox id="taskDeatils" width="70%" height="100%" verticalAlign="middle" paddingTop="0">
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="task*"/>
+						<cmp:PTTextInputWmode id="task"  width="30%" maxChars="20" />
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="qt images*"/>
+						<mx:NumericStepper id="qtimages" minimum="0" maximum="100" width="20%" height="20%"/>
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="details (optional)"/>
+						<cmp:PTTextAreaWmode id="deatils"  width="40%" height="100%"/>
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="31%" text="deadline*"/>
+						<mx:DateField  id="deadlineDate" width="40%" height="20%" minYear="{new Date().fullYear}" labelFunction="formateDate" yearNavigationEnabled="true" creationComplete="{bool=true}"
+								/>
+						<mx:Label width="10%" text="Time" textAlign="left"/>
+						<popText:PopTextInput id="deadlineTime" width="20%" text="09:30"/>
+					</mx:HBox>
+					<mx:HBox height="100%" width="100%">
+						<mx:LinkButton  label="uploadedFiles"  width="20%" height="20%" click="openPopup()"/>
+						<!--<mx:Label width="30%" text="upload files*"/>	
+						<upload:FileUpload id="fileUpload_client" width="100%" height="90%" uploadButtonPressed="{uploadBool=true}"
+						uploadUrl="{Application.application.docRoot+'Cutouttool_Beta-debug/upload.php'}"
+						uploadComplete="updateNoOfImages();" 
+						uploadIOError="Alert.show('IO Error in uploading file.', 'Error')" 
+						uploadSecurityError="Alert.show('Security Error in uploading file.', 'Error')"/>-->
+					</mx:HBox>
+					<mx:HBox height="20%" width="100%" horizontalAlign="center">
+						<mx:Button label="submit" click="tasksubmit(event)" enabled="{!this.parentApplication.demoView}"/>
+						<mx:Button label="Clear" click="newtaskCancel()"/>
+					</mx:HBox>
+				</mx:VBox>
+				</mx:Panel>
+		</mx:VBox>

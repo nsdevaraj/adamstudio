@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Groups" table="groups">
+        <id name="groupId" type="integer" column="group_ID">
+            <generator class="increment" />
+        </id>
+        <property name="groupLabel">
+            <column name="group_label" />
+        </property>
+        <property name="authLevel">
+            <column name="auth_level" />
+        </property>
+    </class> 
+    <query name="Groups.findById">
+        select u from Groups u where u.groupId = ?
+    </query>
+    <query name="Groups.findByName">
+        select u from Groups u where u.groupLabel = ?
+    </query>
+</hibernate-mapping>

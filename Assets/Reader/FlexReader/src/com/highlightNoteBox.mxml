@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="300" height="180"  paddingBottom="7" paddingLeft="7" paddingRight="7" paddingTop="7" borderStyle="solid" borderColor="#555555" borderThickness="2" cornerRadius="5" backgroundColor="#333333">
+	<mx:Style>
+			.saveBtn{
+				upSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsUp");
+				downSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsDown");
+				overSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsOver");
+				disabledSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsUp");
+				
+				selected-up-skin: Embed("../assets/swf/interfaceAssets.swf#hideDetailsUp");
+				selected-down-skin:Embed("../assets/swf/interfaceAssets.swf#hideDetailsDown");
+				selected-over-skin: Embed("../assets/swf/interfaceAssets.swf#hideDetailsOver");
+				selected-disabled-skin: Embed("../assets/swf/interfaceAssets.swf#hideDetailsUp");
+			}
+			.cancelBtn{
+				upSkin: Embed("../assets/swf/interfaceAssets.swf#cancelDetailsUp");
+				downSkin: Embed("../assets/swf/interfaceAssets.swf#cancelDetailsDown");
+				overSkin: Embed("../assets/swf/interfaceAssets.swf#cancelDetailsOver");
+				disabledSkin: Embed("../assets/swf/interfaceAssets.swf#cancelDetailsUp");
+				
+				selected-up-skin: Embed("../assets/swf/interfaceAssets.swf#removeBtnUp");
+				selected-down-skin:Embed("../assets/swf/interfaceAssets.swf#removeBtnDown");
+				selected-over-skin: Embed("../assets/swf/interfaceAssets.swf#removeBtnOver");
+				selected-disabled-skin: Embed("../assets/swf/interfaceAssets.swf#removeBtnUp");
+			}
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Application;
+			private var childInstance:*;
+			private var parentInstance:*;
+			
+			private function cancelFunc():void{
+				trace(Application.application.notesContainer.numChildren);
+				var len:Number=Application.application.notesContainer.numChildren;
+				for(var i:Number=0;i<len;i++){
+					if(Application.application.notesContainer.getChildAt(i).highlightObject!=null){
+						if(Application.application.notesContainer.getChildAt(i).highlightObject.name==childInstance.name){
+							var temp:*=Application.application.notesContainer.getChildAt(i).parent;
+							temp.removeChild(Application.application.notesContainer.getChildAt(i));
+							break;
+						}
+					}
+					//trace(Application.application.notesContainer.getChildAt(i).highlightObject.name==childInstance.name);	
+				}
+				parentInstance=childInstance.parent;
+				parentInstance.removeChild(childInstance);
+				childInstance=null;
+				parentInstance=null;
+				this.visible=false;
+				this.x=0;
+				this.y=0;
+			}
+			private function saveFunc():void{
+				if(!saveBtn.selected){
+					Application.application.notesAddFunc(childInstance.parent.parent.parent.currentPage+1,messageTxt.text,childInstance); 
+				
+				}
+				this.visible=false;
+				this.x=0;
+				this.y=0;
+			}
+			public function action(str:String,target:*,x:Number,y:Number):void{
+				this.x=x;
+				this.y=y;
+				childInstance=target;
+				
+				if(str=="new"){
+					//saveBtn.visible=true;
+					saveBtn.selected=false;
+					cancelBtn.selected=false;
+					messageTxt.text="";
+				}
+				if(str=="exist"){
+					saveBtn.selected=true;
+					cancelBtn.selected=true;
+					var len:Number=Application.application.notesContainer.numChildren;
+					for(var i:Number=0;i<len;i++){
+					if(Application.application.notesContainer.getChildAt(i).highlightObject!=null){
+						if(Application.application.notesContainer.getChildAt(i).highlightObject.name==childInstance.name){
+							messageTxt.text=Application.application.notesContainer.getChildAt(i).messageTxt;
+							break;
+						}
+					}
+					//trace(Application.application.notesContainer.getChildAt(i).highlightObject.name==childInstance.name);	
+				}
+				}
+				this.visible=true;
+			}
+		]]>
+	</mx:Script>
+	<mx:filters>
+        <mx:Array>
+          <mx:DropShadowFilter alpha="0.5" angle="270" distance="4" blurX="4" blurY="4" strength="1" quality="8"/>
+        </mx:Array> 
+    </mx:filters>
+	 	<mx:TextArea id="messageTxt" width="100%" height="100%"/>
+	 	<mx:HBox width="100%" horizontalAlign="right" height="40" verticalAlign="middle">
+	 		<mx:Button id="saveBtn" styleName="saveBtn" buttonMode="true" useHandCursor="true" click="saveFunc()"/>
+	 		<mx:Button id="cancelBtn" styleName="cancelBtn" buttonMode="true" useHandCursor="true" click="cancelFunc()"/>
+	 	</mx:HBox>
+</mx:VBox>

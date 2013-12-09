@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%" creationComplete="updatePropertiesCall()"
+	height="100%"
+	xmlns="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:view="com.adams.dt.view.PDFTool.*"
+	xmlns:todolistscreens="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:components="com.adams.dt.view.PDFTool.components.*" initialize="initComment()">
+	<mx:Metadata>
+		[Event(name="archive", type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			private function initComment():void {
+				dispatchEvent(new Event("archive"));
+			}
+			/**
+			 * override the gotoPrevTask and update the properties
+			 */
+			override public function gotoPrevTask():void{
+				var tsklbl:String = model.currentTasks.workflowtemplateFK.taskLabel;
+				var tskcode:String = model.currentTasks.workflowtemplateFK.taskCode;
+				var taskLabelTodo:String = model.currentTasks.workflowtemplateFK.taskLabelTodo;
+				
+				var arrayCollect:ArrayCollection = property.getPropertiespjSet();
+				if( arrayCollect ){
+					model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+				}				
+				super.gotoPrevTask();
+			}
+			/**
+			 * override the gotoNextTask and update the properties
+			 */
+			override public function gotoNextTask():void{
+				var arrayCollect:ArrayCollection = property.getPropertiespjSet();
+				if( arrayCollect ){
+					model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+				}
+				super.gotoNextTask();
+			}
+			
+			override public function updateProperties():void {
+				property.updateProperties();
+			}
+			public function updatePropertiesCall():void{
+				if( property.timeSheet ) {
+					property.timeSheet.updateProperties();
+				}
+			}
+			
+		]]>
+	</mx:Script> 
+	<todolistscreens:ProfilePdfValidation id="property"/> 
+</TodoList>

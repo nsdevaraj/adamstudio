@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300" xmlns:MainView="com.adams.dt.view.MainView.*" xmlns:view="com.adams.dt.view.*">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private function onTabNavigatorChangeIMP( event:Event ):void {				
+			impfileView.tileFileCollection = model.modelTileFileCollection;
+		}
+	]]>
+</mx:Script>
+	<MainView:HeaderView />
+	
+	<mx:VBox id="projDetails" width="100%" top="0" left="0">
+			<mx:Canvas label="Mail" width="100%" height="100%">	
+				<mx:VBox width="100%"  height="100%">	
+					<mx:Form width="100%" height="100%" top="45">
+						<mx:FormItem label="{model.loc.getString('projectNameFlex')}" styleName="mainOrangeTitle">
+							<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="{model.loc.getString('senderFlex')}" styleName="subBlueTitle">
+							<mx:Text text="{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="{model.loc.getString('receiverFlex')}" styleName="subBlueTitle">
+							<mx:Text text="{model.impPerson.personFirstname+' '+model.impPerson.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+					</mx:Form>	
+				</mx:VBox>
+				<mx:Image source="@Embed(source='assets/swf/MainInterface.swf#AVlogo')" right="45" maintainAspectRatio="false" />
+				<mx:Text text="Date :{model.currentTasks.tDateCreation+' '}" selectable="false" bottom="5" right="45" textAlign="right" styleName="dateText" />
+			</mx:Canvas>		
+		</mx:VBox>
+		<!--<mx:Canvas right="5" id="buzCard" width="300" height="61" top="10" >
+			<view:bussinessCard width="100%" height="100%" />
+		</mx:Canvas>-->
+		<mx:TabNavigator minWidth="800" width="100%" height="100%" id="imptabView" backgroundColor="#363636" creationPolicy="auto" change="onTabNavigatorChangeIMP( event )">
+			<mx:Canvas label="{model.loc.getString('propertiesTabFlex')}" width="100%" height="100%">
+				<view:TimesheetChalkBoard id="impTimeSheet" width="100%" height="100%" projectProperty="{model.propertiespresetsCollection}"/>
+			</mx:Canvas>
+			<mx:Canvas label="{model.loc.getString('filesTabFlex')}" width="100%" height="100%">
+				<view:FileView id="impfileView" width="100%" height="100%" tileFileCollection="{model.modelTileFileCollection}"  />
+			</mx:Canvas>
+		</mx:TabNavigator>	
+</mx:Canvas>

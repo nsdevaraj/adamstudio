@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx"   
+		   xmlns:components="com.adams.scrum.views.components.*" 
+		   click="canvas1_clickHandler(event)">
+	<fx:Script>
+		<![CDATA[ 			 
+			import com.adams.scrum.models.vo.Stories;
+			import com.adams.scrum.models.vo.Tasks;
+			import com.adams.scrum.utils.GetVOUtil;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.mx_internal;
+			import mx.events.FlexEvent;
+			
+			use namespace mx_internal;
+
+			/**
+ 			 * The new task button Handler, the new task is created with
+ 			 * selected properties for the task
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */				
+			protected function createTaskHandler(event:MouseEvent):void
+			{
+				var task:Tasks = new Tasks();
+				task.taskComment = Utils.StrToByteArray(taskComment.text);
+				task.taskType = taskType.selectedIndex;
+				task.storyFk = story.storyId;
+				task.TDateCreation = new Date();
+				task.estimatedTime = int(taskEstimatedTime.value);
+				task.taskStatusFk = Utils.taskStatusWaiting;
+				Object( owner ).getParentList().renderSignal.dispatch( NativeList.TASKCREATED,task );
+				taskComment.text ='';
+				taskEstimatedTime.value = 0;
+				storyPanelVisible = false;
+			} 
+			[Bindable]
+			private var storyPanelVisible:Boolean;
+			[Bindable]
+			public var story:Stories;
+			
+				
+			private function onOpenStory():void{
+				storyPanelVisible = true;
+			}
+ 
+			/**
+ 			 * <p>
+ 			 * initiation of the Renderer object, the taskTypes Collection is set with product taskstypes
+ 			 * </p>
+			 */			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				var typeArrC:ArrayCollection = new ArrayCollection();
+				if(value && storyLbl ){
+					storyLbl.text = '';
+					taskType.dataProvider = typeArrC;
+					story= value as Stories;
+					storyLbl.text =story.storyId.toString()+' - '+ Utils.expandStory(story);
+					if(story.productObject.productTaskTypeArr) {
+						typeArrC.source = story.productObject.productTaskTypeArr;
+					}
+					taskType.dataProvider = typeArrC;
+					taskType.validateNow();
+					taskType.selectedIndex=0;
+					
+					taskcreationId.enabled = visibleStatusButton();
+					
+					storyEstimatedTxt.text = Utils.totalStoriesEstimatedTime(story);
+					storyDoneTxt.text = Utils.totalStoriesDoneTime(story);
+					storyRemainingTxt.text = remainingTime(int(storyEstimatedTxt.text),int(storyDoneTxt.text));		
+					Utils.findPriority(story);
+					
+					var totalStoryStatus : Array = Utils.validateTotalTaskFinish( story );
+					if((totalStoryStatus[0] == 0) && (totalStoryStatus[1] == 0)){
+						storyFinishedStatus.styleName = Utils.getStatusSkinName(Utils.taskStatusFinished,Utils.TASK);
+					}else if((totalStoryStatus[1] >= 1) || (totalStoryStatus[3] >= 1)){
+						storyFinishedStatus.styleName = Utils.getStatusSkinName(Utils.taskStatusInProgress,Utils.TASK);
+					}else if((totalStoryStatus[1] == 0) && (totalStoryStatus[3] == 0)){
+						storyFinishedStatus.styleName = Utils.getStatusSkinName(Utils.taskStatusWaiting,Utils.TASK);
+					}
+					if((totalStoryStatus[0] == 0) && (totalStoryStatus[1] == 0) && (totalStoryStatus[2] == 0) && (totalStoryStatus[3] == 0)){
+						storyFinishedStatus.styleName = Utils.getStatusSkinName(Utils.taskStatusWaiting,Utils.TASK);
+					} 
+					else if((totalStoryStatus[0] == undefined) && (totalStoryStatus[1] == undefined) && (totalStoryStatus[2] == undefined) && (totalStoryStatus[3] == undefined)){
+						storyFinishedStatus.styleName = Utils.getStatusSkinName(Utils.taskStatusWaiting,Utils.TASK);
+					}	
+				}
+			}
+			private function remainingTime(estmateTime:int,doneTime:int):String{
+				var totalremaining:int = 0;
+				totalremaining = estmateTime - doneTime;
+				return totalremaining.toString();
+			}
+
+			protected function canvas1_clickHandler(event:MouseEvent):void
+			{
+				// Check the cliked target to expand the datagrid items...
+				if( event.target as Group || event.target.parent as HGroup)
+				{
+					Object( owner ).getParentList().renderSignal.dispatch( NativeList.STORYEXPAND,null,this );
+				} 
+			}
+			private function visibleStatusButton():Boolean{				
+				return Object(owner).getParentList().addOnOffRendererProperty;
+			}
+		]]>
+	</fx:Script>	
+	<s:Group width="100%" >
+		<s:Rect top="0" left="0" right="0" bottom="0">
+			<s:fill>
+				<s:SolidColor id="backgroundSolidColor" color="#91a2b8" />
+			</s:fill>
+		</s:Rect>
+		<s:VGroup width="100%" id="storyRow" >
+			<s:HGroup verticalAlign="middle" width="100%" paddingRight="5" paddingLeft="5">
+				<s:Button id="taskcreationId" label="Task" click="onOpenStory()" styleName="NewIcon" enabled="{visibleStatusButton()}"/> 
+				<s:Label id="storyLbl" width="100%" 
+						 color="0x000000"
+						 maxDisplayedLines="1"
+						 showTruncationTip="true" />				
+				<mx:Spacer width="100%" />
+				<s:Button id="storyFinishedStatus" right="0" verticalCenter="0"/>				
+				<s:HGroup variableColumnWidth="false" columnWidth="22" verticalAlign="middle">
+					<s:Label id="storyEstimatedTxt"/>
+					<s:Label id="storyDoneTxt"/>
+					<s:Label id="storyRemainingTxt" />	
+				</s:HGroup>
+				<mx:Spacer width="70" />
+			</s:HGroup>
+			<s:HGroup width="100%" verticalAlign="middle" height="40" id="storyPanel" visible="{storyPanelVisible}" 
+					  includeInLayout="{storyPanelVisible}">
+				<s:Label text="Task Type" />
+				<s:DropDownList id="taskType"/>
+				<s:Label text="Comment" />
+				<s:TextInput id="taskComment"/>
+				<s:Label text="Estimation Hrs" />
+				<s:NumericStepper maximum="200" width="50" id="taskEstimatedTime" />
+				<components:NativeButton id="taskCreateBtn" label="Task" styleName="NewIcon" click="createTaskHandler(event)" />
+				<s:Button label="Cancel" click="storyPanelVisible=false" styleName="CancelIcon"/>
+			</s:HGroup>
+		</s:VGroup>
+	</s:Group>
+</mx:Canvas>

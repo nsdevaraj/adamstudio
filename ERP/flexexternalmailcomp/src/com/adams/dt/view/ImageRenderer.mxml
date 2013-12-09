@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" verticalScrollPolicy="off" horizontalScrollPolicy="off" horizontalAlign="center" verticalAlign="middle">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var fileId:int;
+			[Bindable]
+			public var fileName:String;
+			
+			[Bindable]
+            [Embed(source="assets/images/pdfdownload.png")]
+            public var pdfDownload:Class;
+			
+			private function checkClick(event:MouseEvent):void
+			{
+				dispatchEvent(new MouseEvent('checkClick'));
+			} 
+			private function buttonClick(event:MouseEvent):void
+			{
+				dispatchEvent(new MouseEvent('buttonClick'));
+			} 
+
+		]]>
+	</mx:Script>
+	<mx:Metadata>
+		[Event(name="checkClick", type="flash.events.MouseEvent")]
+	</mx:Metadata> 
+	<mx:Metadata>
+		[Event(name="buttonClick", type="flash.events.MouseEvent")]
+	</mx:Metadata> 
+		
+	<mx:CheckBox id="checkbox" name="{fileId.toString()}" label="{fileName}" width="150" click="checkClick(event)" />
+	<mx:Button id="downloadId" name="{fileId.toString()}" label="{fileName}" width="150" icon="{pdfDownload}" enabled="{checkbox.selected}" click="buttonClick(event);" />
+	
+</mx:VBox>

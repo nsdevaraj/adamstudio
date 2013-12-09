@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.dt.view.components.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:autocomplete="com.adams.dt.view.components.autocomplete.*" >	
+	<s:states>
+		<s:State name='person' />
+		<s:State name='personView' />
+	</s:states>
+	<s:TitleWindow id="popTitle" title="Person Selection" width="660">
+		<s:layout><s:VerticalLayout paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5"/></s:layout>
+		<s:VGroup id="btnCon" height="250">
+			<s:HGroup id="aurosearchContainer"  verticalAlign="middle" width="100%">
+				<s:Label text="Search:" />
+				<autocomplete:AutoCompleteView id="autoSearch" labelField="All" skinClass="com.adams.dt.view.AutoCompleteSkin"/>
+				<s:DropDownList id="selector" visible="false"/>			
+				<s:Spacer width="100%"/>
+				<s:Button id="addBtn" styleName="addPersonIcon" label="Add"/>
+				<s:Button id="modifyBtn" label="Modify" styleName="modifyIcon" />
+			</s:HGroup>
+			<components:ReportGrid id="personList"
+								   specificText="{autoSearch.specificText}"  width="100%" doubleClickEnabled="true"
+								   height="200">
+				<components:columns>
+					<s:ArrayList>
+						<s:GridColumn headerText="Firstname"  width="100" dataField="personFirstname" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+						<s:GridColumn headerText="Lastname" width="100" dataField="personLastname" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+						<s:GridColumn headerText="Phone" width="200" dataField="personPhone" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+						<s:GridColumn headerText="Email" width="200" dataField="personEmail" itemRenderer="com.adams.dt.view.renderers.ReportColorRenderer"/>
+						<s:GridColumn width="25"  itemRenderer="com.adams.dt.view.renderers.PersonDeleteRenderer"  />
+					</s:ArrayList>
+				</components:columns>
+			</components:ReportGrid>
+		</s:VGroup> 
+		<s:VGroup top="{btnCon.y+btnCon.height+5}" excludeFrom="person" height.personView="170"
+				  height="0" width="100%" paddingBottom="5">
+			<components:PersonForm id="personForm" />
+		</s:VGroup>
+	</s:TitleWindow>
+</s:Skin>

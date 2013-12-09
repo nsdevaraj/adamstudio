@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="Select Validation File"
+	showCloseButton="true" close="remPop()" headerHeight="30" width="700" xmlns:view="com.adams.dt.view.components.*">
+	<mx:Metadata>
+		[Event(name="statusUpadate", type="flash.events.Event")]
+		[Event(name="technicalUpadate", type="flash.events.Event")]
+	</mx:Metadata> 
+	 <mx:Script>
+	 	<![CDATA[
+	 		import com.adams.dt.business.util.StringUtils;
+	 		import com.universalmind.cairngorm.events.Callbacks;
+	 		import mx.rpc.IResponder;
+	 		import com.adams.dt.event.PropertiespjEvent;
+	 		import com.adams.dt.model.vo.Propertiespresets;
+	 		import com.adams.dt.model.vo.Propertiespj;
+	 		import com.adams.dt.model.vo.Persons;
+	 		import com.adams.dt.model.vo.Categories;
+	 		import com.adams.dt.event.TasksEvent;
+	 		import mx.collections.ArrayCollection;
+	 		import com.adams.dt.model.vo.Workflowstemplates;
+	 		import com.adams.dt.model.vo.Profiles;
+	 		import com.adams.dt.model.vo.FileDetails;
+	 		import com.adams.dt.model.vo.TaskStatus;
+	 		import com.adams.dt.model.vo.Status;
+	 		import com.adams.dt.model.vo.Tasks;
+	 		import com.adams.dt.business.util.GetVOUtil;
+	 		import com.adams.dt.business.util.Utils;
+	 		import mx.managers.PopUpManager;
+	 		import com.adams.dt.model.ModelLocator;
+	 		[Bindable]
+	 		public var personsValidation:Persons;
+	 		[Bindable]
+	 		public var profilesValidation:String;
+	 		[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private function remPop():void {
+				model.sendBasicFileArr = [];
+				PopUpManager.removePopUp( this );
+			}
+			
+			private function validationSend():void {	
+				if( Utils.checkTemplateExist( model.indReaderMailTemplatesCollection,  getTemplate( getProfileId( profilesValidation ) ).workflowTemplateId ) ) {
+					var inside:Boolean;
+					var propPreset:Propertiespresets = Utils.getPropPreset( correspondingProfiles( profilesValidation ) );
+					var handler:IResponder = new Callbacks( onPropertySave );
+					var updateEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ, handler );
+					for each( var item:Propertiespj in model.currentProjects.propertiespjSet ) {
+						if( item.propertyPresetFk == propPreset.propertyPresetId ) {
+							item.projectFk = model.currentProjects.projectId;
+							item.fieldValue = '1';
+							updateEvent.propertiespj = item;
+							break;
+						}
+					}
+					updateEvent.dispatch();  
+				}
+			}				
+			
+			private function onPropertySave( rpcEvent:Object ):void {
+				dispatchEvent( new Event( "statusUpadate" ) );
+				dispatchEvent( new Event( "technicalUpadate" ) );
+				if( !model.currentTasks ) {
+					var workflowtempCode:String = "P3T01A";
+					var tempWorkflowstemplates:Workflowstemplates = Utils.getWorkflowstemplates( workflowtempCode );
+					model.currentTasks = Utils.getProjTaskWorfFlowFK ( tempWorkflowstemplates.workflowTemplateId );	
+					var cat2:Categories = model.currentProjects.categories; 
+					var cat1:Categories = cat2.categoryFK;
+					var domain:Categories = cat1.categoryFK;
+					model.currentDir = model.parentFolderName + domain.categoryName + "/" + cat1.categoryName + "/" + cat2.categoryName + "/" + StringUtils.compatibleTrim( model.currentProjects.projectName );
+				}
+				othersValidation( profilesValidation, personsValidation );
+				remPop(); 
+			}
+			
+			private function othersValidation( profilesCodeName:String, personsValidation:Persons ):void {
+				flexPDFViewSelection();
+				createOtherMail( profilesCodeName, personsValidation );
+			}
+			
+			private function createOtherMail( profilesCodeName:String, personsValidation:Persons ):void{								
+				var bulkMsgTaskPersonCol:ArrayCollection = new ArrayCollection();
+				var tasksvo:Tasks = createProfileTaskMessage( profilesCodeName, personsValidation.personId );
+				bulkMsgTaskPersonCol.addItem( tasksvo );
+				model.commonProfileValidation = profilesCodeName;				
+				if( bulkMsgTaskPersonCol.length != 0 ) {
+					var messageindEvent:TasksEvent = new TasksEvent( TasksEvent.CREATE_COMMON_PROFILE_MSGTASKS );
+					messageindEvent.bulkMsgTaskPersonCollection = bulkMsgTaskPersonCol;
+					messageindEvent.dispatch();
+				}
+			}
+			
+			private function correspondingProfiles( profileCode:String ):String {
+				switch( profileCode ) {
+					case 'CHP':
+						return 'chp_validation';
+					break;	
+					case 'CPP':
+		    			return 'cpp_validation';
+		    		break;
+		    		case 'COM':
+		    			return 'comm_validation';
+		    		break;
+		    		case 'AGN':		
+		    			return 'agn_validation';
+		    		break;
+		    		case 'IND':
+		    			return 'ind_validation';
+		    		break;
+		    		case 'EPR':		    
+		    			return 'imp_validation';
+		    		break;
+		    		default:
+		    			break;
+				}
+				return null;
+			}
+			
+			private function initializeValidation( validationName:String ):Propertiespj {
+				var cppvalidPropertyPj:Propertiespj = new Propertiespj();
+				var propPreset:Propertiespresets = getPropPreset( validationName );
+				cppvalidPropertyPj.propertyPreset = propPreset;
+				cppvalidPropertyPj.propertyPreset.propertyPresetId = propPreset.propertyPresetId;
+				cppvalidPropertyPj.fieldValue = "1";
+				return cppvalidPropertyPj;
+			}
+			
+			private function getPropPreset( value:String ):Propertiespresets {
+				for each( var item:Propertiespresets in model.propertiespresetsCollection ) {
+					if( item.fieldName == value ) {
+						return item;
+					}
+				}
+				return null;
+			}	
+			
+			private function createProfileTaskMessage( profile:String, dynamicPersonId:int ):Tasks {
+				var taskData:Tasks = new Tasks();
+				taskData.taskId = NaN;
+				taskData.previousTask = model.currentTasks;
+				
+				taskData.projectObject = model.currentProjects;
+				var domain:Categories = Utils.getDomains( model.currentProjects.categories );
+				model.messageDomain = domain;
+				taskData.personFK = int( dynamicPersonId );				
+				
+				for each( var filesvo:FileDetails in model.basicFileCollection ) {	
+					if( filesvo.visible == false ) {					
+						if( ( tempType ) && ( tempMiscelleneous ) ) {	
+							if( ( tempType == filesvo.type ) && ( tempMiscelleneous == filesvo.miscelleneous ) ) {  						
+								taskData.fileObj = filesvo;
+								break;
+							}
+						}
+					}
+				} 
+				
+				//--------------------
+				var by:ByteArray = new ByteArray();
+				var sep:String = "&#$%^!@";
+				var replySubject:String = model.currentProjects.projectName;
+				var strComments:String = '';
+				if( commentsValidationTxt.text )
+					strComments = commentsValidationTxt.text;
+					
+				var str:String = model.person.personFirstname+sep+replySubject+sep+profile + " " + strComments + sep + model.person.personId + "," + model.person.defaultProfile;
+				by.writeUTFBytes( str );
+				taskData.taskComment = by;
+				var status:Status = new Status();
+				status.statusId = TaskStatus.WAITING;
+				taskData.taskStatusFK = status.statusId;
+				taskData.tDateCreation = model.currentTime;
+				taskData.workflowtemplateFK = getTemplate( getProfileId( profile ) );	
+				taskData.tDateEndEstimated = Utils.getCalculatedDate( model.currentTime, taskData.workflowtemplateFK.defaultEstimatedTime ); 
+				taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;
+				return taskData;
+			}	
+			
+			private function getTemplate( pro:int ):Workflowstemplates {
+				var indTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection( model.indReaderMailTemplatesCollection, model.currentProjects.workflowFK );
+				for each (var item:Workflowstemplates in  indTemplateCollection ) {
+					if( item.profileFK == pro && item.taskCode == 'PDF01A' ) {
+						return item;
+					}
+				}
+				return null;
+			}
+			
+			private function getProfileId( str:String ):int {
+				for each( var pro:Profiles in model.teamProfileCollection ) {
+					if( pro.profileCode == str ) {
+						return pro.profileId;
+					}
+				}
+				return 0;
+			}		
+			
+			private var tempType:String = null;
+			private var tempMiscelleneous:String = null;
+			private function flexPDFViewSelection():void {
+				if( model.agenceAttachFileCommon.length != 0 ) {
+					var tempFiledetails:FileDetails = model.agenceAttachFileCommon.getItemAt( 0 ) as FileDetails;
+					for each( var filesvo:FileDetails in model.basicFileCollection ) {
+						if( filesvo.visible == true ) {				
+							if( ( tempFiledetails.projectFK == filesvo.projectFK) && ( tempFiledetails.fileId == filesvo.fileId ) ) {
+								tempType = tempFiledetails.type;
+								tempMiscelleneous = tempFiledetails.miscelleneous;
+								break;
+							}
+						}
+					}		
+				}		
+			}
+				
+	 	]]>
+	 </mx:Script>
+	
+	 <view:Upload id="uploadComp" height="170" basicFileCollection="{ model.basicFileCollection }"
+				         basicFileVisible="{ ( model.currentUserProfileCode == 'OPE' ) }"/>
+	<mx:HBox width="100%" height="50">
+		<mx:Text text="{model.loc.getString('comments')}" width="110" textAlign="right"/>
+    	<mx:TextArea id="commentsValidationTxt"  width="100%" height="100%" />
+	</mx:HBox>			         
+	<mx:ControlBar width="100%" height="40" verticalAlign="middle" horizontalAlign="right"> 
+		<mx:Button label="Send Validation" click="validationSend()" />
+		<mx:Button label="Cancel" click="remPop()"/>
+	</mx:ControlBar>
+	
+</mx:TitleWindow>

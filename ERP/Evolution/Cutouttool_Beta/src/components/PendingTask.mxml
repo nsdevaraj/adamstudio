@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" 
+	creationComplete="{init(),Controller.getInstance().registerView = this}" >
+	<mx:Metadata>
+        [Event(name="change", type="flash.events.Event")]
+        [Event(name="itemDoubleClick", type="flash.events.Event")]
+         [Event(name="comboBoxChange", type="flash.events.Event")]
+    </mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import controller.Controller;
+		import mx.collections.ArrayCollection;
+		[Bindable]
+		private var _myData:ArrayCollection = new ArrayCollection();
+		[Bindable]
+		private var _pageVal:int = 0;
+		[Bindable]
+		private  var taskTypeCollection:ArrayCollection;
+		public var _id:String='';
+		public var _selectedType:String = '';
+		private var statusArr:Array = ["Show All","waiting","inprogress","delivered","archived"]
+		public function init():void{
+			if(Controller.getInstance().userObj.type == "2"){
+				taskTypeCollection = new ArrayCollection([{label:"Show All",data:"1"},{label:"waiting",data:"2"},
+											{label:"inprogress",data:"3"},{label:"delivered",data:"4"}]);
+			}else{
+				taskTypeCollection = new ArrayCollection([{label:"Show All",data:"1"},{label:"waiting",data:"2"},
+											{label:"inprogress",data:"3"},{label:"delivered",data:"4"},{label:"archived",data:"5"}]);
+			}
+			taskType.selectedIndex = 1;
+		}
+		public function garbageCollection():void{
+		}
+		public function set myData(arr:ArrayCollection):void{
+			_myData = arr
+		}
+		public function set selectedType(str:String):void{
+			_selectedType = str;
+			//trace(statusArr.indexOf(str));
+			taskType.selectedIndex = statusArr.indexOf(str);
+			
+		}
+		public function get selectedType():String{
+			return _selectedType;
+		}
+		
+		public function set PageVal(num:int):void{
+			_pageVal = num;
+			Page.maximum = _pageVal;
+		}
+		
+		private function itemClicked(event:MouseEvent):void{
+			_id = event.currentTarget.selectedItem.id;
+			dispatchEvent(new Event('itemDoubleClick'));
+		}
+		
+		private function onCombodataChange(event:Event):void{
+			selectedType = taskType.selectedLabel;
+			dispatchEvent(new Event('comboBoxChange'));
+		}
+	]]>
+</mx:Script>
+	<mx:Panel title="Pending Task"  id="ntPanel" width="60%" height="98%" horizontalAlign="center" paddingTop="15" paddingBottom="15" paddingLeft="15" paddingRight="15">
+		<mx:List id="Pendingtask"  dataProvider="{_myData}" width="100%" height="100%" doubleClick="itemClicked(event)"
+				doubleClickEnabled="true" itemRenderer="components.ListRenderer">				
+		</mx:List>
+		<mx:ControlBar >
+			<mx:Label text="Page No: "/>
+			<mx:NumericStepper id="Page" minimum="1" maximum="{_pageVal}" change="{dispatchEvent(new Event('change'))}"/>
+			<mx:Label text="Select Task Type: "/>
+			<mx:ComboBox  id="taskType" dataProvider="{taskTypeCollection}" change="{onCombodataChange(event)}"/>
+		</mx:ControlBar>
+	</mx:Panel>
+</mx:VBox>

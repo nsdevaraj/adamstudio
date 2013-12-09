@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  
+		 xmlns:mx="library://ns.adobe.com/flex/mx" showCloseButton="true" close="removePop()" 
+		   xmlns:mediaplayer="com.ra.view.mediaplayer.*" title="{titleTxt}" initialize="creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.ra.view.mediaplayer.*;
+			import com.ra.view.skins.videoSkins.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			private var vidURL:String = 'http://www.youtube.com/watch?v=';
+			
+			[Bindable]
+			public var titleTxt:String;
+			
+			[Bindable]
+			private var _videoListDP:ArrayCollection;
+			
+			
+			public function set videoListDP(val:ArrayCollection):void{
+				_videoListDP = val;
+				playFirstVideo()
+			}
+			public function get videoListDP():ArrayCollection{
+				return _videoListDP
+			}
+			
+			 
+			private function removePop():void{
+				Group(this.parent).setStyle('bottom',-500);
+				//youtubePlayer.stop();
+			}
+			private function playFirstVideo():void{
+				youtubePlayer.source=String(vidURL+_videoListDP.getItemAt(0));
+				vidList.validateNow();
+				vidList.selectedIndex = 0;
+			} 
+			private function onVideoListClick(event:IndexChangeEvent):void{
+				var currentDataItem:Object = event.currentTarget.selectedItem;
+				youtubePlayer.source= vidURL+currentDataItem;
+			} 
+			//private var youtubePlayer:YoutubePlayer = new YoutubePlayer();
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{ 
+				/* youtubePlayer.autoPlay = true;
+				youtubePlayer.setStyle('skinClass',Class(YoutubePlayerSkin));  
+				playerPanel.addElement(youtubePlayer); */
+			}
+
+		]]>
+	</fx:Script>
+	<s:Group width="550">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="#cfcfcf" />
+			</s:fill>
+		</s:Rect>
+		
+		<s:Group id="playerPanel"   clipAndEnableScrolling="true" left="0" top="0">
+			<mediaplayer:YoutubePlayer  id="youtubePlayer" autoPlay="true" symbolColor="#232323" 
+									   skinClass="com.ra.view.skins.videoSkins.YoutubePlayerSkin"/>
+			
+		</s:Group>
+		<s:Rect width="210" right="0" top="0" bottom="0" height="100%">
+			<s:fill>
+				<s:SolidColor color="#ffffff" />
+			</s:fill>
+		</s:Rect>
+		<s:List id="vidList" change="onVideoListClick(event)"     contentBackgroundColor="red"
+				itemRenderer="view.vidListRenderer" right="10" top="10" bottom="10"   width="200"  
+				dataProvider="{_videoListDP}">
+			 
+		</s:List>
+		
+		
+	</s:Group>
+	
+</mx:TitleWindow >

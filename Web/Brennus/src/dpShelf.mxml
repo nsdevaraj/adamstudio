@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/halo" minWidth="1024" minHeight="768" xmlns:disp="view.DisplayShelf.*">
+	<fx:Script>
+		<![CDATA[
+		private var dataSet:Array = ['assets/ShowcaseIMG/general.png',
+		'assets/ShowcaseIMG/planning.png',
+		'assets/ShowcaseIMG/team.png',
+		'assets/ShowcaseIMG/communication.png',
+		'assets/ShowcaseIMG/dashboard.png',
+		'assets/ShowcaseIMG/pdf.png',
+		'assets/ShowcaseIMG/workflow.png',
+		'assets/ShowcaseIMG/chat.png']
+		]]>
+	</fx:Script>  
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	
+ 
+		
+		
+		
+		<mx:Text text="Showcase" styleName="introTitle" fontSize="24"/>
+		
+		<mx:HRule width="100%" />
+		
+		<mx:VBox width="100%" height="100%" verticalGap="10" horizontalAlign="center" verticalAlign="middle">
+			<disp:DisplayShelf    id="shelf"  horizontalCenter="0" verticalCenter="0"
+								  borderThickness="3" borderColor="#000000" dataProvider="{dataSet}" 
+								  enableHistory="false" width="100%"/>
+			
+		</mx:VBox>
+		<mx:VBox width="100%" verticalGap="0">
+			<mx:Text width="100%" styleName="headerText" fontSize="13" color="#000000" fontWeight="bold">
+				<mx:htmlText>
+					<![CDATA[<p align="justify">We are specialized in workflow’s environment, B-to-B applications, tool dedicated to specific professional processes , dynamic data vizualisation online, etc.</p>
+					]]>
+				</mx:htmlText>
+			</mx:Text>
+			<mx:Text width="100%" styleName="headerText" fontSize="13" color="#000000" fontWeight="bold">
+				<mx:htmlText>
+					<![CDATA[<p align="justify">Please ask for a personal demo online at : info@brennus-software.com</p>
+					]]>
+				</mx:htmlText>
+			</mx:Text>
+		</mx:VBox>
+		
+		
+
+</s:Application>

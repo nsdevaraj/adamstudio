@@ -1,0 +1,28 @@
+<mx:Panel 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:parsley="org.spicefactory.parsley.flex.tag.*"
+	width="100%"
+	height="100%"
+	title="Panel2"
+	addedToStage="trace('ADD 2'); dispatchEvent(new Event('configureView', true));"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import org.spicefactory.parsley.flex.mxmlconfig.core.CoreModel;
+			
+			[Inject]
+			[Bindable]
+			public var model:CoreModel;	
+		]]>
+	</mx:Script>
+	
+	<parsley:Configure/>
+	
+	<mx:Text text="AA"/>
+	<mx:Text text="Bound value: |{model.stringProp}|"/>
+	<mx:Text text="BB"/>
+	
+	
+</mx:Panel> 

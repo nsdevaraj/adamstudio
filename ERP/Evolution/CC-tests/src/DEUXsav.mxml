@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+    <mx:HTTPService id="srv" url="http://212.43.199.78/FXU/FlexTest/getLatestTimes?start=2008-01-01;domain=FXU;person_pk=8" />
+
+    <mx:HTTPService id="httpsvc" result="resultHandler(event)" fault="faultHandler(event)"
+		            url="http://212.43.199.78/FXU/FlexTest/getLatestTimes?start=2008-01-01;domain=FXU;person_pk=8"
+		            />
+
+    <mx:HTTPService id="productmainsvc" result="productmainHandler(event)" fault="faultHandler(event)"
+		            url="http://" resultFormat="text"
+		            />
+
+    <mx:Script>
+    <![CDATA[
+        import mx.controls.Alert;
+        import mx.collections.ArrayCollection;
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        
+        private var templateUrl:String = "http://boutique.stade.fr/boutique/recherche_resultats.cfm?marque_nav=0&rayon_nav=-1&gamme_nav=0&prix_min=&prix_max=&mot=%25&classement=&code_lg=[lg]&ordre=&triage=0&pag=[pg]"
+    	private var pg_num:int = 1;
+
+    	[Bindable]
+    	private var times:ArrayCollection;
+    	private var mainproducts:ArrayCollection;
+    	private var lang_code:String;
+    	
+    	private function resultHandler(event:ResultEvent):void
+            {
+                times = event.result.DATA.ROW;
+            }
+    	private function faultHandler(event:FaultEvent):void
+            {
+				Alert.show(event.fault.faultString);
+            }
+
+    	private function productmainHandler(event:ResultEvent):void
+            {
+            var xmldata:XML = new XML( event.result );
+            var xmlform:XMLList;
+            var formnum:int;
+            var formname:String;
+			Alert.show( xmldata.length() );
+			// formnum = 0;
+			//do {
+			//	formname = "form_result" + formnum; 
+			//	xmlform = xmldata.(@name == formname);
+			//	if( xmlform.length() ) 
+			//		Alert.show( xmlform.toXMLString() );
+			//	formnum++;
+			//	} while( 0 && xmlform.length() > 0 );
+			//if( formnum == 20 )
+			//	getProducts();
+            }
+        private function getProducts():void
+			{
+			lang_code = "lg_fr";
+			productmainsvc.url = templateUrl.replace("[lg]", lang_code).replace("[pg]",pg_num);
+			productmainsvc.send();
+			pg_num += 1;
+			} 
+  	]]>
+    </mx:Script>
+    
+    <mx:VBox>
+    <mx:DataGrid dataProvider="{srv.lastResult.catalog.product}" width="100%" height="100%">
+        <mx:columns>
+            <mx:DataGridColumn dataField="productId" headerText="Product Id"/>
+            <mx:DataGridColumn dataField="name" headerText="Name"/>
+            <mx:DataGridColumn dataField="price" headerText="Price" textAlign="right"/>
+            <mx:DataGridColumn dataField="qtyInStock" headerText="Qty" textAlign="right"/>
+        </mx:columns>
+    </mx:DataGrid> 
+    <mx:Button label="Get Products" click="srv.send()"/>
+    
+	<mx:DataGrid dataProvider="{times}" >
+	  <mx:columns>
+	  	<mx:DataGridColumn dataField="num" headerText="ID" />
+	  	<mx:DataGridColumn dataField="project" headerText="Project" />
+	  	<mx:DataGridColumn dataField="job" headerText="Job" />
+	  	<mx:DataGridColumn dataField="time_minutes" headerText="Time" />
+	  	<mx:DataGridColumn dataField="comments" headerText="Comments" />
+	  </mx:columns>
+	</mx:DataGrid>
+	<mx:Button label="Fetch" click="httpsvc.send()">
+	</mx:Button>
+
+	<mx:DataGrid dataProvider="{mainproducts}" >
+	  <mx:columns>
+	  	<mx:DataGridColumn dataField="num" headerText="ID" />
+	  	<mx:DataGridColumn dataField="project" headerText="Project" />
+	  	<mx:DataGridColumn dataField="job" headerText="Job" />
+	  	<mx:DataGridColumn dataField="time_minutes" headerText="Time" />
+	  	<mx:DataGridColumn dataField="comments" headerText="Comments" />
+	  </mx:columns>
+	</mx:DataGrid>
+	<mx:Button label="Get products" click="getProducts()" />
+
+    </mx:VBox>
+</mx:Application>

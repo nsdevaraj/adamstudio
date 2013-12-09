@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:com="*"
+		 width="100%" height="100%"  xmlns:cmp="components.*"
+	 creationComplete="{initCom(),Controller.getInstance().registerView = this}" paddingTop="20" verticalAlign="middle" horizontalAlign="center"> 
+	<mx:Metadata>
+		[Event(name="uploadComplete", type="flash.events.Event")]
+		[Event(name="fileUploadComplete", type="flash.events.Event")]
+		[Event(name="uploadProgress", type="flash.events.ProgressEvent")]
+		[Event(name="uploadCancel", type="flash.events.Event")]
+		[Event(name="uploadIOError", type="flash.events.IOErrorEvent")]
+		[Event(name="uploadSecurityError", type="flash.events.SecurityErrorEvent")]
+		[Event(name="uploadButtonPressed", type="flash.events.Event")]
+	
+	</mx:Metadata> 
+	<mx:Style source="assets/css/style.css"/>
+	<mx:Style>
+		.drag{
+			 background-image: Embed("assets/Box.swf#DragArea");
+	
+		}
+		.displaySty{
+			 background-image: Embed("assets/Box.swf#DisplayArea");
+	
+		}
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import mx.utils.Base64Encoder;
+			import mx.collections.ArrayCollection;
+			import business.IFrame;
+			import mx.effects.Parallel;
+			import mx.core.Application;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent; 
+			import data.Tasks;
+			import controller.Controller; 
+			import mx.controls.*;
+			import mx.managers.*;
+            import mx.events.*;
+			import flash.events.*;
+			import flash.net.*;
+			
+			
+			private var _strUploadUrl:String;
+			private var _refAddFiles:FileReferenceList;	
+			private var _refUploadFile:FileReference = new FileReference();;
+			public var _arrUploadFiles:Array = new Array();
+			private var _numCurrentUpload:Number = 0;			
+			public var newTask:Boolean = true;
+			[Bindable]	
+			[Embed(source="assets/Box.swf#DisplayArea")]
+			public var DisplayArea:Class;
+			[Bindable]
+			public var DisplayAreaImg:Class;
+			[Bindable]
+			private var showProgress:Boolean = false;
+   			private var myVisible:Boolean = true;
+			private var _userType:String = Controller.getInstance().userObj.type;
+			// Set uploadUrl
+			public function set uploadUrl(strUploadUrl:String):void {
+				_strUploadUrl = strUploadUrl;
+			}
+			private var _newTaskBool:Boolean;
+			public function set newTaskBool(boolVal:Boolean):void{
+				_newTaskBool = boolVal;
+			}
+			public function get dataProvider():Object {
+				return listFiles.dataProvider as Object;
+			}
+			private var exisitingDataVal:int = 0;
+			public function set exsitingData(arr:Array):void{				
+				_arrUploadFiles = arr;
+				exisitingDataVal = _arrUploadFiles.length;
+				
+			} 
+			private var _uploadedImagesArray:Array = new Array();
+			public function get uploadedImages():Array{
+				return _uploadedImagesArray;
+			}
+			public function set uploadedImages(arr:Array):void{
+				_uploadedImagesArray = arr;
+			}
+			public function get exsitingData():Array{
+				return _arrUploadFiles;
+			} 
+			private var _DndUploadCompletedArray:Array = new Array();
+			//[Bindable(event="arrayUpdated",  type="flash.events.Event")] 
+			public function set DndUploadCompletedArray(arr:Array):void{
+				_DndUploadCompletedArray = arr;
+				dispatchEvent(new Event("arrayUpdated"));
+				//if(uploadeStartedBool)uploadTheDroppedFiles();
+			} 
+			public function init():void{
+			}
+			public function garbageCollection():void{
+			}
+			// Initalize
+			private function initCom():void {
+				_userType = Controller.getInstance().userObj.type
+				_arrUploadFiles = new Array();
+				for(var i:String in listFiles.dataProvider){
+					_arrUploadFiles.push(listFiles.dataProvider[i]);
+				}	 													
+				enableUI();
+				uploadCheck();
+				listFiles.verticalScrollPolicy = "on";
+			}
+			
+			// Called to add file(s) for upload
+			private function addFiles():void {
+				_refAddFiles = new FileReferenceList();
+				var f:FileReference = new FileReference();
+				//var filter:FileFilter = new FileFilter("Images");
+				_refAddFiles.addEventListener(Event.SELECT, onSelectFile);
+				_refAddFiles.browse();
+			} 
+
+	
+
+			// Called when a file is selected
+			private function onSelectFile(event:Event):void {
+				var arrFoundList:Array = new Array();
+				// Get list of files from fileList, make list of files already on upload list
+				for (var i:Number = 0; i < _arrUploadFiles.length; i++) {
+					
+					for (var j:Number = 0; j < _refAddFiles.fileList.length; j++) {
+						
+						if (_arrUploadFiles[i].name == _refAddFiles.fileList[j].name) {
+							arrFoundList.push(_refAddFiles.fileList[j].name);
+							_refAddFiles.fileList.splice(j, 1);
+							j--;
+						}
+					}
+				}
+				if (_refAddFiles.fileList.length >= 1) {				
+					for (var k:Number = 0; k < _refAddFiles.fileList.length; k++) {
+						_arrUploadFiles.push({
+							name:_refAddFiles.fileList[k].name,
+							size:formatFileSize(_refAddFiles.fileList[k].size),
+							file:_refAddFiles.fileList[k],source:" "});
+				
+					}
+					listFiles.dataProvider = _arrUploadFiles;
+					listFiles.selectedIndex = _arrUploadFiles.length - 1;
+				}				
+				if (arrFoundList.length >= 1) {
+					Alert.show("The file(s): \n\n• " + arrFoundList.join("\n• ") + "\n\n...are already on the upload list. Please change the filename(s) or pick a different file.", "File(s) already on list");
+				}
+				updateProgBar();
+				scrollFiles();
+				uploadCheck();
+			}
+			
+			// Called to format number to file size
+			private function formatFileSize(numSize:Number):String {
+				var strReturn:String;
+				numSize = Number(numSize / 1000);
+				strReturn = String(numSize.toFixed(1) + " KB");
+				if (numSize > 1000) {
+					numSize = numSize / 1000;
+					strReturn = String(numSize.toFixed(1) + " MB");
+					if (numSize > 1000) {
+						numSize = numSize / 1000;
+						strReturn = String(numSize.toFixed(1) + " GB");
+					}
+				}				
+				return strReturn;
+			}
+			
+			// Called to remove selected file(s) for upload
+			private function removeFiles():void {
+				var arrSelected:Array = listFiles.selectedIndices;
+				if (arrSelected.length >= 1) {
+					for (var i:Number = 0; i < arrSelected.length; i++) {
+						_arrUploadFiles[Number(arrSelected[i])] = null;
+						_uploadedImagesArray[Number(arrSelected[i])] = null;
+						
+					}
+					for (var j:Number = 0; j < _arrUploadFiles.length; j++) {
+						if (_arrUploadFiles[j] == null) {
+							_arrUploadFiles.splice(j, 1);
+							_uploadedImagesArray.splice(j, 1);
+							j--;
+						}
+					}
+					listFiles.dataProvider = _arrUploadFiles;
+					listFiles.selectedIndices = [0];					
+				}
+				listFiles.selectedIndex =0;
+				//Alert.show(_uploadedImages.indexOf(_arrUploadFiles[Number(arrSelected[i])]));
+				updateProgBar();
+				scrollFiles();
+				uploadCheck();
+			}
+			
+			// Called to check if there is at least one file to upload
+			public function uploadCheck():void {
+				if (_arrUploadFiles.length == 0) {
+					btnUpload.enabled = false;
+					listFiles.verticalScrollPolicy = "off";
+				} else {
+					btnUpload.enabled = true;
+					listFiles.verticalScrollPolicy = "on";
+				}
+			}
+			
+			// Disable UI control
+			private function disableUI():void {
+				btnAdd.enabled = false;
+				btnRemove.enabled = false;
+				btnUpload.enabled = false;
+				btnCancel.enabled = true;
+				listFiles.enabled = false;
+				listFiles.verticalScrollPolicy = "off";
+			}
+			
+			// Enable UI control
+			private function enableUI():void {
+				btnAdd.enabled = true;
+				btnRemove.enabled = true;
+				btnUpload.enabled = true;
+				btnCancel.enabled = false;
+				listFiles.enabled = true;
+				listFiles.verticalScrollPolicy = "on";
+			}
+			
+			// Scroll listFiles to selected row
+			private function scrollFiles():void {
+				listFiles.verticalScrollPosition = listFiles.selectedIndex;
+				listFiles.validateNow();
+			}
+			
+			private var sendVars:URLVariables = new URLVariables();
+			public var dateStr:String = new String();
+			private function updateParam():void{
+				filePathlist = new ArrayCollection();
+				showProgress = true;
+				ExternalInterface.call("flexHandlePurpose",false);
+				dispatchEvent(new Event("uploadButtonPressed"));
+				var date:Date;
+				if(uploadpath.length==0){
+					if(_userType=="1" && newTask){
+						date = new Date();
+						sendVars.year=convertIntoStr(date.fullYear);
+						sendVars.month=convertIntoStr(date.month+1);
+						sendVars.date=convertIntoStr(date.fullYear)+convertIntoStr(date.month+1)+convertIntoStr(date.date)+convertIntoStr(date.hours)+convertIntoStr(date.minutes)+convertIntoStr(date.seconds);
+						dateStr = date.fullYear+"-"+(date.month+1)+"-"+date.date+" "+date.hours+":"+date.minutes+":"+date.seconds;
+					}else{
+						var cTask:Tasks = Controller.getInstance().currentTaskObj;
+						var dateVal:Array = cTask.datetime_of_creation.split(" ")					
+						sendVars.year = dateVal[0].split("-")[0]
+						sendVars.month = convertIntoStr(Number(dateVal[0].split("-")[1]))					
+						sendVars.date = convertIntoStr(Number(dateVal[0].split("-")[0]))+convertIntoStr(Number(dateVal[0].split("-")[1]))+convertIntoStr(Number(dateVal[0].split("-")[2]))+convertIntoStr(Number(dateVal[1].split(":")[0]))+convertIntoStr(Number(dateVal[1].split(":")[1]))+convertIntoStr(Number(dateVal[1].split(":")[2]));
+					}
+				}				
+				sendVars.action = "upload";		
+				sendVars.clientName=Controller.getInstance().userObj.company;
+				sendVars.userType = _userType;
+				var userFolder:String;
+				if(_userType=="1"){
+					userFolder = "client";
+				}else{
+					userFolder = "supplier";
+				}
+				uploadpath = "Cutouttool_Beta-debug/uploadedFiles/"+userFolder+"/"+sendVars.clientName+"/"+sendVars.year+"/"+sendVars.month+"/"+sendVars.date+"/";
+				trace("-----path->"+uploadpath);
+			}
+			private function convertIntoStr(num:Number):String{
+				if(num<10) return "0"+num;
+				return String(num);
+			}
+			// Called to upload file based on current upload number
+			[Bindable]
+			private var filePathlist:ArrayCollection = new ArrayCollection();
+			private function startUpload():void {
+				if (_arrUploadFiles.length > 0 && _numCurrentUpload>=exisitingDataVal) {
+					disableUI();					
+					listFiles.selectedIndex = _numCurrentUpload;
+					scrollFiles();							
+					var request:URLRequest = new URLRequest();
+					request.data = sendVars;
+				    request.url = _strUploadUrl;
+				    request.method = URLRequestMethod.POST;
+				    _refUploadFile = new FileReference();
+				     if(listFiles.selectedItem.file is FileReference){
+				    	_refUploadFile = listFiles.selectedItem.file;
+					    _refUploadFile.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+					   	_refUploadFile.addEventListener(Event.COMPLETE, onUploadComplete);
+					    _refUploadFile.addEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
+					  	_refUploadFile.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+					    _refUploadFile.upload(request);
+				    }else{
+				    	filePathlist.addItem({path:listFiles.selectedItem.file,index:listFiles.selectedIndex,name:listFiles.selectedItem.name,source:listFiles.selectedItem.source});
+				    	if(filePathlist.length==_DndUploadCompletedArray.length){
+				    		removeEventListener("arrayUpdated",checkUploadData);
+				    	}
+				    	var event:Event;
+				    	onUploadComplete(event);
+				    }
+					
+				}else{
+					recursiveUpload();
+				}
+			} 
+			private function checkUploadData(ev:Event):void{
+				uploadTheDroppedFiles();
+			}
+			private function recursiveUpload():void{
+				_numCurrentUpload++;				
+				if (_numCurrentUpload < _arrUploadFiles.length) {
+					startUpload();
+				} else {
+					enableUI();
+					clearUpload();
+					uploadedImages = _arrUploadFiles.slice(0,_arrUploadFiles.length);
+					Alert.show("uploadComplete");					
+					dispatchEvent(new Event("uploadComplete"));
+				}
+			}
+			// Cancel and clear eventlisteners on last upload
+			private function clearUpload():void {
+				_refUploadFile.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+				_refUploadFile.removeEventListener(Event.COMPLETE, onUploadComplete);
+				_refUploadFile.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
+				_refUploadFile.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+				_refUploadFile.cancel();
+				_numCurrentUpload = 0;
+				updateProgBar();
+				enableUI();
+			}
+			
+			// Called on upload cancel
+			private function onUploadCanceled():void {
+				clearUpload();
+				dispatchEvent(new Event("uploadCancel"));
+			}
+			
+			// Get upload progress
+			private function onUploadProgress(event:ProgressEvent):void {
+				var numPerc:Number = Math.round((event.bytesLoaded / event.bytesTotal) * 100);
+				updateProgBar(numPerc);
+				var evt:ProgressEvent = new ProgressEvent("uploadProgress", false, false, event.bytesLoaded, event.bytesTotal);
+				dispatchEvent(evt);
+			}
+			
+			// Update progBar
+			private function updateProgBar(numPerc:Number = 0):void {
+				var strLabel:String = (_numCurrentUpload + 1) + "/" + _arrUploadFiles.length;
+				strLabel = (_numCurrentUpload + 1 <= _arrUploadFiles.length && numPerc > 0 && numPerc < 100) ? numPerc + "% - " + strLabel : strLabel;
+				strLabel = (_numCurrentUpload + 1 == _arrUploadFiles.length && numPerc == 100) ? "Upload Complete - " + strLabel : strLabel;
+				strLabel = (_arrUploadFiles.length == 0) ? "" : strLabel;
+//				progBar.label = strLabel;
+	//			progBar.setProgress(numPerc, 100);
+		//		progBar.validateNow();
+			}
+			
+			// Called on upload complete
+			private function onUploadComplete(event:Event):void {
+				_numCurrentUpload++;				
+				if (_numCurrentUpload < _arrUploadFiles.length) {
+					startUpload();
+				} else {
+					if(filePathlist.length==0){
+						showProgress = false;
+						enableUI();
+						clearUpload();
+						ExternalInterface.call("flexHandlePurpose",true);
+						uploadedImages = _arrUploadFiles.slice(0,_arrUploadFiles.length);
+						Alert.show("uploadComplete");						
+						dispatchEvent(new Event("uploadComplete"));
+					}else{
+						uploadTheDroppedFiles();
+					}
+				}
+			} 
+			[Bindable]
+			private var uploadpath:String = new String();
+			[Bindable]
+			private var source:String;
+			[Bindable]
+			private var uploadFilename:String
+			private var currentFilePointer:int = 0;
+			private function uploadTheDroppedFiles():void{
+				
+				if(filePathlist.length!=0){
+						var object:Object = getUploadObject(_DndUploadCompletedArray[currentFilePointer]);//filePathlist.getItemAt(currentFilePointer);
+						if(object!=null){							
+							removeEventListener("arrayUpdated",checkUploadData);
+							source = object.source;
+							uploadFilename = object.name;
+							listFiles.selectedIndex = object.index;
+							connect.getOperation("uploadfileUsingPath").send();
+						}else{
+							addEventListener("arrayUpdated",checkUploadData);
+						}
+				}	
+			}
+			private function getUploadObject(str:String):Object{
+				var obj:Object = new Object();
+				for each(var item:Object in filePathlist){
+					if(item.name == str){
+						obj = item;
+						return obj;
+					}
+				}
+				return null;
+			}
+			private function faultHandler(event:FaultEvent):void{
+				//Alert.show("-------fault------->"+event.message);
+			}
+			private function resultHandler(event:ResultEvent):void{				
+				if(currentFilePointer == filePathlist.length-1){
+					showProgress = false;
+					ExternalInterface.call("flexHandlePurpose",true);
+					enableUI();
+					clearUpload();
+					uploadedImages = _arrUploadFiles.slice(0,_arrUploadFiles.length);
+					Alert.show("uploadComplete");					
+					dispatchEvent(new Event("uploadComplete"));
+				}else{
+					if(currentFilePointer <= _DndUploadCompletedArray.length-1){	
+						removeEventListener("arrayUpdated",checkUploadData);				
+						currentFilePointer++
+						uploadTheDroppedFiles();
+					}else{
+						addEventListener("arrayUpdated",checkUploadData);
+					}
+					
+				}
+			}
+			
+			// Called on upload io error
+			private function onUploadIoError(event:IOErrorEvent):void {
+				clearUpload();
+				var evt:IOErrorEvent = new IOErrorEvent("uploadIoError", false, false, event.text);
+				dispatchEvent(evt);
+			}
+			
+			// Called on upload security error
+			private function onUploadSecurityError(event:SecurityErrorEvent):void {
+				clearUpload();
+				var evt:SecurityErrorEvent = new SecurityErrorEvent("uploadSecurityError", false, false, event.text);
+				dispatchEvent(evt);
+			}
+			
+			// Change view state
+			private function changeView():void {
+				currentState = (currentState == "mini") ? "" : "mini";
+			}
+			private function updateAppletProperty(event:Event):void{
+				var _width:Number = event.currentTarget.width;
+				var _height:Number = event.currentTarget.height;
+				var _x:Number = event.currentTarget.x;
+				var _y:Number = event.currentTarget.y; 
+				var point:Point = new Point(_x,_y);
+				point = mainWindow.localToGlobal(point);
+				Application.application.showApplet(point.x,point.y,_width,_height);
+			}
+		]]>
+	</mx:Script> 
+	<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="uploadfileUsingPath" result="resultHandler(event)">
+				<mx:arguments>
+					<source>{source}</source>
+					<destination>{uploadpath}</destination>
+					<name>{uploadFilename}</name>					
+				</mx:arguments>
+			</mx:method>
+	</mx:RemoteObject>      	
+	<mx:VBox verticalGap="0" horizontalAlign="center" width="{mainWindow.height/1.6978}" height="100%" id="mainWindow">
+		<cmp:IFrame id="dragArea"  width="100%" height="{dragArea.width*0.7005}" styleName="drag" backgroundSize="100%">
+		</cmp:IFrame>
+		<mx:Canvas width="100%" height="100%" id="dispArea" styleName="displaySty" backgroundSize="100%">
+			<mx:Canvas width="100%" id="innerCanvas" height="{(innerCanvas.width*0.7829)+20}"  verticalScrollPolicy="off" horizontalScrollPolicy="off">				
+				<mx:DataGrid id="listFiles" styleName="dgstyle" allowMultipleSelection="true"  width="80%" height="43%" rowCount="5" top="75" horizontalCenter="0" verticalCenter="0" headerHeight="0" verticalScrollPolicy="auto" draggableColumns="false" resizableColumns="false" sortableColumns="false">
+					<mx:columns>
+						<mx:DataGridColumn headerText="File Name" width="200">
+							<mx:itemRenderer>
+								<mx:Component>
+									<mx:TextInput width="100%" height="100%" text="{data.name}" borderStyle="none" backgroundAlpha="{data.bg}" backgroundDisabledColor="#a6a198" enabled="false"/>
+								</mx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+						<mx:DataGridColumn headerText="Size">
+							<mx:itemRenderer>
+								<mx:Component>
+									<mx:TextInput textAlign="right" width="100%" height="100%" text="{data.size}" borderStyle="none" backgroundAlpha="{data.bg}" backgroundDisabledColor="#a6a198"  enabled="false"/>
+								</mx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+					</mx:columns>
+				</mx:DataGrid>
+				<mx:HBox width="100%" top="10" horizontalAlign="right" paddingTop="5" paddingRight="10" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					<mx:Button id="btnRemove" styleName="removeBtn" enabled="{listFiles.dataProvider.length}" useHandCursor="{listFiles.dataProvider.length}" buttonMode="{listFiles.dataProvider.length}" click="removeFiles()"/>
+					<mx:Button id="btnAdd" styleName="addBtn" useHandCursor="true" buttonMode="true" click="addFiles()"/> 
+				</mx:HBox>
+				<mx:Canvas width="100%" bottom="0" paddingLeft="10" paddingRight="10" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+					
+					<mx:Button enabled="false" selected="{showProgress}" id="progBarButton" styleName="preloaderBtn" left="10" />
+					<mx:HBox width="100%" horizontalAlign="right" right="10">
+						<mx:Button id="btnUpload" styleName="uploadBtn" enabled="true" useHandCursor="true" buttonMode="true"  click="{updateParam(),startUpload()}"/>
+						<mx:Button  id="btnCancel" styleName="cancelBtn" enabled="true" useHandCursor="true" buttonMode="true"  click="onUploadCanceled()"/>
+					</mx:HBox>
+				</mx:Canvas>
+			
+			</mx:Canvas>
+		</mx:Canvas>
+	</mx:VBox>
+	
+</mx:VBox>

@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Persons" table="persons">
+        <id name="PersonId" type="integer" column="Person_ID">
+            <generator class="increment" />
+        </id>
+        <property name="personFirstname">
+            <column name="Person_Firstname" />
+        </property>
+        <property name="personLastname">
+            <column name="Person_Lastname" />
+        </property>
+        <property name="personEmail">
+            <column name="Person_Email" />
+        </property>
+        
+        <property name="personAddress">
+            <column name="Person_Address" />
+        </property>
+        <property name="personPostalCode">
+            <column name="Person_Postal_Code" />
+        </property>
+        <property name="personCity">
+            <column name="Person_City" />
+        </property>
+        <property name="personCountry">
+            <column name="Person_Country" />
+        </property> 
+        <property name="personLogin">
+            <column name="Person_Login" />
+        </property>
+        <property name="personPassword">
+            <column name="Person_Password" />
+        </property>
+        <property name="companyFk">
+            <column name="Company_FK" />
+        </property>
+        <property name="personPosition">
+            <column name="Person_Position" />
+        </property>
+        <property name="personPhone">
+            <column name="Person_Phone" />
+        </property>
+        <property name="personMobile">
+            <column name="Person_Mobile" />
+        </property>
+        <property name="personPict">
+            <column name="Person_Pict" />
+        </property>
+        <property name="personDateentry">
+            <column name="Person_DateEntry" />
+        </property>
+        <property name="activated">
+            <column name="Activated" />
+        </property>
+        <property name="activeChatid">
+            <column name="Person_ActiveChatid" />
+        </property>
+        <property name="loginStatus">
+            <column name="Person_LoginStatus" />
+        </property>
+        <property name="defaultProfile">
+            <column name="Default_Profile_FK" />
+        </property>
+    </class> 
+    <query name="Persons.findByName">
+        select u from Persons u where u.personLogin=?
+    </query>
+    <query name="Persons.findById">
+        select u from Persons u where u.PersonId = ?
+    </query>
+    <query name="Persons.findUserLogin">
+        select u from Persons u where u.personEmail=? and u.personPassword=?
+    </query>
+    <query name="Persons.findPersonsList">
+        select p,r from Persons p, Profiles r, Teamlines t where t.personID = p.PersonId and r.profileId=t.profileID and t.projectID = ?
+    </query>
+    <query name="Persons.findOnlinePerson">
+        select u from Persons u where u.loginStatus='Online' ORDER BY u.personFirstname
+    </query>
+    <query name="Persons.updateLogout">
+        update Persons u set u.loginStatus='Offline' where u.PersonId=?
+    </query>
+    <query name="Persons.findByMailPersonId">
+        select u from Persons u where u.PersonId = ?
+    </query>
+    <query name="Persons.findIMPEmail">
+        select u from Persons u where u.personEmail=?
+    </query>
+</hibernate-mapping>

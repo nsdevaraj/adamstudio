@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox name="notes" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="200" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" verticalGap="0" creationComplete="notesinit()">
+		<mx:Script>
+			<![CDATA[
+				import mx.core.Application;
+				import flash.events.TimerEvent;
+				import flash.utils.Timer;
+				[Bindable]public var checkboxPageNo:String=new String(); 
+				[Bindable]public var pageNo:Number;
+				[Bindable]public var messageTxt:String;
+				[Bindable]public var highlightObject:*;
+				private var t:Timer;
+				private function gotoPage():void{
+					Application.application.myBook.gotoPageWOF(pageNo);
+				}
+				 /* public function get pageNo():String{
+					return notesCheck.label;
+				}
+				public function set pageNo(val:String):void{
+					notesCheck.label=val;
+				} */ 
+				private function notesinit():void{
+					t=new Timer(1000);
+					t.addEventListener(TimerEvent.TIMER,notesTimer);
+				}
+				private function notesTimer(evt:TimerEvent):void{
+					message_txt.enabled=false;
+					editBTN.selected=false;
+					t.stop();
+				}
+				private function editMessage():void{
+					if(!message_txt.enabled){
+						Application.application.checkAllMessageTxtDetails();
+						message_txt.enabled=true;
+						editBTN.selected=true;
+					}
+					else{
+						editBTN.selected=false;
+						message_txt.enabled=false;
+					}
+				}
+			]]>
+		</mx:Script>
+		<mx:Style>
+			.editSaveBtn{
+				upSkin: Embed("../assets/swf/interfaceAssets.swf#editDetailsUp"); 
+				downSkin: Embed("../assets/swf/interfaceAssets.swf#editDetailsDown");
+				overSkin: Embed("../assets/swf/interfaceAssets.swf#editDetailsOver");
+				disabledSkin: Embed("../assets/swf/interfaceAssets.swf#editDetailsUp");
+								
+				selectedUpSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsUp");
+				selectedDownSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsDown");
+				selectedOverSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsOver");
+				selectedDisabledSkin: Embed("../assets/swf/interfaceAssets.swf#saveDetailsUp");
+			}
+			.goDetailsBtn{
+				upSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsUp"); 
+				downSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsDown");
+				overSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsOver");
+				
+								
+				selectedUpSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsUp");
+				selectedDownSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsDown");
+				selectedOverSkin: Embed("../assets/swf/interfaceAssets.swf#goDetailsOver");
+			}
+			.checkBox{
+				fillAlphas: 1, 1, 1, 1;
+   				fillColors: #ffffff, #ffffff, #ffffff, #ffffff;
+			}
+		</mx:Style>
+		<mx:Canvas width="100%" height="30" backgroundColor="#222222">
+			<mx:VBox left="5" verticalCenter="0">
+				<mx:CheckBox id="notesCheck" styleName="checkBox" selected="false" color="#FFFFFF" label="{checkboxPageNo}"  fontSize="12" fontWeight="bold" textRollOverColor="#FFFFFF" textSelectedColor="#FFFFFF"/>
+			</mx:VBox>
+			<mx:HBox right="5" verticalCenter="0">
+				<mx:Button id="editBTN" toggle="true" styleName="editSaveBtn" click="editMessage()"/>
+				<mx:Button styleName="goDetailsBtn" click="gotoPage()"/>
+			</mx:HBox>
+		</mx:Canvas>
+		<mx:Canvas width="100%" height="100%" backgroundColor="#EBEBEB">
+			<mx:TextArea enabled="false" disabledColor="#666666" backgroundDisabledColor="#EEEEEE" borderColor="#AAAAAA" borderThickness="1" id="message_txt" left="5" top="5" right="5" bottom="5" text="{messageTxt}" focusOut="if(message_txt.enabled) t.start();"/>
+		</mx:Canvas>
+</mx:VBox>	

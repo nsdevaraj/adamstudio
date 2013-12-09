@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
+	            backgroundColor="white">
+
+    <mx:Script>
+        <![CDATA[
+        	import mx.charts.series.AreaSeries;
+        	import mx.charts.chartClasses.Series;
+        	import mx.charts.LinearAxis;
+        	import mx.charts.renderers.LineRenderer;
+        	import mx.charts.AxisRenderer;
+        	import mx.charts.DateTimeAxis;
+        import mx.controls.Image;
+        import mx.charts.chartClasses.IAxis;
+        import mx.collections.ArrayCollection;
+        import mx.utils.ObjectUtil;
+
+        private var gImages:Array = new Array();
+        private var gTimer:Timer = new Timer(500, 1);
+
+        [Bindable]
+        private var gPopupPosX:int;
+        [Bindable]
+        private var gPopupPosY:int;
+
+        [Embed(source="assets/images/inCard.png")]
+        [Bindable]
+        private var clsInCard:Class;
+        [Embed(source="assets/images/inCheck.png")]
+        [Bindable]
+        private var clsInCheck:Class;
+        [Embed(source="assets/images/inMail.png")]
+        [Bindable]
+        private var clsInMail:Class;
+        [Embed(source="assets/images/inSms.png")]
+        [Bindable]
+        private var clsInSms:Class;
+        [Embed(source="assets/images/inTel.png")]
+        [Bindable]
+        private var clsInTel:Class;
+        [Embed(source="assets/images/outCard.png")]
+        [Bindable]
+        private var clsOutCard:Class;
+        [Embed(source="assets/images/outCheck.png")]
+        [Bindable]
+        private var clsOutCheck:Class;
+        [Embed(source="assets/images/outMail.png")]
+        [Bindable]
+        private var clsOutMail:Class;
+        [Embed(source="assets/images/outSms.png")]
+        [Bindable]
+        private var clsOutSms:Class;
+        [Embed(source="assets/images/outTel.png")]
+        [Bindable]
+        private var clsOutTel:Class;
+        [Embed(source="assets/images/exComplexe.png")]
+        [Bindable]
+        private var clsExComplex:Class;
+        [Embed(source="assets/images/exIntermediaire.png")]
+        [Bindable]
+        private var clsExIntermediate:Class;
+        [Embed(source="assets/images/exBref.png")]
+        [Bindable]
+        private var clsExShort:Class;
+
+        [Bindable]
+        private var valData:ArrayCollection;
+        [Bindable]
+        private var eveData:ArrayCollection;
+        
+        private var valComplex:ArrayCollection = new ArrayCollection( [
+            { Date: "02/21/2007 00:00", Expected: 27.2, Real: 27.2, Now: 0, Simu:0 },
+            { Date: "03/21/2007 00:00", Expected: 47.1, Real: 47.1, Now: 0, Simu:0 },
+            { Date: "04/23/2007 00:00", Expected: 72.99, Real: 72.99, Now: 0, Simu:0 },
+            { Date: "05/23/2007 00:00", Expected: 490.92, Real: 490.92, Now: 0, Simu:0 },
+            { Date: "12/26/2008 00:00", Expected: 440.92, Real: 440.92, Now: 0, Simu:0 },
+            { Date: "01/26/2009 00:00", Expected: 367.43, Real: 440.92, Now: 0, Simu:0 },
+            { Date: "01/29/2009 00:00", Expected: 367.43, Real: 390.92, Now: 0, Simu:0 },
+            { Date: "02/26/2009 00:00", Expected: 293.94, Real: 390.92, Now: 0, Simu:0 },
+            { Date: "03/03/2009 00:00", Expected: 293.94, Real: 280.92, Now: 0, Simu:0 },
+            { Date: "03/26/2009 00:00", Expected: 220.45, Real: 280.92, Now: 0, Simu:0 },
+            { Date: "04/01/2009 00:00", Expected: 220.45, Real: 210.92, Now: 0, Simu:0 },
+            { Date: "04/26/2009 00:00", Expected: 146.96, Real: 210.92, Now: 0, Simu:0 },
+            { Date: "05/26/2009 00:00", Expected: 73.47, Real: 210.92, Now: 0, Simu:0 },
+            { Date: "06/26/2009 00:00", Expected: 0, Real: 210.92, Now: 0, Simu:0 }
+            ] );
+
+        private var eveComplex:ArrayCollection = new ArrayCollection( [
+            { Date: "02/21/2007 00:00", Type: "outCheck", Details: "Facture impayée\nOrange\nInitial: 27,2 €\nVersé: 0€" },
+            { Date: "03/21/2007 00:00", Type: "outCheck", Details: "Facture impayée\nOrange\nInitial: 19,9 €\nVersé: 0€" },
+            { Date: "04/23/2007 00:00", Type: "outCheck", Details: "Facture impayée\nOrange\nInitial: 25,89 €\nVersé: 0€" },
+            { Date: "05/23/2007 00:00", Type: "outCheck", Details: "Facture impayée\nOrange\nInitial: 417,93 €\nVersé: 0€" },
+            { Date: "11/10/2008 00:00", Type: "outMail,", Details: "Relance 1\nEnvoyée le 10 nov. 2008" },
+            { Date: "12/01/2008 00:00", Type: "outMail", Details: "Relance 2\nEnvoyée le 12 déc. 2008" },
+            { Date: "12/22/2008 00:00", Type: "outMail", Details: "Relance 3\nEnvoyée le 22 déc. 2008" },
+            { Date: "12/26/2008 00:00", Type: "inCard", Details: "Versement\nCarte bancaire\n25€" },
+            { Date: "01/26/2009 00:00", Type: "outTel", Details: "Appel sortant\nRépondeur" },
+            { Date: "01/29/2009 00:00", Type: "inCard", Details: "Versement\nCarte bancaire\n50€" },
+            { Date: "02/27/2009 00:00", Type: "outTel", Details: "Appel sortant\nRépondeur" },
+            { Date: "03/03/2009 00:00", Type: "inCard", Details: "Versement\nCarte bancaire\n110€" },
+            { Date: "03/04/2009 00:00", Type: "outTel", Details: "Appel sortant\nRépondeur" },
+            { Date: "04/01/2009 00:00", Type: "inCard", Details: "Versement\nCarte bancaire\n70€" }
+            ] );
+
+        private var valIntermediate:ArrayCollection = new ArrayCollection( [
+            { Date: "08/27/2008 00:00", Expected: 58.15, Real: 58.15, Now: 0, Simu:0 },
+            { Date: "09/27/2008 00:00", Expected: 114.24, Real: 114.24, Now: 0, Simu:0 },
+            { Date: "03/27/2009 00:00", Expected: 0, Real: 114.24, Now: 0, Simu:0 },
+            { Date: "03/30/2009 00:00", Expected: 0, Real: 114.24, Now: 0, Simu:0 }
+            ] );
+
+        private var eveIntermediate:ArrayCollection = new ArrayCollection( [
+            { Date: "08/27/2008 00:00", Type: "outCheck", Details: "Facture n°11014238770107\nBouygues\nInitial: 58,15 €\nVersé: 0€\nPassage" },
+            { Date: "09/27/2008 00:00", Type: "outCheck", Details: "Facture n°11014272721206\nBouygues\Initial: 56,09 €\nVersé: 0€\nPassage" },
+            { Date: "11/27/2008 00:00", Type: "inMail", Details: "Affectation\nAccusé réception" },
+            { Date: "12/01/2008 00:00", Type: "outMail", Details: "Relance 1\nMichaud (plateforme)" },
+            { Date: "12/19/2008 00:00", Type: "outMail", Details: "Relance 2\nMichaud (plateforme)" },
+            { Date: "01/07/2009 00:00", Type: "outMail", Details: "Relance 3\nMichaud (plateforme)" },
+            { Date: "03/23/2009 00:00", Type: "outTel", Details: "Appel sortant" },
+            { Date: "03/30/2009 00:00", Type: "outSms", Details: "Relance par SMS" }
+            ] );
+
+        private var valShort:ArrayCollection = new ArrayCollection( [
+            { Date: "05/07/2008 00:00", Expected: 33, Real: 33, Now: 0, Simu:0 },
+            { Date: "02/02/2009 00:00", Expected: 40.5, Real: 40.5, Now: 0, Simu:0 },
+            { Date: "02/27/2009 00:00", Expected: 40.5, Real: 40.5, Now: 0, Simu:0 }
+            ] );
+
+        private var eveShort:ArrayCollection = new ArrayCollection( [
+            { Date: "05/07/2008 00:00", Type: "outCheck", Details: "Amende\nN° 791080045201\nInitial: 33 €\nVersé: 0€" },
+            { Date: "02/02/2009 00:00", Type: "outCheck", Details: "Frais\nArticle 128-1 Loi n°2004-1485 du 30 déc. 2004\nInitial: 7,5 €\nVersé: 0€" },
+            { Date: "02/04/2009 00:00", Type: "inMail", Details: "Affectation\nAccusé réception\nMichaud" },
+            { Date: "02/06/2009 00:00", Type: "outMail", Details: "Relance 1\nMichaud (plateforme)" },
+            { Date: "02/27/2009 00:00", Type: "outMail", Details: "Relance 2\nMichaud (plateforme)" }
+            ] );
+
+        public function mkDate(s:String):Date {
+          var cDate:Date = new Date(s);
+          return cDate;
+        }
+
+        public function strDate(d:Date, prevVal:Date, axis:IAxis):String {
+          const cMois:Array = [ "jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc" ];
+          var cDate:String = cMois[d.month] + " " + d.fullYear;
+          return cDate;
+        }
+
+        public function dblclickImage(e:Event):void {
+          // Images id is formatted as: icoEvent{evtIndex}
+          var cEventIx:int = int(e.target.id.substr( 8 ));
+          var cDetails:Array = eveData[cEventIx].Details.split( "\n" );
+          titDetails.text = cDetails.shift();
+          panDetails.text = eveData[cEventIx].Date.replace("00:00", "") + "\n\n"
+                            + cDetails.join( "\n" );
+          gPopupPosX = (e.target as Image).parent.x + (e.target as Image).x;
+          gPopupPosY = (e.target as Image).parent.y + (e.target as Image).y;
+          effDetailsIn.play();
+        }
+
+        public function copyExample( pEx:ArrayCollection ):void {
+          var cBA:ByteArray = new ByteArray();
+          cBA.writeObject( pEx.source );
+          cBA.position = 0;
+          valData = new ArrayCollection( cBA.readObject() as Array );
+
+          // Make sure there are at least 2 months ahead
+          var cLast:Object = valData[ valData.length - 1 ];
+          var cTest:Date = new Date( cLast.Date );
+          var cNow:Date = new Date();
+          if( cNow.getTime() > cTest.getTime() ) {
+            cTest = new Date();
+            cTest.setTime( cTest.getTime() + 2 * 30 * 24 * 3600 * 1000 );
+            valData.addItem( {Date: (1+cTest.getMonth()) + "/" + cTest.getDate() + "/" + cTest.getFullYear(),
+                              Expected:cLast.Expected,
+                              Real:cLast.Real, Now:cLast.Now,
+                              Simu:cLast.Value} );
+          }
+
+          chkFuture.selected = false;
+        }
+
+        public function hideFuture(v:Boolean):void {
+          var cIx:int;
+          var cTest:Date;
+          var cNow:Date = new Date();
+          var cFound:Boolean = false;
+          if( valData == null ) return;
+          if( v ) {
+            for( cIx = 0; cIx < valData.length; cIx++ ) {
+              cTest = new Date( valData[cIx].Date );
+              if( cFound ) {
+                valData[cIx].Now = 500;
+              }
+              else if( cNow.getTime() < cTest.getTime() ) {
+                valData.addItemAt( {Date:(1+cNow.getMonth()) + "/" + cNow.getDate() + "/" + cNow.getFullYear(),
+                                    Expected:valData[cIx-1].Expected,Real:valData[cIx-1].Real,
+                                    Simu:valData[cIx-1].Simu,Now:500}, cIx );
+                cFound = true;
+              }
+            }
+          }
+          else {
+            if( exComplex.selected ) copyExample( valComplex );
+            if( exIntermediate.selected ) copyExample( valIntermediate );
+            if( exShort.selected ) copyExample( valShort );
+          }
+        }
+
+        public function simulate(pMonths:int):void {
+          var cI:int = 0;
+          var cIx:int;
+          var cTest:Date;
+          var cDate:Date;
+          var cFound:Boolean = false;
+          var cNow:Date = new Date();
+          if( valData == null ) return;
+
+          // Reset graph data
+          if( exComplex.selected ) copyExample( valComplex );
+          if( exIntermediate.selected ) copyExample( valIntermediate );
+          if( exShort.selected ) copyExample( valShort );
+
+          // Build the refunding simulation starting from the value at {now} to zero
+          // on the given number of months
+          var cData:ArrayCollection = new ArrayCollection( [
+                   { Date: (1+cNow.getMonth()) + "/" + cNow.getDate() + "/" + cNow.getFullYear(),
+                     Value:0 } ] );
+          var cVal:Number;
+          for( cIx = 0; cIx < valData.length && cData[0].Value == 0; cIx++ ) {
+            cTest = new Date(valData[cIx].Date);
+            if( cTest > cNow ) cData[0].Value = valData[cIx].Real;
+          }
+          if( cData[0].Value == 0 ) cData[0].Value = valData[valData.length - 1].Real;
+          cVal = cData[0].Value;
+          cDate = new Date(cNow);
+          while( cVal > 0 ) {
+            cVal -= cData[0].Value / pMonths;
+            cDate.setTime( cDate.getTime() + 30 * 24 * 60 * 60 * 1000 );
+            cData.addItem( { Date: (1+cDate.getMonth()) + "/" + cDate.getDate() + "/" + cDate.getFullYear(),
+                             Value: cVal } );
+          }
+          monthlyRefunding.text = " " + Math.round(cData[0].Value * 100 / pMonths)/100 + "€";
+
+          // Apply the refunding simulation to the main chart data
+          cI = 0;
+          cDate = new Date( cData[cI].Date );
+          for( cIx = 0; cIx < valData.length; cIx++ ) {
+            cTest = new Date( valData[cIx].Date );
+            if( cTest.getTime() < cNow.getTime() ) {
+              valData[cIx].Simu = null;
+            }
+            else if( cDate.getTime() < cTest.getTime() ) {
+              valData.addItemAt( {Date: (1+cDate.getMonth()) + "/" + cDate.getDate() + "/" + cDate.getFullYear(),
+                                     Expected:valData[cIx].Expected,
+                                     Real:valData[cIx].Real,Now:valData[cIx].Now,
+                                     Simu:cData[cI].Value}, cIx );
+              if( cI < cData.length - 1 ) {
+                cI += 1;
+                cDate = new Date( cData[cI].Date );
+              }
+            }
+            else if( cDate.getTime() == cTest.getTime() ) {
+              valData[cIx].Simu = cData[cI].Value;
+              if( cI < cData.length - 1 ) {
+                cI += 1;
+                cDate = new Date( cData[cI].Date );
+              }
+            }
+            else {
+              valData[cIx].Simu = cData[cI].Value;
+            }
+          }
+          while( cI < cData.length ) {
+            cIx = valData.length - 1;
+            valData.addItem( {Date:cData[cI].Date,
+                              Expected:valData[cIx].Expected,
+                              Real:valData[cIx].Real,Now:valData[cIx].Now,
+                              Simu:cData[cI].Value} );
+            cI++;
+          }
+        showEvents();
+        }
+
+        public function showEvents():void {
+          gTimer.addEventListener( "timer", showEventsGo );
+          gTimer.start();
+        }
+
+        public function showEventsGo( event:TimerEvent ):void {
+          var cXPos:int;
+          var cSecPerPixel:Number;
+          var cEventDate:Date;
+          var cEventDateStr:String;
+          gTimer.removeEventListener( "timer", showEventsGo );
+          for( cXPos = 0; cXPos < gImages.length; cXPos++ ) gImages[cXPos].visible = false;
+          gImages = new Array();
+          if( eveData == null ) return;
+          cSecPerPixel = ( (Areachart.horizontalAxis as DateTimeAxis).computedMaximum 
+                          -(Areachart.horizontalAxis as DateTimeAxis).computedMinimum
+                 ) / 1000 / Areachart.horizontalAxisRenderers[0].length;
+          for ( var cIx:int=0; cIx<eveData.length; cIx++ ) {
+            gImages.push( new Image() );
+            gImages[gImages.length - 1].id = "icoEvent" + cIx;
+            gImages[gImages.length - 1].alpha = "0.85";
+            cEventDate = new Date(eveData[cIx].Date);
+            cEventDateStr = cEventDate.toDateString();
+            switch ( eveData[cIx].Type ) {
+              case "inCard" :
+                gImages[gImages.length - 1].source = clsInCard;
+                gImages[gImages.length - 1].toolTip = "Paiement par carte\n" + cEventDateStr;
+                break;
+              case "inCheck" :
+                gImages[gImages.length - 1].source = clsInCheck;
+                gImages[gImages.length - 1].toolTip = "Paiement par chèque\n" + cEventDateStr;
+                break;
+              case "inMail" :
+                gImages[gImages.length - 1].source = clsInMail;
+                gImages[gImages.length - 1].toolTip = "Courrier entrant\n" + cEventDateStr;
+                break;
+              case "inSms" :
+                gImages[gImages.length - 1].source = clsInSms;
+                gImages[gImages.length - 1].toolTip = "SMS entrant\n" + cEventDateStr;
+                break;
+              case "inTel" :
+                gImages[gImages.length - 1].source = clsInTel;
+                gImages[gImages.length - 1].toolTip = "Appel entrant\n" + cEventDateStr;
+                break;
+              case "outCard" :
+                gImages[gImages.length - 1].source = clsOutCard;
+                gImages[gImages.length - 1].toolTip = "Remboursement par carte\n" + cEventDateStr;
+                break;
+              case "outCheck" :
+                gImages[gImages.length - 1].source = clsOutCheck;
+                gImages[gImages.length - 1].toolTip = "Facture\n" + cEventDateStr;
+                break;
+              case "outMail" :
+                gImages[gImages.length - 1].source = clsOutMail;
+                gImages[gImages.length - 1].toolTip = "Courrier envoyé\n" + cEventDateStr;
+                break;
+              case "outSms" :
+                gImages[gImages.length - 1].source = clsOutSms;
+                gImages[gImages.length - 1].toolTip = "SMS envoyé\n" + cEventDateStr;
+                break;
+              case "outTel" :
+                gImages[gImages.length - 1].source = clsOutTel;
+                gImages[gImages.length - 1].toolTip = "Appel émis\n" + cEventDateStr;
+                break;
+            }
+            cXPos = Areachart.x + Areachart.horizontalAxisRenderers[0].gutters.x
+                    + ( cEventDate.getTime() - Areachart.horizontalAxis.baseline ) / 1000 / cSecPerPixel;
+            gImages[gImages.length - 1].move(cXPos - 16, 0);
+            gImages[gImages.length - 1].doubleClickEnabled = true;
+            gImages[gImages.length - 1].addEventListener( MouseEvent.DOUBLE_CLICK, dblclickImage );
+            canEvents.addChild( gImages[gImages.length - 1] );
+          }
+        }
+
+        ]]>
+    </mx:Script>
+
+     <mx:Stroke id="stkSimu" color="#C05080" weight="2" alpha="0.8" />
+     <mx:VBox id="canMain">
+      <mx:Panel title="Proposed view"  textAlign="center" width="1040" borderStyle="outset">
+        <mx:Canvas id="spacer" height="50">
+        </mx:Canvas>
+        <mx:Canvas id="canEvents" height="32">
+        </mx:Canvas>
+        <mx:AreaChart id="Areachart" color="0x8080FF" height="150" width="1000"
+             showDataTips="true">
+
+            <mx:fill>
+              <mx:SolidColor color="white" />
+            </mx:fill>
+
+            <mx:horizontalAxis>
+                <mx:DateTimeAxis id="horzAxis" dataUnits="days" interval="3"
+                  parseFunction="mkDate" labelFunction="strDate" />
+            </mx:horizontalAxis>
+            <mx:horizontalAxisRenderers>
+              <mx:AxisRenderer axis="{horzAxis}" gutters="{new Rectangle()}" />
+            </mx:horizontalAxisRenderers>
+
+            <mx:verticalAxis>
+                <mx:LinearAxis minimum="0" maximum="600" />
+            </mx:verticalAxis>
+
+            <mx:series>
+                <mx:AreaSeries alpha="1" dataProvider="{valData}"
+                               xField="Date" yField="Real" form="step">
+                  <mx:areaFill>
+                    <mx:SolidColor color="0x8080FF" />
+                  </mx:areaFill>
+                </mx:AreaSeries>
+                <mx:AreaSeries alpha="0.5" dataProvider="{valData}"
+                               xField="Date" yField="Expected" form="step">
+                  <mx:areaFill>
+                    <mx:SolidColor color="0x80FF80" />
+                  </mx:areaFill>
+                </mx:AreaSeries>
+                <mx:AreaSeries dataProvider="{valData}"
+                               xField="Date" yField="Now" form="step">
+                  <mx:areaFill>
+                    <mx:SolidColor color="white" alpha="0.4"/>
+                  </mx:areaFill>
+                </mx:AreaSeries>
+                <mx:LineSeries dataProvider="{valData}" xField="Date" yField="Simu"
+                               form="step" lineStroke="{stkSimu}" />
+            </mx:series>
+        </mx:AreaChart>
+        </mx:Panel>
+        <mx:Panel title="Mockup control" textAlign="center" width="1040" borderStyle="outset">
+         <mx:HBox>
+          <mx:VBox>
+            <mx:RadioButton id="exComplex" label="Exemple complexe"
+                click="copyExample( valComplex );
+                       eveData=eveComplex;
+                       showEvents();
+                       imgPrevious.source=clsExComplex;" />
+            <mx:RadioButton id="exIntermediate" label="Exemple intermédiaire"
+                click="copyExample( valIntermediate );
+                             eveData=eveIntermediate;
+                       showEvents();
+                       imgPrevious.source=clsExIntermediate;" />
+            <mx:RadioButton id="exShort" label="Exemple court"
+                click="copyExample( valShort );
+                       eveData=eveShort;
+                       showEvents();
+                       imgPrevious.source=clsExShort;" />
+          </mx:VBox>
+          <mx:Label text="Simuler un engagement :" />
+          <mx:NumericStepper id="simulationMonths" minimum="2" maximum="12" click="simulate(simulationMonths.value)" />
+          <mx:Label text="mensualités de" />
+          <mx:Label id="monthlyRefunding" text="" />
+          <mx:CheckBox id="chkFuture" label="Masquer le futur" change="hideFuture(chkFuture.selected)" />
+         </mx:HBox>
+        </mx:Panel>
+        <mx:Panel title="Current view" textAlign="center" width="1040" borderStyle="outset">
+          <mx:Image id="imgPrevious" />
+        </mx:Panel>
+     </mx:VBox>
+
+  <!-- ************** Effects ************* -->
+  <mx:Parallel id="effDetailsIn">
+    <mx:Move duration="500" xFrom="{gPopupPosX + 16}" xTo="{Math.max(0,gPopupPosX-100)}"
+                            yFrom="{gPopupPosY + 16}" yTo="{Math.max(0,gPopupPosY-60)}"
+             target="{canDetails}" />
+    <mx:Resize duration="500" heightFrom="0" heightTo="120"
+                              widthFrom="0" widthTo="200"
+               target="{canDetails}" />
+  </mx:Parallel>
+
+  <mx:Canvas id="canDetails" width="0" height="0" y="{canMain.height}"
+             backgroundAlpha="0.95" backgroundColor="0xF0F4F8" horizontalScrollPolicy="off">
+    <mx:filters>
+      <mx:DropShadowFilter distance="4" color="0x202060" alpha="0.4" angle="70"/>
+    </mx:filters>
+    <mx:VBox>
+    <mx:HBox>
+      <mx:Label id="titDetails" width="180" color="0x201080" textAlign="center" textDecoration="underline" />
+      <mx:Button width="10" height="10" cornerRadius="2" label="" borderColor="0xA04040"
+                 paddingBottom="0" paddingTop="0" paddingLeft="0" paddingRight="0" 
+                 toolTip="Close" click="effDetailsIn.play(null,true)" />
+    </mx:HBox>
+    <mx:TextArea id="panDetails" width="180" height="80" textAlign="left" textIndent="15" borderThickness="0" backgroundAlpha="0" />
+    </mx:VBox>
+  </mx:Canvas>
+
+</mx:Application>

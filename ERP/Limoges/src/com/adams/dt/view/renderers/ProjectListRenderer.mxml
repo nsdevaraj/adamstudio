@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 toolTip="{ info }">
+	<fx:Script>
+		<![CDATA[
+			
+			[Bindable]
+			public var prjLabel:String;
+			
+			[Bindable]
+			private var _backGroundColor:uint;
+			public function set backGroundColor( value:uint ):void {
+				_backGroundColor = value;
+			} 
+			
+			private var _info:String;
+			[Bindable]
+			public function get info():String {
+				return _info;
+			}
+			public function set info( value:String ):void {
+				_info = value;
+			}
+			
+			private var _refObject:Object;
+			[Bindable]
+			public function get refObject():Object {
+				return _refObject;
+			}
+			public function set refObject( value:Object ):void {
+				_refObject = value;
+			}
+			
+			private var _isClickable:Boolean;
+			[Bindable]
+			public function get isClickable():Boolean {
+				return _isClickable;
+			}
+			public function set isClickable( value:Boolean ):void {
+				_isClickable = value;
+				if( value ) {
+					if( !hasEventListener( MouseEvent.CLICK ) ) {
+						addEventListener( MouseEvent.CLICK, onClick );
+					}
+				}
+				else {
+					if( hasEventListener( MouseEvent.CLICK ) ) {
+						removeEventListener( MouseEvent.CLICK, onClick );
+					}
+				}
+			}
+			
+			private function onClick( event:MouseEvent ):void {
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%" alpha="{ _backGroundColor ? 1 : 0 }">
+		<s:fill>
+			<s:SolidColor color="{ _backGroundColor }"/>
+		</s:fill>
+	</s:Rect>
+	<s:Label text="{ prjLabel }" horizontalCenter="0" verticalCenter="0"/>
+</s:Group>

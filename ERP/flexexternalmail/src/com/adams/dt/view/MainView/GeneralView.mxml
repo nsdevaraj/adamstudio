@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" xmlns:MainView="com.adams.dt.view.MainView.*"
+	 xmlns:view="com.adams.dt.view.*">
+	 
+	 <!--<mx:Binding source="model.propertiespresetsCollection" destination="this.projectPropertyCollection"/>-->
+	 
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Tasks;
+			import mx.core.UIComponent;
+			import mx.collections.ArrayCollection;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();	
+			
+			private var sep:String = "&#$%^!@";	
+			
+			private function getBody(str:String):String{
+				str = str.split(sep)[2];
+				return str.substr(str.indexOf(" "));
+				//return str.split(sep)[2].split(' ')[1];
+			}	
+			
+			private var _projectPropertyCollection:ArrayCollection;
+			public function set projectPropertyCollection (value:ArrayCollection):void
+			{
+					_projectPropertyCollection = value; 						
+			}	
+			public function get projectPropertyCollection ():ArrayCollection
+			{
+				return _projectPropertyCollection;
+			}
+			
+			private function onTabNavigatorChangeAll( event:Event ):void {
+				if(alltabView.selectedIndex == 2){
+					if(allfileView!=null){
+						allfileView.tileFileCollection = model.modelTileFileCollection;
+					}
+				}
+				else if(alltabView.selectedIndex == 1){
+				togBtn.selected = false;
+				accPanel.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+					var fileINDEvents:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_SELECT_IND_FILE);
+			   	 	CairngormEventDispatcher.getInstance().dispatchEvent(fileINDEvents); 
+				}
+				
+				
+				/* else if(alltabView.selectedIndex == 0){
+					var events:Event;
+					allTimeSheet.updateProperties(events);
+				} */
+			}
+			private function showCommonAction(event:MouseEvent):void
+			{
+				allTimeSheet.showAlert(event);
+			}	
+			private function formFun(event:Event,pan:UIComponent):void{
+				//event.currentTarget.getChildAt(0).selected=true;
+				if(event.currentTarget.getChildAt(0).selected == false){
+					event.currentTarget.getChildAt(0).selected = true;
+					remForm(pan);
+				}else{
+					event.currentTarget.getChildAt(0).selected = false;
+					addForm(pan);
+				}
+			}
+			private function addForm(pan:UIComponent):void{
+				pan.includeInLayout = true;
+				pan.visible = true;
+			}
+			private function remForm(pan:UIComponent):void{
+				pan.includeInLayout = false;
+				pan.visible = false;
+			}
+			private function getComments(currentTasks:Tasks):String{
+				var returnStr:String = '';
+				if(currentTasks!=null){
+					return returnStr = getBody(currentTasks.taskComment.toString());
+				}
+				return returnStr;
+			}
+			public function getComment():ByteArray {
+				var by : ByteArray = new ByteArray();
+				by.writeUTFBytes( replyText.text );
+				return by;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:ApplicationControlBar id="headerAll" styleName="headerAppCtrlBar" width="100%" top="32" left="0" >
+			<mx:Canvas width="100%" height="100%">	
+				<mx:VBox width="100%"  height="100%">	
+					<mx:Form width="100%" height="100%" top="45">
+						<mx:FormItem label="{model.loc.getString('projectNameFlex')}" styleName="mainOrangeTitle">
+							<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="{model.loc.getString('senderFlex')}" styleName="subBlueTitle">
+							<mx:Text text="{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+						<mx:FormItem label="{model.loc.getString('receiverFlex')}" styleName="subBlueTitle">
+							<mx:Text text="{model.person.personFirstname+' '+model.person.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+						</mx:FormItem>						
+					</mx:Form>						
+				</mx:VBox>
+				<mx:Button styleName="AVProductLogo" right="45"  />
+				<mx:Text text="Date :{model.currentTasks.tDateCreation+' '}" selectable="false" bottom="5" right="45" textAlign="right" styleName="dateText" />
+			</mx:Canvas>		
+		</mx:ApplicationControlBar>		
+		<mx:TabNavigator top="{headerAll.height+headerAll.y+5}" left="35" right="35" id="alltabView"  minWidth="800" width="100%" height="100%"  backgroundColor="#363636"
+			 creationPolicy="auto" change="onTabNavigatorChangeAll( event )">
+			<mx:Canvas label="{model.loc.getString('propertiesTabFlex')}" width="100%" height="100%">
+				<view:TimesheetChalkBoard id="allTimeSheet" width="100%" height="100%" projectProperty="{model.propertiespresetsCollection}"/>
+			</mx:Canvas>
+			<mx:Canvas label="Reader" width="100%" height="100%">
+				<view:RelecutreCorrection id="relecutreCorrectionId" width="100%" height="100%" />				
+			</mx:Canvas>
+			<mx:Canvas label="{model.loc.getString('filesTabFlex')}" width="100%" height="100%">
+				<view:FileView id="allfileView" width="100%" height="100%" tileFileCollection="{model.modelTileFileCollection}"  />
+			</mx:Canvas>
+		</mx:TabNavigator>	
+		<MainView:HeaderView top="0" left="0" right="0"/>
+		
+		<mx:Canvas width="100%" bottom="0" >
+			<mx:HBox width="100%" id="accPanel" click="formFun(event,replycodForm)" height="30" top="0" styleName="technicalFormHeader">
+				<mx:Button id="togBtn" toggle="true" styleName="chartViewerButton" selected="false"/>
+				<mx:Label text="{model.loc.getString('replyMessageFlex')}" />
+			</mx:HBox>		
+				
+			 <mx:VBox  id="replycodForm" verticalAlign="middle" styleName="technicalFormContainer" includeInLayout="true" visible="true" 
+			 	width="100%" height="100%" verticalGap="5" paddingRight="10" paddingTop="10">
+			 	
+			 	<mx:HBox width="100%" verticalAlign="middle">
+			 		<mx:Text text="{model.loc.getString('commentsFrom')}" width="110" textAlign="right"/>
+    	        	<mx:TextArea id="commentArea" text="{getComments(model.currentTasks)}" editable="false" selectable="false"  styleName="textAreaReader" 
+        	    		width="50%" height="80%" horizontalCenter="0"/>
+            		<mx:Text text="{model.loc.getString('replyCommentsFlex')}" width="110" textAlign="right"/>
+            		<mx:TextArea id="replyText"  
+	            	width="50%" height="80%" horizontalCenter="0"/>
+	            </mx:HBox>
+	            	
+            	 <mx:HBox width="100%" bottom="0" horizontalAlign="center">
+					<mx:Button id="Previous" label="Demande incomplète" name="Previous" styleName="previousBtn" right="50" width="250" click="showCommonAction(event)" enabled="{model.editForm}"/>
+					<mx:Button id="Next" label="VALIDATION" name="Next" styleName="nextBtn" left="50" width="200" click="showCommonAction(event)" enabled="{model.editForm}"/>
+				</mx:HBox>
+				
+         	 </mx:VBox>
+         	
+          
+		<!--	<mx:Form labelWidth="150"  width="100%" height="100%" >
+				<mx:FormItem label="{model.loc.getString('replyCommentsFlex')}" width="100%">
+					<mx:VBox width="100%">	
+						<mx:HBox width="100%">
+							<mx:TextArea id="replyText" width="100%" height="120" enabled="{model.editForm}"/>
+						</mx:HBox>
+						<mx:HBox width="100%">
+							<mx:Button id="Previous" label="Demande incomplète" name="Previous" styleName="previousBtn" right="50" width="250" click="showCommonAction(event)" enabled="{model.editForm}"/>
+							<mx:Button id="Next" label="VALIDATION" name="Next" styleName="nextBtn" left="50" width="200" click="showCommonAction(event)" enabled="{model.editForm}"/>
+						</mx:HBox>
+					</mx:VBox>
+				</mx:FormItem>						
+			</mx:Form>-->
+		</mx:Canvas>
+</mx:Canvas>

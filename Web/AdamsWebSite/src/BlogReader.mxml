@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" verticalCenter="0" horizontalCenter="0" 
+	xmlns:adobecomp="com.adams.blog.components.*"
+	xmlns:adobesrv="com.adams.blog.service.*"
+	xmlns:mxeffects="com.adams.ac.mxeffects.*"  styleName="transparentBackground" 
+	creationComplete="initApp()" width="100%" height="100%" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" >
+	
+	<!--<mx:Style source="styles/reader_styles.css" />-->
+
+	<mx:Script>
+	<![CDATA[
+		import com.adams.blog.events.BlogEvent;
+		import mx.collections.ArrayCollection;
+		import com.adams.blog.data.BlogLink;
+		import mx.controls.LinkButton;
+		import flash.net.navigateToURL;
+		
+		/**
+		 * initApp
+		 *
+		 * Initializes the application by loading data.
+		 */
+		private function initApp() : void
+		{
+			loadData();
+		}
+		
+		/**
+		 * loadData
+		 *
+		 * Requests all of the data: links, categories, articles, etc. from the
+		 * server.
+		 */
+		private function loadData() : void
+		{			
+			blogPhp.getLinks();
+			blogPhp.getCategories();
+			blogPhp.getArticles(true,true);
+			blogPhp.getNews();
+			blogPhp.getBlogDays();
+		}
+		
+		/**
+		 * showEntiesForDate
+		 *
+		 * Requests only the blog entries for a specific date.
+		 */
+		private function showEntriesForDate( event:BlogEvent ) : void
+		{
+			trace("Select : ",event.selectedDate);
+			blogPhp.getArticles(true,true,event.selectedDate);
+		}
+		
+		/**
+		 * showEntriesForCategory
+		 *
+		 * Requests only the blog entries for a specific category
+		 */
+		private function showEntriesForCategory( event:Event ) : void{
+			trace("Show entries for: "+event.target.data);
+			blogPhp.getArticles(true,true,null,event.target.data);
+		}
+		
+		/**
+		 * searchBlogs
+		 *
+		 * Searchs the blogs (title and content) for the given phrase.
+		 */
+		private function searchBlogs() : void
+		{
+			if( keyword.text.length > 0 ) {
+				blogPhp.performSearch(keyword.text);
+			} else {
+				blogPhp.getArticles(true,true);
+			}
+		}
+		
+		/**
+		 * gotoLink
+		 *
+		 * This function is called from the Link buttons in the Links area. It simply opens
+		 * a new browser with the given link.
+		 */
+		private function gotoLink( event:Event ) : void
+		{
+			var button:LinkButton = event.target as LinkButton;
+			var repIndex:Number = button.repeaterIndex;
+			var linkInfo:BlogLink = blogPhp.links.getItemAt(repIndex) as BlogLink;
+			navigateToURL(new URLRequest(linkInfo.url), "_blank");
+		}
+		public function searchBlogsTitle(txt:String) : void
+		{	
+				blogPhp.performSearch(txt);
+		}
+	]]>
+	</mx:Script>
+	
+	<adobesrv:BlogService id="blogPhp" />
+	
+	<!--
+		The background is the place where the articles appear. It is behind everything else and
+		stretched across the page. This allows its scrollbar to appear on the right side of the
+		application, yet scroll the content which has been positioned roughly in the middle.
+	-->
+	<mx:Canvas width="100%" height="100%"  right="0" left="0"  top="0" bottom="0" >
+	<mx:Canvas id="background" left="218"  right="210" top="50" bottom="0"  horizontalScrollPolicy="off" verticalScrollPolicy="auto">
+		
+		<mx:VBox width="100%"  id="contentBox"  backgroundColor="#e5e8ed" >
+			<mx:Repeater id="rep" dataProvider="{blogPhp.articles}" recycleChildren="true">
+				<adobecomp:BlogArticle id="blogArtickleView" data="{rep.currentItem}" width="100%"
+					/>
+				<adobecomp:SeparatorBar width="100%" height="10" alpha=".4"/>
+			</mx:Repeater>
+		</mx:VBox>
+	</mx:Canvas>
+	<mx:ApplicationControlBar top="5" height="35" left="10" right="10" width="100%" verticalAlign="top">
+			 <mx:HBox id="categoriesBox" verticalAlign="middle" label="Categories" width="100%" height="100%"  paddingLeft="5" >
+				<mx:Repeater id="catrep" dataProvider="{blogPhp.categories}">
+					<mx:LinkButton label="{catrep.currentItem.label}" data="{catrep.currentItem.code}" click="showEntriesForCategory(event)" />
+				</mx:Repeater>
+			</mx:HBox>
+			
+			<mx:HBox width="193" id="linkBox" right="28" top="250" bottom="10" verticalAlign="middle">
+			<mx:Label text="Search" styleName="FormLabel"/>
+				<mx:TextInput id="keyword" width="100%" right="32" top="19" enter="searchBlogs()"/>
+				<mx:Button  right="10"  styleName="GoButton" click="searchBlogs()"/>
+			</mx:HBox>
+		</mx:ApplicationControlBar>
+	
+	<!--
+		The Latest News area appears on the left side
+	-->
+	<mx:Canvas width="200" id="newsBox" left="10" top="50" bottom="119"  backgroundColor="#e5e8ed">
+		<mx:Canvas top="0" width="100%" height="38" backgroundColor="#b5bdc9">
+			<mx:Label text="Latest News" styleName="headerText" horizontalCenter="0" verticalCenter="0"/>
+		</mx:Canvas>
+		<mx:VBox left="5" right="5" top="41"  height="282">
+			<mx:Repeater id="newsrep" dataProvider="{blogPhp.news}">
+				<adobecomp:NewsArticle data="{newsrep.currentItem}" width="100%" />
+			</mx:Repeater>
+		</mx:VBox>
+	</mx:Canvas>
+	
+	<mx:Canvas width="200" height="100" id="linkBoxPanel" left="10" top="370" bottom="0" backgroundColor="#e5e8ed">
+		<mx:Canvas top="0" width="100%" height="38" backgroundColor="#b5bdc9">
+			<mx:Label text="Links" styleName="headerText" horizontalCenter="0" verticalCenter="0"/>
+		</mx:Canvas>
+		<mx:VBox id="linksBox"  top="43" label="Links" width="100%" height="100%" paddingTop="5" paddingLeft="5" >
+				<mx:Repeater id="linkrep" dataProvider="{blogPhp.links}">
+					<mx:LinkButton label="{linkrep.currentItem.label}" click="gotoLink(event)" />
+				</mx:Repeater>
+			</mx:VBox>
+	</mx:Canvas>
+	
+	
+	<!--
+		The title area is here because it floats above everything else. This allows the 
+		article section, background, to scroll beneath it.
+	--> 
+	
+	<!--
+		The calendar showing just the days with published articles (not including news).
+	-->
+	<adobecomp:Calendar id="calendar" 
+		right="10" top="50" width="193" 
+		blogDays="{blogPhp.blogDays}"
+		datePick="showEntriesForDate(event)"/>
+	
+	<!--
+		The links, categories, archives, and search area.
+	-->
+	</mx:Canvas>
+	
+</mx:Module>

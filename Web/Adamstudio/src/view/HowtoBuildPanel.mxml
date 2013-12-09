@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	  styleName="transparentBackground"	width="100%" height="100%"
+	 horizontalScrollPolicy="off">
+	 <mx:Script>
+	 	<![CDATA[
+			import mx.core.FlexGlobals;
+	 	]]>
+	 </mx:Script>
+	
+	 <mx:Label styleName="introTitle" text="How to build success?" fontSize="24" left="15" top="15"/>
+     	<mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" 
+				   click="{parentDocument.backtoHome()}"/>
+     <mx:HRule left="15" right="15" top="50" strokeColor="#999999" strokeWidth="1"/>
+     <mx:Image left="15" top="60" source="@Embed('assets/images/Animation_img4.png')"/>
+     <mx:TextArea borderStyle="none" backgroundAlpha="0" 
+     	width="100%" styleName="contFont" height="100%" id="three" 
+     	editable="false" selectable="false" left="230" top="60" right="40" 
+      verticalScrollPolicy="off">
+			<mx:htmlText><![CDATA[<h2>Brennus offers 4 success patterns</h2><br/>
+<h1>UI-oriented design</h1><br><br><li>Try ergonomy solutions first</li><li>Tune UI concepts</li><li>Get users feedback and statistics</li>
+<h1>Retro-engineering and migration</h1><br>
+<li>Integrate in, or replace an existing information system</li><li>Step-by-step migration made easy by the use of all indutry standards and protocols</li><li>Instant benefit from quick development and auto-deployment of components</li>
+<h1>Analysis –Development –Production</h1><br>
+<li>Collecting information from all actors</li><li>Defining the need</li><li>Proposing solutions</li><li>Specifying the application in details</li><li>Developing and full testing</li>
+<h1>Coding hub<h1><br>
+<li>Brennus' development task force can be hired by companies who have their own architecture and design team.</li>]]>
+	     </mx:htmlText>
+		</mx:TextArea>
+		
+</mx:Canvas>

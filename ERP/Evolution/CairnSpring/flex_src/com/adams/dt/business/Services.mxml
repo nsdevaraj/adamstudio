@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cairngorm:ServiceLocator xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:cairngorm="com.universalmind.cairngorm.business.*">
+	<mx:Script>
+		<![CDATA[
+    		import com.adams.dt.model.ModelLocator; 
+    		import mx.rpc.events.InvokeEvent;
+    		
+    		/**
+         	 * The event type for getting all the Languages retrieving purpose used for this services.
+         	 */
+    		public static const LANG_SERVICE:String = 'lang';
+    		
+    		/**
+         	 * The event type for getting all the pagination retrieving purpose used for this services.
+         	 */
+    		public static const PAGE_SERVICE:String = 'paging';
+    		
+    		/**
+     	 	* ModelLocator class instance.
+     	 	*/
+    		[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			
+			/**
+		     * Method Name serviceInvoked.
+		     * currently which type of the event invoke in serverside
+			 * @param InvokeEvent value pass			
+			 * return type void
+		     */
+			private function serviceInvoked(event:mx.rpc.events.InvokeEvent):void{ 
+				trace(event.currentTarget.toString() + ' invoked')
+			} 
+    	]]>
+	</mx:Script> 
+	 
+	<mx:RemoteObject showBusyCursor="true"
+		id="paging" invoke="serviceInvoked(event)"
+		destination="pagingDAO" concurrency="single"
+		channelSet="{model.channelSet}"/> 
+	<mx:RemoteObject showBusyCursor="true"
+		id="lang" invoke="serviceInvoked(event)"
+		destination="lang" concurrency="single"
+		channelSet="{model.langChannelSet}"/> 
+	<mx:RemoteObject showBusyCursor="true"
+		id="MeaningOfLife" invoke="serviceInvoked(event)"
+		destination="MeaningOfLife" concurrency="single"
+		channelSet="{model.langChannelSet}"/> 
+		
+</cairngorm:ServiceLocator>

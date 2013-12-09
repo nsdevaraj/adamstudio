@@ -1,0 +1,243 @@
+/* CSS file */
+global{
+modalTransparency: 0.5;
+modalTransparencyBlur: 5;
+modalTransparencyColor: #272727;
+modalTransparencyDuration: 100;
+}
+WindowedApplication{
+background-Image:Embed("assets/general/AV_bg.jpg");	
+background-size: 			"100%";
+color: #ffffff;
+fontFamily: coFont;
+fontSize: 12;
+}
+@font-face {
+	font-family: coFont;
+	src: url("assets/fonts/tahoma.ttf");
+	font-weight:normal;
+}
+.carouselTxt{
+	color: #ff6600;
+	fontFamily: coFont;
+	fontSize: 18;
+}
+ CheckBox {
+textRollOverColor: #ffffff;
+textSelectedColor: #b1b1b1;
+   color: #ffffff;
+fontFamily: coFont;
+fontSize: 12;
+} 
+.fieldText{
+	color: #000000;
+	fontFamily: coFont;
+	fontSize: 12;
+	
+}
+/* FormItem
+{ 
+	color: #b1b1b1;
+	fontFamily: coFont;
+	fontSize: 12;
+} */
+Alert
+{
+	title-background-skin: 		Embed("/assets/general/alert_titulo1.png", scaleGridTop="9", scaleGridBottom="16", scaleGridLeft="13", scaleGridRight="85");
+	/*background-image: 		Embed("/assets/general/alert.png",  scaleGridTop="10", scaleGridBottom="58", scaleGridLeft="10", scaleGridRight="147");*/
+	background-size: 			"100%";
+	
+	padding-left: 				0;
+	padding-bottom: 			14;
+	padding-right: 				0;
+	padding-top: 				0;
+	
+	header-height: 				25;
+	borderStyle: 				none;
+	background-color: 			none;
+	
+	border-thickness-top:		0;
+	border-thickness-bottom:	0;
+	border-thickness-left:		0;
+	border-thickness-right:		0;
+
+	
+	color: 						#333333;
+	
+	messageStyleName: 			"alertText";
+	title-style-name:			"myTitle";
+}
+.alertText
+{
+	background-image: 			Embed("/assets/general/alert_fondo1.png", scaleGridTop="1", scaleGridBottom="26", scaleGridLeft="5", scaleGridRight="85");
+	background-size: 			"100%";
+	font-family:				coFont;
+	font-size:					11;
+	font-weight: 				normal;
+}
+List {
+   backgroundColor: #333333;
+   rollOverColor: #666666;
+   textRollOverColor: #000000;
+   borderColor: #000000;
+   selectionColor: #000000;
+   color: #cccccc;
+   textSelectedColor: #ffffff;
+   fontFamily: coFont;
+   background-alpha: 0.9;
+}
+
+.myTitle
+{
+	font-family:				coFont;
+	font-size:					12;
+	font-weight: 				normal;
+	color:						#ffffff;
+	padding-left:				3;	
+}
+
+Button{
+	up-skin:        		Embed("/assets/general/boton_classic.png", scaleGridTop="6", scaleGridBottom="14", scaleGridLeft="6", scaleGridRight="14");
+	over-skin:      		Embed("/assets/general/boton_classic1.png", scaleGridTop="6", scaleGridBottom="14", scaleGridLeft="6", scaleGridRight="14");
+	down-skin:      		Embed("/assets/general/boton_classic2.png", scaleGridTop="6", scaleGridBottom="14", scaleGridLeft="6", scaleGridRight="14");
+	disabled-skin:			Embed("/assets/general/boton_dis.png", scaleGridTop="6", scaleGridBottom="14", scaleGridLeft="6", scaleGridRight="11");
+
+	color: 					#000000;
+	font-family: 			coFont;
+	font-weight:			normal;
+	font-size:				11;
+
+	padding-left: 			6;
+	padding-right: 			6;
+
+	text-roll-over-color: 	#333333;
+	text-selected-color: 	#000000;
+
+}
+ScrollBar
+{
+	up-arrow-up-skin: 		Embed("/assets/general/Vtarrow.png" );
+	up-arrow-over-skin:		Embed("/assets/general/Vtarrow_over.png");
+	up-arrow-down-skin:		Embed("/assets/general/Vtarrow.png");
+	
+	down-arrow-up-skin:		Embed("/assets/general/Vbarrow.png" );
+	down-arrow-over-skin:	Embed("/assets/general/Vbarrow_over.png");
+	down-arrow-down-skin:	Embed("/assets/general/Vbarrow.png");
+	
+	thumb-up-skin:			Embed("/assets/general/Vthumb.png", scaleGridTop="15", scaleGridBottom="20", scaleGridLeft="2", scaleGridRight="11");
+	thumb-over-skin:		Embed("/assets/general/Vthumb_over.png", scaleGridTop="15", scaleGridBottom="20", scaleGridLeft="2", scaleGridRight="11");
+	thumb-down-skin:		Embed("/assets/general/Vthumb.png", scaleGridTop="15", scaleGridBottom="20", scaleGridLeft="2", scaleGridRight="11");
+	
+	track-skin: 			Embed("/assets/general/Vbar.png", scaleGridTop="25", scaleGridBottom="30", scaleGridLeft="6", scaleGridRight="8");
+	/*track-down-skin: 		Embed("/assets/img/Scroll_fondo.png", scaleGridTop="26", scaleGridBottom="28", scaleGridLeft="8", scaleGridRight="9");*/
+
+	/* thumb-icon:				Embed("/assets/img/scroll_icon.png");  */
+}
+
+.veepeepost{
+	up-skin:        		Embed("/assets/general/traceablility.png");
+	over-skin:      		Embed("/assets/general/traceablility_over.png");
+	down-skin:      		Embed("/assets/general/traceablility.png");
+	disabled-skin:			Embed("/assets/general/traceablility.png");
+	
+}
+.webcenter{
+	up-skin:        		Embed("/assets/general/dataOnline.png");
+	over-skin:      		Embed("/assets/general/dataOnline_over.png");
+	down-skin:      		Embed("/assets/general/dataOnline.png");
+	disabled-skin:			Embed("/assets/general/dataOnline.png");
+	
+}
+.perigee{
+	up-skin:        		Embed("/assets/general/ftpService.png");
+	over-skin:      		Embed("/assets/general/ftpService_over.png");
+	down-skin:      		Embed("/assets/general/ftpService.png");
+	disabled-skin:			Embed("/assets/general/ftpService.png");
+	
+}
+
+.net2ftp{
+up-skin:        		Embed("/assets/general/secureTransfer.png");
+	over-skin:      		Embed("/assets/general/secureTransfer_over.png");
+	down-skin:      		Embed("/assets/general/secureTransfer.png");
+	disabled-skin:			Embed("/assets/general/secureTransfer.png");
+}
+
+.tracabilite{
+	up-skin:        		Embed("/assets/general/iBrief.png");
+	over-skin:      		Embed("/assets/general/iBrief_over.png");
+	down-skin:      		Embed("/assets/general/iBrief.png");
+	disabled-skin:			Embed("/assets/general/iBrief.png");
+}
+
+.AV{
+	up-skin:        		Embed("/assets/general/webCenter.png");
+	over-skin:      		Embed("/assets/general/webCenter_over.png");
+	down-skin:      		Embed("/assets/general/webCenter.png");
+	disabled-skin:			Embed("/assets/general/webCenter.png");
+}
+
+
+/* .veepeepost{
+	up-skin:        		Embed("/assets/general/webCenter.png");
+	over-skin:      		Embed("/assets/general/webCenter_over.png");
+	down-skin:      		Embed("/assets/general/webCenter.png");
+	disabled-skin:			Embed("/assets/general/webCenter.png");
+}
+.webcenter{
+	up-skin:        		Embed("/assets/general/iBrief.png");
+	over-skin:      		Embed("/assets/general/iBrief_over.png");
+	down-skin:      		Embed("/assets/general/iBrief.png");
+	disabled-skin:			Embed("/assets/general/iBrief.png");
+}
+.perigee{
+	up-skin:        		Embed("/assets/general/secureTransfer.png");
+	over-skin:      		Embed("/assets/general/secureTransfer_over.png");
+	down-skin:      		Embed("/assets/general/secureTransfer.png");
+	disabled-skin:			Embed("/assets/general/secureTransfer.png");
+}
+
+.net2ftp{
+	up-skin:        		Embed("/assets/general/ftpService.png");
+	over-skin:      		Embed("/assets/general/ftpService_over.png");
+	down-skin:      		Embed("/assets/general/ftpService.png");
+	disabled-skin:			Embed("/assets/general/ftpService.png");
+}
+
+.tracabilite{
+	up-skin:        		Embed("/assets/general/dataOnline.png");
+	over-skin:      		Embed("/assets/general/dataOnline_over.png");
+	down-skin:      		Embed("/assets/general/dataOnline.png");
+	disabled-skin:			Embed("/assets/general/dataOnline.png");
+}
+
+.AV{
+	up-skin:        		Embed("/assets/general/traceablility.png");
+	over-skin:      		Embed("/assets/general/traceablility_over.png");
+	down-skin:      		Embed("/assets/general/traceablility.png");
+	disabled-skin:			Embed("/assets/general/traceablility.png");
+}
+
+
+ */
+/* <IMAGE>veepeepost.png</IMAGE>.
+<IMAGE>webcenter.png</IMAGE>
+<IMAGE>perigee.png</IMAGE>
+<IMAGE>net2ftp.png</IMAGE>
+<IMAGE>tracabilite.png</IMAGE>
+<IMAGE>AV.png</IMAGE> */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" 
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+	currentState="{getState(model.expiryState)}" backgroundColor="#363636"
+	xmlns:util="com.adams.dt.business.*" 
+	xmlns:business="com.adams.dt.business.*" 
+	xmlns:control="com.adams.dt.control.*" 
+	xmlns:view="com.adams.dt.view.*"
+	xmlns:todo="com.adams.dt.view.components.*" initialize="initApp();" creationComplete="creationComplete();" 
+	xmlns:MainView="com.adams.dt.view.MainView.*"> 
+	
+	<mx:Style source="assets/iBrief/css/Main.css"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.StringUtils;
+			import com.adams.dt.business.util.EncryptUtil;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.event.PersonsEvent;
+			import mx.rpc.IResponder;
+			import mx.messaging.channels.AMFChannel;
+			import mx.collections.ArrayCollection;
+			import mx.messaging.ChannelSet;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.event.PresetTemplateEvent;
+			import com.adams.dt.event.ChannelSetEvent;
+			import com.adams.dt.model.vo.LoginVO;
+			import com.adams.dt.event.LangEvent;
+			import com.adobe.cairngorm.control.CairngormEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.generator.SequenceGenerator; 
+			
+			 
+			[Bindable]
+			private var taskLocalId:Number;
+			private var btn_name:String;
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();
+			private var channelSet:ChannelSet;
+			private var channelSetsep:ChannelSet;
+			[Bindable]
+			private var impProjectLocalId:Number;
+			[Bindable]
+			private var personLocalId:Number;
+			[Bindable]
+			private var taskLocalEmailId:String;
+			[Bindable]
+			private var fileLocalId:Number;	
+			[Bindable]
+			private var urlvalue:String;
+			[Bindable]
+			private var commonUserName:String;
+			[Bindable]
+			private var commonPassword:String;
+			private var fileReference:FileReference;
+			private var superbFileReference:FileReference;
+			private var mLoader:Loader;
+			private var allTypeFilter:FileFilter = new FileFilter("All Files (*.*)","*.*");
+			private var mailArrColl:ArrayCollection = new ArrayCollection();
+			private var parentFolderName:String = "";
+			private var _strUploadScript:String = "c:/temp/";
+			private var fileReferenceind:FileReference;
+			[Bindable]
+    		[Embed("assets/iBrief/swf/additionalAssetsReader.swf#preloader")]
+   			private var LOADING:Class;
+   			private var upArray:Array;
+   			[Bindable]
+   			private var displyType:Boolean = false;
+   			[Bindable]
+   			private var windowsCloseConfirmation:String="Yes"; 	
+   			
+			private var sep:String = "&#$%^!@";	
+			private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}			
+			private function getBody(str:String):String{
+				return String(str.split(sep)[2]);
+			} 
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+   			private function initApp():void{
+				if(ExternalInterface.available){
+					ExternalInterface.addCallback("callRequest",callRequest);
+					ExternalInterface.addCallback("callPathFunc",callPathFunc);
+					ExternalInterface.call("requestForPath");
+				}
+			}
+			
+			private function callPathFunc(str:String):void{
+				parentFolderName = str;
+			}
+			private function callRequest(str:String):void{
+				if(ExternalInterface.available){					
+					ExternalInterface.call("requestService",model.windowsCloseConfirmation);
+				}
+			}
+			
+			private function getState(cState:String):String{
+				if(cState=="datafoundState"){
+					vs.selectedChild = foundalert;
+					model.windowsCloseConfirmation = "No";	
+				}
+				else if(cState=="expireState"){ 
+					vs.selectedChild = expirealert;
+					model.windowsCloseConfirmation = "No";				
+				}
+				else if(cState=="sentState"){
+					vs.selectedChild = sentalert;
+					model.windowsCloseConfirmation = "No";	
+				}
+				else if(cState=="mailState"){ 
+					vs.selectedChild = mailAlertView;
+					model.businessCard = model.person;		
+				}
+				else if(cState=="loadState"){vs.selectedChild = loadalert}
+				/* else if(cState=="todoState"){vs.selectedChild = todoAlertView} 
+				else if(cState=="impState"){vs.selectedChild = impAlertView} */
+				else if(cState=="delaySendState"){vs.selectedChild = delayloadalert}
+				/* else if(cState=="indState"){vs.selectedChild = indalert}	 */	
+				else if(cState=="invalidState"){vs.selectedChild = validatealert}
+				else if(cState=="AllViewState"){vs.selectedChild = allalert}				
+				return '';
+			}
+						
+			public function creationComplete():void{
+				model.mainClass = this;	
+			
+				model.expiryState = "delaySendState";
+				initChannel();
+			} 
+			private function initChannel():void{ 
+				var url:String = Application.application.parameters.htmlURL; 
+				var urlsvalues:String = Application.application.parameters.htmlURL; 							
+				urlvalue = urlsvalues.substring(0,urlsvalues.lastIndexOf(".html")+5);
+				urlvalue = urlvalue.substring(0,urlvalue.lastIndexOf("/")); 
+				urlvalue = urlvalue.substring(0,urlvalue.lastIndexOf("/")+1);							
+				url = url.split("#amp").join("&");  /* */   
+				    
+				//var tempurl:String = "http://192.168.1.12:8181/DTFlex/ExternalMail/flexexternalmail.html?type=All%23ampuser=vincent31%23amppass=ctpmb%23amptaskId=4%23ampprojId=1";
+				 		
+				/*   var url:String = tempurl; 
+				var urlsvalues:String = tempurl; 							
+				urlvalue = urlsvalues.substring(0,urlsvalues.lastIndexOf(".html")+5);
+				urlvalue = urlvalue.substring(0,urlvalue.lastIndexOf("/")); 
+				urlvalue = urlvalue.substring(0,urlvalue.lastIndexOf("/")+1);							
+				url = url.split("%23amp").join("&");*/        
+				
+				model.serverLocation = urlvalue;
+				model.editForm = true;	
+				
+				var langchannel:AMFChannel = new AMFChannel("my-longpolling-amf", model.serverLocation+"spring/messagebroker/amflongpolling");
+   				var channelSetlang:ChannelSet = new ChannelSet();
+   				channelSetlang.addChannel(langchannel);
+   				model.langChannelSet = channelSetlang; 
+							
+ 				var channel:AMFChannel = new AMFChannel("my-longpolling-amf", model.serverLocation+"spring/messagebroker/amflongpolling");
+ 				channelSet = new ChannelSet();
+				channelSet.addChannel(channel); 
+				model.channelSet = channelSet;
+					
+				var channelss:AMFChannel = new AMFChannel("my-polling-amf", model.serverLocation+"spring/messagebroker/amfpolling");
+ 				channelSetsep = new ChannelSet();
+				channelSetsep.addChannel(channelss); 
+				model.channelSet = channelSetsep;
+				
+				var pushchannel:AMFChannel = new AMFChannel("my-longpolling-amf", model.serverLocation+"spring/messagebroker/amflongpolling");
+   				var pushchannelSet:ChannelSet = new ChannelSet();
+   				pushchannelSet.addChannel(pushchannel);
+   				model.pushchannelset = channelSetsep; 
+				
+				model.parentFolderName = parentFolderName;
+								
+				var rootFile:String = url.split(".html?")[1];			    									
+				var viewtype:String = rootFile.split("&")[0];	
+				var typeName:String = viewtype.split("type=")[1]; 
+				
+				model.typeSubAllName = "";
+					
+				trace("url :"+url+"\n");
+				trace("viewtype :"+viewtype+"\n");
+				trace("typeName :"+typeName+"\n");
+								
+				if(typeName == 'Mail'){		
+					model.typeName = "Mail";
+					model.HeaderDetails = "Mail";										
+					
+					var setMessageuser:String = rootFile.split("&")[1];
+					commonUserName = setMessageuser.split("user=")[1];
+					commonUserName = decryptionsUserLogin(commonUserName);
+					trace("Mail -- commonUserName :"+commonUserName+"\n");
+
+					var setMessagepass:String = rootFile.split("&")[2];
+					commonPassword = setMessagepass.split("pass=")[1];
+					commonPassword = decryptionsUserLogin(commonPassword);
+					trace("Mail -- commonPassword :"+commonPassword+"\n");
+					
+					var setMessagetask:String = rootFile.split("&")[3];
+					taskLocalId = setMessagetask.split("msgId=")[1];
+					trace("Mail -- taskLocalId :"+taskLocalId+"\n");
+					model.modelTaskLocalId = taskLocalId;
+					
+					authendications(commonUserName,commonPassword); 
+					
+					//if(todoAlertView.planView!=null)todoAlertView.planView.selectedIndex = 0;
+					displyType = false;
+				}				
+				else if(typeName == 'Prop'){
+					model.typeName = "Prop";
+					model.HeaderDetails = "Mail Imprimeur";
+					
+					var setMessageuser:String = rootFile.split("&")[1];
+					commonUserName = setMessageuser.split("user=")[1];
+					commonUserName = decryptionsUserLogin(commonUserName);
+					trace("prop -- commonUserName :"+commonUserName+"\n");
+					
+					var setMessagepass:String = rootFile.split("&")[2];
+					commonPassword = setMessagepass.split("pass=")[1];
+					commonPassword = decryptionsUserLogin(commonPassword);
+					trace("prop -- commonPassword :"+commonPassword+"\n");
+					
+					var setMessagetask:String = rootFile.split("&")[3];			
+					taskLocalId = setMessagetask.split("IMPtaskId=")[1];
+					trace("prop -- taskLocalId :"+taskLocalId+"\n");
+					model.modelTaskLocalId = taskLocalId;
+										
+					var setMessageproj:String = rootFile.split("&")[4];	
+					impProjectLocalId = setMessageproj.split("IMPprojId=")[1];	
+					trace("prop -- impProjectLocalId :"+impProjectLocalId+"\n");
+					
+					authendications(commonUserName,commonPassword); 
+					
+					//todoAlertView.planView.selectedIndex = 0;
+					displyType = true;
+				}
+				else if(typeName == 'EMailId') {		
+					model.typeName = "EMailId";
+					model.HeaderDetails = "Rss";
+								
+					var setmailId:String = rootFile.split("&")[1];
+					status("EMailId -- setmailId :"+setmailId+"\n");
+					
+					taskLocalEmailId = setmailId.split("mailId=")[1];
+					status("EMailId -- setmailId :"+taskLocalEmailId+"\n");
+										
+					//todoAlertView.planView.selectedIndex = 0;
+					displyType = true;
+					getEmailSearch(taskLocalEmailId);
+				} 
+				//else if(typeName == 'Tab2')  //else if(typeName == 'Reader') 
+				else if(typeName == 'Reader'){		
+					model.typeName = "Reader";
+					model.HeaderDetails = "Flex reader";
+								
+					var setMessageuser:String = rootFile.split("&")[1];
+					commonUserName = setMessageuser.split("user=")[1];
+					commonUserName = decryptionsUserLogin(commonUserName);
+					trace("Reader -- commonUserName :"+commonUserName+"\n");
+					
+					var setMessagepass:String = rootFile.split("&")[2];
+					commonPassword = setMessagepass.split("pass=")[1];
+					commonPassword = decryptionsUserLogin(commonPassword);
+					trace("Reader -- commonPassword :"+commonPassword+"\n");
+					
+					var setMessagetask:String = rootFile.split("&")[3];			
+					taskLocalId = setMessagetask.split("INDtaskId=")[1];
+					trace("Reader -- taskLocalId :"+taskLocalId+"\n");
+					model.modelTaskLocalId = taskLocalId;
+					
+					var setMessageproj:String = rootFile.split("&")[4];	
+					impProjectLocalId = setMessageproj.split("INDprojId=")[1];	
+					trace("Reader -- impProjectLocalId :"+impProjectLocalId+"\n");
+					model.modelProjectLocalId = impProjectLocalId;
+										
+					/* var setMessagefile:String = rootFile.split("&")[5];	
+					fileLocalId = setMessagefile.split("INDfileId=")[1];	
+					trace("Reader -- fileLocalId :"+fileLocalId+"\n");
+					model.modelFileLocalId = fileLocalId; */
+					
+					authendications(commonUserName,commonPassword); 
+					
+					//todoAlertView.planView.selectedIndex = 0;
+					displyType = true;
+				} 
+				else if(typeName == 'All') {
+					model.typeName = "All";
+					model.HeaderDetails = "VALIDATION CREA";
+					
+					var setMessageuser:String = rootFile.split("&")[1];
+					commonUserName = setMessageuser.split("user=")[1];
+					commonUserName = decryptionsUserLogin(commonUserName);
+					trace("All -- commonUserName :"+commonUserName+"\n");
+					
+					var setMessagepass:String = rootFile.split("&")[2];
+					commonPassword = setMessagepass.split("pass=")[1];
+					commonPassword = decryptionsUserLogin(commonPassword);
+					trace("All -- commonPassword :"+commonPassword+"\n");
+					
+					var setMessagetask:String = rootFile.split("&")[3];			
+					taskLocalId = setMessagetask.split("taskId=")[1];
+					trace("All -- taskLocalId :"+taskLocalId+"\n");
+					model.modelTaskLocalId = taskLocalId;
+										
+					var setMessageproj:String = rootFile.split("&")[4];	
+					impProjectLocalId = setMessageproj.split("projId=")[1];	
+					trace("All -- impProjectLocalId FIRST:"+impProjectLocalId+"\n");
+					if(!int(impProjectLocalId)){
+						impProjectLocalId = setMessageproj.split("projId=")[1].split('#')[0]
+					}
+					trace("All -- impProjectLocalId SECOND:"+impProjectLocalId+"\n");
+					model.modelProjectLocalId = impProjectLocalId;
+					
+					model.delayUpdateTxt = "URL's details verfied";
+					
+					authendications(commonUserName,commonPassword); 
+					
+					//todoAlertView.planView.selectedIndex = 0;
+					displyType = true;
+				}
+			}
+			private function decryptionsUserLogin(encryptionName:String):String{
+				var encryptor:EncryptUtil = new EncryptUtil();				
+				var decryptionValue:String = encryptor.decrypt((StringUtils.replace(unescape(encryptionName),'%2B','+')));
+				return decryptionValue;
+			}
+			private function authendications(user:String,pass:String):void{
+				var loginVO : LoginVO = new LoginVO();
+  				loginVO.userName = user;
+  				loginVO.password = pass;
+   				var csevent:ChannelSetEvent = new ChannelSetEvent( ChannelSetEvent.SET_CHANNEL );
+  				csevent.loginVO = loginVO;
+ 	 			var eventsArr:Array = [csevent]
+  				var handler:IResponder = new Callbacks(result,fault)
+  				var loginSeq:SequenceGenerator = new SequenceGenerator(eventsArr,handler)
+  				loginSeq.dispatch();
+			}			
+	       	public function result(ev:Event):void {
+	       	}
+	       	public function fault(ev:Event):void {
+	       	}
+			
+			private function getEmailSearch(taskEmailId:String):void{	
+				var levent :LangEvent = new LangEvent(LangEvent.EVENT_GET_ALL_LANGS);
+				var getAllpresetTemp:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_GETALL_PRESETTEMPLATE,handler);
+				var event:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GET_PERSONS);
+				//event.emailId = taskEmailId;
+				event.loginName = taskEmailId;   //martin2  //wvalmy //ovalmy  
+          		var eventconsumer:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CONSU_STATUSONLINE);
+    			var evtArr:Array = [levent,getAllpresetTemp,event,eventconsumer]
+    			
+			 	var handler:IResponder = new Callbacks(Resultsview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch();			
+			}  
+			public function Resultsview(rpcEvent : Object):void{
+				trace("Resultsview language")       	
+				//model.loc.language=="Fr"?frCheck.selected = true:enCheck.selected = true;
+	        }
+		 	public function messageSettings():void { 
+		 		model.expiryState = "sentState";
+		 		model.windowsCloseConfirmation = "No";
+		 	} 
+		 	public function status(msg:String):void{
+				//statusArea.text += msg;
+				//statusArea.validateNow();
+				//statusArea.verticalScrollPosition = statusArea.textHeight;
+			}
+			private function downloadAttechments(event:MouseEvent):void{
+				getDownloadFilePath(int(event.currentTarget.name));
+			}
+			private function getDownloadFilePath(fileLocalId:Number):void{
+				var event:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_FILEDETAILS);
+				event.filedetailsVo = new FileDetails();
+				event.filedetailsVo.fileId = fileLocalId;
+          		CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}
+			public function SaveMessage(event:MouseEvent):void{	
+          		fileReference = new FileReference();
+				fileReference.save(model.modelByteArrray);				
+			}
+			private function sentMailview(rpcEvent : Object):void{
+				model.expiryState = "sentState";//currentState = "sentState";
+			}
+			private function onIOError(event:IOErrorEvent):void{
+				Alert.show(event.text);
+			}
+			private function onSecurityError(event:Event):void{
+				Alert.show(event.toString());
+			}
+			public function indSaveMessage(event:MouseEvent):void{	
+          		fileReferenceind = new FileReference();          		
+				fileReferenceind.save(model.modelIMPByteArrray,model.saveRefFilename);
+			} 	
+			/* public function TimeSheetAction(event:MouseEvent):void{
+				if(allalert.allTimeSheet!=null){
+					btn_name = event.currentTarget.name;
+					if(btn_name == 'Previous'){
+						allalert.allTimeSheet.Previous.dispatchEvent(event);
+					}else{
+						allalert.allTimeSheet.Next.dispatchEvent(event);
+					}
+				}
+			} */
+			
+		]]>
+	</mx:Script>
+	<business:Services id="loginService"/>
+	<control:DTController id="controller"/> 
+	
+	<mx:ViewStack width="100%" id="vs" creationPolicy="auto" height="100%">
+		<mx:HBox width="100%" id="validatealert" label="validatealert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Text text="{model.invalideAlertName}" styleName="menuText"  selectable="false"/>
+		</mx:HBox>
+		
+		<mx:HBox width="100%" id="delayloadalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Image id="delayimage" verticalCenter="0" horizontalCenter="0" source="{LOADING}" width="22"	height="22"/>
+			<mx:Text id="delayTxt" text="{model.delayUpdateTxt}" styleName="menuText" selectable="false"/>
+		</mx:HBox>
+		  
+		<mx:HBox width="100%" id="loadalert" label="loadalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Image id="image" verticalCenter="0"	horizontalCenter="0" source="{LOADING}" width="22"	height="22"/>
+			<mx:Text text="Loading" styleName="menuText" selectable="false"/>
+		</mx:HBox>
+		
+		<mx:HBox width="100%" id="expirealert" label="expirealert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Text text="{model.loc.getString('yourmessageExpiredFlex')}" styleName="menuText"  selectable="false"/>
+		</mx:HBox>
+		
+		<mx:HBox width="100%" id="foundalert" label="foundalert" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Text text="Data not Found" styleName="menuText"  selectable="false"/>
+		</mx:HBox>
+		
+		<mx:HBox id="sentalert" label="sentAlert" width="100%" height="100%"  horizontalAlign="center" verticalAlign="middle" >
+			<mx:Text text="{'Your message has been sent'+model.taskStatus}" styleName="menuText"  selectable="false"/>
+			<mx:VBox  horizontalCenter="0" verticalCenter="0" label="ID DETAIL" includeInLayout="false" visible="false" >
+				<mx:TextArea id="statusArea" width="600" height="400" editable="false" verticalScrollPolicy="auto" includeInLayout="false" visible="false"/>
+			</mx:VBox>
+		</mx:HBox>	
+		
+		<MainView:MailView id="mailAlertView" label="Mail"  width="100%" height="100%" mailTaskLocalID="{taskLocalId}"/>
+		
+		<!--<MainView:ImpAlertView id="impAlertView" label="IMPAlert"  width="100%" height="100%"/>
+		
+		<MainView:TodoAlertView id="todoAlertView" label="todoALert" width="100%" height="100%"/>
+		
+		<view:RelecutreCorrection id="indalert" label="indAlert"  width="100%" height="100%" />-->				
+		
+		<MainView:GeneralView id="allalert"  label="GeneralView" width="100%" height="100%" />
+	</mx:ViewStack>
+</mx:Application>

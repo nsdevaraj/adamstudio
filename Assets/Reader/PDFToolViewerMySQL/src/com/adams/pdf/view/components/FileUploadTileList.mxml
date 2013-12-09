@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" width="100%" height="100%"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 creationComplete="initializationVariable(event)" 
+		 xmlns:components="com.adams.swizdao.views.components.*">
+	
+	<fx:Script>
+		<![CDATA[
+			/*
+			
+			Copyright (c) 2011 Adams Studio India, All Rights Reserved 
+			
+			@author   V.Kumar
+			@contact  kutti.kumar@gmail.com
+			@project  PDFTool
+			
+			@internal 
+			
+			*/
+			import com.adams.pdf.model.AbstractDAO;
+			import com.adams.pdf.model.vo.FileDetails;
+			import com.adams.pdf.model.vo.FileReferenceVO;
+			import com.adams.pdf.signal.ControlSignal;
+			import com.adams.pdf.util.DateUtil;
+			import com.adams.pdf.util.Utils;
+			import com.adams.pdf.view.mediators.MainViewMediator;
+			import com.adams.swizdao.model.vo.CurrentInstance;
+			import com.adams.swizdao.response.SignalSequence;
+			import com.adams.swizdao.util.EncryptUtil;
+			import com.adams.swizdao.util.FileNameSplitter;
+			import com.adams.swizdao.util.GetVOUtil;
+			import com.adams.swizdao.util.StringUtils;
+			
+			import flash.events.Event;
+			import flash.events.IOErrorEvent;
+			import flash.events.ProgressEvent;
+			import flash.net.FileReference;
+			import flash.net.FileReferenceList;
+			import flash.net.URLRequest;
+			import flash.net.URLRequestHeader;
+			import flash.net.URLRequestMethod;
+			import flash.net.URLVariables;
+			import flash.utils.ByteArray;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.ClassFactory;
+			import mx.events.CollectionEvent;
+			import mx.events.FlexEvent;
+			
+			import org.osflash.signals.Signal;
+			
+			import spark.components.List;
+			import spark.components.supportClasses.ListBase;
+			import spark.events.IndexChangeEvent;
+			import spark.layouts.TileLayout;
+			
+			public static const SHOW_ITEM:String = "showItem";
+			public static const COMPLETE_ITEM_UPLOAD:String = "completeItemUpload";
+			public static const COMPLETE_ALL_UPLOAD:String = "completeAllUpload";
+			public static const REPLACE_ITEM:String = "replaceItem";
+			public static const CANCEL_ITEM:String = "cancelItem";
+			public static const DELETE_ITEM:String = "deleteItem";
+			public static const DELETE_INNER_ITEM:String = "deleteInnerItem";
+			public static const DOWNLOAD_ITEM:String = "downloadItem";
+			public static const PREVIEW_ITEM:String = "previewItem";
+			public static const RENAME_ITEM:String = "renameItem";
+			public static const INFO_ITEM:String = "infoItem";
+			public static const COMPARISION_ITEM:String = "compareItem";
+			
+			public static const SELECT_PREVIOUS_ITEM:String = "selectPreItem";
+			
+			
+			[Inject]
+			public var currentInstance:CurrentInstance; 
+			
+			[Inject]
+			public var mainViewMediator:MainViewMediator;
+			
+			[Inject]
+			public var signalSeq:SignalSequence;
+			
+			[Inject]
+			public var controlSignal:ControlSignal;
+			
+			[Inject("filedetailsDAO")]
+			public var filedetailsDAO:AbstractDAO;
+			
+			//[Inject("projectsDAO")]
+			//public var projectDAO:AbstractDAO;
+			
+			public var renderSignal:Signal = new Signal();
+			
+			public var serverPath:String;
+			public var destinationPath:String;
+			
+			public var currentFileId:int = 0;
+			
+			public var fileListDataProvider:ArrayCollection = new ArrayCollection();
+			public var tempAc:ArrayCollection =  new ArrayCollection();
+			private var currentUploadingObejct:Object = new Object();
+			
+			public const OLD_FILE:String = "oldFile";
+			public const NEW_FILE:String = "newFile";
+			
+			private var imageExtensionArray:Array = ["jpg","jpeg","png","tiff","gif","bmp"];
+			private var docExtensionArray:Array = ["doc","txt","rtf","docx","docm","odt","html"];
+			private var zipExtensionArray:Array = [".7z",".rar",".zip",".zipx",".tgz",".taz"];
+			private var dataExtensionArray:Array = [".xls",".ods"];
+			private var audioExtensionArray:Array = [".aac",".wav",".wma",".mp3",".wave"];
+			private var videoExtensionArray:Array = [".3gp",".avi",".wmv",".flv",".mov",".mpeg",".mpeg4"];
+			private var monthName:Array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+			
+			private var fileObject:FileReference;
+			private var currentUploadedFilePath:String = "";
+			[Bindable]
+			public var uploadNotInProcess:Boolean = true;		
+			
+			[Embed(source="assets/swf/Icon.swf#imageIcon")]
+			private var imageIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#audioIcon")]
+			private var audioIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#otherIcon")]
+			private var otherIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#zipIcon")]
+			private var zipIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#videoIcon")]
+			private var videoIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#pdfIcon")]
+			private var pdfIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#xlsIcon")]
+			private var xlsIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#xmlIcon")]
+			private var xmlIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#psdIcon")]
+			private var psdIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#swfIcon")]
+			private var swfIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#flaIcon")]
+			private var flaIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#aiIcon")]
+			private var aiIcon:Class;
+			[Embed(source="assets/swf/Icon.swf#docIcon")]
+			private var docIcon:Class;
+			
+			private var optionAr:ArrayList = new ArrayList([{downloadItem:"Download"}]);
+			private var fileRefList:FileReferenceList;
+			private var _fileType:String = Utils.BASICFILETYPE;
+			private var downloadReference:FileReference;
+			
+			[Bindable]
+			private var uploadVisible:Boolean;
+			[Bindable]
+			private var controlsVisible:Boolean;
+			
+			private var tempFileObj:FileDetails;
+			private var replaceBool:Boolean = false;
+			
+			private var _componentType:String = "default";
+			
+			public function get componentType():String
+			{
+				return _componentType;
+			}
+			
+			[Bindable] 
+			[Inspectable(defaultValue='default', category="Other", enumeration="upload,dashboard")] 
+			public function set componentType(value:String):void
+			{
+				_componentType = value;
+				setCurrentView();
+			}
+			
+			
+			public function get fileType():String {
+				return _fileType;
+			}
+			
+			[Bindable]
+			public function set fileType( value:String ):void {
+				_fileType = value;
+			}
+			
+			private var _currentListComp:Object;
+			
+			public function get currentListComp():Object
+			{
+				switch(currentState){
+					case "ThumbViewState":
+						_currentListComp = fileList;
+						break;
+					case "ListViewState":
+						_currentListComp = fileGrid;
+						break;
+					case "DetailViewState":
+						_currentListComp = fileList;
+						break;
+				}
+				return _currentListComp;
+				
+			}
+			
+			public function set currentListComp(value:Object):void
+			{
+				_currentListComp = value;
+			}
+			[Bindable]
+			private var listStyle:String;
+			
+			private function setCurrentView():void{
+				currentState="ThumbViewState";
+				controlsVisible = false;
+				uploadVisible = false;
+				listStyle = "";
+				switch(componentType){
+					case "default":
+						optionAr = new ArrayList([{downloadItem:"Download"}]);
+						setDefaultRenderer();
+						break;
+					case "upload":
+						uploadVisible = true;
+						optionAr = new ArrayList([{deleteItem:"Delete"}]);
+						setDefaultRenderer();
+						break;
+					case "dashboard":
+						listStyle = "fileList"
+						controlsVisible = true;
+						optionAr= new ArrayList([{previewItem:"Preview"},{compareItem:"Compare"},{renameItem:"Rename"},{infoItem:"Info"},{downloadItem:"Download"},
+							{replaceItem:"Replace"},{deleteItem:"Delete"}]);
+						break;
+				}
+			}
+			private function setDefaultRenderer():void{
+				/* if(fileList){
+					fileList.itemRenderer = new ClassFactory(ListThumbRenderer)
+					tileLayout.columnWidth = 50;
+					tileLayout.rowHeight = 50;
+					controlsPanel.selectedIndex=1;	
+				} */
+			}
+			private function setDetailRenderer():void{
+				/* fileList.itemRenderer = new ClassFactory(ListDetailRenderer)
+				tileLayout.columnWidth = 150;
+				tileLayout.rowHeight = 75; */
+			}
+			protected function onViewChangeHandler(event:IndexChangeEvent):void{
+				switch(controlsPanel.selectedItem.value){
+					case "listView":
+						currentState="ListViewState";
+						onDataChange();
+						break;
+					case "thumbView":
+						currentState="ThumbViewState";
+						setDefaultRenderer()
+						break;
+					case "detailView":
+						currentState="DetailViewState";
+						setDetailRenderer();
+						break;
+				}
+			}	
+			
+			private function initializationVariable( event:FlexEvent ):void {
+				fileListDataProvider.addEventListener( CollectionEvent.COLLECTION_CHANGE, onDataProviderChange );
+				fileRefList = new FileReferenceList();
+				fileRefList.addEventListener( Event.SELECT, selectHandler );
+				fileList.renderSignal.add( signalHandler );
+				
+				var tempArrc : ArrayCollection = new ArrayCollection();
+				fileList.dataProvider = tempArrc;
+			}
+			
+			private function selectHandler(event:Event):void { 
+				var files:FileReferenceList = FileReferenceList(event.target);
+				var selectedFileArray:Array = files.fileList;
+				
+				for (var i:uint = 0; i < selectedFileArray.length; i++)
+				{
+					var file:FileReference = FileReference(selectedFileArray[i]);
+					var f:FileReferenceVO = new FileReferenceVO(); 
+					f.fileRefVO = file;
+					f.fileName = file.name;
+					f.extension = file.type;
+					f.type = this.fileType; 
+					var passAC:ArrayCollection = currentListComp.dataProvider as ArrayCollection;
+					var checkStatus:Boolean = isItemAvailable(f.fileRefVO ,passAC);
+					if(!checkStatus){
+						currentListComp.dataProvider.addItem({ fileId:0, file:f, type:f.type, fileName:f.fileName, extension:f.extension, img:fileImageClass(f.extension), uploadPercentage:0, uploadStatus:"Not Done", fileDateTime:new Date(), fileStatus:NEW_FILE, filePath:"", miscelleneous:'',options:optionAr,previewed:Utils.existFileSelection });
+						tempAc.addItem({ fileId:0, file:f,type:f.type, fileName:f.fileName, extension:f.extension, img:fileImageClass(f.extension), uploadPercentage:0, uploadStatus:"Not Done", fileDateTime:new Date(), fileStatus:NEW_FILE, filePath:"", miscelleneous:'',options:optionAr,previewed:Utils.existFileSelection  });
+					}
+				} 
+				if(tempAc.length>0 && uploadNotInProcess){
+					uploadFiles();
+				}
+			}
+			
+			private function signalHandler( type:String,obj:Object = null ):void {				
+				if( type == DELETE_INNER_ITEM ) {
+					deleteFileItem( obj );
+				}
+				else if( type == CANCEL_ITEM ) {
+					onFileUploadCancel();
+				}
+				else if( type == DELETE_ITEM ) {
+					/* tempAc.removeItemAt(tempAc.getItemIndex(searchItemForUpdate( obj, tempAc)));
+					if(tempAc.length==0) 
+						uploadNotInProcess = true;
+					currentListComp.dataProvider.removeItemAt(currentListComp.dataProvider.getItemIndex( obj )); */
+				}
+				else if( type == PREVIEW_ITEM ){
+					
+				}
+				else if( type == DOWNLOAD_ITEM ) {
+					downloadFileItem(obj);
+				}
+				else if( type == INFO_ITEM ) {
+					
+				}
+				else if( type == REPLACE_ITEM ) {
+					replaceBool = true;
+					var replaceFileObj:FileDetails = GetVOUtil.getVOObject( obj.fileId, filedetailsDAO.collection.items, filedetailsDAO.destination, FileDetails ) as FileDetails;
+					
+					tempFileObj = new FileDetails();
+					tempFileObj = replaceFileObj;
+					browseFiles();
+				}
+				else if( type == RENAME_ITEM ) {
+				}
+				else if(type == SELECT_PREVIOUS_ITEM) {
+					Utils.existFileSelection = true;
+					controlSignal.modifyPDFContextSignal.dispatch();
+				}
+				else if( type == COMPARISION_ITEM ) {
+					Utils.existFileSelection = false;
+					controlSignal.modifyPDFContextSignal.dispatch();
+				}
+			}
+			
+			[ControlSignal(type='modifyPDFContextSignal')]
+			public function modifyContext():void {	
+				if( currentListComp ) {
+					onDataChange();
+				}
+			}
+			
+			private function fileReplaceUpdation():void {		 
+				var serverUploadpath:String = currentInstance.config.FileServer; //'c://temp/'
+				var arrc:ArrayCollection = new ArrayCollection();
+				var toPath:String = currentInstance.config.FileServer+serverUploadpath+Utils.fileSplitter;
+				for each(var filesVo:FileDetails in currentInstance.mapConfig.fileUploadCollection){
+					var filename:String = filesVo.fileName; 
+					var splitObject:Object = FileNameSplitter.splitFileName( filesVo.fileName );			
+					
+					filesVo.storedFileName = filename;
+					filesVo.filePath = toPath+filesVo.type+Utils.fileSplitter+filesVo.storedFileName;
+					filesVo.miscelleneous = FileNameSplitter.getUId();
+					arrc.addItem( filesVo );
+				}
+				
+				replaceBool = false;
+				controlSignal.bulkUpdateFilesSignal.dispatch(null,arrc);
+			}
+			
+			private function downloadFileItem( obj:Object ):void {
+				downloadReference = new FileReference();
+				
+				downloadReference.addEventListener( ProgressEvent.PROGRESS, onFileDownloadProgress, false, 0, true );
+				
+				downloadReference.addEventListener( Event.COMPLETE, onDownloadComplete, false, 0, true );
+				
+				downloadReference.addEventListener( HTTPStatusEvent.HTTP_STATUS, onFileDownloadEvent, false, 0, true );
+				downloadReference.addEventListener( IOErrorEvent.IO_ERROR, onFileDownloadEvent, false, 0, true );
+				downloadReference.addEventListener( SecurityErrorEvent.SECURITY_ERROR, onFileDownloadEvent, false, 0, true );
+				
+				
+				var url:String = currentInstance.config.serverLocation + "/downloadHandler";
+				var request:URLRequest = new URLRequest( url );	
+				request.method = URLRequestMethod.POST;
+				
+				var variables:URLVariables = new URLVariables();
+				variables.saveFilePath = obj.filePath;
+				
+				currentInstance.mapConfig.encryptorUserName = StringUtils.replace(escape(EncryptUtil.encrypt(currentInstance.mapConfig.currentPerson.personLogin)),'+','%2B');
+				currentInstance.mapConfig.encryptorPassword = StringUtils.replace(escape(EncryptUtil.encrypt(currentInstance.mapConfig.currentPerson.personPassword)),'+','%2B');
+				
+				variables.userEncrptName = currentInstance.mapConfig.encryptorUserName;
+				variables.passEncrptName = currentInstance.mapConfig.encryptorPassword;
+				
+				request.data = variables; 				
+				downloadReference.download( request, obj.fileName ); 
+			}
+			
+			/* Added By Deepan for the purpose of download Cancel*/
+			private function onFileDownloadProgress( event:ProgressEvent ):void {
+				var fr:FileReference = event.currentTarget as FileReference;
+				mainViewMediator.view.progress.view.progressText.text = "Downloading  " + fr.name;
+				if( !currentInstance.waitingForServerResponse ) {
+					mainViewMediator.view.progress.view.cancelButton.visible = true;
+					mainViewMediator.view.progress.view.cancelButton.clicked.add( onFileDownloadCancel );
+					currentInstance.waitingForServerResponse = true;
+				}
+			}
+			
+			private function onDownloadComplete( event:Event=null ):void {
+				downloadReference.removeEventListener( HTTPStatusEvent.HTTP_STATUS, onFileDownloadEvent );
+				downloadReference.removeEventListener( ProgressEvent.PROGRESS, onFileDownloadProgress );
+				downloadReference.removeEventListener( IOErrorEvent.IO_ERROR, onFileDownloadEvent );
+				downloadReference.removeEventListener( SecurityErrorEvent.SECURITY_ERROR, onFileDownloadEvent );
+				downloadReference.removeEventListener( Event.COMPLETE, onDownloadComplete );
+				removeCancelHeader( onFileDownloadCancel );
+			}
+			
+			private function onFileDownloadEvent( event:Event ):void {
+				var fr:FileReference = event.currentTarget as FileReference;
+				if( !fr.data ) {
+					removeCancelHeader( onFileDownloadCancel );
+					controlSignal.showAlertSignal.dispatch( null, Utils.FILESYNC, Utils.APPTITLE, 1, null );
+				}
+			}
+			
+			private function onFileDownloadCancel( event:MouseEvent = null ):void {
+				downloadReference.cancel();
+				onDownloadComplete();
+			}
+			
+			private function deleteFileItem( obj:Object ):void{	
+				currentListComp.dataProvider.removeItemAt(currentListComp.dataProvider.getItemIndex( obj ));			
+				if(currentInstance.mapConfig.fileUploadCollection.length!=0){
+					var flag:int = -1;
+					for(var i:int = 0;i<currentInstance.mapConfig.fileUploadCollection.length;i++)
+					{
+						if((obj.fileName) == (currentInstance.mapConfig.fileUploadCollection.getItemAt(i).fileName))
+						{
+							flag = i;
+						}
+					}
+					currentInstance.mapConfig.fileUploadCollection.removeItemAt( flag );
+				}
+			}
+			
+			private function fileUploadCompleteHandler():void{
+				if((currentListComp.dataProvider as ArrayCollection).length!=0){
+					currentInstance.mapConfig.fileUploadCollection = new ArrayCollection();
+					for(var i:int=0;i<(currentListComp.dataProvider as ArrayCollection).length;i++){
+						if((currentListComp.dataProvider as ArrayCollection).getItemAt(i).fileStatus == this.NEW_FILE){
+							var filesVo:FileDetails = new FileDetails();							
+							filesVo.fileName = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).fileName; //Test0017.pdf
+							filesVo.filePath = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).filePath; //C:/temp/DIADEM/2011/Apr/DIA3158_CHandran/Tasks/Test0017373983201118120890.pdf
+							filesVo.fileDate = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).fileDateTime; //08-APR-11
+								filesVo.taskId = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).taskId; //0
+								filesVo.categoryFK = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).categoryFK; //0
+							filesVo.type = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).type; // Basic
+							filesVo.storedFileName = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).storedFileName; //Test0017373983201118120890.pdf
+								filesVo.projectFK = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).projectFK; //currentInstance.mapConfig.currentProjects.projectFK;
+							var splitObject:Object = FileNameSplitter.splitFileName( ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).fileName );			
+							if(splitObject.extension != 'swf'){ 
+								filesVo.visible = true;  //pdf-->>1 
+							}else{
+								filesVo.visible = false; //swf-->0
+							}
+								filesVo.releaseStatus = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).releaseStatus;  //1							
+							filesVo.miscelleneous = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).miscelleneous; //1302266522234
+							filesVo.fileCategory = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).fileCategory; //null
+							filesVo.page = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).page; //pdf-->>0 swf-->1
+							filesVo.extension = ( currentListComp.dataProvider as ArrayCollection ).getItemAt(i).extension;
+							currentInstance.mapConfig.fileUploadCollection.addItem( filesVo );
+							
+						}
+					} 
+				}
+				uploadNotInProcess = true;
+				if( replaceBool ){
+					fileReplaceUpdation();
+				}
+			}
+			
+			private function onDataProviderChange( event:CollectionEvent ):void{
+				onDataChange();
+			}
+			
+			public function onDataChange():void {
+				currentListComp.dataProvider = new ArrayCollection();
+				
+				if( fileListDataProvider.length == 0 ) {
+					controlsVisible = false;
+				}
+				
+				for(var i:int = 0; i < fileListDataProvider.length; i++ ) {
+					var checked:Boolean;
+					if( mainViewMediator.view.currentState != Utils.UPLOAD_INDEX ) {
+						checked = false;
+						if( currentInstance.mapConfig.currentTasks ) {
+							if( fileListDataProvider.getItemAt( i ).taskId == currentInstance.mapConfig.currentTasks.previousTask.taskId ) {
+								checked = true;
+							}
+						}
+					}
+					else {
+						checked = true;
+					}
+					
+					if( checked ) {
+						var f:FileReferenceVO = new FileReferenceVO();
+						var path:String = fileListDataProvider.getItemAt( i ).filePath;
+						var splitObject:Object = FileNameSplitter.splitFileName( fileListDataProvider.getItemAt( i ).fileName );
+						var extension:String = splitObject.extension;
+						var fileName:String = fileListDataProvider.getItemAt( i ).fileName;
+						var miscelleneous:String = fileListDataProvider.getItemAt( i ).miscelleneous;
+						currentListComp.dataProvider.addItem( { fileId:fileListDataProvider.getItemAt( i ).fileId, file:f, 
+							type:fileType, fileName:fileName, extension:extension, img:fileImageClass( extension ), 
+							uploadPercentage:100, uploadStatus:"Done", fileDateTime:fileListDataProvider.getItemAt( i ).fileDate, 
+							fileStatus:OLD_FILE, filePath:path, miscelleneous:miscelleneous,options:optionAr, previewed:Utils.existFileSelection } );
+					}
+				}
+			}
+			
+			public function resetUploader():void{
+				if(currentListComp)currentListComp.dataProvider = new ArrayCollection();
+				fileListDataProvider.removeAll();
+				fileListDataProvider = new ArrayCollection();
+				tempAc.removeAll();
+				uploadNotInProcess = true;
+				fileObject = null;
+			} 
+			
+			private function isItemAvailable( file:FileReference, ac:ArrayCollection ):Boolean{
+				if( ac ){
+					for(var i:int = 0;i<ac.length;i++){
+						if(ac.getItemAt(i).fileName == file.name )
+							return true;
+					}
+				}
+				return false;
+			}
+			
+			private function searchItemForUpdate( currentItem:Object, ac:ArrayCollection ):Object{
+				for(var i:int = 0;i<ac.length;i++)
+				{
+					if((currentItem.fileName) == (ac.getItemAt(i).fileName))
+					{
+						return ac.getItemAt(i);
+					}
+				}
+				return null;
+			}
+			
+			private function fileImageClass( extension:String ):Class{
+				extension = ( extension )?extension.toLowerCase():"Unknown";
+				if(imageExtensionArray.join(",").indexOf( extension ) != -1){
+					return imageIcon;
+				}
+				if(audioExtensionArray.join(",").indexOf( extension ) != -1){
+					return audioIcon;
+				}
+				if(videoExtensionArray.join(",").indexOf( extension ) != -1){
+					return videoIcon;
+				}
+				if(zipExtensionArray.join(",").indexOf( extension ) != -1){
+					return zipIcon;
+				}
+				if(docExtensionArray.join(",").indexOf( extension ) != -1){
+					return docIcon;
+				}
+				if(dataExtensionArray.join(",").indexOf( extension ) != -1){
+					return xlsIcon;
+				}
+				if(extension == "pdf"){
+					return pdfIcon;
+				}
+				if(extension == "xml"){
+					return xmlIcon;
+				}
+				if(extension == "psd"){
+					return psdIcon;
+				}
+				if(extension == "ai"){
+					return aiIcon;
+				}
+				if(extension == "fla"){
+					return flaIcon;
+				}
+				if(extension == "swf"){
+					return swfIcon;
+				}
+				return otherIcon;
+			}
+			
+			public function browseFiles():void
+			{
+				var pdfTypes:FileFilter = new FileFilter("PDF Files (*.pdf)", "*.pdf");
+				var allTypes:Array = new Array(pdfTypes);
+				fileRefList.browse(allTypes);
+			} 
+			
+			public function uploadFiles():void{	
+				if(tempAc.length>0 && uploadNotInProcess){				
+					uploadNotInProcess = false;
+					currentUploadingObejct = tempAc.getItemAt(0);
+					loadAndUploadFiles(tempAc.getItemAt(0).file.fileRefVO);
+				}
+			}  
+			
+			private function loadAndUploadFiles( file:FileReference ):void {
+				fileObject = file; 
+				var data:ByteArray = new ByteArray();
+				var fileName:String = file.name;
+				
+				var url:String = serverPath+"/uploadhandler";
+				var request:URLRequest = new URLRequest( url );
+				request.contentType = 'multipart/form-data; boundary=' + getBoundary();
+				request.requestHeaders.push( new URLRequestHeader( 'Cache-Control', 'no-cache' ) );
+				request.method = URLRequestMethod.POST;
+				var now:Date = new Date();
+				var variables:URLVariables = new URLVariables();
+				var ext:String = (file.type!=null)?file.type.substr(1):"Unknown";
+				
+				currentInstance.mapConfig.encryptorUserName = StringUtils.replace(escape(EncryptUtil.encrypt(currentInstance.mapConfig.currentPerson.personLogin)),'+','%2B');
+				currentInstance.mapConfig.encryptorPassword = StringUtils.replace(escape(EncryptUtil.encrypt(currentInstance.mapConfig.currentPerson.personPassword)),'+','%2B');
+				
+				variables.userEncrptName = currentInstance.mapConfig.encryptorUserName;
+				variables.passEncrptName = currentInstance.mapConfig.encryptorPassword;
+				
+				variables.filePath = destinationPath;
+				variables.fileName = fileName; 
+				currentUploadedFilePath = variables.filePath+"/"+variables.fileName;
+				request.data = variables; 
+				
+				
+				
+				fileObject.addEventListener( ProgressEvent.PROGRESS, progressHandler );
+				fileObject.addEventListener( Event.COMPLETE, completeHandler );
+ 				fileObject.addEventListener( IOErrorEvent.IO_ERROR, faultHandler );
+				fileObject.upload( request );
+			}
+			
+			public function getBoundary():String {
+				var _boundary:String = "";
+				if(_boundary.length == 0) {
+					for (var i:int = 0; i < 0x20; i++ ) {
+						_boundary += String.fromCharCode( int( 97 + Math.random() * 25 ) );
+					}
+				}
+				
+				return _boundary;
+			}
+			
+			private function completeHandler( event:Event ):void {
+				if( tempAc.length > 0 ) {
+					var currentObject:Object = searchItemForUpdate(currentUploadingObejct, currentListComp.dataProvider as ArrayCollection);
+					tempAc.removeItemAt(tempAc.getItemIndex(searchItemForUpdate(currentObject, tempAc)));
+					currentObject.filePath = currentUploadedFilePath;
+					currentObject.uploadPercentage = 100;
+					currentObject.type = fileType;
+					currentObject.fileDateTime = new Date();
+					currentObject.uploadStatus = "Done";
+					currentListComp.dataProvider.itemUpdated(currentObject); 			
+					var compeleteObject:Object = new Object();
+					compeleteObject.filePath = currentUploadedFilePath;
+					compeleteObject.img = null;
+					compeleteObject.fileDateTime = new Date();
+					compeleteObject.uploadPercentage = 100;
+					compeleteObject.uploadStatus = "Done";
+					fileList.renderSignal.dispatch( FileUploadTileList.COMPLETE_ITEM_UPLOAD, compeleteObject );
+					if( tempAc.length > 0 ) {
+						currentUploadingObejct = tempAc.getItemAt( 0 );
+						loadAndUploadFiles( tempAc.getItemAt( 0 ).file.fileRefVO );
+					}
+					else {
+						uploadNotInProcess = true;
+						removeCancelHeader( onFileUploadCancel );
+						fileUploadCompleteHandler();
+					} 
+				}
+			}		
+			
+			/* Added By Deepan for the purpose of Upload Cancel*/
+			private function onFileUploadCancel( event:MouseEvent = null ):void {
+				var cancelingItem:Object;
+				for( var i:int = 0; i < currentListComp.dataProvider.length; i++ ) {
+					var item:Object = currentListComp.dataProvider.getItemAt( i );
+					if( item.file.fileRefVO == fileObject ) {
+						cancelingItem = item;
+					}
+				}
+				
+				var tempCancelItem:Object;
+				for( var j:int = 0; j < tempAc.length; j++ ) {
+					var obj:Object = tempAc.getItemAt( j );
+					if( obj.fileName == cancelingItem.fileName ) {
+						tempCancelItem = obj;
+					}
+				}
+				
+				currentListComp.dataProvider.removeItemAt( currentListComp.dataProvider.getItemIndex( cancelingItem ) );
+				tempAc.removeItemAt( tempAc.getItemIndex( tempCancelItem ) );
+				
+				fileObject.cancel();
+				
+				if( tempAc.length > 0 ) {
+					currentUploadingObejct = tempAc.getItemAt( 0 );
+					loadAndUploadFiles( tempAc.getItemAt( 0 ).file.fileRefVO );
+				}
+				else {
+					uploadNotInProcess = true;
+					removeCancelHeader( onFileUploadCancel );
+					fileUploadCompleteHandler();
+				} 
+			}
+			
+			/* Added By Deepan for the purpose of Removing Cancel and Progress*/
+			private function removeCancelHeader( method:Function ):void {
+				if( currentInstance.waitingForServerResponse ) {
+					mainViewMediator.view.progress.view.cancelButton.clicked.remove( method );
+					currentInstance.waitingForServerResponse = false;
+					mainViewMediator.view.progress.view.cancelButton.visible = false;
+					mainViewMediator.view.progress.view.progressText.text = "Loading...";
+				}
+			}
+			
+			/* Added By Deepan for the purpose of Upload Cancel*/
+			private function progressHandler( event:ProgressEvent ):void {
+				mainViewMediator.view.progress.view.progressText.text = "Uploading  " + currentUploadingObejct.fileName;
+				if( !currentInstance.waitingForServerResponse ) {
+					mainViewMediator.view.progress.view.cancelButton.visible = true;
+					mainViewMediator.view.progress.view.cancelButton.clicked.add( onFileUploadCancel );
+					currentInstance.waitingForServerResponse = true;
+				}
+				currentUploadingObejct.uploadPercentage = Math.round( ( event.bytesLoaded / event.bytesTotal ) * 100 );
+				var currentObject:Object = searchItemForUpdate( currentUploadingObejct, currentListComp.dataProvider as ArrayCollection );
+				if( currentObject ) {
+					currentObject.uploadPercentage = Math.round( ( event.bytesLoaded / event.bytesTotal ) * 100 );
+					currentListComp.dataProvider.itemUpdated( currentObject );
+				}
+			}
+			
+			private function faultHandler( event:IOErrorEvent ):void {
+				trace('failed upload')
+			}	
+			
+		]]>
+	</fx:Script> 
+	<s:states>
+		<s:State name="ThumbViewState"/>
+		<s:State name="ListViewState"/>
+		<s:State name="DetailViewState"/>
+	</s:states>
+	<s:VGroup width="100%" height="100%" horizontalAlign="right" paddingRight="2">
+		<s:BorderContainer width="74" height="20" visible="{controlsVisible}" includeInLayout="{controlsVisible}">
+			<s:ButtonBar id="controlsPanel" styleName="todoStatusBar"  requireSelection="true"
+						 arrowKeysWrapFocus="true" labelField="value" selectedIndex="1"
+						 change="onViewChangeHandler( event )"   width="100%" top="-1">
+				<s:layout><s:HorizontalLayout gap="10" variableColumnWidth="false" columnWidth="13"  verticalAlign="middle"
+											  paddingRight="5" paddingLeft="5"/></s:layout>
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:Object icon="@Embed('assets/images/list_over.png')" label="List View" value="listView"/>
+						<fx:Object icon="@Embed('assets/images/thumb_over.png')" label="Thumb View" value="thumbView"/>
+						<fx:Object icon="@Embed('assets/images/detail_over.png')" label="Detail View" value="detailView"/>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:ButtonBar>
+		</s:BorderContainer>
+		<components:NativeList id="fileList" styleName="{listStyle}" width="100%" height="100%" itemRenderer="com.adams.pdf.view.renderers.ListThumbRenderer" excludeFrom="ListViewState">
+			<components:layout><s:TileLayout id="tileLayout" columnWidth="50" rowHeight="50"/></components:layout>
+		</components:NativeList>
+		<s:DataGrid id="fileGrid" width="100%" height="100%" includeIn="ListViewState">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="fileName" />
+					<s:GridColumn dataField="extension" />
+					<s:GridColumn dataField="fileDateTime" />
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		<s:Group visible="{uploadVisible}" includeInLayout="{uploadVisible}" width="100%">
+			<s:Button id="browseBtn" left="0"
+					  label="Browse" click="browseFiles()"/>	
+		</s:Group>
+	</s:VGroup>
+</s:Group>

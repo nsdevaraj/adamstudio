@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	     xmlns:view="com.adams.dt.view.components.*"
+	     creationComplete="onCreationComplete()">
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.event.PersonsEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.view.components.todolistscreens.ValidationRequest;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import com.adams.dt.model.vo.Companies;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import com.adams.dt.business.util.GetVOUtil;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+		    private var _formVisible:Boolean;
+		    
+		    [Bindable]
+		    private var dp:ArrayCollection;
+			
+			public function onRestorePerson():void {
+				Alert.show( 'Do you want to restore this person?', 'Confirmation', Alert.YES|Alert.NO, this, onRestore );
+	    	}
+	    	
+	    	private function onRestore( event:CloseEvent ):void {
+	    		if( event.detail == Alert.YES ) {
+	    			var selectedPerson:Persons = _personList.selectedItem as Persons;
+	    			selectedPerson.activated = 1;
+	    			
+	    			var handler:IResponder = new Callbacks( restoreHandler );
+	    			var personUpdateEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_UPDATE_PERSONS, handler );
+	    			personUpdateEvent.persons = selectedPerson;
+	    			personUpdateEvent.dispatch();
+	    		}
+	    	}
+			
+			private function restoreHandler( rpcEvent:Object ):void {
+				var removeIndex:int = dp.getItemIndex( _personList.selectedItem );
+				dp.removeItemAt( removeIndex );
+				dp.refresh();
+				if( dp.length > 0 ) {
+					if( dp.length == removeIndex ) {
+						_personList.selectedItem = dp.getItemAt( removeIndex - 1 );
+					}
+					else {
+						_personList.selectedItem = dp.getItemAt( removeIndex );
+					}
+					onModification( _personList.selectedItem as Persons );
+				}
+				else {
+					_formVisible = false;
+				}
+			}
+			
+			private function onCreationComplete():void {
+				_selectionForm.buttonCon.visible = false;
+				_selectionForm.buttonCon.includeInLayout = false;
+				dp = new ArrayCollection();
+				for each( var item:Persons in model.personsArrCollection ) {
+					if( item.activated == 0 ) {
+						dp.addItem( item );
+					}
+				}	
+				dp.refresh();
+			}
+			
+			private function onItemClick():void {
+				_selectionForm.makeEditing = false;
+				_selectionForm._userName.editable = false;
+				_selectionForm._userName.styleName = 'disabledText';
+				_selectionForm.isBindable = "Details";
+				onModification( _personList.selectedItem as Persons );
+			}
+			
+			private function companyLabelFuction( item:Object, col:DataGridColumn ):String {
+	    		return GetVOUtil.getCompanyObject( item.companyFk ).companyname;
+			}
+			
+			private function onModification( obj:Persons ):void {
+				if( !_formVisible ) {
+					_formVisible = true;
+				}
+				_selectionForm._firstName.text = obj.personFirstname;
+				_selectionForm._lastName.text = obj.personLastname;
+				_selectionForm._email.text = obj.personEmail;
+				_selectionForm._phone.text = obj.personPhone;
+				_selectionForm._mobile.text = obj.personMobile;
+				_selectionForm._userName.text = obj.personLogin;
+				_selectionForm._password.text = obj.personPassword;
+				
+				var companyItem:Companies = GetVOUtil.getCompanyObject( obj.companyFk );
+				_selectionForm._companyName.text = companyItem.companyname;
+				_selectionForm._code.text = companyItem.companycode;
+				_selectionForm._category.text = companyItem.companyCategory;
+				_selectionForm._address.text = companyItem.companyAddress;
+				_selectionForm._companyPhone.text = companyItem.companyPhone;
+				_selectionForm._postalcode.text = companyItem.companyPostalCode;
+				_selectionForm._city.text = companyItem.companyCity;
+				_selectionForm._country.text = companyItem.companyCountry;
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:DataGrid id="_personList" width="100%" dataProvider="{ dp }" itemClick="onItemClick()">
+		<mx:columns>
+        	<mx:DataGridColumn headerText="Company" labelFunction="companyLabelFuction" dataField="companyFk"/>
+        	<mx:DataGridColumn headerText="Firstname" dataField="personFirstname"/>
+            <mx:DataGridColumn headerText="Lastname" dataField="personLastname"/>
+            <mx:DataGridColumn headerText="Phone" dataField="personPhone" />
+            <mx:DataGridColumn headerText="Email" dataField="personEmail">
+            	<mx:itemRenderer>
+	         		<mx:Component>
+		         		<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off"
+		         			       verticalScrollPolicy="off" width="100%">
+	         				<mx:Script>
+			         			<![CDATA[
+			         				import mx.resources.ResourceBundle;
+			         			]]>
+			         		</mx:Script>
+	         				<mx:Label text="{ data.personEmail }" left="0" right="{ ( restore .x - 4 ) }"/>
+	         				<mx:Image id="restore" source="{ ImageResourceEmbedClass.DELIVERED }" right="4"
+	         					      useHandCursor="true" buttonMode="true" mouseChildren="false"
+	         					      toolTip="Restore The Person" click="outerDocument.onRestorePerson()"/>
+	         			</mx:Canvas>
+	         		</mx:Component>
+		        </mx:itemRenderer>
+            </mx:DataGridColumn>
+        </mx:columns>
+	</mx:DataGrid>
+	<view:SelectionForm id="_selectionForm" visible="{ _formVisible }" includeInLayout="{ _formVisible }"/>        
+</mx:VBox>

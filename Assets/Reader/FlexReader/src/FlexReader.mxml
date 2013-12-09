@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"  
+	xmlns:filters="flash.filters.*"
+	xmlns:rs="com.rubenswieringa.book.*"
+	creationComplete="onCreationComplete();init();" 
+	xmlns:libCom="lib.*"  xmlns:customCom="com.*"
+	backgroundColor="#252525"
+	xmlns:df="com.jherrington.data.*"
+	xmlns:f="com.jherrington.data.filters.*"
+	>
+	<mx:Style source="css/globalStyle.css"/>
+	<mx:Style source="assets/style/book.css"/>
+	<mx:Script source="as/init.as"/>
+	<mx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.controls.Text;
+			
+			import mx.core.ScrollPolicy;
+			import mx.effects.Fade;
+			import com.rubenswieringa.book.*;
+			
+			[Embed(source='assets/style/icons/hard1.swf')]
+			private var hardBtnIcon1:Class;
+			[Embed(source='assets/style/icons/hard2.swf')] 
+			private var hardBtnIcon2:Class;
+ 			[Embed(source='assets/swf/interfaceAssets.swf#groupLine')] 
+			[Bindable]private var grouopLine:Class; 
+			
+			[Embed(source='assets/swf/interfaceAssets.swf#pageCurl')] 
+			[Bindable]private var pageCurl:Class;
+			[Embed(source='assets/swf/interfaceAssets.swf#readerLogo')]  
+			[Bindable]private var readerLogo:Class;
+			[Embed(source='assets/swf/interfaceAssets.swf#panIconOpen')] 
+			[Bindable]private var panIconOpen:Class;
+			[Embed(source='assets/swf/interfaceAssets.swf#panIconClose')] 
+			[Bindable]private var panIconClose:Class;
+			[Bindable]private var itData:Array = new Array();
+[Bindable]	private var tearBtnVisible:Boolean = false;
+[Bindable]	private var hardBtnIcon:Class = hardBtnIcon1;
+			
+[Bindable]	private var introText1:String = "The Book component is a feature-rich container class that creates an animated, interactive book from its contents. ";
+[Bindable]	private var introText2:String = "Many thanks go out to Theo Aartsma for letting me use his artwork for this demo, thanks man. Go check out his brand-new website:";
+[Bindable]	private var transparencyText:String = "The Book component supports transparent pages.\nFlip over the next two pages and notice that they only carry the color of the above image.";
+[Bindable]	private var tearingText:String = "Every page has a tear-property which can be set to true.  Tear off this page by dragging the outer top corner to the bottom, or the outer bottom corner to the top.";
+[Bindable]	private var gotoPageText:String = "The gotoPage method lets you trigger a page-flip sequence by setting a target-page.";
+[Bindable]	private var hardText:String = "The hard-property of a page can be set to true to make that page hard-back.\n\nFurthermore, the Book component has a hardCover-property which can be set to true to make the first and last pages hard-back.";
+[Bindable]	private var liveBitmappingText:String = "Each page has a liveBitmapping feature that (when enabled) continuously updates its cached bitmap during pageflips. Notice how the animation on this page keeps playing during a pageflip.";
+[Bindable]	private var eventsText1:String = "   Glow is something that comes from within-a feeling of balance, well-being, and inner peace.";
+[Bindable]	private var eventsText2:String = "Features : \n\n\npageflipStarted\npageflipEnding\npageflipFinished\nhoverStarted\nhoverEnding\nhoverFinished\npageTurned\npageNotTurned\npageTorn\nbookOpened\nbookClosed\nstatusChanged\ncontentChanged";
+			
+			
+			
+			private function onCreationComplete ():void {
+				myBook.addEventListener(BookEvent.PAGE_TORN, onPageTorn);
+				
+			}
+			
+			
+			private function onPageTorn (event:BookEvent):void {
+				/* if (myBook.pages.getItemIndex(tearablePage1) == -1){
+					tearBtnVisible = true;
+				}  */
+			}
+			
+		 	private function addTearable ():void {
+				/* myBook.addChildAt(tearablePage2, 10); 
+				myBook.addChildAt(tearablePage1, 10); */
+			} 
+			
+			private function toggleHard (page:Page):void {
+				/* hard_btn.toolTip = (page.hard) ? "make next page hard" : "make next page fluid";
+				hardBtnIcon = (page.hard) ? hardBtnIcon1 : hardBtnIcon2;
+				page.hard = !page.hard;
+				hard_btn.invalidateDisplayList(); */
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:HTTPService id="httpServiceBookmark" method="POST" useProxy="false" resultFormat="xml" contentType="application/xml" fault="bookmarkLoadFault(event)" result="bookmarkLoadResult(event)"/>
+	<mx:HTTPService id="httpServiceNotes" method="POST" useProxy="false" resultFormat="xml" contentType="application/xml" fault="noteLoadFault(event)" result="noteLoadResult(event)"/>
+	<mx:HTTPService url="assets/localXML/book.xml" resultFormat="e4x" id="xmldata" result="ObjToXmlList(event)"/>
+	<df:FilteredArray id="filterData" data="{itData}">
+		<df:filters> 
+			<f:ContainsText control="{searchTxt}" value="{searchTxt.text}" field="Description"/> 
+			<!--<f:TextMatch control="{nameId}" value="{nameId.text}" field="name"/> -->
+		</df:filters>		
+	</df:FilteredArray>
+	<mx:Canvas width="100%" height="100%" id="mainFrame">
+		       
+	<!--	<libCom:ButtonScrollingCanvas x="0" y="0" 
+				startScrollingEvent="{MouseEvent.MOUSE_OVER}"
+				stopScrollingEvent="{MouseEvent.MOUSE_OUT}"
+				borderStyle="inset" 
+				width="80%" height="100%" 
+				backgroundColor="#feefd3" backgroundAlpha="0.65" >-->
+				<!--<mx:Image source="assets/images/Bridge.jpg"/> -->
+				<!--left="0" right="0" top="0" bottom="{userControlBar.height}"-->
+		<mx:Canvas x="0" y="0" width="{mainFrame.width}" height="{mainFrame.height-readerMenuBar.height}"  id="myBookTool1" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		<libCom:ButtonScrollingCanvas x="0" y="0" 
+				startScrollingEvent="{MouseEvent.MOUSE_OVER}"
+				stopScrollingEvent="{MouseEvent.MOUSE_OUT}"
+				borderStyle="inset" 
+				width="100%" height="100%" 
+				id="myBookTool">	
+		<mx:VBox id="myBookVBox" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		<rs:Book id="myBook" width="800" height="530" 
+		openAt="0" autoFlipDuration="100" easing="0.3" regionSize="150"
+		sideFlip="false"  hardCover="true" hover="true" snap="false" flipOnClick="true" pageflipFinished="pageflipFinishedEvent(event)" enterFrame="pageflipEnterFrameEvent(event)">
+		
+		
+		
+		<rs:Page> 
+			<mx:Image source="@Embed('assets/img/Jpg/FrontCover.jpg')" />
+			<mx:Label 
+				right="30" y="38" 
+				fontFamily="Verdana" fontSize="9" color="#EEEEEE" 
+				text="v1.0 (Alpha)" />
+			<mx:Label 
+				left="30" right="30" y="90" 
+				fontFamily="Arial" fontSize="10" color="#9BBFBA" textAlign="center"
+				text="by Brennus Group" />
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/leftblank.jpg')" /></rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page1.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#FFFFFF" textAlign="left"
+					text="{introText1}" fontWeight="normal" enabled="false" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page2.jpg')" />
+			<mx:Text 
+					top="60"
+					horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#FFFFFF" textAlign="left"
+					text="{eventsText1}" fontWeight="normal" enabled="false" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page3.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="left"
+					text="{transparencyText}" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page4.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="center"
+					text="" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+			</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/sumeco/backstabber_blue1.png')" />
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/sumeco/backstabber_blue2.png')" />
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/sumeco/backstabber_green1.png')" />
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/sumeco/backstabber_green2.png')" />
+		</rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page7.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="-40" width="240" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="left"
+					text="{tearingText}" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page8.jpg')" /></rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page11.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="left"
+					text="{gotoPageText}" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+		
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page12.jpg')" /></rs:Page>
+		<rs:Page hard="true">
+			<mx:Image source="@Embed('assets/img/Jpg/page13.jpg')" />
+			<mx:Text 
+					top="60"
+					 horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="left"
+					text="{hardText}" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page14.jpg')" /></rs:Page>
+		<rs:Page liveBitmapping="true">
+			<mx:Image source="@Embed('assets/img/sumeco/baken.swf')" />
+			<mx:Text 
+					top="425"
+					horizontalCenter="0" width="275" height="350" 
+					fontFamily="Arial" fontSize="12" color="#000000" textAlign="left"
+					text="{liveBitmappingText}" fontWeight="normal" enabled="false" disabledColor="#000000" letterSpacing="1"/>
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page16.jpg')" /></rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page17.jpg')" />
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page18.jpg')" /></rs:Page>
+		<rs:Page>
+			<mx:Image source="@Embed('assets/img/Jpg/page19.jpg')" />
+			<mx:Text 
+					top="35"
+					horizontalCenter="130" width="275" height="350" 
+					fontFamily="Arial" fontSize="16" color="#FFFFFF" textAlign="left"
+					text="-- Comments --" fontWeight="normal" enabled="false" disabledColor="#FFFFFF" letterSpacing="1"/>
+		
+		</rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/page20.jpg')" /></rs:Page>
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/rightblank.jpg')" /></rs:Page>
+		
+		<rs:Page><mx:Image source="@Embed('assets/img/Jpg/BackCover.jpg')" /></rs:Page>
+		
+		
+	</rs:Book>
+		</mx:VBox>	
+			<customCom:highlightNoteBox  id="noteSmallBox" x="310" y="221"/>
+		</libCom:ButtonScrollingCanvas>
+		</mx:Canvas>
+		<mx:Canvas top="0" bottom="{readerMenuBar.height}" left="0" right="0" horizontalScrollPolicy="off" verticalScrollPolicy="off" id="overlapBox">
+		
+		<mx:Canvas left="20" top="20">
+			<mx:Box left="{(readerLogoBox.x+readerLogoBox.width)-30}"  borderThickness="3" borderColor="#003966" borderStyle="solid" backgroundColor="#FFFFFF" cornerRadius="20" height="35" paddingBottom="5" paddingLeft="35" paddingRight="10" paddingTop="5" verticalCenter="0">
+				<mx:Label fontSize="12" fontWeight="bold" text="Demo PDF Book"/>
+			</mx:Box>
+			<mx:Box verticalCenter="0" id="readerLogoBox">
+				<!--<mx:Image source="{pageCurl}" top="0" left="0"/>-->
+				<mx:Image source="{readerLogo}" top="20" left="20"/>
+			</mx:Box>
+		</mx:Canvas>
+		<mx:Canvas borderStyle="solid" cornerRadius="10" left="{searchTxt.x+(readerMenuBar.x-100)}" width="350" height="{overlapBox.height-175}" id="searchResultBox" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<mx:VBox width="100%" height="100%" verticalGap="0"  horizontalScrollPolicy="off" verticalScrollPolicy="off">
+				<mx:Canvas width="100%" height="32.5" backgroundImage="@Embed('assets/swf/interfaceAssets.swf#searchresult_mc')" backgroundSize="100">
+					<mx:HBox right="10" verticalCenter="2">
+						<!--<mx:Button id="searchResMinMax" toggle="true" styleName="searchResMiniMaxBtn" useHandCursor="true" buttonMode="true" click="searchResultMinMax()"/>-->
+						<mx:Button styleName="searchResCloseBtn" useHandCursor="true" buttonMode="true" click="searchResultBoxFunc()"/>
+					</mx:HBox>	
+				</mx:Canvas>
+				<!--<mx:HBox width="100%" height="30" backgroundColor="#CCCCCC" paddingLeft="10" paddingTop="5">
+					<mx:Label text="No Results found!" fontSize="11" fontWeight="bold"/>
+				</mx:HBox>-->
+				<mx:HBox width="100%" height="100%" backgroundColor="#333333" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+
+					  
+					<mx:DataGrid id="dg" width="100%" height="100%" dataProvider="{filterData}" click="myBook.gotoPageWOF(Number(dg.selectedItem.@id));">
+						<mx:columns>
+						  <mx:DataGridColumn dataField="Page" width="75"/>
+						  <!--<mx:DataGridColumn dataField="Description" id="myColoumn" itemRenderer="com.myText">-->
+						  <mx:DataGridColumn dataField="Description">
+						  		<mx:itemRenderer>
+									<mx:Component>
+										<mx:Label htmlText="&lt;font color='#FF0000'&gt;GG&lt;/font&gt;-Gladiator" text="{data.Description}"  dataChange="var pattern:RegExp = new RegExp(outerDocument.searchTxt.text,'gi');this.htmlText=this.text.replace(pattern, '&lt;font color=\'#FF0000\'&gt;&lt;b&gt;'+outerDocument.searchTxt.text+'&lt;/b&gt;&lt;/font&gt;');"/>
+									</mx:Component>						  		
+						  		</mx:itemRenderer>	
+						  </mx:DataGridColumn>
+						</mx:columns> 
+					</mx:DataGrid> 
+				</mx:HBox>
+			</mx:VBox>
+		</mx:Canvas>
+		<!--<mx:VBox id="zoomSliderVBox" x="{zoomBtn.x+readerMenuBar.x}" width="55" height="190" styleName="zoomSliderVBox" verticalAlign="top" horizontalAlign="center" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="10">
+			<mx:filters>
+	            <mx:Array>
+	              <mx:DropShadowFilter 
+	                alpha="0.5"
+	                angle="270"
+	                distance="8"
+	                blurX="5"
+	                blurY="5"
+	                strength="2" 
+	                quality="8"
+	                />
+	            </mx:Array> 
+          </mx:filters>
+          <mx:VBox horizontalAlign="center" id="zoomPanelInside">
+           	 <customCom:cButton id="zoomInBtn" styleName="zoomInBtn" width="20" height="20" click="zoomPanelBtn(event)"/>
+         	 <mx:VSlider id="zoomNav" liveDragging="true" height="90" dataTipFormatFunction="zoomNavSliderTooltip" snapInterval="0.25" minimum="0.25" maximum="3" verticalCenter="-5" change="zoomTool(Number(zoomNav.value))"/>
+         	 <customCom:cButton id="zoomOutBtn" styleName="zoomOutBtn" width="20" height="20" click="zoomPanelBtn(event)"/>
+          </mx:VBox>
+         	 
+		</mx:VBox>-->
+		
+	</mx:Canvas>	
+<!--		</libCom:ButtonScrollingCanvas>-->
+		<mx:VBox id="userControlBar" top="{myBookTool.height-readerMenuBar.height}" height="100" width="100%" verticalAlign="middle" horizontalAlign="center" verticalGap="0">
+		<mx:filters>
+            <mx:Array>
+              <mx:DropShadowFilter id="boltShadow" 
+                alpha="0.5"
+                angle="270"
+                distance="4"
+                blurX="4"
+                blurY="4"
+                strength="1" 
+                quality="8"
+                />
+            </mx:Array> 
+            
+          </mx:filters>
+          <mx:HBox width="100%" height="40" id="pageNavBox">
+          	<mx:Canvas width="100%" height="40" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+          		<mx:HBox verticalAlign="top" paddingTop="5" horizontalAlign="center" horizontalCenter="0" height="100" width="200" borderStyle="solid" borderColor="#333333" backgroundColor="#333333" cornerRadius="20">
+          			<mx:HSlider id="pageNav" width="175" snapInterval="2" verticalCenter="-5" change="pageNavChange()" dataTipFormatFunction="pageNavSliderTooltip" liveDragging="true"/>
+          		</mx:HBox>
+          	</mx:Canvas>
+          </mx:HBox>
+          <mx:HBox id="menuBar" width="100%" verticalAlign="middle" horizontalAlign="center" backgroundColor="#333333" verticalGap="0">
+          	
+			<mx:HBox id="readerMenuBar" height="50" bottom="0" verticalAlign="middle"  paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" horizontalGap="10">
+		
+          
+	       <!-- <mx:HSlider id="dev" width="75" tickInterval="50" snapInterval="1" minimum="25" maximum="500" labels="[25,500]" verticalCenter="-5"/>-->
+	         	<mx:HBox width="350" height="100%" horizontalAlign="right" verticalAlign="middle">
+	         		<mx:Label text="Search" color="#FFFFFF" fontWeight="bold"/>
+	        		<mx:TextInput width="75" height="22" id="searchTxt" change="dg.dataProvider = filterData;" />
+	          		<!--<customCom:cButton id="searchBtn" styleName="searchBtn" width="20" height="20" click="searchResultBoxFunc()"/>-->
+	           		<mx:Spacer width="-5"/>
+	          		<!--<customCom:cButton id="advSearchBtn" styleName="advSearchBtn" width="20" height="20"/> -->
+	          		<!--<mx:PopUpButton id="advSearchBtn" openAlways="true"  styleName="advSearchBtn" width="15" height="15" horizontalCenter="-15" buttonMode="true" useHandCursor="true" popUpGap="10">
+	            	<mx:popUp>
+	            		<mx:VBox id="advSearchVBox" width="150" height="120" styleName="zoomSliderVBox" verticalAlign="top" horizontalAlign="center" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" backgroundColor="#555555" borderStyle="solid" cornerRadius="10">
+								<mx:filters>
+						            <mx:Array>
+						              <mx:DropShadowFilter 
+						                alpha="0.5"
+						                angle="270"
+						                distance="8"
+						                blurX="5"
+						                blurY="5"
+						                strength="2" 
+						                quality="8"
+						                />
+						            </mx:Array> 
+					          </mx:filters>
+					          <mx:VBox borderStyle="solid" backgroundColor="#222222" cornerRadius="5" width="100%">
+					          	<mx:Label text="Advanced Option" color="#FFFFFF" fontWeight="bold"/>
+					          </mx:VBox>
+					      </mx:VBox>
+	            	</mx:popUp>
+	            	</mx:PopUpButton>-->
+	         		<mx:Image source="{grouopLine}"/>
+	          		<!--<customCom:cButton id="zoomBtn" styleName="zoomBtn" width="25" height="22" click="zoomPanelOpenClose(event)"/>-->
+	          		<mx:PopUpButton openAlways="true"  styleName="zoomBtn" width="25" height="25" horizontalCenter="-15" buttonMode="true" useHandCursor="true">
+	          		 	<mx:popUp>
+	          		 		<mx:VBox id="zoomSliderVBox" width="55" height="190" styleName="zoomSliderVBox" verticalAlign="top" horizontalAlign="center" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="10" backgroundColor="#555555" borderStyle="solid" cornerRadius="10">
+								<mx:filters>
+						            <mx:Array>
+						              <mx:DropShadowFilter 
+						                alpha="0.5"
+						                angle="270"
+						                distance="8"
+						                blurX="5"
+						                blurY="5"
+						                strength="2" 
+						                quality="8"
+						                />
+						            </mx:Array> 
+					          </mx:filters>
+					          <mx:VBox horizontalAlign="center" id="zoomPanelInside">
+					           	 <customCom:cButton name="zoomInBtn" id="zoomInBtn" styleName="zoomInBtn" width="20" height="20" click="zoomPanelBtn(event)"/>
+					         	 <mx:VSlider id="zoomNav" liveDragging="true" height="90" dataTipFormatFunction="zoomNavSliderTooltip" snapInterval="0.25" minimum="0.25" maximum="3" verticalCenter="-5" change="zoomTool(Number(zoomNav.value))"/>
+					         	 <customCom:cButton name="zoomOutBtn" id="zoomOutBtn" styleName="zoomOutBtn" width="20" height="20" click="zoomPanelBtn(event)"/>
+					          </mx:VBox>
+					         	 
+							</mx:VBox>
+	          		 	</mx:popUp>
+	            	</mx:PopUpButton>
+	            	
+	          		<!--<mx:Image source="{zoomImg}" width="25" height="22"/>-->
+	          		<mx:Spacer width="-15"/>
+	              	<mx:PopUpButton id="zoomCombo" openAlways="true" initialize="popUpButton_initialize();" width="80"/>
+	            	            	
+	         	</mx:HBox>
+	          	<mx:Image source="{grouopLine}"/>
+	          	<mx:HBox width="200" height="100%" horizontalAlign="center">
+	          		<mx:HBox height="100%">
+	          		
+			           <customCom:cButton id="prevPageBtn" styleName="prevPageBtn" width="34" height="20" click="pageMove(0)"/>
+			            <mx:TextInput id="gotoTxt" width="85" height="22" textAlign="center" focusIn="pageNavTextFocus(event)" focusOut="pageNavTextFocus(event)"/>
+			           <customCom:cButton id="nextPageBtn" styleName="nextPageBtn" width="34" height="20" click="pageMove(1)"/>
+	           
+	          		</mx:HBox>
+	          	</mx:HBox>
+	            <mx:Image source="{grouopLine}"/>
+          	</mx:HBox>
+	 		<mx:HBox width="350" height="100%" horizontalAlign="left" verticalAlign="middle" id="referMenuBtnVBox">
+	 			<!--<customCom:PopUpButtonPositioned id="tocPopupBtn" width="0" height="0" popUpPosition="top" styleName="zoomBtn"/>-->
+		 		<!--<customCom:cButton id="tocBtn" styleName="tocBtn" click="tabBtnActivities(event)"/>
+	            <customCom:cButton id="bookmarkBtn" styleName="bookmarkBtn" click="tabBtnActivities(event)"/>
+	            <customCom:cButton id="notesBtn" styleName="notesBtn" click="tabBtnActivities(event)"/>-->
+	            <mx:PopUpButton openAlways="true"  styleName="tocBtn" width="35" height="35" horizontalCenter="-15" buttonMode="true" useHandCursor="true">
+	            	<mx:popUp>
+	            		<mx:TabNavigator width="380" height="{mainFrame.height-200}">
+							<mx:VBox label="Content" icon="{TabTOC}">
+								<mx:Tree id="tocTree" width="100%" height="90%" dataProvider="{tocXML}" labelField="@label" showRoot="false" change="tocTreeClick(event)"/>
+							</mx:VBox>
+							<mx:VBox label="Bookmark" icon="{TabBookmark}">
+								<mx:VBox width="100%" height="100%" backgroundColor="#FFFFFF" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+									<mx:Canvas width="100%">
+											<mx:HBox left="0" verticalCenter="0">
+												<mx:Spacer width="5"/>
+												<mx:CheckBox id="bookmarkCheckBoxForAll"  click="checkAllBookmarkDetails()" selected="false" label="Select All" fontSize="14"/>
+											</mx:HBox>
+											<mx:HBox right="0" verticalCenter="0">
+												<mx:Button styleName="addDetails" buttonMode="true" useHandCursor="true" toolTip="Add Bookmark" click="bookmarkAddFunc(myBook.currentPage+1)"/>
+												<mx:Button styleName="removeDetails" buttonMode="true" useHandCursor="true" toolTip="Remove Selected Bookmark" click="removeCheckBookmark()"/>
+											</mx:HBox>
+									</mx:Canvas>
+									<mx:VBox id="bookmarkContainer" width="100%" height="100%" verticalGap="0" borderStyle="solid" borderThickness="1" cornerRadius="5">
+									</mx:VBox>
+								</mx:VBox> 
+							</mx:VBox>
+							<mx:VBox label="Notes" icon="{TabNotes}" id="notesVBox">
+								<mx:VBox width="100%" height="100%" backgroundColor="#FFFFFF" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+									<mx:Canvas width="100%" id="notesMenuBarVbox">
+											<mx:HBox left="0" verticalCenter="0">
+												<mx:Spacer width="5"/>
+												<mx:CheckBox id="notesCheckBoxForAll" fontWeight="bold" click="checkAllNotesDetails()" selected="false" label="Select All" fontSize="14"/>
+											</mx:HBox>
+											<mx:HBox right="0" verticalCenter="0">
+												<mx:Button styleName="addDetails" buttonMode="true" useHandCursor="true" toolTip="Add Note" click="notesAddFunc((myBook.currentPage+1),'---notes----')"/>
+												<mx:Button styleName="removeDetails" buttonMode="true" useHandCursor="true" toolTip="Remove Selected Notes" click="removeCheckNotes()"/>
+											</mx:HBox>
+									</mx:Canvas>
+									<mx:VBox id="notesContainer" width="100%" height="{notesVBox.height-(notesMenuBarVbox.height+30)}" verticalGap="0" borderStyle="solid" borderThickness="1" cornerRadius="5">
+									</mx:VBox>
+								</mx:VBox>
+							</mx:VBox>
+						</mx:TabNavigator>
+	            	</mx:popUp>
+	            </mx:PopUpButton>
+	           <!-- <customCom:cButton id="singalDoublePageBtn" styleName="singalDoublePageBtn" width="34" height="20" toggle="true" selected="true"/>-->
+	            <customCom:cButton id="bookmarkBtn" styleName="bookmarkBtn" click="bookmarkBtnClick=true;bookmarkAddFunc(myBook.currentPage+1)"/>
+	            <mx:Spacer width="-25"/>
+	             
+	            <customCom:cButton id="notesBtn" toggle="true" selected="false" styleName="notesBtn" click="trace(notesContainer.numChildren)"/>
+	            <!--click="notesAddFunc((myBook.currentPage+1),'notes')"-->
+	 		</mx:HBox>
+          </mx:HBox>
+		</mx:VBox>
+		
+	</mx:Canvas>
+	<mx:XML id="tocXML" source="assets/localXML/toc.xml"/>
+</mx:Application>

@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"  
+	            showCloseButton="true" horizontalAlign="center" height="100%" title="Technical Template" 
+	            close="closeWindow( event )" layout="vertical" headerHeight="30" width="800" horizontalScrollPolicy="off"
+	            styleName="bgContainer"   resizeEffect="Resize" verticalScrollPolicy="off" mouseDownOutside="onMousedownOutside()" >
+	<mx:Script>
+		<![CDATA[
+			import mx.rpc.IResponder;
+			import mx.rpc.events.ResultEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.events.DataGridEvent;
+			import mx.collections.IList;
+			import mx.events.ListEvent;
+			import mx.events.CollectionEventKind;
+			import com.adams.dt.view.components.impremiurRenderer.CheckBoxSelectContent;
+			import mx.collections.IViewCursor;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.events.CollectionEvent;
+			import mx.managers.DragManager;
+			import mx.events.DragEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.event.DefaultTemplateValueEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.DefaultTemplateValue;
+			import mx.core.UIComponent;
+			import com.adams.dt.view.components.impremiurRenderer.ComboSelectContent;
+			import com.adams.dt.view.components.impremiurRenderer.FieldSelectContent;
+			import com.adams.dt.view.components.impremiurRenderer.TextSelectContent;
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			import mx.events.CloseEvent;
+			
+		 	[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	private var _deletedTemplateValueColl:ArrayCollection = new ArrayCollection();
+		 	private var _defaultTemplateValueColl:ArrayCollection = new ArrayCollection();
+		 	private var _updateTempColl:ArrayCollection = new ArrayCollection();
+		 	private var finalTempColl:ArrayCollection = new ArrayCollection();
+		 	
+		 	/**
+		    * getter setter function for the defaultTemplateValue dataGrid.
+		    */
+		 	
+		 	public function get defaultTemplateValueProvider():ArrayCollection {
+    			return _defaultTemplateValueColl
+    		}
+    		public function set defaultTemplateValueProvider( value : ArrayCollection ):void {
+    			_defaultTemplateValueColl = value;
+    			defaultDataGrid.dataProvider = _defaultTemplateValueColl;
+    		}
+    		
+    		/**
+		    * getter setter function for the delete defaultTemplateValue dataGrid.
+		    */
+		 	
+		 	public function get deletedTemplateValueProvider():ArrayCollection {
+    			return _deletedTemplateValueColl
+    		}
+    		public function set deletedTemplateValueProvider( value : ArrayCollection ):void {
+    			_deletedTemplateValueColl = value;
+    			deleteDefaultDataGrid.dataProvider = _deletedTemplateValueColl;
+    			if(_deletedTemplateValueColl.length > 0){
+    				addBtn.enabled = true;
+    			}else{
+    				addBtn.enabled = false;
+    			}
+    		}
+    		
+    		
+            
+			
+    		/**
+		    * Close the window when user click the close Button.
+		    */
+		 	private function closeWindow( event:CloseEvent ) :void {
+		 		PopUpManager.removePopUp(this);
+			 	deleteDefaultDataGrid.visible = false;
+			 	deleteDefaultDataGrid.includeInLayout = false
+			}
+		    
+		    
+		 	/**
+		    * Close the window on MouseDownOutSide
+		    */	
+			private function onMousedownOutside():void {
+	    		dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+	    	}
+	    	/**
+		    * Show the Edit Panel when user click the Edit Buttom
+		    */
+	    	public function onDoubleClick( event:MouseEvent=null ):void {
+	    		var editableBoll:Boolean = GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(defaultDataGrid.selectedItem).propertiesPresetFK ).editablePropertyPreset;
+		     	switch( editableBoll ) 
+		     	{
+		     		case true:
+		     			showEditablePanel();
+					break;
+					case false:
+					     Alert.show("Editable Option is not Applied for this Properties");
+					break;
+		     	}
+         		
+         	}
+         	private function showEditablePanel() :void
+         	{
+         		if( editPanel.numChildren > 0 ) {
+          			editPanel.removeAllChildren();
+          			editPanel.visible = false;
+          			editPanel.includeInLayout = false;
+          		}
+	          	editPanel.visible = true;
+	          	editPanel.includeInLayout = true;
+	          	editPanel.label = " ADD Optional Value ";
+	          	var id:int =  DefaultTemplateValue(_defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex)).propertiesPresetFK;
+	          	var selectedType:String = GetVOUtil.getPropertiesPresetFieldType(id)
+	          	 switch( selectedType ) {
+	          		case "textfield":
+						textContentCreation( editPanel );
+					break;
+					case "radio":
+						comboContentCreation( editPanel );
+					break;
+					case "popup":
+						comboContentCreation( editPanel );
+					break;
+					case "checkbox":
+						checkBoxContentCreation( editPanel );
+					break; 
+					case "numstepper":
+						fieldLabelCreation( editPanel );
+					break;
+					default:
+					break;
+	          	} 
+         	}
+         	/**
+		    * Show the Edit Panel for the Text Editor
+		    */
+        	private var textEditCon:TextSelectContent
+         	private function textContentCreation( con:UIComponent ):void {
+         		textEditCon = new TextSelectContent();
+	          	con.addChild( textEditCon );
+	          	textEditCon.parenRef = _defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex) as DefaultTemplateValue;
+	          	textEditCon.parenList = defaultDataGrid;
+	          	textEditCon.addEventListener( Event.CLOSE, onClose,false,0,true );
+	          	textEditCon.addEventListener( Event.CLEAR, onClear,false,0,true );
+         	}
+         	/**
+		    * Show the Edit Panel for the Label Editor
+		    */
+         	private var fieldLabel:FieldSelectContent; 
+	        private function fieldLabelCreation(con:UIComponent ):void{
+	         	fieldLabel = new FieldSelectContent();
+	          	con.addChild( fieldLabel );
+	          	fieldLabel.parenRef = _defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex) as DefaultTemplateValue;
+	          	fieldLabel.parenList = defaultDataGrid;
+	          	fieldLabel.addEventListener( Event.CLOSE, onClose ,false,0,true);
+	          	fieldLabel.addEventListener( Event.CLEAR, onClear,false,0,true);
+	         }
+	        /**
+		    * Show the Edit Panel for the Combo Editor
+		    */
+	        private var comboEditCon:ComboSelectContent;
+         	private function comboContentCreation( con:UIComponent  ):void {
+	          	comboEditCon = new ComboSelectContent();
+	          	con.addChild( comboEditCon );
+	          	comboEditCon.parenRef = _defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex) as DefaultTemplateValue;
+	          	comboEditCon.parenList = defaultDataGrid;
+	          	var str:String = String( GetVOUtil.getPropertiesPresetObject(comboEditCon.parenRef.propertiesPresetFK).fieldOptionsValue)
+	          	var aValues:Array = str.split(",") 
+	          	var arrayColl:ArrayCollection = new ArrayCollection(aValues) ;
+				comboEditCon.dp = arrayColl
+	          	comboEditCon.addEventListener( Event.CLOSE, onClose,false,0,true );
+	          	comboEditCon.addEventListener( Event.CLEAR, onClear,false,0,true );
+        	}
+        	/**
+		    * Show the Edit Panel for the Check Box Editor
+		    */
+        	private var checkBoxEditCon:CheckBoxSelectContent;
+         	private function checkBoxContentCreation( con:UIComponent  ):void {
+	          	checkBoxEditCon = new CheckBoxSelectContent();
+	          	con.addChild( checkBoxEditCon );
+	          	checkBoxEditCon.parenRef = _defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex) as DefaultTemplateValue;
+	          	checkBoxEditCon.parenList = defaultDataGrid;
+	          	checkBoxEditCon.addEventListener( Event.CLOSE, onClose,false,0,true );
+	          	checkBoxEditCon.addEventListener( Event.CLEAR, onClear,false,0,true );
+        	}
+        	
+        	private function onClose( event:Event ):void {
+	        }
+			private function onClear( event:Event ):void {
+	        }
+	        /**
+		    * Label function to display the properties preset label in the data grid
+		    */
+	        private function getPropertiesPresetLabel(item:Object, column:DataGridColumn):String {
+			  return GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(item).propertiesPresetFK ).fieldLabel;
+		    }
+		     /**
+		    * Value function to display the properties preset Value in the data grid
+		    */
+		     private function getPropertiesPresetValue(item:Object, column:DataGridColumn):String 
+		     {
+		     	var propType:String ;
+		     	var defaultType:String = GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(item).propertiesPresetFK ).fieldType;
+		     	switch( defaultType ) 
+		     	{
+	          		case "textfield":
+	          			propType = DefaultTemplateValue(item).defaultTemplateValue
+					break;
+					case "radio":
+					    var propPreset:Propertiespresets = GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(item).propertiesPresetFK )
+						propType =   getTheFirstlabel(propPreset.fieldOptionsValue,int(DefaultTemplateValue(item).defaultTemplateValue))
+					break;
+					case "popup":
+						 var propPreset:Propertiespresets = GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(item).propertiesPresetFK )
+						 if(propPreset.fieldOptionsValue == null){
+						 	propType ="";
+						 }else{
+						 	propType =   getTheFirstlabel(propPreset.fieldOptionsValue,int(DefaultTemplateValue(item).defaultTemplateValue))
+						 }
+						 
+					break;
+					case "checkbox":
+						propType =   DefaultTemplateValue(item).defaultTemplateValue
+					break; 
+					case "numstepper":
+						propType =   DefaultTemplateValue(item).defaultTemplateValue
+					break;
+					default:
+					break;
+		     	
+		      }
+		      return propType;
+		     }
+		     
+		    private function getTheFirstlabel( arString:String , indexNum:int ):String
+		    {
+		    	var aValues:Array = arString.split(",") ;
+		    	return aValues[indexNum]
+		    }
+		    private function getTheFirstRadiolabel( arString:String , indexNum:int ):String
+		    {   if(indexNum == -1)
+		    	{
+		    		indexNum = 0
+		    	}
+		    	var aValues:Array = arString.split(",") ;
+		    	return aValues[indexNum]
+		    }
+		    private function getTheFirstCheckBoxlabel( boo:String ):String
+		    {
+		    	return (boo==false)?"false":"true";
+		    } 
+		    
+		    /**
+		    * when delete button trigger 
+		    */
+		   	public function onDelete() :void {
+        	 	Alert.show('Do U Really Want To Delete "'+GetVOUtil.getPropertiesPresetObject( DefaultTemplateValue(defaultDataGrid.selectedItem).propertiesPresetFK ).fieldLabel+
+        	 	'" ?', 'Delete Label', Alert.OK  | Alert.CANCEL, null, deleteCheck );
+        	 	if( editPanel.numChildren > 0 ) {
+          			editPanel.removeAllChildren();
+          			editPanel.visible = false;
+          			editPanel.includeInLayout = false;
+          		}
+            }
+            private function deleteCheck( event:CloseEvent ):void {
+				if( event.detail == Alert.OK ) {
+ 					model.defaultTempValueColl.removeAll();
+					var deleteTempValue:DefaultTemplateValue = DefaultTemplateValue(_defaultTemplateValueColl.getItemAt(defaultDataGrid.selectedIndex));
+					_defaultTemplateValueColl.removeItemAt(defaultDataGrid.selectedIndex);
+					
+					// delete the value using the bulk delete .....
+					model.defaultTempValueColl.addItem(deleteTempValue);
+					var delTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent(DefaultTemplateValueEvent.DELETE_DEFAULT_TEMPLATE_VALUE)
+					CairngormEventDispatcher.getInstance().dispatchEvent(delTempValueEvt);
+					
+					// update to show the value in the data grid
+					_deletedTemplateValueColl.addItem(deleteTempValue);
+					_defaultTemplateValueColl.refresh();
+					addBtn.enabled = true;
+				}
+        	}
+         	/**
+		    * Drag Enter Function
+		    */
+			private function doDragEnter(event:DragEvent):void {
+				finalTempColl.removeAll();
+                _updateTempColl.removeAll();  
+                var dropTarget:DataGrid = DataGrid(event.currentTarget);
+                var dataInfo:ArrayCollection = dropTarget.dataProvider as ArrayCollection;
+                var items:Array = event.dragSource.dataForFormat("items") as Array;
+                DragManager.acceptDragDrop(dropTarget);
+            }
+			/**
+		    * Drop Enter Function
+		    */
+            private function doDragDrop(event:DragEvent):void {        
+            	var dropTarget:DataGrid = DataGrid(event.currentTarget);  
+                var items:Array = event.dragSource.dataForFormat("items") as Array;
+                var dropLoc:int = dropTarget.calculateDropIndex(event); 
+				for(var i:int = 0; i < items.length; i++)
+                {                 
+                	_deletedTemplateValueColl.removeItemAt( _deletedTemplateValueColl.getItemIndex(items[i] ) )
+                    _updateTempColl.addItem(items[i]);
+                }
+                doDragExit(event); 
+            }
+            /**
+		    * DragExit Function
+		    */
+            private function doDragExit(event:DragEvent):void {
+                var dropTarget:DataGrid = DataGrid(event.currentTarget);          
+                dropTarget.hideDropFeedback(event);
+               for each( var newTempValue:DefaultTemplateValue in _updateTempColl) {
+	            	var newdefaultTemplateValue :DefaultTemplateValue = new DefaultTemplateValue();
+					newdefaultTemplateValue.defaultTemplateFK = newTempValue.defaultTemplateFK
+					newdefaultTemplateValue.propertiesPresetFK = newTempValue.propertiesPresetFK
+					newdefaultTemplateValue.defaultTemplateValue = newTempValue.defaultTemplateValue;
+					finalTempColl.addItem(newdefaultTemplateValue);
+                }
+                var updateEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent(DefaultTemplateValueEvent.BULK_UPDATE_DEFAULT_TEMPLATE_VALUE)
+                updateEvt.defaultTempValuesArr = finalTempColl; 
+                var handler:IResponder = new Callbacks(createResult,null)
+                updateEvt.callbacks = handler;
+                updateEvt.dispatch();
+            }
+			 private function createResult(resultEv:ResultEvent):void{
+			 	var updatedDefTemValAc:ArrayCollection = resultEv.result as ArrayCollection
+			 	for each(var defTemVal:DefaultTemplateValue in updatedDefTemValAc){
+                	_defaultTemplateValueColl.addItem(defTemVal);
+                }
+			 }
+			
+			private function checkEnableStatus():void
+			{
+				deleteDefaultDataGrid.visible = addBtn.selected; 
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:HBox width="100%" verticalAlign="middle" horizontalGap="2">
+	 			<mx:DataGrid id="defaultDataGrid"  dataProvider="{_defaultTemplateValueColl}" 
+					doubleClickEnabled="true" width="100%"  
+					dragMoveEnabled="true" 
+		            dragEnter="doDragEnter(event);"            
+		            dragExit="doDragExit(event);"             
+		            dragDrop="doDragDrop(event);" 
+		            dragEnabled="true" resizeEffect="Resize"   >
+					<mx:columns>
+							<mx:DataGridColumn headerText="Label" dataField="defaultTemplateFK"  width="150" labelFunction="getPropertiesPresetLabel"/>
+							<mx:DataGridColumn headerText="Value" dataField="defaultTemplateValue"  width="100" labelFunction="getPropertiesPresetValue"/>
+							<mx:DataGridColumn id="ItemRen" width="150" headerText="FieldType" >
+			                	<mx:itemRenderer>
+			                		<mx:Component>
+			                		<mx:HBox paddingLeft="10" paddingRight="10" verticalAlign="middle">
+			                			<mx:Script>
+			                				<![CDATA[
+			                					import com.adams.dt.business.util.GetVOUtil;
+			                					import com.adams.dt.model.vo.DefaultTemplateValue;
+			                				]]>
+			                			</mx:Script>
+			                			<mx:Image left="0" source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(DefaultTemplateValue( data ).propertiesPresetFK)]}"   width="50"/>
+			                			<mx:Button styleName="deleteIcon"  click="outerDocument.onDelete()" />
+			                			<mx:Label text="edit" textDecoration="underline" useHandCursor="true"  buttonMode="true" click="outerDocument.onDoubleClick()"/>
+			                		</mx:HBox>
+			                		</mx:Component>
+			                	</mx:itemRenderer>
+			                </mx:DataGridColumn>
+					</mx:columns>
+			    </mx:DataGrid>
+			    <mx:Button name="ButtAdd"    id="addBtn"  toggle="true" styleName="plusBTN"   click="checkEnableStatus()" />
+	 			<mx:DataGrid id="deleteDefaultDataGrid"  dataProvider="{_deletedTemplateValueColl}" width="100%"
+			    	  allowMultipleSelection="true" dragEnabled="true" visible="false" includeInLayout="{deleteDefaultDataGrid.visible}" >
+					<mx:columns>
+							<mx:DataGridColumn headerText="Label" dataField="defaultTemplateFK"   labelFunction="getPropertiesPresetLabel"/>
+							<mx:DataGridColumn id="ItemRen1" editable="false"  width="150" headerText="FieldType" >
+			                	<mx:itemRenderer>
+			                		<mx:Component>
+			                		<mx:HBox paddingLeft="10" paddingRight="10">
+			                			<mx:Script>
+			                				<![CDATA[
+			                					import com.adams.dt.business.util.GetVOUtil;
+			                					import com.adams.dt.model.vo.DefaultTemplateValue;
+			                				]]>
+			                			</mx:Script>
+			                			<mx:Image source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(DefaultTemplateValue( data ).propertiesPresetFK)]}"   width="50"/>
+			                		</mx:HBox>
+			                		</mx:Component>
+			                	</mx:itemRenderer>
+			                </mx:DataGridColumn>
+					</mx:columns>
+			    </mx:DataGrid>
+	 </mx:HBox>
+	<mx:Canvas id="editPanel"  	visible="false" includeInLayout="false"  width="100%" />
+</mx:TitleWindow>

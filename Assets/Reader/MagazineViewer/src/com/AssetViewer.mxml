@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+		 showEffect="{showHideEffect}" hideEffect="{showHideEffect}"
+		 hide="assetViewerHideHandler(event)"
+		 effectEnd="assetViewerEffectEndHandler(event)"
+		 creationComplete="assetViewerCreationCompleteHandler(event)"
+		 clipAndEnableScrolling="true" xmlns:com="com.*">
+	<fx:Declarations>
+		<mx:Fade id="showHideEffect" duration="300"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.clearInterval;
+			import flash.utils.setInterval;
+			
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			
+			import skin.CloseBtnSkin;
+			
+			[Bindable]
+			public var assetType:String = "";
+			
+			[Bindable]
+			public var assetURL:String = "";
+			
+			private var loader:Loader = new Loader();
+			
+			public static const AUDIO:String = "audio";
+			public static const VIDEO:String = "video";
+			public static const IMAGE:String = "image";
+			public static const SWF:String = "swf";
+			public static const SWF_3D:String = "swf3D";
+			
+			private var touchInterval:int;
+			
+			private var prevXPosition:Number = 0;
+			private var prevYPosition:Number = 0;
+			
+			private var curXPosition:Number = 0;
+			private var curYPosition:Number = 0;
+			
+			public function displayAsset(url:String, type:String):void
+			{
+				assetType = type;
+				assetURL = url;
+				switch(type)
+				{
+					case VIDEO:
+						videoPlayer.source = url;
+						videoPlayer.stop();
+						break;
+					case IMAGE:
+						imageViewer.source = url;
+						break;
+					case SWF:
+						swfViewer.source = url;
+						break;
+					case SWF_3D:
+						swfViewer.source = url;
+						loader.load(new URLRequest(url));
+						break;
+				}
+			}
+			
+			
+			protected function assetViewerHideHandler(event:FlexEvent):void
+			{
+				videoPlayer.stop();
+				this.removeEventListener(MouseEvent.MOUSE_UP, onMouseHandler);
+				clearInterval(touchInterval);
+			}
+			
+			
+			protected function assetViewerEffectEndHandler(event:EffectEvent):void
+			{
+				if(event.type == EffectEvent.EFFECT_END && this.visible)
+				{
+					if(assetType == VIDEO){
+						videoPlayer.play();
+					}
+				}
+				else if(event.type == EffectEvent.EFFECT_END && !this.visible)
+				{
+					if(assetType == VIDEO){
+						videoPlayer.source = "";
+						videoPlayer.stop();
+					}
+					swfViewer.source = "";
+					imageViewer.source = ""
+				}
+			}
+			
+			
+			protected function assetViewerCreationCompleteHandler(event:FlexEvent):void
+			{
+				this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseHandler);
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, swfViewerLoadCompleteHandler);
+			}
+			
+			protected function swfViewerLoadCompleteHandler(event:Event):void
+			{
+				if(assetType == SWF_3D){
+					(swfViewer.content as MovieClip).stop();
+				}
+			}
+			
+			protected function onMouseHandler(event:MouseEvent):void
+			{
+				if(event.type == MouseEvent.MOUSE_DOWN && assetType == SWF_3D)
+				{
+					touchInterval = setInterval(onEnterFrameHandler, 20);
+					this.addEventListener(MouseEvent.MOUSE_UP, onMouseHandler);
+					curXPosition = stage.mouseX;
+					curYPosition = stage.mouseY;
+				}
+				else if(event.type == MouseEvent.MOUSE_UP)
+				{
+					clearInterval(touchInterval);
+					this.removeEventListener(MouseEvent.MOUSE_UP, onMouseHandler);
+				}
+			}
+			
+			protected function onEnterFrameHandler():void
+			{
+				prevXPosition = curXPosition;
+				prevYPosition = curYPosition;
+				
+				curXPosition = stage.mouseX;
+				curYPosition = stage.mouseY;
+				var mc:MovieClip = swfViewer.content as MovieClip;
+				if(prevXPosition<curXPosition)
+				{
+					if(mc.currentFrame == mc.totalFrames) mc.gotoAndStop(1);
+					mc.nextFrame();
+				}
+				if(prevXPosition>curXPosition)
+				{
+					if(mc.currentFrame == 1) mc.gotoAndStop(mc.totalFrames);
+					mc.prevFrame();
+				}
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Group width="100%" height="100%" clipAndEnableScrolling="true" click="this.visible = false;">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor alpha="0.5" color="0"/>
+			</s:fill>
+		</s:Rect>	
+	</s:Group>
+	
+	<com:VideoPlayerWithoutFullscreen id="videoPlayer" width="{this.width}" height="{this.height}" visible="{(assetType == VIDEO)}" />
+	<s:Image id="imageViewer" width="100%" height="100%" 
+			  verticalAlign="middle" horizontalAlign="center"
+			  visible="{(assetType == IMAGE)}">
+		<s:filters>
+			<s:DropShadowFilter distance="1" quality="5" strength="10" blurX="10" blurY="10" alpha="0.5"/>
+		</s:filters>
+	</s:Image>
+	<mx:SWFLoader id="swfViewer" width="100%" height="100%"
+				  verticalAlign="middle" horizontalAlign="center"
+				  visible="{(assetType == SWF || assetType == SWF_3D)}">
+		<mx:filters>
+			<s:DropShadowFilter distance="1" quality="5" strength="10" blurX="10" blurY="10" alpha="0.5"/>
+		</mx:filters>
+	</mx:SWFLoader>
+	<s:Button click="this.visible = false;"
+			  skinClass="skin.CloseBtnSkin"
+			  useHandCursor="true" buttonMode="true"
+			  top="5" right="5"
+			  toolTip="Close"/>
+</s:Group>

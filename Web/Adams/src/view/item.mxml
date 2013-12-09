@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox  horizontalAlign="center" rollOver="rItem()"  rollOut="rOut()" height="100%" width="100%"  verticalAlign="middle"  xmlns:mx="http://www.adobe.com/2006/mxml" backgroundColor="gray"  paddingBottom="5" paddingLeft="5" paddingTop="5" paddingRight="5"
+ >
+	    <mx:Script>
+	    	<![CDATA[
+				import mx.core.Application;
+				import mx.core.FlexGlobals;
+	    		[Bindable]
+	    		public var rollString:String;
+	    		
+	    		private function rItem():void{
+					parentDocument.overLabel.text  = String(data.name);
+	    			//Application.application.headerView.overLabel.text = String(data.name); 
+	    		}
+	    		private function rOut():void{
+					parentDocument.overLabel.text   = ""; 
+	    		}
+	    	]]>
+	    </mx:Script>
+	    <mx:Image id="image" width="147" height="114" horizontalAlign="center" source="{data.thumbnail}" alpha="{data.enabled=='true' ? 1.0 :0.2}"/>
+		  <!--  <mx:ControlBar width="100%">
+		    	<mx:Label width="100%" text="{data.description}"  fontWeight="bold" alpha="{data.enabled=='true' ? 1.0 :0.2}"/>
+		    </mx:ControlBar>	-->
+    
+</mx:VBox>
+
+

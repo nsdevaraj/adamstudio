@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:comp="com.adams.dt.view.filemanagement.*"
+	     xmlns:components="com.adams.dt.view.components.*"
+	     creationCompleteEffect="{ mx.effects.Fade }"
+	     width="100%" height="100%" creationPolicy="all" xmlns:PDFTool="com.adams.dt.view.PDFTool.*"
+	     creationComplete="init()">
+	     <mx:Binding source="model.PopupOpenStatus" destination="popUpOpenTask"/>
+	     <mx:Binding source="model.modelMainProjectView" destination="this.indexChange"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.view.filemanagement.FileReplace;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.view.filemanagement.DragUtils;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.adams.dt.model.vo.EventStatus;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.events.CloseEvent;
+			import mx.effects.Fade;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import com.adams.dt.view.PDFTool.MiniPDFReader;
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import mx.events.ListEvent;
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.containers.FormItem;
+			import mx.core.UIComponent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.FileCategory;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.view.filemanagement.DragContainer;
+			import com.adams.dt.event.fileManagement.RemoveFileEvent;
+			import mx.effects.DefaultTileListEffect;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+			private var totalFileCollection:ArrayCollection = new ArrayCollection();
+			
+			/**
+			 * set basic files 
+			 * classify the files based on the category
+			 */
+			private var _basicFileCollection:ArrayCollection;
+			[Bindable(event="projectPropertyChange")]
+			public function set basicFileCollection (value:ArrayCollection):void
+			{
+				if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",updateContainer,false,0,true);
+					if(value!=null){
+						_basicFileCollection = value; 
+						dispatchEvent (new Event ("projectPropertyChange"));
+					}
+			}
+			/**
+			 * get basic files 
+			 */
+			public function get basicFileCollection ():ArrayCollection
+			{
+				return _basicFileCollection;
+			}
+			private var _projectAllFileCollection:ArrayCollection;		
+			[Bindable]
+			public function set projectAllFileCollection (value:ArrayCollection):void
+			{
+				if(value!=null){
+					_projectAllFileCollection = value; 
+				}
+			}
+			/**
+			 * get  projectAllfiles 
+			 */
+			public function get projectAllFileCollection ():ArrayCollection
+			{
+				return _projectAllFileCollection;
+			}	
+			
+			[Bindable]
+			private var _popUpOpenTask:Boolean;
+			public function set popUpOpenTask(value:Boolean):void
+			{
+				if(value)
+				{
+					if(!isCompareMode){
+						openPopup(model.currentSwfFile);	
+					}else{
+						//onComparePage();
+						compareMenuItem.dispatchEvent(new Event(Event.SELECT));
+					}
+				}
+			}
+			
+			
+			/**
+			 *  classify the files based on the category
+			 *  update file containers
+			 */
+			[Bindable] 
+			public var creation:ArrayCollection = new ArrayCollection();
+			[Bindable] 
+			public var uncate:ArrayCollection = new ArrayCollection();
+			[Bindable] 
+			public var reference:ArrayCollection = new ArrayCollection();
+			private function updateContainer(event:Event):void{
+				creation = new ArrayCollection();
+				uncate = new ArrayCollection();
+				reference = new ArrayCollection();
+				for each( var item:FileDetails in basicFileCollection){	
+					if(item.visible){			
+						switch(item.fileCategory){		 
+							case FileCategory.CREATION:
+								creation.addItem(item);
+								creation.refresh()
+							break; 
+							case FileCategory.REFERENCE:
+								reference.addItem(item);
+								reference.refresh()
+							break;
+							default:
+								uncate.addItem(item);
+								uncate.refresh();
+						}
+					}
+				}
+				if(unorganized)unorganized.fileCollection = uncate;
+				if(creationContainer)creationContainer.fileCollection = creation; 
+				if(referenceContainer)referenceContainer.fileCollection = reference;
+			}
+			
+			
+			private var selectedValue:int;
+			
+			private function itemComparison( event:NativeDragEvent ):void {
+				selectedValue = DragContainer( event.currentTarget ).selectedIndex;
+				DragContainer( event.currentTarget ).draggingSource = DragContainer( event.currentTarget );
+			}
+			/**
+			 * internal containers dragging functionality
+			 * remove the dragged item from containers
+			 */ 
+			private function removeExistFile( event:RemoveFileEvent ):void {
+				var dragContainer_Len:int=dragForm.numChildren;
+					for( var i:int = 0; i < dragContainer_Len;i++ ) {
+						if(dragForm.numChildren>0){
+							if( DragContainer( VBox(dragForm.getChildAt( i )).getChildAt(1) ).draggingSource != null ) {
+								if( event.doRemove ){
+									if(DragContainer( VBox(dragForm.getChildAt( i )).getChildAt(1) ).dataProvider.length>0)
+										DragContainer( VBox(dragForm.getChildAt( i )).getChildAt(1) ).dataProvider.removeItemAt( selectedValue );
+								}	
+								DragContainer( VBox(dragForm.getChildAt( i )).getChildAt(1) ).draggingSource = null;
+								break;
+							}
+						}
+					}
+			}
+			
+			
+			/**
+			 * get basic files 
+			 */
+			 
+			private var _refresh:Boolean;
+			[Bindable]
+			public function get refresh():Boolean { 
+				return _refresh;
+			}
+			public function set refresh( value:Boolean ):void {
+				if( value ) {
+					refreshExistFile();
+					model.bgDownloadFileRefresh = false;
+				}
+			}
+			
+			private function refreshExistFile():void {
+				 var dragContainer_Len:int = dragForm.numChildren;
+				for( var i:int = 0; i < dragContainer_Len;i++ ) {
+					if( dragForm.numChildren > 0 ) {
+						var container :DragContainer = VBox( dragForm.getChildAt( i ) ).getChildAt( 1 ) as DragContainer;
+						container.updateTileList( container.dp );
+					}
+				}
+			}
+			
+			private var _indexChange:String = '';
+			[Bindable]
+			public function get indexChange():String {
+				return _indexChange;
+			}
+			
+			public function set indexChange( value:String ):void {
+				_indexChange = value;
+				if(indexChange != "Dashboard")
+				{
+					miniReader.visible = false;
+					miniImageViewer.visible = false;
+					miniFileDetailer.visible = false;
+					downloadBtn.visible = false;
+				}
+			}
+			 
+			private var currentSWF:FileDetails = new FileDetails();
+			private var currentPDF:FileDetails = new FileDetails();
+			private var currentFilePath:String = "";
+			private function downloadFile():void
+			{
+				try{
+					var fileRef:FileReference = new FileReference;
+					fileRef.download(new URLRequest(currentFilePath));
+				}
+				catch (err:Error){
+					var file:File = new File(currentFilePath);
+					file.addEventListener(Event.SELECT, onSelect,false,0,true);
+					file.browseForSave("Save Your File");								
+				}
+			}
+			private function onSelect(e:Event):void {    
+				var f:File = e.currentTarget as File;    
+				var file:File =new File(currentFilePath);
+				file.copyTo(f,true);
+			}   
+			private function onShowPDF( event:RemoveFileEvent ):void {
+				basicFilesWindow.width = 150;
+				releaseFilesWindow.width = 150;
+				isCompareMode = false;
+				if( event.fileItem.extension == "pdf" ) { 
+					currentFileDetail = event.fileItem;
+					var delegate:LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+					var selectedFile:FileDetails = event.fileItem;
+					var result:SQLResult = delegate.getSwfFileDetails( selectedFile ); 
+					
+					var array:Array = [];
+					array = result.data as Array;
+					var tempFilePath:String = "";
+					currentSWF = new FileDetails();
+					if( array ) {
+						currentSWF = array[0] as FileDetails;
+						model.currentSwfFile = currentSWF;
+						openPopup( currentSWF );
+					}
+					else {
+						model.PopupOpenStatus = false;
+						var fileEvents:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_SWFFILEDETAILS );
+						fileEvents.fileDetailsObj = selectedFile;
+						fileEvents.dispatch();
+						model.currentPDFFile = selectedFile;
+						model.loadMPVFiles = true;
+					}
+					downloadBtn.visible = false;
+					currentFilePath = "";
+				}
+				else {
+					delegate = new LocalFileDetailsDAODelegate();
+					selectedFile = event.fileItem;
+					result = delegate.getFileDetails( selectedFile ); 
+					
+					array = [];
+					array = result.data as Array;
+					tempFilePath = "";
+					currentSWF = new FileDetails();
+					
+					if( array ) {
+						release.contextMenu = null;
+						creationContainer.contextMenu = null;
+						unorganized.contextMenu = null;
+						currentSWF = array[0] as FileDetails;
+						var fileExt:String = event.fileItem.extension; 
+						if( fileExt == "jpg" || fileExt == "jpeg" || fileExt == "png" || fileExt == "gif" ) {
+							miniReader.visible = false;
+							miniImageViewer.visible = true;
+							miniFileDetailer.visible = false;
+							downloadBtn.visible = true;
+							miniImageViewer.source = currentSWF.filePath;
+						}
+						else {
+							/** 
+							 * openWithDefaultApplication() function work's only in AIR 2.0 
+							 **/ 
+							
+							/* try{
+								var tmpFile:File = new File(event.fileItem.filePath);
+								tmpFile.openWithDefaultApplication();
+							}
+							catch(err:Error)
+							{
+								Alert.show("The file you selected is prohibited and cannot be opened",event.fileItem.fileName);
+							}  */
+							miniReader.visible = false;
+							miniImageViewer.visible = false;
+							miniFileDetailer.visible = true;
+							downloadBtn.visible = true;
+							miniFileName.text = event.fileItem.fileName;
+							miniFileExt.text = event.fileItem.extension;
+						}
+						
+						currentFilePath = currentSWF.filePath;
+					}
+					else {
+						
+						model.PopupOpenStatus = false;
+						fileEvents = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_FILEDETAILS );
+						fileEvents.fileDetailsObj = selectedFile;
+						fileEvents.dispatch();
+						model.currentPDFFile = selectedFile;
+						model.loadMPVFiles = true;
+					}
+					
+				}
+			}
+			
+			private var changableFile:FileDetails; 
+			private var currentContainer:Object;
+			private function removingItem( event:RemoveFileEvent ):void {
+				changableFile = event.fileItem;
+				currentContainer = event.releaseContainer;
+				Alert.show( 'Do you want to delete this file?', 'Confirmation', Alert.YES|Alert.NO, this, onDelete );
+			}
+			
+			private function onDelete( event:CloseEvent ):void {
+				if( event.detail == Alert.YES ) {
+					var eventsArray:Array = [];
+					
+					miniReader.visible = false;
+					miniImageViewer.visible = false;
+					miniFileDetailer.visible = false;
+					downloadBtn.visible = false;
+					
+					var handler:IResponder = new Callbacks( onChangeResult );
+					var updateEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_UPDATE_DETAILS, handler );
+					changableFile.visible = false;
+					updateEvent.fileDetailsObj = changableFile;
+					eventsArray.push( updateEvent );
+					
+					var eEvent:EventsEvent = new EventsEvent( EventsEvent.EVENT_CREATE_EVENTS );
+			  		var _events:Events = new Events();
+					_events.eventDateStart = model.currentTime;
+					_events.eventType = EventStatus.FILEDELETE;   
+					_events.personFk = model.person.personId;
+					_events.taskFk = ( model.currentTasks ) ? model.currentTasks.taskId : 0;	
+					_events.workflowtemplatesFk = ( model.currentTasks ) ? model.currentTasks.wftFK : 0;			
+					_events.projectFk = model.currentProjects.projectId;
+					var by:ByteArray = new ByteArray();
+					var str:String = changableFile.fileName + "&#$%^!@"+ changableFile.fileId;
+					by.writeUTFBytes( str );
+					_events.details = by;
+					_events.eventName = "File";		
+					eEvent.events = _events;	
+					eventsArray.push( eEvent );				
+					
+					var sequencer:SequenceGenerator = new SequenceGenerator( eventsArray );
+					sequencer.dispatch();
+				}
+				else {
+					changableFile = null;
+					currentContainer = null;
+				}
+			}
+			
+			private function onChangeResult( rpcEvent:Object ):void {
+				var dp:ArrayCollection;
+				var removeIndex:int;
+				dp = currentContainer.dataProvider as ArrayCollection;
+				removeIndex = dp.getItemIndex( changableFile );
+				if( removeIndex != -1 ) {
+					dp.removeItemAt( removeIndex );
+				}
+				dp.refresh();
+				changableFile = null;
+				currentContainer = null;
+			}
+			
+			private function replacingItem( event:RemoveFileEvent ):void {
+				changableFile = event.fileItem;
+				currentContainer = event.releaseContainer;
+				
+				var uploadComponent:FileReplace = new FileReplace();
+				uploadComponent.replaceableFile = changableFile;
+				uploadComponent.addEventListener( 'startReplacing', onReplacing,false,0,true ); 
+				PopUpManager.addPopUp( uploadComponent, this );
+				PopUpManager.centerPopUp( uploadComponent );
+			}
+			
+			private function onReplacing( event:Event ):void {
+				var eventsArray:Array = [];
+					
+				var handler:IResponder = new Callbacks( onChangeResult );
+				var updateEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_UPDATE_DETAILS, handler );
+				changableFile.taskId = 0;
+				changableFile.type = 'Basic';
+				updateEvent.fileDetailsObj = changableFile;
+				eventsArray.push( updateEvent );
+				
+				var eEvent:EventsEvent = new EventsEvent( EventsEvent.EVENT_CREATE_EVENTS );
+		  		var _events:Events = new Events();
+				_events.eventDateStart = model.currentTime;
+				_events.eventType = EventStatus.FILEREPLACE;   
+				_events.personFk = model.person.personId;
+				_events.taskFk = ( model.currentTasks ) ? model.currentTasks.taskId : 0;	
+				_events.workflowtemplatesFk = ( model.currentTasks ) ? model.currentTasks.wftFK : 0;			
+				_events.projectFk = model.currentProjects.projectId;
+				var by:ByteArray = new ByteArray();
+				var str:String = changableFile.fileName + "&#$%^!@"+ changableFile.fileId;
+				by.writeUTFBytes( str );
+				_events.details = by;
+				_events.eventName = "File";		
+				eEvent.events = _events;	
+				eventsArray.push( eEvent );				
+				
+				var sequencer:SequenceGenerator = new SequenceGenerator( eventsArray );
+				sequencer.dispatch();
+			} 
+			
+			private var compareRootMenu:NativeMenu =  new NativeMenu();
+			private var compareMenuItem:NativeMenuItem = new NativeMenuItem("Compare");
+			private var selectedFileMainDetail:FileDetails = new FileDetails();
+			private var currentFileDetail:FileDetails = new FileDetails();	
+			[Bindable]		
+			public var isCompareMode:Boolean = false;
+			
+			private function init():void
+			{
+				compareRootMenu.addItem(compareMenuItem);
+				compareRootMenu.addEventListener(Event.DISPLAYING, onMenuSelect);
+				compareMenuItem.addEventListener(Event.SELECT, onMenuItemSelect)
+			}
+				
+			private function openPopup(currentSWF:FileDetails):void{
+					trace("OpenPopup File Management")
+				//if(!isCompareMode){
+					isCompareMode = false;
+					miniReader.pdfTool.imgURL = currentSWF.filePath;
+					miniReader.visible = true;
+					miniImageViewer.visible = false;
+					miniFileDetailer.visible = false;
+					downloadBtn.visible = false;
+					var commentEvent : CommentEvent = new CommentEvent( CommentEvent.GET_COMMENT );
+					commentEvent.fileFk = currentSWF.remoteFileFk; 
+					commentEvent.dispatch()			  
+					model.workflowState = 0;
+					
+					release.contextMenu = compareRootMenu;
+					creationContainer.contextMenu = compareRootMenu;
+					unorganized.contextMenu = compareRootMenu;
+				/* }
+				else
+				{
+					release.contextMenu = null;
+					creationContainer.contextMenu = null;
+					unorganized.contextMenu = null;
+				} */
+				
+			}
+			private var firstSWFFile:FileDetails = new FileDetails();
+			private var secondSWFFile:FileDetails  = new FileDetails();
+			
+			private function onMenuItemSelect(evt:Event):void
+			{
+				isCompareMode = true;
+				release.contextMenu = null;
+				creationContainer.contextMenu = null;
+				unorganized.contextMenu = null;
+				
+				var delegate:LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+				var selectedFile:FileDetails = currentFileDetail;
+				var result:SQLResult = delegate.getSwfFileDetails( selectedFile ); 
+				
+				var array:Array = [];
+				array = result.data as Array;
+				var tempFilePath:String = "";
+				firstSWFFile = new FileDetails();
+				if( array ) {
+					firstSWFFile = array[0] as FileDetails;
+					model.currentSwfFile = firstSWFFile;
+				}
+				
+				delegate = new LocalFileDetailsDAODelegate();
+				selectedFile = selectedFileMainDetail;
+				result = delegate.getSwfFileDetails( selectedFile ); 
+				
+				array = [];
+				array = result.data as Array;
+				tempFilePath = "";
+				secondSWFFile  = new FileDetails();
+				if( array ) {
+						secondSWFFile = array[0] as FileDetails;
+						model.currentSwfFile = secondSWFFile;
+				}
+				else {
+					model.PopupOpenStatus = false;
+					var fileEvents:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_SWFFILEDETAILS );
+					fileEvents.fileDetailsObj = selectedFile;
+					fileEvents.dispatch();
+					model.currentPDFFile = selectedFile;
+					model.loadMPVFiles = true;
+				}
+				
+				onComparePage();
+				
+			}
+			
+			private function onComparePage():void
+			{
+				miniReader.pdfTool.imgURLs(firstSWFFile.filePath,secondSWFFile.filePath); 
+				miniReader.visible = true;
+				miniImageViewer.visible = false;
+				miniFileDetailer.visible = false;
+				downloadBtn.visible = false;
+				var commentEvent : CommentEvent = new CommentEvent( CommentEvent.GET_COMMENT );
+				commentEvent.fileFk = firstSWFFile.remoteFileFk;
+				commentEvent.compareFileFk = secondSWFFile.remoteFileFk;
+				commentEvent.dispatch()			  
+				model.workflowState = 0;
+			}
+			
+			private function onMenuSelect(event:Event):void
+			{
+				if(selectedFileMainDetail!=null && selectedFileMainDetail .extension == "pdf")
+				{
+					if(!(selectedFileMainDetail == currentFileDetail)){
+						compareMenuItem.enabled = true;
+						compareMenuItem.label = "Compare with "+selectedFileMainDetail.fileName;
+					}else
+					{
+						compareMenuItem.enabled = false;
+						compareMenuItem.label = "Compare with same file, not possible";
+					}
+				}
+				else
+				{
+					compareMenuItem.enabled = false;
+					compareMenuItem.label = "Compare not possible";
+				}
+			}
+			
+			private function onItemRollOver(event:ListEvent):void
+			{
+				event.currentTarget.selectedIndex = event.currentTarget.indicesToIndex(event.rowIndex,event.columnIndex);
+				selectedFileMainDetail = event.currentTarget.selectedItem; 	
+			}
+			
+			private function onReleaseItemRollOver(event:Event):void
+			{
+				selectedFileMainDetail = release.selectedFileDetail;; 	
+			}
+			
+			private function onCompareClose():void
+			{
+				isCompareMode = false;
+				model.currentSwfFile = firstSWFFile;
+				openPopup(firstSWFFile);
+			}
+			
+			private function onItemRollOut(event:MouseEvent):void
+			{
+			 	//event.currentTarget.selectedIndex = -1;
+			 	//selectedFileDetail = null;	
+			}
+			
+			private function outSideFuncHandler( evt:Event ):void {
+				currentFileDetail = release.currentFileDetail;
+				firstSWFFile = release.selectedFileDetail;
+				openPopup( release.selectedFileDetail );
+			}
+		]]>
+	</mx:Script>
+	<mx:Style>
+		.filebgContainer{	
+			padding-bottom:5;
+			padding-left:5;
+			padding-right:5;
+			padding-top:5;
+		}
+	</mx:Style>
+	<!-- <mx:Model id="listData" source="xml/listData.xml"/>-->
+	<mx:HDividedBox width="100%" height="100%" >
+		<components:WindowShade id="basicFilesWindow" enableHeader="false"  label="Basic Files" opened="true" width="150" height="100%" 
+								paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5">
+			<mx:VBox id="dragForm" width="100%" height="100%">
+			
+				<mx:VBox  width="100%" styleName="filebgContainer">
+					<mx:Label text="AGENCE CREATION" styleName="subHeader" fontSize="12"/>
+					<comp:DragContainer fileCategory="{FileCategory.CREATION}" id="creationContainer" width="100%" height="200" borderStyle="solid"  
+										nativeDragStart="itemComparison( event )" removeItem="removeExistFile( event )" 
+										showItem="onShowPDF( event )" deleteItem="removingItem( event )"
+										replaceItem="replacingItem( event )"
+										itemRollOver="onItemRollOver(event);" mouseOut="onItemRollOut(event);"/>	
+				</mx:VBox>
+				
+				<mx:VBox width="100%" styleName="filebgContainer">
+					<mx:Label text="UnOrganised Files" styleName="subHeader" fontSize="12"/>
+					<comp:DragContainer fileCategory="unOrganized"  id="unorganized" width="100%" height="200" borderStyle="solid"  
+					 					nativeDragStart="itemComparison( event )" removeItem="removeExistFile( event )" 
+					 					showItem="onShowPDF( event )" deleteItem="removingItem( event )"
+					 					replaceItem="replacingItem( event )"
+					 					itemRollOver="onItemRollOver(event);" mouseOut="onItemRollOut(event);"/>	
+				</mx:VBox>
+								
+				<mx:VBox width="100%" includeInLayout="{reference.length!=0}" styleName="filebgContainer"
+					 visible="{reference.length!=0}">
+					<mx:Label text="REFERENCE FILES" styleName="subHeader" fontSize="12"/>
+					<comp:DragContainer fileCategory="{FileCategory.REFERENCE}" id="referenceContainer" 
+										includeInLayout="{reference.length!=0}" visible="{reference.length!=0}"
+										width="100%" height="100" borderStyle="solid"  
+										nativeDragStart="itemComparison( event )" 
+						                removeItem="removeExistFile( event )" showItem="onShowPDF( event )"
+						                deleteItem="removingItem( event )"
+						                replaceItem="replacingItem( event )"/>
+				</mx:VBox>
+			</mx:VBox>
+		</components:WindowShade>
+		
+		<components:WindowShade enableHeader="false" label="File Preview" opened="true" width="33%" height="100%"
+								paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5">
+			<mx:Canvas width="100%" height="100%">
+			<mx:Image id="miniImageViewer" width="100%" height="100%" 
+					   verticalAlign="middle" horizontalAlign="center" visible="false"/>
+			<PDFTool:MiniPDFReader id="miniReader" width="100%" height="100%" visible="false"/>
+			<mx:VBox id="miniFileDetailer" 
+					borderColor="#CCCCCC" borderThickness="0.7" cornerRadius="10"
+					verticalCenter="0" horizontalCenter="0"
+					fontWeight="bold" fontSize="12" visible="false">
+				<mx:HBox>
+					<mx:Label width="150" text="File Name"/>
+					<mx:Label text=":"/>
+					<mx:Label id="miniFileName" />
+				</mx:HBox>
+				<mx:HBox>
+					<mx:Label width="150" text="File Extension"/>
+					<mx:Label text=":"/>
+					<mx:Label id="miniFileExt" />
+				</mx:HBox>
+				<mx:HBox>
+					<mx:Label width="150" text="Preview "/>
+					<mx:Label text=":"/>
+					<mx:Label text="Not Available"/>
+				</mx:HBox>
+			</mx:VBox>
+			<mx:Button id="downloadBtn" label="Download" bottom="10" right="10" 
+						visible="false" click="downloadFile()"/>
+			<mx:Canvas id="compareCloseCan" bottom="10" left="10" visible="{isCompareMode}">
+				<mx:Button label="Close" left="25" click="onCompareClose()"/>
+				<mx:Button styleName="CompareBtnSkin"/>
+			</mx:Canvas>
+				<!--<mx:Button id="listBtn" label="list" click="filesStack.selectedIndex=0" top="0" right="5" />
+				<mx:Button label="detail" top="0" click="filesStack.selectedIndex=1" right="{listBtn.width+10}" />
+				<mx:ViewStack id="filesStack" 
+					styleName="filebgContainer" 
+					width="100%" top="50" height="100%">
+				
+					<mx:Canvas width="100%" height="100%">
+						<components:GeneralFileView id="generalView"  width="100%" height="100%" 
+						tasksFileCollection="{projectAllFileCollection}"/> 
+					</mx:Canvas>
+					
+					<mx:Canvas width="100%" height="100%">
+					<mx:DataGrid dataProvider="{projectAllFileCollection}" width="100%" height="100%">
+						<mx:columns>
+							<mx:DataGridColumn dataField="fileDate" />
+							<mx:DataGridColumn dataField="fileName" />
+							<mx:DataGridColumn dataField="taskId" />
+							<mx:DataGridColumn dataField="type" />
+							<mx:DataGridColumn dataField="releaseStatus" />
+							<mx:DataGridColumn dataField="fileCategory" />
+						</mx:columns>
+					</mx:DataGrid>	
+					</mx:Canvas>
+				</mx:ViewStack>-->
+				
+			</mx:Canvas>
+		</components:WindowShade>
+		<components:WindowShade id="releaseFilesWindow" enableHeader="false"  label="Releases" opened="true" width="150" height="100%"
+			paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5">
+			 <!--<mx:VBox  id="releaseForm" width="100%" height="100%" styleName="filebgContainer" >-->
+				<components:ReleaseFileContainer id="release" width="100%" height="100%" 
+																	tasksFileCollection="{ model.taskFileCollection }"
+																	outSideCalling="outSideFuncHandler( event )" 
+																	outSidePopUpOn="true"
+																	deleteReleaseItem="removingItem( event )"
+																	replaceReleaseItem="replacingItem( event )"
+																	fileItemRollOver="onReleaseItemRollOver( event )"/>
+			<!--</mx:VBox>-->
+			<!--<components:PDFPreviwer id="viewer"/>-->
+		</components:WindowShade>
+	</mx:HDividedBox>	
+	<!--  -->
+</mx:HBox>

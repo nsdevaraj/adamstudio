@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"  width="100%" 
+	styleName="innerBorder" xmlns:technicalTemplate="com.adams.dt.view.components.technicalTemplate.*">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import com.adams.dt.event.PropPresetTemplateEvent;
+			import mx.controls.DataGrid;
+			import mx.core.UIComponent;
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			public var parenRef:Proppresetstemplates;
+			
+			[Bindable]
+			public var parenList:DataGrid;
+			[Bindable]
+			public var dp:ArrayCollection;
+			[Bindable]
+			public var parentList:DataGrid;
+			
+			[Bindable]
+			public var _textEditor:Boolean
+			[Bindable]
+			public var _labelEditor:Boolean
+			[Bindable]
+			public var _numericStepperEditor:Boolean
+			[Bindable]
+			public var _checkBoxEditor:Boolean
+			
+			public function setVisibility( txtEdit:Boolean , cmbEdit:Boolean ,lblEdit:Boolean ,numericEdit:Boolean,
+											checkBoxEdit:Boolean) :void {
+				_textEditor = txtEdit;
+				_comboEditor = cmbEdit;
+				_labelEditor = lblEdit;
+				_numericStepperEditor = numericEdit;
+				_checkBoxEditor = checkBoxEdit;
+				AddConVisible = false;
+			}
+			
+			
+			 
+			/**
+			 * For ComboEdit  Content ....... 
+			 **/
+			 [Bindable]
+			 private var AddConVisible:Boolean;
+			[Bindable]
+			public var _comboEditor:Boolean
+			private function onAddClick():void {
+				optionValue.text = "";
+				AddConVisible = true;
+			}
+			private function onNewEntryAdd( event:MouseEvent ):void {
+				dp.addItem(optionValue.text)
+				AddConVisible = false
+				
+			}
+			private function onRemoveClick():void {
+				if(_listContent.dataProvider.length>0){
+					dp.removeItemAt( _listContent.selectedIndex );
+				}
+				else{
+					Alert.show("Out of Limit");
+				}
+				AddConVisible = false;
+			}
+			
+			
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Form width="100%">
+		<!--For the TextField Content-->
+		<mx:FormItem label="Default Value" id="textEditorTXT" visible="{_textEditor}" includeInLayout="{_textEditor}">
+			<mx:TextInput id="_DefaultValue" text="{parenRef.fieldOptionsValue}"/>	
+		</mx:FormItem>
+		
+		<!--For the combo Edit / Radio Edit Content -->
+		<mx:FormItem label="Field Label" visible="{_comboEditor}" includeInLayout="{_comboEditor}" >
+			<mx:TextInput id="_fieldValue" text="{parenRef.fieldLabel}"/>	
+		</mx:FormItem>
+		<mx:FormItem label="Option Values" width="100%" visible="{_comboEditor}" verticalGap="5" includeInLayout="{_comboEditor}">
+			<mx:List id="_listContent" dataProvider="{ dp }" height="100" width="100%" />
+			<mx:HBox paddingRight="10" width="100%">
+				<mx:Button toolTip="Add Option Values" id="addBtn" styleName="addButton" click="onAddClick()"/>
+					<mx:Label text="Enter value" visible="{AddConVisible}"/>
+					<mx:TextInput id="optionValue"  visible="{AddConVisible}"/>
+					<mx:Button id="addButton" label="Add"  click="onNewEntryAdd(event)" visible="{AddConVisible}"/>
+			</mx:HBox>	
+		</mx:FormItem>
+		
+		<!--For the Label Content -->
+		<mx:FormItem label="Label Field" visible="{_labelEditor}" includeInLayout="{_labelEditor}" >
+			<mx:TextInput id="_labelField" text="{parenRef.fieldOptionsValue}" />			
+		</mx:FormItem>
+		
+		<!--For the Numeric Content -->
+		<mx:FormItem label="Numeric Stepper Field" visible="{_numericStepperEditor}" includeInLayout="{_numericStepperEditor}" >
+			<mx:NumericStepper id="numericStepper" minimum="0" maximum="100" value="{int(parenRef.fieldOptionsValue)}" />
+		</mx:FormItem>
+		
+		<!--For the Check Box Content -->
+		<mx:FormItem label="Check Box " visible="{_checkBoxEditor}" includeInLayout="{_checkBoxEditor}" >
+			<mx:CheckBox id="checkBoxId" selected="{Boolean(parenRef.fieldOptionsValue)}"/>
+		</mx:FormItem>
+	</mx:Form>
+</mx:VBox>

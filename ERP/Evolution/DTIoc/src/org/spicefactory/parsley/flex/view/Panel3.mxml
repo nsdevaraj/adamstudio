@@ -1,0 +1,59 @@
+<mx:Panel 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	title="Panel3b"
+	addedToStage="trace('ADD 3'); dispatchEvent(new Event('configureView', true));"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import org.spicefactory.parsley.flex.mxmlconfig.core.CoreModel;
+			import org.spicefactory.parsley.testmodel.AnnotatedResourceBinding;
+			import org.spicefactory.parsley.core.context.Context;
+			import mx.resources.ResourceManager;
+			import mx.managers.PopUpManager;
+			import mx.containers.TitleWindow;
+			
+			[Inject(id="child")]
+			[Bindable]
+			public var model:CoreModel;	
+			
+			[Inject]
+			[Bindable]
+			public var resourceBinding:AnnotatedResourceBinding;
+			
+			[Inject]
+			public var context:Context;
+			
+			private function showPopup () : void {
+				var tw:TitleWindow = new TitleWindow();
+				context.viewManager.addViewRoot(tw);
+				tw.addChild(new Panel4());
+				tw.title = "Window";
+				tw.width = 600;
+				tw.height = 400;
+				trace("Now add popup");
+				PopUpManager.addPopUp(tw, this);
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Metadata>
+        [ResourceBundle("test")]
+    </mx:Metadata>
+	
+	
+	<mx:Text text="{ResourceManager.getInstance().getString('test','msg1')}"/>
+	<mx:Text id="display" text="Bound value: |{model.stringProp}|"/>
+	<mx:Text id="info" text="{resourceBinding.boundValue}"/>
+	
+
+	<mx:Button label="Deutsch" click="ResourceManager.getInstance().localeChain = ['de_DE'];"/>
+	<mx:Button label="English" click="ResourceManager.getInstance().localeChain = ['en_US'];"/>
+	
+	<mx:Button label="Show Popup" click="showPopup();"/>
+	
+	
+</mx:Panel> 

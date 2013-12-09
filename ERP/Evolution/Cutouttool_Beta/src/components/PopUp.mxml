@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  creationPolicy="all" isPopUp="{false}" xmlns:mx="http://www.adobe.com/2006/mxml" title="{titleVal}" 
+		showCloseButton="true"
+		styleName="noPadding"
+		resize="callMoveIFrame()"
+    	move="callMoveIFrame()"
+		implements="components.Interface.IComponents" 
+		creationComplete="{init(),Controller.getInstance().registerView = this}"
+		close="titleWindow_close(event);" verticalAlign="middle" horizontalAlign="center" xmlns:upload="components.*" width="100%" height="100%"  verticalScrollPolicy="off">
+
+	<mx:Style>
+		.noPadding {
+			borderColor: #666666;			
+			headerHeight: 30;
+			borderThicknessLeft: 0;
+		   	borderThicknessTop: 0;
+		   	borderThicknessBottom: 0;
+		   	borderThicknessRight: 0;
+		}
+	</mx:Style>
+
+	<mx:Script>
+		<![CDATA[
+			import business.AccessRights;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+			import business.CreateZip;
+			import business.GetUploadedPath;
+			import mx.collections.ArrayCollection;
+			import controller.Controller;
+			import mx.core.Application;
+			import mx.managers.IFocusManagerComponent;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			[Bindable]
+			public var source:String;
+			public var selectedTask:Boolean = false;
+			public var fileUploadedArr:ArrayCollection = new ArrayCollection();
+			public var fileDeliveredArr:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			public var titleVal:String = new String()
+			
+			public function init():void {
+				comp_fileDeatils.selectedIndex = 0;
+				comp_fileDeatils.selectedIndex = 1;				 
+				//.centerPopUp(this);
+				initiate();
+				
+			}
+			
+			public function garbageCollection():void{
+			}
+			[Bindable]
+			private var _uploadeDP:ArrayCollection;
+			public function set uploadeDP(arrC:ArrayCollection):void{
+				_uploadeDP = arrC
+			}
+			[Bindable]
+			private var _deliverDP:ArrayCollection;
+			public function set deliverDP(arrC:ArrayCollection):void{
+				_deliverDP = arrC
+			}
+			private function callMoveIFrame(){
+				if(currentFileUploadComp!=null)
+				currentFileUploadComp.dragArea.moveIFrame();
+			}
+			public function loadChild(num:int):void{
+				if(currentFileUploadComp!=null)currentFileUploadComp.dragArea.moveIFrame();
+				if(num==0){
+					titleVal = "Uploaded Files";
+				}else{
+					titleVal = "Delivered Files";
+				}
+				comp_fileDeatils.selectedIndex = num;
+			}
+			public function setStackIndex(num:int):void{
+				if(num==0)Application.application.hideApplet();
+				uploadStack.selectedIndex = num;
+				deliverdStack.selectedIndex = num;
+			}
+			private function indexOfStack():int{
+			 	var index:int = AccessRights.getIndex(Controller.getInstance().currentTaskObj.statusVal,Controller.getInstance().userObj.type,1);
+				return index;
+			}
+			private function indexOfStack_Client():int{
+				var index:int = AccessRights.getIndex(Controller.getInstance().currentTaskObj.statusVal,Controller.getInstance().userObj.type,0);
+				return index;
+			}
+			//private var delivery:
+			private function updateArr(event:Event,str:String):void{
+				if(str=='client'){
+					fileUploadedArr = event.currentTarget.listFiles.dataProvider as ArrayCollection;
+	
+				}else if(str=='suplier'){
+					fileDeliveredArr = event.currentTarget.listFiles.dataProvider as ArrayCollection;
+				}
+			}
+			private function titleWindow_close(evt:Event):void {
+				Application.application.hideApplet();
+				dispatchEvent(new Event("closed"));
+				PopUpManager.removePopUp(this as IFlexDisplayObject);
+			}
+			[Bindable]
+			private var fileArr:Array = new Array();
+		    [Bindable]
+			private var downloadFile:String = Application.application.docRoot+"Cutouttool_Beta-debug";
+			private function activateDownLoad(str:String):void{
+				var path:GetUploadedPath = new GetUploadedPath();
+				var arrC:ArrayCollection = new ArrayCollection();
+				fileArr = new Array()
+				switch(str){
+					case 'supplier':
+						arrC = downloadfiles_suplier.dataProvider as ArrayCollection;					
+					break;
+					case 'client':
+						arrC = downloadfiles_client.dataProvider as ArrayCollection;
+					break;
+				}
+				for(var i:int=0;i<arrC.length;i++){
+					fileArr.push(path.getPath(arrC[i].name));
+				}
+				trace(fileArr);
+				zipfile.getOperation('crateZip').send();
+				//var zip:CreateZip = new CreateZip(fileArr);
+				 
+			}
+			
+			private function faultHandler(event:FaultEvent):void{
+				Alert.show("fault-->"+event.message)
+			}
+			private function resultHandler(event:ResultEvent):void{
+				var path:String = String(event.result);
+				var pURL:String = Application.application.docRoot+"Cutouttool_Beta-debug/download.php"
+				var header:URLRequestHeader = new URLRequestHeader ("Content-type", "application/octet-stream");
+				var myRequest:URLRequest = new URLRequest ( pURL+'?path='+path);	
+				myRequest.requestHeaders.push (header);				
+				myRequest.method = URLRequestMethod.POST;	
+				navigateToURL ( myRequest, "_blank" );
+			}
+			
+			
+			/***********************************Drag and Drop FIles Coding*********************/
+				import events.FileDropEvent;
+				
+				import mx.core.Application;
+		
+					public var storeFileArray:Array;					
+					public var currentFileUploadComp:FileUpload;
+		            public function initiate():void{
+		            	storeFileArray = new Array();
+		            	Application.application.addEventListener(FileDropEvent.FILEDROPED,lcHandler);	
+		            }
+		            public function lcHandler(event:FileDropEvent):void 
+		            {
+		            	var returnString:String = event.filePath;
+					 	var arrayStr:Array = returnString.split("**");
+					 	if(Controller.getInstance().userObj.type=='1'){
+							currentFileUploadComp = fileUpload_client;
+						}else if(Controller.getInstance().userObj.type=='2'){
+							currentFileUploadComp = fileUpload_suplier;
+						}
+		                for (var i:Number = 0; i <arrayStr.length; i++) 
+						{
+							displayFiles(arrayStr[i].toString());
+						}
+						Application.application.addEventListener(FileDropEvent.FILEUPLOADED,getCompletedFile);
+					} 
+					public var tempUploadCompletedFile:Array = new Array();
+					public function getCompletedFile(event:FileDropEvent):void{			
+						var returnString:String = event.filePath;
+						var splitArr:Array = returnString.split("::");
+						if(splitArr[1]=="Done"){
+							tempUploadCompletedFile.push(splitArr[0]);
+							fileUpload_client.DndUploadCompletedArray = tempUploadCompletedFile; 
+						}
+						
+					}
+					public function displayFiles(_filename:String):void 
+		            {
+		            	_filename = (unescape(_filename))
+					 	
+					 	_filename = _filename.replace('://',':\\');
+					 	_filename = _filename.replace('\\','\\');
+					 	_filename = _filename.replace('\/','\\');
+					 	_filename = _filename.replace('(','(');
+					 	_filename = _filename.replace(')',')');
+					 	
+					 	
+		                if(_filename.indexOf(":::")!=-1)
+						{
+							var fileName:String = _filename.substring(0,_filename.indexOf(":::"));  
+							var tempFile:String = _filename.substring(_filename.lastIndexOf(":*:")+3);
+																
+							var _filesizeTemp:String = _filename.substring(_filename.lastIndexOf(":::")+3);
+							var _filesize:String = _filesizeTemp.substring(0,_filesizeTemp.lastIndexOf(":*:"));
+												 				
+							var fileExtension:String = fileName.substring(fileName.length,fileName.lastIndexOf("\\")+1); 	
+							var fileExtension1:String = fileName.substring(fileName.length,fileName.lastIndexOf("//")); 
+							var fileExtension2:String = fileName.substring(fileName.length,fileName.lastIndexOf("/")); 	
+							
+						}
+									
+						var bool:Boolean = true;
+						
+						for (var i:Number = 0; i <fileUpload_client._arrUploadFiles.length; i++) 
+						{		
+							//if(fileuploadId._arrUploadFiles[i].name==fileExtension) 
+							if(new String(fileUpload_client._arrUploadFiles[i].file)==fileName)
+							{
+								bool = false;
+								break;
+							}
+													
+						} 
+						
+						if(bool)
+						{
+							//Alert.show(fileExtension+"---"+_filesize+"=="+fileName+" -- "+tempFile);
+							fileUpload_client._arrUploadFiles.push({name:fileExtension,size:_filesize,file:fileName,source:tempFile});	
+							fileUpload_client.listFiles.dataProvider = fileUpload_client._arrUploadFiles;
+							fileUpload_client.listFiles.selectedIndex = fileUpload_client._arrUploadFiles.length - 1; 
+							fileUpload_client.uploadCheck();
+						}
+						else
+						{
+							//Alert.show("The file(s): \n\n• " + fileExtension+"\n• "+ "\n\n...are already on the upload list. Please change the filename(s) or pick a different file.", "File(s) already on list");
+						}		
+		            } 
+		            
+		]]>
+	</mx:Script>
+	<mx:RemoteObject id="zipfile" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+				<mx:method name="crateZip" result="resultHandler(event)">
+						<mx:arguments>
+							<query>{fileArr}</query>
+						</mx:arguments>
+				</mx:method>
+		</mx:RemoteObject> 
+		<mx:ViewStack id="comp_fileDeatils" width="100%" height="100%">	
+			<mx:VBox width="100%" height="100%" id="uploadedFileComp">
+			<mx:ViewStack creationPolicy="all" id="uploadStack" width="100%" height="100%" selectedIndex="{(selectedTask)?0:indexOfStack_Client()}">
+				<mx:HBox width="100%" height="100%" paddingTop="20" verticalAlign="middle" horizontalAlign="center">
+				<mx:DataGrid id="uploadfiles"  dataProvider="{_uploadeDP}" rowCount="4"  width="90%" height="90%" allowMultipleSelection="true">
+					<mx:columns>
+						<mx:DataGridColumn dataField="No" headerText="No"/>
+						<mx:DataGridColumn dataField="name" headerText="ImageName"/>
+						<mx:DataGridColumn dataField="size" headerText="Size"/>
+					</mx:columns>
+				</mx:DataGrid>	
+				</mx:HBox>
+					<mx:HBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" >	
+					<upload:FileUpload id="fileUpload_client"  uploadButtonPressed="updateArr(event,'client')"
+						uploadUrl="{Application.application.docRoot+'Cutouttool_Beta-debug/upload.php'}"
+						uploadIOError="Alert.show('IO Error in uploading file.', 'Error')" 
+						uploadSecurityError="Alert.show('Security Error in uploading file.', 'Error')" width="90%" height="90%"/>
+					</mx:HBox>
+					<mx:Panel alpha="0" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" headerHeight="0">
+					<mx:DataGrid id="downloadfiles_client"  width="90%" height="90%" rowCount="4"  allowMultipleSelection="true">
+						<mx:columns>
+							<mx:DataGridColumn dataField="No" headerText="No"/>
+							<mx:DataGridColumn dataField="name" headerText="ImageName"/>
+							<mx:DataGridColumn dataField="size" headerText="Size"/>
+						</mx:columns>
+					</mx:DataGrid>
+					<mx:ControlBar>
+						<mx:Button label="Download" enabled="{downloadfiles_suplier.dataProvider.length}"  toolTip="Download file(s)" id="btnDownload_client" click="activateDownLoad('client')" icon="@Embed('assets/bullet_go.png')"/>
+					</mx:ControlBar>	
+				</mx:Panel>
+				</mx:ViewStack>	
+			</mx:VBox>
+			<mx:VBox width="100%" height="100%" id="downloadedFileComp">
+				<mx:ViewStack id="deliverdStack" width="100%" height="100%" selectedIndex="{(selectedTask)?0:indexOfStack()}">
+					<mx:HBox width="100%" height="100%" paddingTop="20" verticalAlign="middle" horizontalAlign="center">
+					<mx:DataGrid id="deliveredfiles" dataProvider="{_deliverDP}" width="90%" height="90%" rowCount="4"  allowMultipleSelection="true">
+					<mx:columns>
+						<mx:DataGridColumn dataField="No" headerText="No"/>
+						<mx:DataGridColumn dataField="name" headerText="ImageName"/>
+						<mx:DataGridColumn dataField="size" headerText="Size"/>
+					</mx:columns>
+					</mx:DataGrid>
+					</mx:HBox>
+					<mx:HBox width="100%" height="100%" paddingTop="20" verticalAlign="middle" horizontalAlign="center">	
+					<upload:FileUpload id="fileUpload_suplier" uploadButtonPressed="updateArr(event,'suplier')"
+						uploadUrl="{Application.application.docRoot+'Cutouttool_Beta-debug/upload.php'}"
+						uploadIOError="Alert.show('IO Error in uploading file.', 'Error')" 
+						uploadSecurityError="Alert.show('Security Error in uploading file.', 'Error')" width="90%" height="90%"/>
+					</mx:HBox>
+					<mx:Panel width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" headerHeight="0">
+					<mx:DataGrid id="downloadfiles_suplier"  rowCount="4"  width="90%" height="90%" allowMultipleSelection="true">
+						<mx:columns>
+							<mx:DataGridColumn dataField="No" headerText="No"/>
+							<mx:DataGridColumn dataField="name" headerText="ImageName"/>
+							<mx:DataGridColumn dataField="size" headerText="Size"/>
+						</mx:columns>
+					</mx:DataGrid>
+					<mx:ControlBar horizontalAlign="center">
+						<mx:Button label="Download" enabled="{downloadfiles_suplier.dataProvider.length}" toolTip="Download file(s)" id="btnDownload_supplier" click="activateDownLoad('supplier')" icon="@Embed('assets/bullet_go.png')"/>
+					</mx:ControlBar>	
+				</mx:Panel>
+				</mx:ViewStack>
+					
+			</mx:VBox>
+			</mx:ViewStack>
+</mx:TitleWindow>

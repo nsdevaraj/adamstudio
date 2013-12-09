@@ -1,0 +1,49 @@
+<mx:Panel 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	title="Panel4"
+	addedToStage="trace('4 addedToStage'); dispatchEvent(new Event('configureView', true));"
+	creationComplete="trace('4 creationComplete');"
+	preinitialize="trace('4 preinitialize');"
+	initialize="trace('4 initialize');"
+	removedFromStage="trace('4 removedFromStage');"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import org.spicefactory.parsley.flex.mxmlconfig.core.CoreModel;
+			import org.spicefactory.parsley.testmodel.AnnotatedResourceBinding;
+			import mx.resources.ResourceManager;
+			
+			[Inject(id="child")]
+			[Bindable]
+			public var model:CoreModel;	
+			
+			[Inject]
+			[Bindable]
+			public var resourceBinding:AnnotatedResourceBinding;
+			
+			[PreDestroy]
+			public function dispose () : void {
+				trace("DISPOSE PANEL 4");			
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Metadata>
+        [ResourceBundle("test")]
+    </mx:Metadata>
+	
+	
+	<mx:Text text="{ResourceManager.getInstance().getString('test','msg1')}"/>
+	<mx:Text id="display" text="Bound value: |{model.stringProp}|"/>
+	<mx:Text id="info" text="{resourceBinding.boundValue}"/>
+	
+
+	<mx:Button label="Deutsch" click="ResourceManager.getInstance().localeChain = ['de_DE'];"/>
+	<mx:Button label="English" click="ResourceManager.getInstance().localeChain = ['en_US'];"/>
+	
+	
+</mx:Panel> 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" width="500" height="300"
+		xmlns:components="com.adams.scrum.views.components.*" xmlns:mediators="com.adams.scrum.views.mediators.*">
+	<s:states>
+		<s:State name="TeamState"/>
+		<s:State name="PersonState"/>
+		<s:State name="ProfileState"/>
+		<s:State name="CompanyState"/>
+	</s:states>
+	<fx:Metadata>
+		[HostComponent('com.adams.scrum.views.mediators.TeamMemberViewMediator')]
+	</fx:Metadata>  
+	<s:Group right="0" id="domainCreationPanel"  left="0" top="0" bottom="0" >
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="#000000" alpha=".7" />
+			</s:fill>
+		</s:Rect>
+		<s:Panel title="New TeamMember" horizontalCenter="0" verticalCenter="0" >
+			<s:HGroup width="100%" height="100%">
+				<mx:Form id="teamMemberForm"  verticalCenter="0" horizontalCenter="0">
+					<mx:FormItem width="100%" label="Person" >
+						<s:HGroup>
+							<s:DropDownList id="personList" labelField="personFirstname" selectedIndex="0"/>
+							<components:NativeButton id="createPerson" label="Create" />
+							<components:NativeButton id="EditPerson" label="Edit" />	
+						</s:HGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Profile" >
+						<s:HGroup>
+							<s:DropDownList id="profileList"  width="100%" labelField="profileLabel" selectedIndex="0"/>
+							<components:NativeButton id="EditProfile" label="Edit" />	
+						</s:HGroup>
+					</mx:FormItem>
+					<mx:FormItem width="100%" label="Company" >
+						<s:HGroup>
+							<s:DropDownList id="companyList" labelField="companyname" selectedIndex="0"/>
+							<components:NativeButton id="createCompany" label="Create" />
+							<components:NativeButton id="editCompany" label="Edit" />	
+						</s:HGroup>
+					</mx:FormItem>
+				</mx:Form>
+				<mediators:PersonViewMediator id="personViewMediator" skinClass="com.adams.scrum.views.PersonSkinView"
+											  width="100%" height="100%" includeIn="PersonState"/>
+				<mediators:ProfileViewMediator id="profileViewMediator" skinClass="com.adams.scrum.views.ProfileSkinView"
+											   width="100%" height="100%" includeIn="ProfileState"/>
+				<mediators:CompanyViewMediator id="companyViewMediator" skinClass="com.adams.scrum.views.CompanySkinView"
+											   width="100%" height="100%" includeIn="CompanyState"/>
+			</s:HGroup>	
+			<s:controlBarContent>
+				<components:NativeButton id="domCreateBtn" label="Member" styleName="OkIcon"/>
+				<components:NativeButton id="domCancelBtn" label="Cancel" styleName="CancelIcon"/>
+			</s:controlBarContent>
+		</s:Panel>
+	</s:Group>	
+</s:Skin>

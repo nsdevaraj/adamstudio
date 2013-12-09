@@ -1,0 +1,127 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@font-face
+{
+	fontFamily: "Calibri";
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: true;
+}
+
+@font-face
+{
+	fontFamily: "MxCalibri";
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: false;
+}
+
+@font-face
+{
+	fontFamily: "Calibri Bold";
+	src: url("/assets/fonts/CALIBRIB.TTF");
+	embedAsCFF: true;
+}
+s|Label{
+	fontFamily: "Calibri";
+	font-size:12;
+}
+mx|TextInput{
+	fontFamily: "MxCalibri";
+	content-background-color:#546a77;
+	border-color:#213b4b;
+}
+s|TextInput{
+	fontFamily: "Calibri";
+	content-background-color:#546a77;
+	border-color:#213b4b;
+}
+s|DropDownList{
+	skinClass: ClassReference('com.adams.dam.view.skins.dummySkins.FilesComboSkin');
+}
+s|Button{
+	fontFamily: "Calibri";
+	skin-class:ClassReference('com.adams.dam.view.skins.style.ButtonIconSkin');
+	overSkin:Embed('assets/images/fileBtn_over.png');
+	upSkin:Embed('assets/images/fileBtn.png');
+	downSkin:Embed('assets/images/fileBtn_down.png');
+}
+s|Button.comboBtn{
+	fontFamily: "Calibri";
+	skin-class:ClassReference('com.adams.dam.view.skins.style.ButtonIconSkin');
+	overSkin:Embed('assets/images/combo_over.png',scaleGridLeft=3, scaleGridRight=25, scaleGridTop=3,scaleGridBottom=5);
+	upSkin:Embed('assets/images/combo.png',scaleGridLeft=3, scaleGridRight=25, scaleGridTop=3,scaleGridBottom=5); 
+	downSkin:Embed('assets/images/combo.png',scaleGridLeft=3, scaleGridRight=25, scaleGridTop=3,scaleGridBottom=5);
+}
+mx|DataGrid{
+	alternating-item-colors:#2c5065,#294a5d;
+	content-background-color:#30576e;
+	roll-over-color:#405e6f;
+	header-style-name:headerStyle;
+	header-background-skin:Embed(source='assets/images/headerBg.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	selectionColor:#1e3b4c;
+	content-background-color:#30576e;
+	horizontalGridLines:false;
+	verticalGridLines:false;
+	horizontalGridLineColor:#F7F7F7;
+	verticalGridLineColor:#CCCCCC;
+	chrome-color:#adadad;
+}
+.headerStyle{
+	content-background-color:#ffffff;
+}
+s|List{
+	fontFamily: "Calibri";
+	content-background-color:#3f494f;
+	border-color : #000000;
+	alternating-item-colors:#32434d,#364750;
+	roll-over-color:#405059;
+	selection-color:#28353b;
+}
+mx|List{
+	fontFamily: "MxCalibri";
+	content-background-color:#3f494f;
+	border-color : #000000;
+	alternating-item-colors:#32434d,#364750;
+	roll-over-color:#405059;
+	selection-color:#28353b;
+}
+s|WindowedApplication{
+	skin-class:ClassReference('assets.skins.WApplicationSkin');
+	font-size:12;
+	color:#c8c8c8;
+}
+s|Button.downloadIcon{
+	skin-class:ClassReference('com.adams.dam.view.skins.style.ButtonSkin');
+	overSkin:Embed('assets/images/downloadIcon_over.png');
+	upSkin:Embed('assets/images/downloadIcon.png');
+	downSkin:Embed('assets/images/downloadIcon.png');
+}
+mx|ScrollBar{
+	trackSkin: Embed(source='assets/images/track_icon.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbUpSkin:Embed(source='assets/images/thumb_icon.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbOverSkin:Embed(source='assets/images/thumb_icon.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbDownSkin:Embed(source='assets/images/thumb_icon.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	upArrowSkin: ClassReference(null);
+	downArrowSkin: ClassReference(null);
+} 
+s|HScrollBar{
+	skinClass: ClassReference('com.adams.dam.view.skins.style.HScrollBarSkin');
+}
+s|VScrollBar{
+	skinClass: ClassReference('com.adams.dam.view.skins.style.VScrollBarSkin');
+}
+s|ToggleButton.thumbBtn{
+	skin-class:ClassReference('com.adams.dam.view.skins.style.ToggleButtonSkin');
+	overSkin:Embed('assets/images/thumbBtn_over.png');
+	upSkin:Embed('assets/images/thumbBtn.png');
+	downSkin:Embed('assets/images/thumbBtn.png');
+	selectedSkin:Embed('assets/images/thumbBtn_selected.png');
+}
+s|ToggleButton.listBtnSkin{
+	skin-class:ClassReference('com.adams.dam.view.skins.style.ToggleButtonSkin');
+	overSkin:Embed('assets/images/listBtn_over.png');
+	upSkin:Embed('assets/images/listBtn.png');
+	downSkin:Embed('assets/images/listBtn.png');
+	selectedSkin:Embed('assets/images/listBtn_selected.png');
+}

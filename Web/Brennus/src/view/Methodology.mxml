@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   styleName="transparentBackground" minHeight="500"	width="100%" height="100%"
+		   horizontalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+		]]>
+	</mx:Script>
+	 
+	<mx:Label styleName="introTitle" text="What is Scrum?" fontSize="24" left="15" top="15"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+	<mx:Canvas width="100%">
+		<mx:Image id="scrumImg" left="0" top="0" source="@Embed('assets/images/Scrum.png')"/>
+		<mx:Image  right="0" top="30" source="@Embed('assets/images/rugby.png')"/>	
+	</mx:Canvas>
+	
+	
+	<mx:VBox width="100%"  left="15" top="{scrumImg.height+60}" right="40">
+		<mx:Text 		 width="100%" styleName="contFont" height="100%" id="three" 
+					 selectable="false" >
+			<mx:htmlText><![CDATA[<p align='justify'><B>A lean approach to software development :</B><br>Scrum an agile software development is framework. Work is structured in cycles of work called sprints, iterations of work that are typically two to four weeks in duration. During each sprint, teams pull from a prioritized list of customer requirements, called user stories, so that the features that are developed first are of the highest value to the customer. At the end of each sprint, a potentially shippable product is delivered
+				<br><b>A simple framework</b><br>Scrum is made up of three roles, three ceremonies, and three artifacts.
+				<br><b>Three roles:</b><br>the Product Owner, who is responsible for the business value of the project; the ScrumMaster, who ensures that the team is functional and productive; and the self organized team. Read more about Scrum roles.
+				<br><b>Three ceremonies:</b><br>the sprint planning meeting, daily scrum meetings, and sprint review meetings.
+				<br><b>Three artifacts for prioritizing and tracking tasks:</b><br>the product backlog, the sprint backlog, and a burndown chart.
+				<br>A time tested process Scrum has become one of the leading agile development methodologies, used by Fortune 500 companies around the world.</p>
+				]]>
+			</mx:htmlText>
+		</mx:Text>
+		
+		 
+		
+	</mx:VBox>	
+</mx:VBox>
+

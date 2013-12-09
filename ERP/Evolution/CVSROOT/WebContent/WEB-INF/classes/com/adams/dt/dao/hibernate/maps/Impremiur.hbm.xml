@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Impremiur" table="imprimeurs">
+        <id name="impremiurId" type="integer" column="impremiur_ID">
+            <generator class="increment" />
+        </id>
+        <property name="impremiurLabel">
+            <column name="impremiur_label" />
+        </property>  
+        <set name="presetstemplateSet" table="presets_templates" order-by="presets_template_ID" inverse="true" cascade="none" lazy="false">
+            <key column="impremiur_FK" />
+            <one-to-many class="com.adams.dt.pojo.Presetstemplates" />
+        </set>
+    </class> 
+</hibernate-mapping>

@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300" xmlns:view="com.adams.dt.view.*" xmlns:MainView="com.adams.dt.view.MainView.*">
+<mx:Binding source="model.messageFileCollection" destination="this.messageFileDownload"/>
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.event.FileDetailsEvent;
+		import com.adams.dt.model.vo.Projects;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.model.vo.FileDetails;
+		import com.adams.dt.event.TasksEvent;
+		import com.adams.dt.business.util.Utils;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import com.adams.dt.model.vo.TaskStatus;
+		import com.adams.dt.model.vo.Tasks;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.model.vo.Categories;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.model.vo.Persons;
+		import mx.controls.LinkButton;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();	
+		[Bindable]
+		private var messageCollection:ArrayCollection = new ArrayCollection();
+		private var sep:String = "&#$%^!@";	
+		private var sendFileReference:FileReference;
+		private var storeFileReference:FileReference;
+		private var dataByteArray:ByteArray = new ByteArray();
+		
+		private var _mailTaskLocalID:Number;
+		public function get mailTaskLocalID():Number{
+			return _mailTaskLocalID;
+		}
+		public function set mailTaskLocalID(val:Number):void{
+			_mailTaskLocalID = val;
+		}
+			
+		private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}			
+			private function getBody(str:String):String{
+				return String(str.split(sep)[2]);
+			} 
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+			private function replyMessageAttechments(event:MouseEvent):void
+			{
+				sendFileReference = new FileReference();
+				sendFileReference.addEventListener(Event.SELECT,selectHandler);
+				sendFileReference.addEventListener(Event.COMPLETE, completeHandler);
+				try
+				{
+					sendFileReference.browse();
+				}
+				catch(err:Error)
+				{
+				}	
+			}
+			public function completeHandler(event:Event):void{
+			}
+			private function selectHandler(event:Event):void 
+			{
+				sendFileReference.addEventListener(Event.COMPLETE, onFileLoaded);
+				sendFileReference.load();	
+        	}
+        	public function onFileLoaded(event:Event):void
+			{
+			    storeFileReference = event.target as FileReference;
+            	dataByteArray = storeFileReference["data"];
+            	//storeFileReference = FileReference(event.target);
+            	 var linkUp:LinkButton = new LinkButton();
+	            linkUp.name = storeFileReference.name;
+	            linkUp.label = storeFileReference.name;
+	            linkUp.addEventListener(MouseEvent.CLICK,removeAttachFiles);
+	            displyAttachId.addChild(linkUp); 	
+	            //upArray.push(linkUp);	            
+			}
+			private function removeAttachFiles(event:MouseEvent):void{
+				var linkUp:LinkButton = new LinkButton();
+				linkUp = event.currentTarget as LinkButton;
+	            /* linkUp.name = event.currentTarget.name;
+	            linkUp.label = event.currentTarget.name; */
+				displyAttachId.removeChild(linkUp);
+				//dataByteArray = null;
+			}
+			private function replyMessage(event:MouseEvent):void
+			{
+				updateCurrentTask();			
+				model.expiryState = "loadState";
+				var localperson:Persons = model.messageSender;				
+				var localprofile:Profiles = model.senderProfile; 
+				trace("\n replyMessage personId :"+model.messageSender.personId+", profileId :"+model.senderProfile.profileId);
+				var taskData:Tasks = new Tasks();
+				//taskData = model.currentTasks; // new
+				taskData.taskId = NaN;
+				taskData.previousTask = model.currentTasks;
+				taskData.projectObject = model.currentProjects;
+				taskData.personDetails = localperson;
+				//add by kumar July 23 	
+				var domain:Categories = getDomains(model.currentProjects.categories);
+				model.messageDomain = domain;
+				//taskData.personDetails.personId = model.currentTasks.taskFilesPath.split(",")[0];				
+				//taskData.taskFilesPath = model.messageSender.personId+","+model.senderProfile.profileId;
+				
+				//taskData.personDetails.personId = getReplyID(String(model.currentTasks.taskComment)).split(",")[0];
+			
+				var by:ByteArray = new ByteArray();
+				//var str:String = replyTo.text+sep+subjectTo.text+sep+replyText.text+sep+(getReplyID(String(model.currentTasks.taskComment)).split(",")[0])+","+(getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				//var str:String = replyFrom.text+sep+subjectTo.text+sep+replyText.text+sep+(getReplyID(String(model.currentTasks.taskComment)).split(",")[0])+","+(getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				
+				trace("\n replyMessage currentpersonId :"+model.person.personId+", profileId :"+model.person.defaultProfile);
+				
+				var str:String = replyFrom.text+sep+subjectTo.text+sep+replyText.text+sep+model.person.personId+","+model.person.defaultProfile;
+
+				by.writeUTFBytes(str)
+				taskData.taskComment = by;
+				var status:Status = new Status();
+				status.statusId = TaskStatus.WAITING;
+				taskData.taskStatusFK = status.statusId;
+				taskData.tDateCreation = model.currentTime;
+				taskData.tDateInprogress = model.currentTime;
+				taskData.tDateEnd = model.currentTime;
+				//taskData.tDateEndEstimated = new Date();
+				//taskData.tDateDeadline = new Date();
+				taskData.workflowtemplateFK = getMessageTemplate(localprofile.profileId);	
+				taskData.tDateEndEstimated = Utils.getCalculatedDate(model.currentTime,taskData.workflowtemplateFK.defaultEstimatedTime); 
+				taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;	
+					
+				trace("replyMessage :"+taskData.taskId);
+				trace("replyMessage :"+taskData.workflowtemplateFK.workflowFK);
+				trace("replyMessage :"+taskData.projectObject.projectId);
+				trace("replyMessage :"+taskData.taskComment);
+				trace("replyMessage :"+taskData.taskStatusFK);
+				trace("replyMessage :"+taskData.tDateCreation);
+				trace("replyMessage :"+taskData.tDateInprogress);
+				trace("replyMessage :"+taskData.personDetails.personId);
+				//trace("replyMessage :"+taskData.previousTask.taskId);
+				
+				var tevent:TasksEvent = new TasksEvent(TasksEvent.CREATE_MSG_TASKS);	
+				if(displyAttachId.getChildren().length!=0) {
+					tevent.taskevtstoreByteArray = dataByteArray;					
+					var pathstr:String = categoryDomainAllocate();					
+					tevent.taskevtfilePath = pathstr;
+					tevent.taskevtfileName = storeFileReference.name.toString();
+					
+					var fileVoLocal:FileDetails = sendServerUpload();
+					fileVoLocal.fileName = storeFileReference.name.toString();
+					fileVoLocal.filePath = pathstr+storeFileReference.name.toString();
+					tevent.taskevtfiledetailsVo = fileVoLocal;
+				}								
+				tevent.tasks = taskData;
+				CairngormEventDispatcher.getInstance().dispatchEvent(tevent);		
+				replyText.editable = false; 
+			}	
+			public function updateCurrentTask():void{
+				var status:Status = new Status()
+				status.statusId =  TaskStatus.FINISHED;
+				model.currentTasks.taskStatusFK = status.statusId;
+				model.currentTasks.tDateInprogress = model.currentTime;
+				model.currentTasks.tDateEnd = model.currentTime;
+				/* var event:TasksEvent = new TasksEvent( TasksEvent.EVENT_MAILUPDATE_TASKS);
+				event.tasks = new Tasks();
+				event.tasks = model.currentTasks;
+				event.tasks.tDateInprogress = new Date();
+				event.tasks.tDateEnd = new Date();
+				CairngormEventDispatcher.getInstance().dispatchEvent(event); */				
+			} 
+			public function getDomains(categories : Categories) : Categories{
+				var tempCategories : Categories = new Categories(); 
+				if(categories.categoryFK != null){
+					tempCategories = getDomains(categories.categoryFK);
+				}else{
+					return categories;
+				}
+			return tempCategories;
+			}
+			public function getMessageTemplate(pro:int):Workflowstemplates{
+				var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.messageTemplatesCollection,model.currentProjects.workflowFK);
+				for each(var item:Workflowstemplates in  messageTemplateCollection){
+					if(item.profileObject.profileId == pro){
+						return item;
+					}
+				}
+			return null;
+			}
+			private function categoryDomainAllocate():String
+			{
+				var returnpath:String = '';
+				var currProject:Projects = model.currentTasks.projectObject;
+				//item.destinationpath = model.currentDir;
+				var localRoot:String = model.parentFolderName; // c:/temp/
+				var domainName:String = model.messageDomain.categoryName; // UNICOPA
+				var domainYear:String = currProject.categories.categoryFK.categoryName; // 2009
+				var domainMonth:String = currProject.categories.categoryName; // Jul
+				var domainProject:String = currProject.projectName; // JHTOOL
+				
+				//returnpath = localRoot+domainName+File.separator+domainYear+File.separator+domainMonth+File.separator+domainProject;
+				returnpath = localRoot+domainName+"/"+domainYear+"/"+domainMonth+"/"+domainProject+"/"+"Message/";
+				
+				return returnpath;
+			}
+			public function sendServerUpload():FileDetails{
+				var filevo:FileDetails  = new FileDetails();
+				filevo.fileId = NaN;
+				//filevo.fileName = storeFileReference.name.toString();
+				//filevo.filePath = pathstr+storeFileReference.name.toString();
+				///filevo.taskId = mailTaskLocalID;
+				filevo.fileDate = new Date();
+				filevo.categoryFK = 0;
+				filevo.type = "Message";
+				filevo.storedFileName = storeFileReference.name;
+				//filevo.projectFK = 25;
+				filevo.visible = 1;
+				filevo.releaseStatus = 0;
+				filevo.fileCategory = '';
+				//filevo.miscelleneous = ''; // IMP
+				//filevo.fileCategory = ''; 	
+				//filevo.page = 0; 
+				//fileEvent.filedetailsVo = filevo;
+				
+			return 	filevo;											
+			}	
+			public function sendUpload():void
+			{	
+	          	var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_UPLOAD_FILE);
+				fileEvent.storeByteArray = dataByteArray;
+				//var pathstr:String = "c:/temp/UNICOPA/2009/Jun/recentproject/Basic/";
+				//fileEvent.filePath = pathstr;
+					
+				var pathstr:String = categoryDomainAllocate();
+				fileEvent.filePath = pathstr;				
+				fileEvent.fileName = storeFileReference.name.toString();
+				
+				var filevo:FileDetails  = new FileDetails();
+				filevo.fileId = NaN;
+				filevo.fileName = storeFileReference.name.toString();
+				filevo.filePath = pathstr+storeFileReference.name.toString();
+				filevo.taskId = mailTaskLocalID;
+				filevo.fileDate = new Date();
+				filevo.categoryFK = 0;
+				filevo.type = "Message";
+				filevo.storedFileName = storeFileReference.name;
+				filevo.projectFK = 25;
+				filevo.visible = 1;
+				filevo.releaseStatus = 0;
+				//filevo.miscelleneous = '';
+				//filevo.fileCategory = ''; 	
+				//filevo.page = 0; 
+				fileEvent.filedetailsVo = filevo;				
+				CairngormEventDispatcher.getInstance().dispatchEvent(fileEvent); 
+				
+				
+				/* var evtArr:Array = [fileEvent]
+			 	var handler:IResponder = new Callbacks(sentMailview);
+				var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+	          	seq.dispatch(); */
+												
+			}
+			private var _messageDownloadCollection:ArrayCollection;
+			public function set messageFileDownload (value:ArrayCollection):void
+			{
+				_messageDownloadCollection = value;
+				currentDisplyFile(_messageDownloadCollection);
+			}
+			[Bindable]
+			public function get messageFileDownload():ArrayCollection
+			{
+				return _messageDownloadCollection;
+			}
+			
+			private function currentDisplyFile(value:ArrayCollection):void
+			{
+				messageCollection = new ArrayCollection();
+				for each(var item:FileDetails in messageFileDownload)
+				{	
+					if(item.taskId == mailTaskLocalID){
+						messageCollection.addItem(item);
+					}
+				}
+				
+				mailfileView.tileMailFileCollection = messageCollection;
+				mailfileView.tileMailFileCollection.refresh();
+				//repdownload.dataProvider = messageCollection;
+				//repdownload.dataProvider.refresh();
+			} 
+			private function getMailTaskId(taskLocalId:Number):void{				
+				var event:TasksEvent = new TasksEvent(TasksEvent.EVENT_GETMAILTASKID_TASKS);
+				event.tasks = new Tasks();
+				event.tasks.taskId = taskLocalId;
+          		CairngormEventDispatcher.getInstance().dispatchEvent( event );	   			
+			}  
+			public function onReplyClick():void{
+				replyBG.setStyle('backgroundColor','#404040')
+				replyField.visible = true;
+				replyField.includeInLayout= true;
+				trace(model.currentProjects.projectName+"MODEL.CURRENTPROJECTS");
+				/* var personEvent:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GETMSG_SENDER);
+				var person:Persons = new Persons();
+				trace("onReplyClick personId:"+model.currentTasks.personDetails.personId);
+				person.personId = model.currentTasks.personDetails.personId;
+				var profiles:Profiles = new Profiles();
+				trace("onReplyClick profileId:"+model.currentTasks.workflowtemplateFK.profileObject.profileId);
+				profiles.profileId = model.currentTasks.workflowtemplateFK.profileObject.profileId;
+				personEvent.persons = person;
+				personEvent.profiles = profiles;
+				CairngormEventDispatcher.getInstance().dispatchEvent(personEvent);  */				
+				
+				var personEvent:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GETMSG_SENDER);
+				var person:Persons = new Persons();
+				trace("\n\n onReplyClick personId:"+getReplyID(String(model.currentTasks.taskComment)).split(",")[0]);
+				person.personId = getReplyID(String(model.currentTasks.taskComment)).split(",")[0];
+				var profiles:Profiles = new Profiles();
+				trace("onReplyClick profileId:"+getReplyID(String(model.currentTasks.taskComment)).split(",")[1]);
+				profiles.profileId = getReplyID(String(model.currentTasks.taskComment)).split(",")[1];
+				personEvent.persons = person;
+				personEvent.profiles = profiles;
+				CairngormEventDispatcher.getInstance().dispatchEvent(personEvent);				
+				
+				trace("onReplyClick :"+person.personId+" , "+profiles.profileId);
+				
+				contentArea.editable = false;
+			}
+			
+	]]>
+</mx:Script>
+		
+		<mx:ApplicationControlBar id="project" styleName="headerAppCtrlBar" width="100%" top="32" left="0" >
+			<mx:Canvas label="Mail" width="100%" height="100%">	
+				<mx:VBox width="100%"  height="100%">
+					<mx:Form width="100%" height="100%" top="45">
+						<mx:FormItem label="ProjectName :" width="100%" styleName="mainOrangeTitle">
+							<mx:Text text="{model.currentProjects.projectName}" selectable="false"  textAlign="left" styleName="mainOrangeTitle" />
+						</mx:FormItem>	
+					</mx:Form>	
+					<!--<mx:Text text="{model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname+''}" selectable="false" left="35" textAlign="left" styleName="menuText" />-->
+				</mx:VBox>
+				<mx:HBox id="projectbus" width="100%" top="0" left="0" horizontalAlign="right">
+					<mx:Canvas right="0" id="buzCard" width="300" height="61" top="40">			
+						<view:bussinessCard width="100%" height="100%" right="10" />
+					</mx:Canvas>
+				</mx:HBox>
+			</mx:Canvas>		
+		</mx:ApplicationControlBar>
+		
+		<mx:Canvas label="Mail" backgroundColor="#313131" borderStyle="solid" borderColor="#000000" left="10"
+			 right="10" top="{project.height+project.y}" >
+			<mx:VBox width="100%" height="100%"  paddingLeft="10" paddingRight="10" paddingBottom="10" paddingTop="10">	
+				<mx:Form width="100%" top="0" paddingLeft="0" textAlign="left">
+					<mx:FormItem label="From :" width="100%" styleName="menuText" fontSize="11" verticalGap="0">
+						<mx:Text id="fromName" text="{getFromName(String(model.currentTasks.taskComment))}" styleName="menuText" fontSize="12" width="100%"/>
+					</mx:FormItem>	
+					<mx:FormItem label="Subject :" width="100%" styleName="menuText" fontSize="11" verticalGap="0">
+						<mx:Text id="subjectText" text="{getSubject(String(model.currentTasks.taskComment))}" fontSize="11" styleName="menuText" width="100%"/>
+					</mx:FormItem>
+					<mx:FormItem label="Attachments File" width="100%" styleName="menuText" fontSize="11" verticalGap="0" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}">
+						<mx:VBox id="downloadfile" width="100%" height="80" verticalGap="0" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}" >
+							<view:MailFileView id="mailfileView" width="100%" height="100%" tileMailFileCollection="{messageCollection}" />
+						</mx:VBox>
+					</mx:FormItem>
+				</mx:Form>		
+			   <!-- <mx:Text id="fromName" text="{'From : '+getFromName(String(model.currentTasks.taskComment))}" styleName="menuText" fontSize="12" width="100%"/>
+			    <mx:Text id="subjectText" text="{'Subject : '+getSubject(String(model.currentTasks.taskComment))}" styleName="menuText" width="100%"/>-->
+			    
+			    <!--<mx:VBox width="100%" id="downloadfile1" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}">
+					<mx:Tile width="100%" height="100%" id="downloadFileDisplay" >
+						<mx:Repeater id="repdownload">
+							<mx:Label id="downloadId" text="{repdownload.currentItem.fileName}" name="{repdownload.currentItem.fileId}" click="downloadAttechments(event)"/>
+						</mx:Repeater>
+					</mx:Tile>
+					<mx:Button id="saveid" label="Save" click="SaveMessage(event);" />
+				</mx:VBox>-->
+				<!--<mx:VBox width="100%" height="100" verticalGap="0" id="downloadfile" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}">
+					<mx:Label styleName="menuText" text="Attachments File" width="100%"/>
+					<view:MailFileView id="mailfileView" width="100%" height="100%" tileMailFileCollection="{messageCollection}"  />
+				</mx:VBox>-->
+				<mx:TextArea id="contentArea" text="{getBody(String(model.currentTasks.taskComment))}" width="100%" height="100" editable="false"/>
+				<mx:VBox width="100%" verticalGap="0">
+					<mx:Box id="replyBG"  horizontalAlign="left" paddingBottom="10" paddingLeft="5" paddingRight="5" paddingTop="5">
+						<mx:Button label="Reply" click="onReplyClick()"/>	
+					</mx:Box>
+						
+					
+					<mx:VBox id="replyField" width="100%" backgroundColor="#404040" 
+				 paddingLeft="10" paddingRight="10"	visible="false" includeInLayout="false">
+				<mx:Form width="100%">
+					<mx:FormItem label="From :"  id="replyFromLab" styleName="menuText" fontSize="11" >
+						<mx:TextInput  editable="false" id="replyFrom" styleName="menuText" fontSize="11" text="{model.person.personFirstname}" />
+					</mx:FormItem>
+					<mx:FormItem label="To :" id="replyToLab" styleName="menuText" fontSize="11" >
+						<mx:TextInput editable="false" id="replyTo" styleName="menuText" fontSize="11" text="{getFromName(String(model.currentTasks.taskComment))}" />
+					</mx:FormItem>
+					<mx:FormItem label="Subject :" id="subjectToLab" styleName="menuText" fontSize="11" >
+						<mx:TextInput editable="false" id="subjectTo" styleName="menuText" fontSize="11" text="{getSubject(String(model.currentTasks.taskComment))}" />
+					</mx:FormItem>
+				</mx:Form>
+				
+				
+					<!--<mx:HBox width="100%">
+						<mx:Label styleName="menuText" text="From :" width="80"/>
+						<mx:Label text="{model.person.personFirstname}" width="100%"/>
+					</mx:HBox>
+					<mx:HBox width="100%">
+						<mx:Label id="replyToLab" styleName="menuText" text="To :" width="80"/>
+						<mx:Label id="replyTo" styleName="menuText" text="{getFromName(String(model.currentTasks.taskComment))}" width="100%"/>
+					</mx:HBox>
+					<mx:HBox width="100%">
+						<mx:Label id="subjectToLab" styleName="menuText" text="Subject :" width="80"/>
+						<mx:Label id="subjectTo" styleName="menuText" text="{getSubject(String(model.currentTasks.taskComment))}" width="100%"/>
+					</mx:HBox>
+					-->
+					<mx:TextArea id="replyText" width="100%" height="100"/>
+					<mx:VBox width="100%" id="displyAttachId">	
+						<!--<view:FileUpload id="uploadId" width="100%" height="100%" uploadUrl="{_strUploadScript}"/>-->			
+					</mx:VBox>
+					<mx:LinkButton label="Attachments" click="replyMessageAttechments(event)"/>
+					<mx:Button label="Send" click="replyMessage(event);" enabled="{replyText.text.length!=0}" />
+				</mx:VBox>	
+				</mx:VBox>
+							
+				
+						
+			</mx:VBox>
+		</mx:Canvas>
+		<MainView:HeaderView langPanelVisible="false" top="0" left="0" right="0"/>
+</mx:Canvas>

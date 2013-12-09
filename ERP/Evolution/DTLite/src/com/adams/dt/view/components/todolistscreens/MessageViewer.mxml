@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	width="100%"
+	height="100%"
+	xmlns:comp="com.adams.dt.view.filemanagement.*" 
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	  xmlns:filemanagement="com.adams.dt.view.filemanagement.*">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.view.components.Upload;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.model.vo.EventStatus;
+			
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.event.WorkflowstemplatesEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			
+			private var attach:Upload;
+			
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();	
+			private var sep:String = "&#$%^!@";	
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}
+			private function getBody(str:String):String{
+				return str.split(sep)[2];
+			}			
+			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+			 
+			
+			private var _task:Tasks;
+			public function set task (value:Tasks):void
+			{
+				_task = value;
+			}
+			[Bindable]
+			public function get task():Tasks
+			{
+				return _task;
+			} 
+			private var messageTaskCollection:ArrayCollection = new ArrayCollection();
+		    
+			
+			private var fileReference:FileReference;
+			[Bindable]
+			private var messageCollection:ArrayCollection = new ArrayCollection();
+			
+			private var _messageDownloadCollection:ArrayCollection;
+			public function set messageFileDownload (value:ArrayCollection):void
+			{
+				_messageDownloadCollection = value;
+				currentDisplyFile(value);
+				
+			}
+			[Bindable]
+			public function get messageFileDownload():ArrayCollection
+			{
+				return _messageDownloadCollection;
+			}
+			private function currentDisplyFile(value:ArrayCollection):void
+			{
+				if(messageCollection.length!=0){
+					messageCollection.removeAll();
+				}
+				else{
+					messageCollection = new ArrayCollection();
+				} 
+										
+				for each(var item:FileDetails in value)
+				{	
+					if(item.taskId == task.taskId){
+						if(item.visible == true){
+							messageCollection.addItem(item);
+						}
+					}
+				}
+				repdownload.dataSource = messageCollection;
+			}	
+			/**
+			 * download the message file 
+			 * check the local existence of files if its not get the files from remote
+			 */			
+			public function downloadFile(event:MouseEvent):void
+			{				
+				var fileObjTaskId:int = int(event.currentTarget.name);
+				for each(var item:FileDetails in messageFileDownload)
+				{	
+					if(item.fileId == fileObjTaskId){
+						var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();			
+						var result:SQLResult = delegate.getFileDetails(item);
+						var array:Array = result.data as Array;
+						if(array!=null){
+							var obj:FileDetails = array[0] as FileDetails;
+							var downLoadedfile:File = new File(obj.filePath); 
+							if(downLoadedfile.exists){ 
+								onDownLoadComplete(obj)
+							}else{
+								var deleteResult:SQLResult = delegate.deleteFileDetails(item);
+								getFilesFromRemote(obj)
+							}
+						}else{
+	            			model.filesToDownload.addItem(item);
+							model.bgDownloadFile.idle = true;
+							model.bgDownloadFile.fileToDownload.list = model.filesToDownload.list;
+						}
+						break;
+					} 
+				}
+			}
+			/**
+			 * Get the files from local 
+			 */	
+			private function onDownLoadComplete(fileObj:FileDetails):void {
+				var downLoadedfile:File = new File(fileObj.filePath); 
+	        	var copyToLocation:File = File.desktopDirectory.resolvePath(fileObj.fileName);
+	        	downLoadedfile.copyTo(copyToLocation,true);
+	       	}
+	       	/**
+			 * Get files from remote server
+			 */	
+	       	private function getFilesFromRemote(obj:FileDetails):void{
+	        	var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_SELECT_FILEDETAILS);
+	        	fileEvent.fileDetailsObj = obj;
+	        	CairngormEventDispatcher.getInstance().dispatchEvent(fileEvent);
+	        }  		        
+	       	
+		]]>
+	</mx:Script>
+	
+						
+						
+	<mx:HBox   left="0" right="0" top="0" height="35" verticalAlign="middle" styleName="statusHeader"  paddingLeft="10" paddingRight="10">
+		<mx:Text id="userNameText" text="{'From : '+getFromName(String(task.taskComment))}"/>
+		<mx:Text top="100" width="100%" textAlign="center"  
+			id="subField"
+			text="{getSubject(String(task.taskComment))}"
+			fontSize="18"
+			styleName="mainProjectHeader"/> 
+	</mx:HBox>	 
+	<mx:VBox width="100%" height="100%" top="35" styleName="darkBorder" paddingLeft="10" paddingRight="10"
+		paddingBottom="5" paddingTop="5">
+		<mx:VBox width="100%" height="100%">
+			<mx:Text id="toText"
+				text="{'To : '+task.personDetails.personFirstname}"/>				
+			<mx:TextArea width="100%" height="100"
+				text="{getBody(String(task.taskComment))}"
+				id="mesgField" editable="false"
+				styleName="textAreaReader"/>
+			</mx:VBox>			
+			<mx:VBox width="100%" height="100" id="downloadfile" includeInLayout="{messageFileDownload.length!=0}" visible="{messageFileDownload.length!=0}">
+					<comp:FileContainer id="repdownload" dataSource="{ messageFileDownload }" deleteShow="false" replaceShow="false"
+												    width="100%" height="100" borderStyle="solid"  
+												    itemRenderer="com.adams.dt.view.filemanagement.renderers.ImageRenderer"
+													columnWidth="70" rowHeight="70"  rowCount="1"/>
+			</mx:VBox>
+			
+	</mx:VBox> 
+</mx:Canvas>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   width="100%" backgroundColor="#6C6E58"
+		   height="40" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+<mx:Metadata>
+	[Event(name="showMessage", type="com.adams.dt.event.chartpeople.ShowMessageEvent")]
+</mx:Metadata>		   
+
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.vo.Projects;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.event.chartpeople.ShowMessageEvent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.view.chartpeople.windows.ChatWindow;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		override public function set data( value:Object ):void {
+			if( value ) {
+				super.data = value;
+				if( _personName )	_personName.text = value.personName; 
+				if( _mainCon )	_mainCon.setStyle( 'backgroundColor', value.profileColor );
+				if( _chatButton )	_chatButton.visible = value.showChat;
+				if( _mailButton )	_mailButton.visible = value.showMessage;
+
+				var currPersonId:int = Persons( getPerson( value.personID ) ).personId;
+				if(model.person.personId == currPersonId){
+					if( _chatButton ) _chatButton.enabled = false;
+				}
+				if( _personImage ) {
+					if( value.personPict )	{
+						_personImage.source = value.personPict;
+					}
+					else {
+						if( _personName.text.length != 0 ) {
+							_personImage.source = ImageResourceEmbedClass.PICICON;
+						} 
+					}	 
+				}
+			}
+		}
+		
+		private function getPerson( id:int ):Persons {
+			for each( var item:Persons in model.personsArrCollection ) {
+				if( item.personId == id ) {
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		private function onChatClick():void {
+			var proj:Projects = GetVOUtil.getProjectObject(model.currentProjects.projectId);
+			if( model.chatWindowCollection[ proj.projectId ] == undefined ) {
+				var myWindow:ChatWindow = new ChatWindow();				
+				myWindow.personReceiverID = proj.projectId.toString();
+				myWindow.projectID = proj.projectId;
+				myWindow.personColor = "#" + data.profileColor;
+				model.chatWindowCollection[ proj.projectId ] = myWindow;
+				myWindow.title = proj.projectName;
+				myWindow.open( true );
+			}
+			else {
+				model.chatWindowCollection[ proj.projectId ].activate();
+			}
+		}
+		
+		private function onMessageClick():void {
+			var event:ShowMessageEvent = new ShowMessageEvent( ShowMessageEvent.SHOW_MESSAGE, true, true );
+			event.messagePersonId = data.personID;
+			dispatchEvent( event );
+		}
+		
+	]]>
+</mx:Script>
+	<mx:HBox horizontalScrollPolicy="off" verticalScrollPolicy="off" id="_mainCon" 
+		     verticalAlign="middle" horizontalAlign="center" left="0" top="0" right="0"
+		     bottom="0" paddingRight="5" paddingLeft="3">
+		<mx:Image id="_personImage" width="32" height="32" maintainAspectRatio="false"/>
+		<mx:Label id="_personName" color="#ffffff"/>
+		<mx:Spacer width="100%" />
+		<mx:Button styleName="chatIconNew" id="_chatButton" click="onChatClick()"/>
+		<mx:Button styleName="mailIcon" id="_mailButton" click="onMessageClick()"/>
+	</mx:HBox>
+</mx:Canvas>

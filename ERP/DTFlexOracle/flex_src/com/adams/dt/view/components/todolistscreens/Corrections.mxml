@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	width="100%"
+	initialize="init()"
+	height="100%">
+	<mx:Script>
+		<![CDATA[
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.business.util.Utils;
+		import com.adams.dt.model.vo.Proppresetstemplates;
+		import mx.events.CollectionEvent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.vo.Propertiespresets;
+		import com.adams.dt.model.vo.Propertiespj;
+		import mx.collections.ArrayCollection;
+			
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		          
+         private function dispatchpropertyChange():void {
+         	dispatchEvent ( new Event( "projectPropertyChange" ) );
+         }  
+         /**
+		 * set collection change listener for model.propertiespresetsCollection
+		 * when ever the arraycollection change it will trigger the updateProperties
+		 */ 
+         private function init():void {
+			model.propertiespresetsCollection.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateProperties,false,0,true);
+		}
+		/**
+		 * set properties presets
+		 * call the update property
+		 */ 
+        private var _projectProperty:ArrayCollection;
+		[Bindable(event="projectPropertyChange")]
+		public function set projectProperty ( value:ArrayCollection ):void {
+			if(!model.propertiespresetsCollection.hasEventListener(CollectionEvent.COLLECTION_CHANGE)){
+				model.propertiespresetsCollection.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateProperties,false,0,true);
+			}
+			if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",updateProperties,false,0,true);
+				if(value!=null){
+					_projectProperty = value;
+					dispatchEvent (new Event ("projectPropertyChange"));
+				}
+		}
+		/**
+		 * get the property preset 
+		 */
+		public function get projectProperty ():ArrayCollection {
+			return _projectProperty;
+		}
+		/**
+		 * create the propertypj values based on the filed present in the screen 
+		 */
+		public function getPropertiespjSet():ArrayCollection {
+			var arrC:ArrayCollection = new ArrayCollection();
+			for (var i:int=0; i<projectProperty.length;i++){				
+				var item:Propertiespresets = Propertiespresets(projectProperty.getItemAt(i));
+				var propertySets:Propertiespj = new Propertiespj();
+				if(hasOwnProperty("text_"+item.fieldName)){						
+					propertySets = checkItemExist(item);
+					propertySets.projectFk = model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["text_"+item.fieldName].text;	
+					arrC.addItem(propertySets);	
+				}
+				if(hasOwnProperty("date_"+item.fieldName)){						
+					propertySets = checkItemExist(item);
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["date_"+item.fieldName].text;
+					arrC.addItem(propertySets);	
+				}
+				if(this.hasOwnProperty("popup_"+item.fieldName)){				
+					propertySets = checkItemExist(item); 
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["popup_"+item.fieldName].selectedIndex;
+					arrC.addItem(propertySets);	
+				}  
+			}
+			return arrC;			
+		} 
+		/**
+		 * Check the property existence on propertiespj
+		 * IF EXIST return the corresponding object
+		 * ELSE create new propertiesPj object
+		 */
+		public function checkItemExist(item:Propertiespresets):Propertiespj {
+			for( var i:int=0; i < model.currentProjects.propertiespjSet.length; i++ ) {
+				var chekProperty:Propertiespj = model.currentProjects.propertiespjSet.getItemAt( i ) as Propertiespj;
+				if(chekProperty.propertyPreset.propertyPresetId == item.propertyPresetId ) {
+					return chekProperty;
+				}
+			}
+			return new Propertiespj();
+		}
+		/**
+		 * update the project property value
+		 * set the component visibilty based on propertypresetTemplate values
+		 * set the edit rights based on the profile
+		 */
+		public function updateProperties( event:Event ):void { 
+			model.updatedPresetId = [];
+			model.deportChange = false;
+			for( var i:int=0; i < projectProperty.length; i++ ) {				
+					var item:Propertiespresets = Propertiespresets(projectProperty.getItemAt(i));
+					var visible:Proppresetstemplates = checkTemplate(item);
+					if(this.hasOwnProperty("label_"+item.fieldName)&&this["label_"+item.fieldName]!=null){
+						if(visible!=null){
+							if(this["label_"+item.fieldName] is Label){
+								this["label_"+item.fieldName].text = visible.fieldLabel;;
+							}else{					
+								this["label_"+item.fieldName].label = visible.fieldLabel;
+							}
+							this["label_"+item.fieldName].visible = true;
+						}else{
+							this["label_"+item.fieldName].visible = false;
+						}
+					} 
+					if(this.hasOwnProperty("popup_"+item.fieldName)&&this["popup_"+item.fieldName]!=null){
+						if(visible!=null){
+							var popStr:String = String(visible.fieldOptionsValue);
+							var popArr:Array = popStr.split(",");
+							var value:String = getPropertyValue(item.propertyPresetId);
+							this["popup_"+item.fieldName].name = item.propertyPresetId;
+							this["popup_"+item.fieldName].dataProvider = popArr;		
+							this["popup_"+item.fieldName].visible = true;			
+							if(value==''||value==null){
+								this["popup_"+item.fieldName].selectedIndex = (item.fieldDefaultValue!=null)?item.fieldDefaultValue:0;
+								if(this["popup_"+item.fieldName] is RadioGropus){
+									this["popup_"+item.fieldName].selectedIndex = -1;
+								}								
+							}
+							else{
+								this["popup_"+item.fieldName].selectedIndex = Number(value);
+							}
+							if(!model.editForm){
+								if(this["popup_"+item.fieldName] is RadioGropus){
+									}else{
+										this["popup_"+item.fieldName].enabled  = false;
+									}
+							}else{
+								if(this["popup_"+item.fieldName] is RadioGropus){
+									}else{
+										this["popup_"+item.fieldName].enabled  = true;
+									}
+							}
+							this["popup_"+item.fieldName].visible = true;
+						}else{
+							this["popup_"+item.fieldName].visible = false;
+						}
+						this["popup_"+item.fieldName].removeEventListener(FocusEvent.FOCUS_OUT,onFieldChange)	
+						this["popup_"+item.fieldName].addEventListener(FocusEvent.FOCUS_OUT,onFieldChange,false,0,true);
+							
+					} 
+					if(hasOwnProperty("text_"+item.fieldName)&&this["text_"+item.fieldName]!=null){	
+						if(visible!=null){
+							var propvalue:String = getPropertyValue(item.propertyPresetId);	
+							this["text_"+item.fieldName].name = item.propertyPresetId;			
+							if(propvalue==''){
+								this["text_"+item.fieldName].text =(item.fieldDefaultValue!=null)?item.fieldDefaultValue:'';
+							}
+							else {		
+								this["text_"+item.fieldName].text = propvalue;
+							}
+							if(!model.editForm){
+								this["text_"+item.fieldName].styleName = 'disabledText';
+								this["text_"+item.fieldName].enabled = false;
+							}else{
+								this["text_"+item.fieldName].styleName = 'TextArea';
+								this["text_"+item.fieldName].enabled = true;
+							}
+							this["text_"+item.fieldName].visible = true;
+						}else{
+							this["text_"+item.fieldName].visible = false;
+						}
+						
+						this["text_"+item.fieldName].removeEventListener(FocusEvent.FOCUS_OUT,onFieldChange)	
+						this["text_"+item.fieldName].addEventListener(FocusEvent.FOCUS_OUT,onFieldChange,false,0,true);
+					}	 				
+				}
+			}
+			/**
+			 * check the property existence in Proppresetstemplates
+			 */
+			public function checkTemplate( preset:Propertiespresets ):Proppresetstemplates {
+				if(preset!=null){
+					for each( var item:Proppresetstemplates in model.currentProjects.presetTemplateFK.propertiesPresetSet ) {
+						if( preset.propertyPresetId == item.propertypresetFK ) {
+							return item
+						} 
+					}
+				}
+				return null;
+			}
+			/**
+			 * get the property value from projects
+			 */ 
+			public function getPropertyValue( id:int ):String {
+				for each( var item:Propertiespj in model.currentProjects.propertiespjSet ) {
+					if( item.propertyPreset.propertyPresetId == id ) {
+						return item.fieldValue;
+					}
+				}
+				return '';
+			}
+			/**
+			 * get the changed field name and property to update events
+			 * IF changes made by client send message with updated property to traffic
+			 * refer propertypjcommand for sending message
+			 */ 
+			private function onFieldChange( event:FocusEvent ):void {
+				model.deportChange = true;
+				if( model.updatedPresetId.indexOf( event.currentTarget.name ) == -1 ) {
+					model.updatedPresetId.push( event.currentTarget.name );
+					getChangedFields( event.currentTarget.name );
+				}
+			}
+			/**
+			 * @param id:String, input propertyPj id
+			 * get changed field name and property
+			 */
+			private function getChangedFields( id:String ):void {
+				var object:Object = new Object();
+				var propertiesPj:Propertiespj = Utils.getPropertyPj( Number( id ), model.currentProjects.propertiespjSet );
+				var propertyPresetTemplate:Proppresetstemplates = Utils.getPropertyPresetTemp( Number( id ), model.currentProjects.presetTemplateFK.propertiesPresetSet );
+				if( propertiesPj != null && propertyPresetTemplate != null ) {
+					object["propertiesPj"] = propertiesPj;
+					object["propertyPresetTemplate"] = propertyPresetTemplate;
+					model.updatedFieldCollection.addItem( object );
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:Canvas styleName="bgContainer" 
+		top="0"
+		left="0"
+		right="0"
+		bottom="0"
+		verticalScrollPolicy="off">
+	<mx:Canvas id="mesgStage"
+		top="5"
+		left="5"
+		right="5"
+		bottom="5"
+		styleName="darkBorder">
+		<mx:VBox width="95%" horizontalCenter="0" height="100%">				
+			<mx:HBox horizontalGap="10">
+				<mx:VBox horizontalAlign="center" styleName="innerBorder" paddingTop="10" verticalGap="0">
+					<mx:Label text="Corrections" fontWeight="bold" fontSize="12"/>	
+					<mx:Form>
+							<mx:FormItem  id="label_correction_txt" label="Textes">   
+								<view:TextNumericStepper id="text_correction_txt" 
+								minimum="0"
+								maximum="40"
+								stepSize="1"
+								text="0"
+								width="65"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_correction_img" label="Images">
+								<view:TextNumericStepper id="text_correction_img"
+								minimum="0"
+								maximum="40"
+								stepSize="1"
+								text="0"
+								width="65"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_correction_cutout" label="Plan">
+								<view:TextNumericStepper id="text_correction_cutout"
+									minimum="0"
+									maximum="40"
+									stepSize="1"
+									text="0"
+									width="65"/>
+							</mx:FormItem>
+					</mx:Form>				
+				</mx:VBox>				
+			</mx:HBox>				
+		</mx:VBox>
+	</mx:Canvas>
+	</mx:Canvas>
+</mx:Canvas>

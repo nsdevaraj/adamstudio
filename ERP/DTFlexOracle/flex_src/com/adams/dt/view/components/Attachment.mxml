@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+<mx:Script>
+	<![CDATA[
+		private var file:File = new File()
+		public function onBrowse():void{
+			file.browse();
+			file.addEventListener(Event.SELECT,getPath,false,0,true);
+		}
+		private function getPath(event:Event):void{
+			var fileObj:File = event.currentTarget as File;
+			filePath.text = fileObj.nativePath;
+		}
+	]]>
+</mx:Script>
+	<mx:TextInput id="filePath" width="100%" />
+	<mx:Button id="browse" label="Browse" width="50%" click="onBrowse()"/>
+	<mx:LinkButton id="remove" label="Remove" width="50%"/>
+</mx:HBox>

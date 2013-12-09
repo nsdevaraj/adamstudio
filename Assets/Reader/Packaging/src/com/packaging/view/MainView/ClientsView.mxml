@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  styleName="transparentBackground" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="srv.send()" 
+		 width="100%" height="100%" minHeight="600" horizontalAlign="center">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			
+			[Bindable]
+			private var items:ArrayCollection;
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+				items = event.result.catalog.product as ArrayCollection;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:HTTPService id="srv" url="data/catalog.xml" result="resultHandler(event)"/>
+	</fx:Declarations>
+	<mx:Text text="References" width="100%" textAlign="left" styleName="introTitle" fontSize="24"/>
+	
+	<mx:HRule width="100%" />
+	
+	<s:DataGroup dataProvider="{items}"   height="100%" itemRenderer="com.packaging.renderers.ImageRenderer3" horizontalCenter="0" verticalCenter="0">
+		<s:layout>
+			<s:TileLayout columnWidth="200"/>
+		</s:layout>
+	</s:DataGroup>
+</mx:VBox>

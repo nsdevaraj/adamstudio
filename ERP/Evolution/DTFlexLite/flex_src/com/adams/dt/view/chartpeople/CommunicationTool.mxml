@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	            xmlns:team="com.adams.dt.view.chartpeople.*"
+	            showCloseButton="true" close="onClose()" 
+	            headerHeight="22" styleName="bgContainer" borderThickness="2"
+	            layout="absolute" height="600"   paddingTop="0"
+	            creationCompleteEffect="{ mx.effects.Fade }"
+	            removedEffect="{ mx.effects.Fade }" 
+	            verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	<mx:Binding source="model.mainProjectState" destination="this.gridVisibility"/>   
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Persons;
+			import mx.effects.Dissolve;
+			import mx.effects.Fade;
+			import mx.events.ListEvent;
+			import mx.effects.DefaultListEffect;
+			import mx.events.CollectionEventKind;
+			import mx.collections.ArrayCollection;
+			import mx.events.CollectionEvent;
+			import mx.containers.Canvas;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.view.chartpeople.renderers.CommunicationRenderer;
+			[Bindable]
+			public var headerClick:Canvas;
+			private var _tempItem:Object;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private var _gridVisibility:int;
+			[Bindable]
+			public function get gridVisibility():int {
+				return _gridVisibility;
+			}
+			public function set gridVisibility( value:int ):void {
+				_gridVisibility = value;
+				if( value == 0 )	onClose();
+			}			
+			private function onClose():void {
+				model.totalChatPerson.removeAll();
+				if( !headerClick.visible )	headerClick.visible = true;
+				PopUpManager.removePopUp( this );
+			}			
+		]]>
+	</mx:Script>
+	<mx:VBox id="_teamCon" paddingTop="0"  verticalGap="0" width="100%" height="100%" styleName="darkBorder">
+		<mx:Canvas width="100%" height="35" styleName="communicationHeader" >
+		<mx:Label text="Team" id="teamTxt" styleName="prjDecText" fontSize="20" left="5" verticalCenter="0"/>
+		<mx:Label id="_projectHead" textAlign="right" width="{this.width-teamTxt.width-40}" text="{ model.currentMainProject.projectName }" right="5" verticalCenter="0" fontSize="20"  
+			     color="#b9b717" styleName="prjDecText" />	
+		</mx:Canvas>			
+		<team:TeamTree width="100%"/>
+	</mx:VBox>
+</mx:TitleWindow>

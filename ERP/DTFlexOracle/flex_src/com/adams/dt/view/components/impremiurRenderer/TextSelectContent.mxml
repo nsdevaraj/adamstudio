@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" addedEffect="{ myEffect }" width="100%" height="100%">
+<mx:Metadata> 
+        [Event(name="close", type="flash.events.Event")] 
+</mx:Metadata> 
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.event.DefaultTemplateValueEvent;
+		import com.adams.dt.model.vo.DefaultTemplateValue;
+		import mx.controls.DataGrid;
+		import mx.core.UIComponent;
+		[Bindable]
+		public var parenRef:DefaultTemplateValue;
+		
+		[Bindable]
+		public var parenList:DataGrid;
+		
+		
+		private function onCancel():void {
+          	_DefaultValue.text= '';
+          dispatchEvent( new Event( Event.CLEAR ) );
+          this.removeAllChildren();
+        }
+        private function onSaveChanges():void {
+          	parenRef.defaultTemplateValue = _DefaultValue.text;
+          	  var defTempValEvent:DefaultTemplateValueEvent = new DefaultTemplateValueEvent(DefaultTemplateValueEvent.UPDATE_DEFAULT_TEMPLATE_VALUE)
+            defTempValEvent.defaultTemplateValues = parenRef
+            defTempValEvent.dispatch()
+          	parenList.dataProvider.refresh();
+          	dispatchEvent( new Event( Event.CLOSE ) );
+          	 this.removeAllChildren();
+        } 
+    ]]>
+</mx:Script>
+
+<mx:WipeRight id="myEffect"/>
+	<mx:Form>
+		<mx:FormItem label="Default Value">
+			<mx:TextInput id="_DefaultValue" text="{parenRef.defaultTemplateValue}"/>	
+		</mx:FormItem>
+		<mx:FormItem direction="horizontal">
+				<mx:Button label="Save" styleName="saveBtn" click="onSaveChanges()"/>
+				<mx:Button label="Cancel" styleName="cancelOrderBtn" click="onCancel()"/>	
+		</mx:FormItem>
+	</mx:Form>
+	
+</mx:VBox>

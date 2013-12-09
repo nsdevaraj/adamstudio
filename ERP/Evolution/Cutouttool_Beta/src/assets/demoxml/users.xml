@@ -1,0 +1,15 @@
+<data>
+  <num>1</num>
+  <row>
+    <pk_user>2</pk_user>
+    <firstname>s</firstname>
+    <lastname>b</lastname>
+    <userpswd>s</userpswd>
+    <email>ks@g.com</email>
+    <group_id>group02</group_id>
+    <registration_date>2006-05-12</registration_date>
+    <company>fontchannel</company>
+    <type>3</type>
+    <activated>2</activated>
+  </row>
+</data>

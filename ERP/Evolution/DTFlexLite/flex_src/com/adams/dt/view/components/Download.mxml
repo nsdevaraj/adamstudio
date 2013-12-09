@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" 
+	width="100%" height="100%" title="Download Files">
+
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Categories;
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.AsyncToken;
+			import mx.core.Application;
+			private var UploadFiles:Array = [];
+			private var UploadFilesColl:ArrayCollection = new ArrayCollection();
+			private var fileData:ByteArray = new ByteArray();
+			private var fileName:String;
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();
+						
+	  		private function uploadResultHandler(event:ResultEvent):void
+	  		{
+	  		  if ( event.token.kind == "remoteFileList") {	
+	              UploadFilesColl = event.result as ArrayCollection;
+	              for ( var i:int = 0 ; i <  UploadFilesColl.length ; i++ ) {
+	                UploadFiles.push({  name:UploadFilesColl[i]
+	                                 ,  status:"initial"});
+	              }
+	              listFiles.dataProvider = UploadFiles;
+              } else  {
+              	  fileData = event.result as ByteArray;
+              	  fileName = event.token.kind;
+              	  for ( var b:int = 0 ; b <  UploadFiles.length ; b++ ) {
+                  if( UploadFiles[b].name == event.token.kind ) {
+                  	UploadFiles[b].status = "Ready";
+	   				listFiles.dataProvider  = UploadFiles;
+                  	break;
+                  }
+                }
+                saveFile();
+              }
+	  		}
+	  		[Bindable]
+			private var _dataProvider:ArrayCollection;
+			public function set dataProvider (value:ArrayCollection):void
+			{
+				_dataProvider = value;
+				for each(var item:FileDetails in _dataProvider){
+					UploadFiles.push({  name:item.fileName
+	                                 ,  status:"initial"});
+				}
+				 listFiles.dataProvider = UploadFiles;
+			}
+	
+			public function get dataProvider ():ArrayCollection
+			{
+				return _dataProvider;
+			}
+			
+	  		private function faultResultHandler(event:FaultEvent):void
+	  		{
+	  		}
+			private var fileReference:File;
+	  		private function saveFile():void 
+	  		{
+ 	  			fileReference = new File(); 
+ 	  			fileReference.addEventListener(Event.COMPLETE,onDownLoadComplete,false,0,true)	  			
+ 	  			fileReference.save(fileData,fileName); 	  			
+	  		}
+	  		
+	  		private function onDownLoadComplete(event:Event):void {
+	        	var downLoadedfile:File = File(event.currentTarget);
+	        	var path:String = model.currentProjects.categories.categoryName+File.separator+ StringUtils.compatibleTrim(model.currentProjects.projectName)+File.separator+downLoadedfile.name;
+	        	var copyToLocation:File = File.desktopDirectory.resolvePath(path);
+	        	if(!copyToLocation.exists)copyToLocation.createDirectory();
+	        	downLoadedfile.copyTo(copyToLocation,true);
+	        	//upDateLocaleDb(fileList.selectedItem,copyToLocation.nativePath);
+	       	}
+	  		
+	  		private function getRemoteFiles(event:Event):void
+	  		{		
+   				var token:AsyncToken = AsyncToken(remoteDownload.getDownloadList(model.currentDir));
+           		token.kind = "remoteFileList";
+	  		}
+
+	  		private function getDownload(event:Event):void
+	  		{
+   				var token:AsyncToken = AsyncToken(
+   				remoteDownload.doDownload(model.currentDir+"/Tasks/"+listFiles.selectedItem.name));
+           		token.kind = listFiles.selectedItem.name;
+	  		}
+		]]>
+	</mx:Script>
+	<mx:RemoteObject id="remoteDownload" destination="fileIO" 
+		result="uploadResultHandler(event)"
+		fault="faultResultHandler(event)" channelSet="{model.channelSet}"/>
+	<mx:Canvas width="100%" height="100%">
+		<mx:DataGrid id="listFiles" left="0" top="0" bottom="0" right="0"
+			verticalScrollPolicy="on"
+			draggableColumns="false" resizableColumns="false" sortableColumns="false">
+			<mx:columns>
+				<mx:DataGridColumn headerText="File" width="150" dataField="name" wordWrap="true"/>
+				<mx:DataGridColumn headerText="Status" width="50" dataField="status" textAlign="right"/>
+			</mx:columns>
+
+		</mx:DataGrid>
+	</mx:Canvas>
+	<mx:ControlBar horizontalAlign="center" verticalAlign="middle">
+		<mx:Button id="btnList" toolTip="List remote files" 
+			width="150" 
+			label="Get Remote Files"
+			click="getRemoteFiles(event)"/>
+		<mx:Button id="btnRetrieve" toolTip="download file" 
+			 width="150" click="getDownload(event)" label="download"/>
+	</mx:ControlBar>
+</mx:Panel>

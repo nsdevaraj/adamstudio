@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<title>Flex Book</title>
+		<script type="text/javascript" src="js/swfobject.js"></script>
+		<style type="text/css">
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+				background-color: #000000;
+			}
+		</style>
+		<script language="JavaScript" type="text/javascript">
+
+				function maximize()
+				{
+				window.moveTo(0,0);
+				window.resizeTo(screen.width,screen.height);
+				window.focus();
+				}
+		</script>
+			</head>
+	<body   onload="maximize()">
+		<div id="flashcontent">
+			You require latest flash version installed
+		</div>
+		<script type="text/javascript">
+		   var so = new SWFObject("book.swf", "FBook", "100%", "100%", "9", "#000000");
+		   so.addVariable("LocalLink", "xml/medireader.xml")
+		   so.write("flashcontent");
+		</script>
+	</body>
+</html>

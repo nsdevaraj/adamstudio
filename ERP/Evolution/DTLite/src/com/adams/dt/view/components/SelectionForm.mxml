@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center" creationComplete="makeEditing = true">
+<mx:Metadata>
+	[Event(name = "save" , type = "flash.events.Event")]
+	[Event(name = "cancel" , type = "flash.events.Event")]
+</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.model.vo.Companies;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.business.util.Utils;
+		
+		[Bindable]
+		public var companiesVisibility:Boolean;
+		[Bindable]
+		public var isBindable:String;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private var _selectedCompany:Companies;
+		[Bindable]
+		public function get selectedCompany():Companies {
+			return _selectedCompany;
+		}
+		public function set selectedCompany( value:Companies ):void {
+			_selectedCompany = value;
+			if( value ) {
+				_companyName.editable = false;
+				_code.editable = false;
+				_address.editable = false;
+				_companyPhone.editable = false;
+				_postalcode.editable = false;
+				_city.editable = false;
+				_country.editable = false;
+				
+				_companyName.text = value.companyname;
+				_code.text = value.companycode;
+				_category.text = value.companyCategory;
+				_address.text = value.companyAddress;
+				_companyPhone.text = value.companyPhone;
+				_postalcode.text = value.companyPostalCode;
+				_city.text = value.companyCity;
+				_country.text = value.companyCountry;
+				
+				companySelection.visible = true;
+				companySelection.includeInLayout = true;
+				companySelection.selected = true;
+				
+				_companyName.styleName = "disabledText";
+				_code.styleName = "disabledText";
+				_address.styleName = "disabledText";
+				_companyPhone.styleName = "disabledText";
+				_postalcode.styleName = "disabledText";
+				_city.styleName = "disabledText";
+				_country.styleName = "disabledText";
+			}
+			else {
+				_companyName.editable = true;
+				_address.editable = true;
+				_companyPhone.editable = true;
+				_postalcode.editable = true;
+				_city.editable = true;
+				_country.editable = true;
+				
+				_companyName.text = '';
+				_code.text = '';
+				//_category.text = '';
+				_address.text = '';
+				_companyPhone.text = '';
+				_postalcode.text = '';
+				_city.text = '';
+				_country.text = '';
+				
+				companySelection.visible = false;
+				companySelection.includeInLayout = false;
+				
+				_companyName.styleName = "TextInput";
+				_address.styleName = "TextInput";
+				_companyPhone.styleName = "TextInput";
+				_postalcode.styleName = "TextInput";
+				_city.styleName = "TextInput";
+				_country.styleName = "TextInput";
+			}
+		}
+		
+		public function makeFilterFunction( value:String ):void {
+			model.totalCompaniesColl.filterFunction = null;
+			model.totalCompaniesColl.sort = null; 
+			model.totalCompaniesColl.refresh();
+			switch( value ){
+	    		case 'CHP':
+	    			model.totalCompaniesColl.filterFunction = chefProduitFilter;
+	    		break;
+	    		case 'CPP':
+	    			model.totalCompaniesColl.filterFunction = chefProduitFilter;
+	    		break;
+	    		case 'COM':
+	    			model.totalCompaniesColl.filterFunction = commercialFilter;
+	    		break;
+	    		case 'IND':
+	    			model.totalCompaniesColl.filterFunction = industrialFilter;
+	    		break;
+	    		case 'AGN':
+	    			model.totalCompaniesColl.filterFunction = agencyFilter;
+	    		break;
+	    		case 'EPR':
+	    			model.totalCompaniesColl.filterFunction = impremiurFilter;
+	    		break;	
+	    		case 'BAT':
+	    			model.totalCompaniesColl.filterFunction = batFilter;
+	    		break;
+	    		default:
+	    		break;
+	    	}
+	    	var sort:Sort = new Sort(); 
+		    sort.fields = [ new SortField( 'companyname' ) ];
+		    model.totalCompaniesColl.sort = sort; 
+	    	model.totalCompaniesColl.refresh();
+		}
+		
+		private function chefProduitFilter( obj:Companies ):Boolean {
+			var retVal : Boolean = false;
+			if ( obj.companyCategory == 'CLIENT' ) {
+				retVal = true;
+			}
+			return retVal;
+	    }
+		
+		private function commercialFilter( obj:Companies ):Boolean {
+	    	var retVal : Boolean = false;
+			if ( obj.companyCategory == 'PHOTOGRAVURE' ) { 
+				retVal = true;
+			}
+			return retVal;
+	    }
+	    
+	    private function industrialFilter( obj:Companies ):Boolean {
+	    	var retVal : Boolean = false;
+			if ( obj.companyCategory == 'INDUSTRIEL' ) { 
+				retVal = true;
+			}
+			return retVal;
+	    }
+	    
+	    private function agencyFilter( obj:Companies ):Boolean {
+	    	var retVal : Boolean = false;
+			if ( obj.companyCategory == 'AGENCE' ) { 
+				retVal = true;
+			}
+			return retVal;
+	    }
+		
+		private function impremiurFilter( obj:Companies ):Boolean {
+	    	var retVal : Boolean = false;
+			//if ( obj.companyCategory == 'IMPRIMEUR' ) { 
+			if ( obj.companyCategory == 'APM' ) { 
+				retVal = true;
+			}
+			return retVal;
+	    }
+	    
+	    private function batFilter( obj:Companies ):Boolean {
+	    	var retVal : Boolean = false;
+			if ( obj.companyCategory == 'BAT' ) { 
+				retVal = true;
+			}
+			return retVal;
+	    }
+	    
+	    [Bindable]
+		private var _styleChange:String;
+		
+		private var _makeEditing:Boolean;
+		[Bindable]
+		public function get makeEditing():Boolean {
+			return _makeEditing;
+		}  
+		
+		public function set makeEditing( value:Boolean ):void {
+			_makeEditing = value;
+			if( value ) {
+				_cancel.label = 'Cancel';
+				_styleChange = 'TextInput';
+			}
+			else {
+				_cancel.label = 'Close';
+				_styleChange = 'disabledText';
+			}
+		}
+		
+		private function onCancel():void {
+			if( !makeEditing ) {
+				makeEditing = true;
+			}
+			if( companiesVisibility ) {
+				companiesVisibility = false;
+				_availableCompanies.visible = false;
+				model.totalCompaniesColl.filterFunction = null;
+				model.totalCompaniesColl.sort = null; 
+				model.totalCompaniesColl.refresh();
+			}
+			if( selectedCompany ) {
+				selectedCompany = null;
+			}
+			if( _code.editable ) {
+				_code.editable = false;
+				_code.styleName = 'disabledText';
+			}
+			dispatchEvent( new Event( 'cancel' ) );
+		}
+		
+		private function onCompanySelect():void {
+			_availableCompanies.visible = false;
+			var item:Companies = _availableCompanies.selectedItem as Companies; 
+			if( item ) {
+				selectedCompany = item;
+				_availableCompanies.selectedItem = null;
+			}
+		}
+		
+		private function showCompanies():void {
+			_availableCompanies.visible = true;
+		}
+		
+		private function onCompanyChange():void {
+			if( !companySelection.selected ) {
+				selectedCompany = null;
+			}
+		}
+		
+		private function makeItBindable():void {
+			if( isBindable == "Add" ) {
+				_code.text = _companyName.text.toUpperCase().slice( 0, 5 );
+			}
+		}
+		
+	]]>
+</mx:Script>
+<mx:EmailValidator source="{ _email }" property="text"/>
+<mx:WipeDown id="_showEffect"/>
+<mx:WipeUp id="_hideEffect"/>
+<mx:HBox>
+	<mx:Form>
+		<mx:FormItem label="FirstName" required="true">
+            <mx:TextInput id="_firstName" width="200" editable="{ makeEditing }" maxChars="30" styleName="{ _styleChange }"/>
+        </mx:FormItem>
+        <mx:FormItem label="LastName">
+            <mx:TextInput id="_lastName" width="200" editable="{ makeEditing }" maxChars="30" styleName="{ _styleChange }"/>
+        </mx:FormItem>
+        <mx:FormItem label="Phone">
+            <mx:TextInput id="_phone" width="200" editable="{ makeEditing }" maxChars="20" styleName="{ _styleChange }" restrict="0-9"/>
+        </mx:FormItem>
+        <mx:FormItem label="Mobile">
+            <mx:TextInput id="_mobile" width="200" editable="{ makeEditing }" maxChars="20" styleName="{ _styleChange }" restrict="0-9"/>
+        </mx:FormItem>
+        <mx:FormItem label="Email" required="true">
+            <mx:TextInput id="_email" width="200" editable="{ makeEditing }" maxChars="30" styleName="{ _styleChange }" focusAlpha="1"/>
+        </mx:FormItem>
+        <mx:FormItem label="Username" required="true">
+            <mx:TextInput id="_userName" width="200" editable="false" maxChars="20" styleName="disabledText"/>
+        </mx:FormItem>
+        <mx:FormItem label="Password" required="true">
+            <mx:TextInput id="_password" width="200" editable="{ makeEditing }" maxChars="20" styleName="{ _styleChange }"  displayAsPassword="true"/>
+        </mx:FormItem>
+    </mx:Form>
+    
+    <mx:Form >
+    	<mx:FormItem label="Company Name" required="true">
+    		<mx:Canvas>
+    			<mx:TextInput id="_companyName" width="200" editable="{ makeEditing }" styleName="{ _styleChange }"
+            	          	  change="makeItBindable()" maxChars="50"/>
+            	<mx:CheckBox x="180" width="20" height="{ _companyName.height }" id="companySelection" visible="false" 
+            		         includeInLayout="false" change="onCompanyChange()" 
+    			             toolTip="Unselect To Create New Company" buttonMode="true" useHandCursor="true" mouseChildren="false"/>          	  
+    		</mx:Canvas>
+        </mx:FormItem>
+        <mx:FormItem label="Company Code">
+            <mx:TextInput id="_code" width="200" editable="false" styleName='disabledText' maxChars="5" restrict="A-Z"/>
+        </mx:FormItem>
+        <mx:FormItem label="Company Category">
+            <mx:TextInput id="_category" width="200" editable="false" maxChars="50" styleName = 'disabledText'/>
+        </mx:FormItem>
+        <mx:FormItem label="Company Address">
+            <mx:TextInput id="_address" width="200" editable="{ makeEditing }" maxChars="50" styleName="{ _styleChange }"/>
+        </mx:FormItem>
+        <mx:FormItem label="Company Phone">
+            <mx:TextInput id="_companyPhone" width="200" editable="{ makeEditing }" maxChars="20" styleName="{ _styleChange }"
+            	          restrict="0-9"/>
+        </mx:FormItem>
+        <mx:FormItem label="Company Postal Code">
+            <mx:TextInput id="_postalcode" width="200" editable="{ makeEditing }" maxChars="20" styleName="{ _styleChange }"
+            	          restrict="0-9"/>
+        </mx:FormItem>
+        <mx:FormItem label="Company City">
+            <mx:TextInput id="_city" width="200" editable="{ makeEditing }" maxChars="50" styleName="{ _styleChange }"/>
+        </mx:FormItem>
+        <mx:FormItem label="Company Country">
+            <mx:TextInput id="_country" width="200" editable="{ makeEditing }" maxChars="50" styleName="{ _styleChange }"/>
+        </mx:FormItem>
+    </mx:Form>
+    <mx:VBox paddingTop="10">
+    	<mx:Label text="Select Existing Companies" visible="{ companiesVisibility }" includeInLayout="{ companiesVisibility }"
+                  textDecoration="underline" click="showCompanies()" buttonMode="true" useHandCursor="true" mouseChildren="false"/>
+    	<mx:List id="_availableCompanies" dataProvider="{ model.totalCompaniesColl }" change="onCompanySelect()" visible="false"
+                 labelField="companyname" showEffect="{ _showEffect }" hideEffect="{ _hideEffect }"/>          	
+    </mx:VBox> 
+</mx:HBox>
+<mx:HBox id="buttonCon">
+	<mx:Button id="_saveButton" visible="{ makeEditing }" includeInLayout="{ makeEditing }" click="dispatchEvent( new Event( 'save' ) )"/>
+	<mx:Button id="_cancel" label="Cancel" click="onCancel()"/>
+</mx:HBox>
+</mx:VBox>
+

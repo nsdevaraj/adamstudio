@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*">	
+	<s:states>
+		<!-- // State Begin -->
+		<s:State name='Login'/> 
+		<s:State name='NewProject'/>
+		<s:State name='ProjectCorrection'/>
+		<s:State name="TaskList"/>
+		<s:State name='Report'/> 
+		<s:State name='Project'/> 
+		<s:State name="DeadlineMessage"/>
+		<s:State name="Message"/>
+		<s:State name="Correction"/>
+      	<s:State name='Admin'/>
+		<s:State name='General'/>
+		<s:State name='Notes'/>
+		<s:State name='File'/>
+		<s:State name='Mail'/>
+		<!-- State End -->   
+	</s:states>
+	<s:BorderContainer styleName="bgColor" borderVisible="false" 
+					   blendMode="color" width="100%" height="100%"/>
+	<mediators:HeaderViewMediator id='header' skinClass='com.adams.dt.view.HeaderSkinView' excludeFrom="Login" width='100%'/>
+	<s:Rect excludeFrom="Login" left="10" right="10" bottom="10" top="{header.height+5}" top.Login="0">
+		<s:fill><s:SolidColor color="#313235" alpha=".75"/></s:fill>
+		<s:stroke><s:SolidColorStroke color="#000000" /></s:stroke>
+	</s:Rect>
+	
+	<!-- // View Begin -->
+    <s:VGroup left="15" right="15" bottom="15" top="{ header.height + 10 }" top.Login="0" width="100%" height="100%">
+		<mediators:PriorityHeaderMediator id='subHeader' skinClass='com.adams.dt.view.PriorityHeaderSkinView' homeState="{ currentState }" 
+									                     visible="false" includeInLayout="{ subHeader.visible }" width='100%'/>
+		<s:Group width="100%" height="100%">
+			<mediators:LoginViewMediator id='login' skinClass='com.adams.dt.view.LoginSkinView' homeState="{ currentState }" includeIn='Login' width='100%' height='100%'/>
+			<mediators:NewProjectViewMediator id='newproject' skinClass='com.adams.dt.view.NewProjectSkinView' homeState="{ currentState }"  includeIn='NewProject' width='100%' height='100%'/>
+			<mediators:ProjectCorrectionViewMediator id='projectcorrection' skinClass='com.adams.dt.view.ProjectCorrectionSkinView' homeState='{currentState}' includeIn='ProjectCorrection' width='100%' height='100%'/>  
+			<mediators:TaskListViewMediator id='tasklist' skinClass='com.adams.dt.view.TaskListSkinView'  homeState="{ currentState }"  includeIn='TaskList' width='100%' height='100%'/>
+			<mediators:ReportViewMediator id='report' skinClass='com.adams.dt.view.ReportSkinView' homeState="{ currentState }"  includeIn='Report' width='100%' height='100%'/>
+			<mediators:DeadlineMessageViewMediator id='deadlinemessage' skinClass='com.adams.dt.view.DeadlineMessageSkinView' homeState="{ currentState }" includeIn='DeadlineMessage' width='100%' height='100%'/> 
+			<mediators:MessageViewMediator id='message' skinClass='com.adams.dt.view.MessageSkinView' homeState="{ currentState }"  includeIn='Message' width='100%' height='100%'/>
+		    <mediators:AdminViewMediator id='admin' skinClass='com.adams.dt.view.AdminSkinView' homeState="{ currentState }" includeIn='Admin' width='100%' height='100%'/>
+			<mediators:GeneralViewMediator id='general' skinClass='com.adams.dt.view.GeneralSkinView' includeIn='General' homeState="{ currentState }" width='100%' height='100%'/>
+			<mediators:NotesViewMediator id='notes' skinClass='com.adams.dt.view.NotesSkinView' includeIn='Notes' homeState="{ currentState }" width='100%' height='100%'/>
+			<mediators:FileViewMediator id='file' skinClass='com.adams.dt.view.FileSkinView' includeIn='File' homeState="{ currentState }" width='100%' height='100%'/>
+			<mediators:MailViewMediator id='mail' skinClass='com.adams.dt.view.MailSkinView' homeState='{ currentState }' includeIn='Mail' width='100%' height='100%'/>
+			<mediators:CorrectionViewMediator id='correction' skinClass='com.adams.dt.view.CorrectionSkinView' homeState="{ currentState }"  includeIn='Correction' width='100%' height='100%'/>
+		</s:Group>
+	</s:VGroup>	
+	<!-- View End -->  
+	<mediators:ProgressViewMediator id='progress' skinClass='com.adams.dt.view.ProgressSkinView' width='100%' height='100%'
+									visible="false" includeInLayout="{ progress.visible }"/>
+</s:Skin>

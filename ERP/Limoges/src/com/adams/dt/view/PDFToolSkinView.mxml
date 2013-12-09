@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*" 
+		xmlns:PDFTool="com.adams.dt.view.components.PDFTool.*" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		clipAndEnableScrolling="true">	
+	<s:states>
+		<s:State name='PDFTool'/>  
+		<s:State name='PDFCompare'/>  
+	</s:states>
+	<s:Group id="page1Layout" width="50%" height="100%" bottom="40" 
+			 clipAndEnableScrolling="true">
+		<PDFTool:SWFPage id="page1" 
+						 shapeColor="{shapeColorPicker.selectedColor}"/>
+		<s:Group id="page1CommentBoxGroup" width="100%" height="100%" clipAndEnableScrolling="true"/>
+		<s:Rect width="100%" height="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="0"/>
+			</s:stroke>
+		</s:Rect>
+	</s:Group>
+	<s:Group id="page2Layout" width="50%" height="100%" bottom="40" right="0" 
+			 clipAndEnableScrolling="true">
+		<PDFTool:SWFPage id="page2"
+						 shapeColor="{shapeColorPicker.selectedColor}"
+						 regionPointerXPos="{page1.regionPointerXPos}" regionPointerYPos="{page1.regionPointerYPos}"/>
+		<s:Group id="page2CommentBoxGroup" width="100%" height="100%" clipAndEnableScrolling="true"/>
+		<s:Rect width="100%" height="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="0"/>
+			</s:stroke>
+		</s:Rect>
+	</s:Group>
+	<s:Group id="compareLayout" width="100%" height="100%" bottom="40" right="0" 
+			 clipAndEnableScrolling="true" >
+		<PDFTool:ComparedPage id="comparedImage" focusEnabled="false"
+							  x="{page2.pageX}" y="{page2.pageY}"/>
+	</s:Group>
+	<s:HGroup id="commentListContainer" gap="0" width="270" height="100%" right="0" bottom="40" visible="true">
+		<s:ToggleButton id="commentListDisplayToggleBtn" focusEnabled="false" styleName="commentListDisplayBtnSkin"
+						width="35" height="40"/>
+		<s:VGroup width="100%" height="100%" gap="0">
+			<s:HGroup id="pdfCommentListNavBar" width="100%" gap="0" includeInLayout="{pdfCommentListNavBar.visible}">
+				<s:ToggleButton id="pdf1CommentListBtn" label="PDF1" width="100%"/>
+				<s:ToggleButton id="pdf2CommentListBtn" label="PDF2" width="100%"/>
+			</s:HGroup>
+			<s:Group width="100%" height="100%">
+				<PDFTool:CommentList id="pdf1CommentList" width="100%" height="100%"/>
+				<PDFTool:CommentList id="pdf2CommentList" width="100%" height="100%"/>
+			</s:Group>		
+		</s:VGroup>
+		<s:filters>
+			<s:DropShadowFilter />
+		</s:filters>
+	</s:HGroup>
+	<s:BorderContainer id="helpTipsContainer" width="100%" height="30" bottom="40" styleName="controlsBg" 
+					   backgroundColor="#000000" backgroundAlpha="0.5"
+					   mouseChildren="false" mouseEnabled="false" visible="false">
+		<s:Label color="#cecece" text="Zoom In: Ctrl + +   |  Zoom Out: Ctrl + -  |  Rotate Left: Ctrl + &lt;-  |  Rotate Right: Ctrl + -&gt;  | Pan: Spacebar + Mouse Left Button"
+				 verticalCenter="0" left="20" fontSize="14">
+			<s:filters>
+				<s:GlowFilter color="#000000"/>
+			</s:filters>	
+		</s:Label>
+	</s:BorderContainer>
+	<s:BorderContainer width="100%" height="40" bottom="0" 
+					   styleName="controlsBg" backgroundColor="#000000" >
+		<s:HGroup verticalCenter="0" right="10" >
+			<s:HGroup id="drawContainer">
+				<s:ToggleButton id="normalNoteBtn" focusEnabled="false" styleName="NormalRectangleBtnSkin"
+								width="30" height="30"/>
+				<s:ToggleButton id="lineBtn" focusEnabled="false" styleName="LineBtnSkin"
+								width="30" height="30"/>
+				<s:ToggleButton id="rectBtn" focusEnabled="false" styleName="RectangleBtnSkin"
+								width="30" height="30"/>
+				<s:ToggleButton id="ellipseBtn" focusEnabled="false" styleName="OvalBtnSkin"
+								width="30" height="30"/>
+				<s:ToggleButton id="pathBtn" focusEnabled="false" styleName="PathBtnSkin"
+								width="30" height="30"/>
+				<s:ToggleButton id="notesOnOffBtn" focusEnabled="false" styleName="NoteOnOffBtnSkin"
+								width="30" height="30" selected="true"/>
+				<s:ToggleButton id="notesExpandCollapseBtn" focusEnabled="false" styleName="NoteExpandCollpseBtnSkin"
+								width="30" height="30" selected="true"/>
+				<mx:ColorPicker id="shapeColorPicker" selectedColor="#FFFF00"/>
+			</s:HGroup>
+			<s:HGroup id="compareViewTools" visible="false" includeInLayout="{compareViewTools.visible}">
+				<s:HGroup id="pageNavTools" includeInLayout="{pageNavTools.visible}">
+					
+					<s:ToggleButton id="playPauseBtn" focusEnabled="false" styleName="PlayPauseBtnSkin"
+									width="30" height="30" selected="true"/>
+					<s:Button id="doubleSingleViewBtn" focusEnabled="false" styleName="doubleViewToggleBtnSkin" 
+							  width="40" height="30"/>
+					<s:Button id="pdf1Btn" focusEnabled="false" styleName="PDF1BtnSkin"
+							  width="30" height="30"/>
+					<s:Button id="pdf2Btn" focusEnabled="false" styleName="PDF2BtnSkin"
+							  width="30" height="30"/>
+				</s:HGroup>
+				<s:HGroup id="comparePageAdjusmentTools" visible="false" 
+						  includeInLayout="{comparePageAdjusmentTools.visible}"
+						  verticalAlign="middle">
+					<s:Image width="30" height="30" smooth="true" 
+							 source="@Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIcon')"/>
+					<s:Label text="({Math.round(page1Slider.value*100)}%)" width="35" textAlign="right"/>
+					<s:HSlider id="page1Slider"  
+							   minimum="0" maximum="1" snapInterval="0.01" liveDragging="true"
+							   focusEnabled="false"/>
+					<s:Image width="30" height="30" smooth="true"
+							 source="@Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIcon')"/>
+					<s:Label text="({Math.round(page2Slider.value*100)}%)" width="35" textAlign="right"/>
+					<s:HSlider id="page2Slider" 
+							   minimum="0" maximum="1" snapInterval="0.01" liveDragging="true"
+							   focusEnabled="false"/>
+					<s:Image width="30" height="30" smooth="true"
+							 source="@Embed('assets/swf/additionalAssetsReader.swf#DiffPDFIcon')"/>
+					<s:Label text="({Math.round(compareImageSlider.value*100)}%)" width="35" textAlign="right"/>
+					<s:HSlider id="compareImageSlider" 
+							   minimum="0" maximum="1" snapInterval="0.01" liveDragging="true"
+							   focusEnabled="false"/>
+				</s:HGroup>
+				<s:ToggleButton id="regionPointerSelectToggleBtn" focusEnabled="false" 
+								styleName="RegionPointerToggleSkin"
+								includeInLayout="{regionPointerSelectToggleBtn.visible}"
+								width="35" height="30"/>
+				<s:Button id="compareBtn" focusEnabled="false" styleName="CompareBtnSkin"
+						  width="30" height="30"/> 
+			</s:HGroup>	
+		</s:HGroup>
+		<s:Button id="helpBtn" styleName="HelpBtnSkin" bottom="10" left="10"
+				  buttonMode="true" useHandCursor="true" toolTip="Help"/>
+	</s:BorderContainer>
+	<s:Label id="releaseVersionLbl" color="#FFFFFF" bottom="10" left="50"
+			 paddingLeft="10" paddingRight="10"/>
+	<s:Button id="backBtn" label="&lt;&lt;Back"
+			  left="5" top="5"/>
+	<s:Group id="pageListGrp" width="100%" height="100%" clipAndEnableScrolling="true">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="#121212"/>
+			</s:fill>
+		</s:Rect>
+			<s:List id="pageListDG" width="100%" height="100%"
+						 itemRenderer="com.adams.dt.view.components.PDFTool.PDFPageItemRender"
+						 >
+				<s:layout>
+					<s:TileLayout id="pageTileLayout" />
+				</s:layout>
+			</s:List>
+	</s:Group>
+</s:Skin>

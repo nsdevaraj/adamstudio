@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:ns1="com.*" backgroundColor="#BBBBBB" width="100%" >
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var selectTask:Boolean = false;
+			private function selectRow(event:Event):void{
+				selectTask = chkbox.selected;
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:CheckBox id="chkbox" width="1%" change="selectRow(event)" height="100"/>
+	<ns1:CusLabel id="CL" width="20%"/>
+	<ns1:todoCusCell id="C3" width="20%" />
+	<ns1:CusCell id="C4" width="20%"/>
+	<ns1:CusCell id="C5" width="20%"/>
+	<ns1:CusCell id="C6" width="19%"/>
+</mx:HBox>
+

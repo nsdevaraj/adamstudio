@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  xmlns:view="com.adams.dt.view.components.*" 
+	       xmlns:cmp="com.adams.dt.view.components.*" xmlns:todo="com.adams.dt.view.components.todolistscreens.*"
+	       creationCompleteEffect = "{ mx.effects.Fade }" creationComplete="onCreationComplete()"
+	       styleName="contsWidth" >
+<mx:Binding source="model.updateToDo" destination="this.onUpdatingToDo"/>	       
+<mx:Script>
+	<![CDATA[
+		
+		import mx.binding.utils.BindingUtils;
+		import com.adams.dt.view.components.ConfirmationDemandeValidation;
+		import com.adams.dt.model.mainView.ViewFactory;
+		import com.adams.dt.business.util.StringUtils;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import com.adams.dt.business.util.StageRef;
+		import com.adams.dt.business.util.KeyHandler;
+		import com.adams.dt.event.RefreshEvent;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import mx.rpc.IResponder;
+		import mx.managers.PopUpManager;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.event.ProjectMessageEvent;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.model.vo.WorkflowTemplatePermission;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.event.TasksEvent;
+		import com.adams.dt.business.util.Utils;
+		import mx.events.CloseEvent;
+		import com.adams.dt.model.vo.TaskStatus;
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.event.OpenToDoListScreenEvent;
+		import mx.effects.Fade;
+		import mx.controls.Alert;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.FileDetailsEvent;
+		import com.adams.dt.model.vo.FileDetails;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.vo.Tasks;
+		import com.adams.dt.view.components.todolistscreens.ITodoList;
+		import mx.core.UIComponent;
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.vo.ViewState;
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private var sep:String = "&#$%^!@";	
+			
+		private function getBody(str:String):String{
+			str = str.split(sep)[2];
+			return str.substr(str.indexOf(" "));
+		}
+		[Bindable]
+        private var _archiveVisibility:Boolean;
+		
+		private var _onUpdatingToDo:Boolean;
+		[Bindable]
+		public function get onUpdatingToDo():Boolean {
+			return _onUpdatingToDo;
+		}
+		public function set onUpdatingToDo( value:Boolean ):void {
+			_onUpdatingToDo = value;
+			updateSelectedScreen();
+		}
+		
+		private function onCreationComplete():void {
+			getView( model.workflowState );
+		}
+		
+		private function updateSelectedScreen():void {
+			if(  Canvas(stack.selectedChild).getChildAt(0)   is ITodoList ) {
+				ITodoList(  Canvas(stack.selectedChild).getChildAt(0)).updateProperties();
+			}
+		}
+		
+		/**
+		 * reset upload component
+		 */
+		private function resetUploadComp():void{
+			uploadComp.listFiles.dataProvider=[];
+			uploadComp.UploadFiles = [];
+			model.currentProjectFiles = new ArrayCollection();
+		}
+		
+		private function checkFileAccess( work:Workflowstemplates ):Boolean {
+			for each( var item:Workflowstemplates in model.fileAccessTemplates ) {
+				if( item.workflowTemplateId == work.workflowTemplateId )  return true;
+			}
+			return false;
+		}
+		/**
+		 * @param workdlowState 
+		 * function binded with viewstack
+		 * based on the changes in model.workflowState the nw screen will be load
+		 * set the property value corresponding to the screen
+		 */
+		private var todoTskcode:String;
+		private var taskFABtoIMP:Boolean; 
+		public function getView( workflowState:Number ):int {
+			
+			if( !StageRef.stage ) StageRef.stage = stage;
+			if( !kh ) kh = new KeyHandler( "F5", onRefresh );
+			
+			//model.release = 0;
+			//file type is basic except the pdf conversion file
+			uploadComp.type = "Basic";			
+			taskFABtoIMP = false;			
+			
+			if( model.currentTasks ) {
+				
+				var tsklbl:String = model.currentTasks.workflowtemplateFK.taskLabel;
+				todoTskcode = model.currentTasks.workflowtemplateFK.taskCode;
+				
+				var stopLabel:Array = [];
+				if( model.currentTasks.workflowtemplateFK.optionStopLabel )
+					stopLabel = model.currentTasks.workflowtemplateFK.optionStopLabel.split( "," );
+				
+				var version:Boolean = false;
+				for( var i:int = 0; i < stopLabel.length; i++ ) { 
+					if( int( Number( stopLabel[ i ] ) ) == WorkflowTemplatePermission.VERSIONLOOP ) {
+						version = true;
+					}
+				}	
+				//Previous file upload 
+				/* if( tsklbl == "REALISATION V1" || 
+					tsklbl == "CORRECTIONS REALISATION V1" ||
+					tsklbl == "REALISATION CORRECTIONS" ||
+					tsklbl == "CORRECTIONS SUPPLEMENTAIRES" || version ) {
+					uploadComp.type = "Tasks";
+				}
+				else if( tsklbl == "VALIDATION PROCESS" ) {  //PREPARATION TECHNIQUE //VALIDATION PROCESS
+					taskFABtoIMP = true;
+ 				}
+				else {
+					uploadComp.type = "Basic";
+				}*/
+				if( version ){
+					uploadComp.type = "Tasks";
+				}
+				else if( tsklbl == "DEMANDE D'OUVERTURE DE DOSSIER" || 
+					tsklbl == "COMPLEMENTS DE DEMANDE" ||
+					tsklbl == "CREATION DE DOSSIER" ||
+					tsklbl == "COMPLEMENTS INFOS DOSSIER" || 
+					tsklbl == "VALIDATION PROCESS" ||
+					tsklbl == "COMPLEMENTS POUR REALISATION V1" ) {
+					uploadComp.type = "Basic";
+				}
+				else if( tsklbl == "VALIDATION PROCESS" ) {  //PREPARATION TECHNIQUE //VALIDATION PROCESS
+					taskFABtoIMP = true;
+ 				}
+				else {
+					//if(version)
+					uploadComp.type = "Tasks";
+				}
+			}
+            //check visiblity of component based on the screen		
+			if( workflowState != 0 ) {
+				 resetUploadComp();	
+				 changePersonBox.visible = false;
+				 changePersonBox.includeInLayout = false;
+				 commentBox.visible = true;
+				 commentBox.includeInLayout = true;
+			}
+			
+			if( workflowState == 0 ) {
+				model.fileAccess = false;
+				commentBox.visible = false;
+				commentBox.includeInLayout = false;
+				model.businessCard =  model.person;
+				if( _archiveVisibility )	_archiveVisibility = false; 
+				if( model.clientCode == "ADM" ) {
+					changePersonBox.visible = true;
+				    changePersonBox.includeInLayout = true;
+				}
+				else {
+					changePersonBox.visible = false;
+				 	changePersonBox.includeInLayout = false;
+				}
+			}
+			else if( workflowState == OpenToDoListScreenEvent.OPEN_VIEWMESSAGSCREEN ) {				
+				commentBox.visible = false;
+				commentBox.includeInLayout= false;
+			}
+			
+			//Enable the navigation button if project in inprogress
+			if( model.currentProjects.projectId != 0 ) {
+				if( model.currentProjects.projectStatusFK == ProjectStatus.STANDBY || model.currentProjects.projectStatusFK == ProjectStatus.ABORTED ) {
+					prevTask.enabled = false;
+					nextTask.enabled = false;
+					jumpTask.enabled = false;
+					loopTask.enabled = false;
+				}
+				else {
+					prevTask.enabled = true;
+					nextTask.enabled = true;
+					jumpTask.enabled = true;
+					loopTask.enabled = true;
+				}
+			}
+			updateComment();
+			adminMonitorSwitch( workflowState );
+			model.preloaderVisibility = false;
+			return workflowState;     
+        }
+        
+        protected function onStackChildIndexChange():void {
+        	var selectedScreen:Object = Canvas( stack.selectedChild ).getChildAt( 0 );
+        	if( stack.selectedIndex == OpenToDoListScreenEvent.OPEN_ORDERRECEPTIONSCREEN 
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_PROCESSVALIDATIONSCREEN
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_PREPARATIONTECHNIQUESCREEN
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_REALISATIONSCREEN 
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_LANCEMENTLIVRAISONSCREEN
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_DEPARTLIVRAISONSCREEN
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_CLOSEPROJECTSCREEN 
+					|| stack.selectedIndex == OpenToDoListScreenEvent.OPEN_TECHNICALPREPARATIONSCREEN ) {
+				if(  selectedScreen is ITodoList ) {
+					if( selectedScreen.property ) {
+						selectedScreen.updateProperties();
+					}
+				}
+			}
+			else if( stack.selectedIndex == OpenToDoListScreenEvent.OPEN_ORDERSCREEN ) {
+				model.fileAccess = false;
+				if( selectedScreen ) {
+					selectedScreen.resetFileForm();
+				} 				
+			}
+			else if( stack.selectedIndex == OpenToDoListScreenEvent.OPEN_VIEWINDMESSAGESCREEN ) {
+				if( selectedScreen) {		
+					onArchiveVisible();
+				}	
+				else {
+					if( _archiveVisibility )	{
+						_archiveVisibility = false;
+					}	 
+				}
+			}
+			//NEWORACLE TODOLIST CLICK ENBLED UPDATE PHASES
+			//DELEY EDITABLE VIEW
+			if( model.currentProjects ) {
+				if( model.currentUserProfileCode == "TRA" || model.currentUserProfileCode == "FAB" || model.currentUserProfileCode == "CLT") {
+					if( model.currentProjects.projectStatusFK != ProjectStatus.STANDBY && model.currentProjects.projectStatusFK != ProjectStatus.ABORTED && !model.currentProjects.projectDateEnd ) {
+						model.updatePhase = true;
+					}
+					else {
+						model.updatePhase = false;
+					}
+				}
+				else {
+					model.updatePhase = false;
+				}
+			}
+        }
+        
+        private function adminMonitorSwitch( workflowName:Number ):void {
+        	switch( workflowName ) {   
+				case OpenToDoListScreenEvent.OPEN_ORDERRECEPTIONSCREEN:
+					model.modelToDoListView = "OrderReceptionScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_TECHNICALPREPARATIONSCREEN:
+					model.modelToDoListView = "TechnicalPreparationScreen";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_PROCESSVALIDATIONSCREEN:
+					model.modelToDoListView = "ProcessValidationScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_PREPARATIONTECHNIQUESCREEN:
+					model.modelToDoListView = "PreparationTechniqueScreen";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_REALISATIONSCREEN:
+					model.modelToDoListView = "RealisationScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_CONTOLSCREEN:
+					model.modelToDoListView = "ContolScreen";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_RELECTURESCREEN:
+					model.modelToDoListView = "RelectureScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_LANCEMENTCORRECTIONSCREEN:
+					model.modelToDoListView = "LancementCorrectionScreen";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_REALISATIONSCREENCORRECTION:
+					model.modelToDoListView = "RealisationCorrectionScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_CONTROLCORRECTIONSCREEN:
+					model.modelToDoListView = "ControlCorrection";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_RELECTURECORRECTIONSCREEN:
+					model.modelToDoListView = "RelecutreCorrection";
+				break;
+				case OpenToDoListScreenEvent.OPEN_LANCEMENTLIVRAISONSCREEN:
+					model.modelToDoListView = "LancementLivration";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_DEPARTLIVRAISONSCREEN:
+					model.modelToDoListView = "DepartLivration";
+				break;
+				case OpenToDoListScreenEvent.OPEN_CLOSEPROJECTSCREEN:
+					model.modelToDoListView = "CloseProjectScreen";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_ORDERSCREEN:
+					model.modelToDoListView = "NewOrderScreen";
+				break;
+				case OpenToDoListScreenEvent.OPEN_VIEWMESSAGSCREEN:
+					model.modelToDoListView = "ViewMessageTask";
+				break;  
+				case OpenToDoListScreenEvent.OPEN_VIEWINDMESSAGESCREEN:
+					model.modelToDoListView = "PDFReaderScreen";
+				break;  																																			                                             
+				default:
+				break; 
+			}
+			adminMonitorName( model.modelToDoListView );
+        }	
+        
+        private var tempType:String = null;
+		private var tempMiscelleneous:String = null;
+		private function assignINDTask():void
+		{
+			if(model.agenceAttachFileCommon.length!=0)	
+			{
+				var tempFiledetails:FileDetails = model.agenceAttachFileCommon.getItemAt(0) as FileDetails;
+				for each( var filesvo:FileDetails in model.basicFileCollection)
+				{
+					if(filesvo.visible == true){				
+						if((tempFiledetails.projectFK == filesvo.projectFK) && (tempFiledetails.fileId == filesvo.fileId)){
+							tempType = tempFiledetails.type;
+							tempMiscelleneous = tempFiledetails.miscelleneous;
+							break;
+						}
+					}
+				}				
+			}			
+		}	
+        
+        
+        
+        private var btn_id:String;
+       	
+		/**
+		 * @event mouseEvent 
+		 * shows the confirmation alert box for prevTask,nextTask,loopTask,jumpTask
+		 * show alert if pdf file is not uploaed for conversion
+		 */
+		
+		private function showAlert():void {
+			if( todoTskcode == "P5T01A" ){
+				isBackButton = false;
+			}
+			if( uploadComp.type == 'Tasks' && !model.pdfConversion && uploadComp.basicFileVisible && isBackButton && ( model.sendBasicFileArr.length == 0 ) ) {
+ 					Alert.show( "Please upload / select a PDF document", model.appName );
+			}
+			else if( taskFABtoIMP && ( model.sendBasicFileArr.length == 0 && model.currentProjectFiles.length == 0 ) && isBackButton ) {
+				//if( Utils.checkTemplateExist( model.checkImpremiurCollection, model.currentProjects.wftFK ) ) {
+				if( todoTskcode == "P3T01A" ){
+					Alert.buttonWidth = 100;	                
+	            	Alert.yesLabel = "Yes";
+	           		Alert.noLabel = "No";
+					var alertStr:String = model.loc.getString( 'IMPPDFwarning' );
+					fabTaskLbl = senderButtonLabel;
+					Alert.show( alertStr, '', Alert.YES|Alert.NO, this, showIMPConfirmationAlert );
+				}
+			}
+			else if( ( !isBackButton ) && ( StringUtils.trimSpace( comments.text ).length == 0 ) ) {
+					Alert.show( "Please provide Comments", model.appName );
+			}
+			else {
+				//if( Utils.checkTemplateExist( model.checkImpremiurCollection, model.currentProjects.wftFK ) ) {
+				if( todoTskcode == "P3T01A" ){
+					showConfirmationAlert( senderButtonLabel );
+				}
+				else {
+					showConfirmationAlert( senderButtonLabel );
+				}
+			}		 
+		}
+		
+		private var fabTaskLbl:String;
+		private function showIMPConfirmationAlert( eve:CloseEvent ):void {
+            if ( eve.detail == Alert.YES ) {
+             	showConfirmationAlert( fabTaskLbl );
+            }  
+        } 
+		
+		private var conWindow:ConfirmationDemandeValidation;
+		private function showConfirmationAlert( eventlbl:String ):void {
+			var title:String = model.currentProjects.projectName + " " + Utils.dateFormat( model.currentTime );
+			Alert.yesLabel = 'Confirmation';
+			Alert.buttonWidth = 120;
+			var alertStr:String = model.loc.getString( 'pleaseDoYouConfirm' ) + " " + eventlbl + ". " + model.loc.getString( 'thanks' );
+			Alert.show( alertStr, title, Alert.YES|Alert.NO, this, confirmationHandler );
+		}
+		
+		private function checkConfirmation( event:Event ):void {
+			PopUpManager.removePopUp( conWindow );
+			onConfirmedClicked();
+		}
+		
+		/**
+		 *@event CloseEvent
+		 * based on the selection from confirmation alert box it excute the function
+		 */
+		private function confirmationHandler( event:CloseEvent ):void {
+			if ( event.detail == Alert.YES ) {
+				onConfirmedClicked();
+			}
+		}
+		
+		private function onConfirmedClicked():void {
+			taskFABtoIMP = false;
+			model.sendBasicFileArr = [];
+			switch( btn_id ) {				
+				case "prevTask":
+					gotoPrevTask();
+				break;
+				case "nextTask":
+					gotoNextTask();
+				break;
+				case "loopTask":
+					gotoLoopTask();
+				break;
+				case "jumpTask":
+					jumpTo();
+				break;
+			}
+		}
+		
+	   private var senderButtonLabel:String;
+	   private var isBackButton:Boolean;	
+       private function checkAvailableTasks( event:MouseEvent, backButton:Boolean ):void {
+       	    senderButtonLabel = event.currentTarget.label;
+       		isBackButton = backButton;
+       		btn_id = event.currentTarget.id;
+			var handler:IResponder = new Callbacks( onAvailabilityResult );
+			var taskEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_GET_SPECIFIC_TASK, handler );
+			taskEvent.taskeventtaskId = model.currentTasks.taskId;
+			taskEvent.dispatch();
+       }
+       
+       private function onAvailabilityResult( rpcEvent:Object ):void {
+			var currentTask:Tasks = Tasks( rpcEvent.result.getItemAt( 0 ) );
+			if( currentTask.taskStatusFK == TaskStatus.FINISHED ) {
+				model.currentTasks = currentTask;
+				Alert.show( "The Task has been already completed by " + currentTask.personDetails.personFirstname );
+				tasksContinuity();
+			}
+			else {
+				showAlert();
+			}
+	   } 
+       
+		/**
+		 * Create previousTask
+		 * its overridded in todolist.as 
+		 * disable the whole application for updating the data
+		 * change the workflowstate, remove the task if its finished, empty the comment box 
+		 */
+        public function gotoPrevTask():void {
+        	model.preloaderVisibility = true;
+        	ITodoList( Canvas(stack.selectedChild).getChildAt(0)).gotoPrevTask();
+       		tasksContinuity();
+       	}
+        
+        /**
+		 * Create nextTask
+		 * its overridded in todolist.as 
+		 * disable the whole application for updating the data
+		 * change the workflowstate, remove the task if its finished, empty the comment box
+		 */
+        public function gotoNextTask():void {
+        	model.preloaderVisibility = true;
+        	ITodoList( Canvas(stack.selectedChild).getChildAt(0)).gotoNextTask();
+        	tasksContinuity();
+        }
+        
+        /**
+		 * Create LoopTask
+		 * its overridded in todolist.as 
+		 * disable the whole application for updating the data
+		 * change the workflowstate, remove the task if its fi
+		 */
+        public function gotoLoopTask():void {
+        	model.preloaderVisibility = true;
+        	ITodoList( Canvas(stack.selectedChild).getChildAt(0) ).gotoLoopTask();
+        	tasksContinuity();
+        }
+       
+        /**
+		 * Create jumpToTask
+		 * its overridded in todolist.as 
+		 * disable the whole application for updating the data
+		 * change the workflowstate, remove the task if its fi
+		 */
+        public function jumpTo():void {
+        	model.preloaderVisibility = true;
+        	ITodoList( Canvas(stack.selectedChild).getChildAt(0) ).jumpTo();
+        	tasksContinuity();
+        }
+        
+        /**
+        * remove the finished task
+        */
+        public function updateTask():void{ 
+        	if( model.currentTasks.taskStatusFK == TaskStatus.FINISHED ) {
+				for each( var item:Object in model.taskCollection ) {
+					for each( var taskC:Tasks in item.tasks ) {
+						if( taskC.taskId == model.currentTasks.taskId ) {
+							item.tasks.removeItemAt( item.tasks.getItemIndex( taskC ) );
+						}
+					}
+				}
+				for each( var myTask:Tasks in model.tasks ) {
+					if( myTask.taskId == model.currentTasks.taskId ) {
+						model.tasks.removeItemAt( model.tasks.getItemIndex( myTask ) );
+					}
+				}
+				model.tasks.refresh();
+				model.taskCollection.refresh();
+			}
+        }
+        
+        private function onArchiveVisible():void {
+        	if(model.currentTasks){
+        	//if( model.currentUserProfileCode != "IND" ) {
+	        	if(model.currentTasks.workflowtemplateFK.profileObject.profileCode!="BAT"){        	
+	        		if( model.currentTasks ) {				
+						var tsklbl:String = model.currentTasks.workflowtemplateFK.taskLabel;
+						var tskcode:String = model.currentTasks.workflowtemplateFK.taskCode;
+						var taskLabelTodo:String = model.currentTasks.workflowtemplateFK.taskLabelTodo;
+						if( tsklbl == "VALIDATION CREA" && (tskcode == "PDF01A" || tskcode == "PDF01B")){		
+							if( !_archiveVisibility )	_archiveVisibility = false;
+						}
+						else{
+							if( !_archiveVisibility )	_archiveVisibility = true;
+						}
+						if(model.currentTasks.workflowtemplateFK.profileObject.profileCode!="BAT"){	
+							model.editForm = true;
+						}else{
+							model.editForm = false;
+						}
+					}
+	        	}	  
+        	}      	
+		} 
+    	
+    	private function onArchiveClick():void {
+    		var status:Status = new Status()
+			status.statusId =  TaskStatus.FINISHED;
+			model.currentTasks.taskStatusFK = status.statusId;
+			model.currentTasks.tDateEnd = model.currentTime;
+			var handler:IResponder = new Callbacks( onArchiveDispatch );
+			var event:TasksEvent = new TasksEvent( TasksEvent.EVENT_UPDATE_PDFREAD_ARCHIVE, handler );
+			event.tasks = model.currentTasks; 
+			CairngormEventDispatcher.getInstance().dispatchEvent(event);
+    	}
+    	
+    	private function onArchiveDispatch( rpcEvent:Object ):void {
+    		updateTask();
+    		model.workflowState = 0;	
+		}
+    	
+        [Bindable]
+        private var commentText:String;  
+        
+        /**
+        * update the comments
+        */      
+        public function updateComment():void{
+        	comments.text = '';
+        	if( model.currentTasks ) { 
+        		
+        		var tsklbl:String = model.currentTasks.workflowtemplateFK.taskLabel;
+				var tskcode:String = model.currentTasks.workflowtemplateFK.taskCode;
+
+				if( tsklbl == "VALIDATION CREA" && ( tskcode == "PDF01A" || tskcode == "PDF01B" ) ) {
+					if( model.currentTasks.taskComment ) {
+						var strcomments:String = model.currentTasks.taskComment.toString();
+						if( strcomments.indexOf( '&#$%^!@' ) != -1 ) {
+							commentText = getBody( model.currentTasks.taskComment.toString() );
+						}
+						else{
+							commentText = model.currentTasks.taskComment.toString();
+						}
+					}
+					else{
+						if( model.currentTasks.previousTask ) {
+							if( model.currentTasks.previousTask.taskComment ) {
+								var commenstr:String = model.currentTasks.previousTask.taskComment.toString();
+			        			if( commenstr.indexOf( '&#$%^!@' ) != -1 ) {
+									commentText = getBody( model.currentTasks.previousTask.taskComment.toString() );
+								}
+								else {
+									commentText = model.currentTasks.previousTask.taskComment.toString();
+								}
+							}
+							else {
+			        			commentText = '';
+			        		}
+		        		}
+					}
+				}
+				else {
+		        	if( model.currentTasks.previousTask ) {
+		        		commentText = String( model.currentTasks.previousTask.taskComment );
+		        	}
+		        	else {
+		        		commentText = String( model.currentTasks.projectObject.projectComment ); 
+		        	}
+		  		}
+	        }
+	        if( ( !commentText ) || ( commentText == 'null' ) ) {
+	        	commentText = '';
+	        }
+	    }
+        
+        /**
+         * get person from task object
+         */ 
+        public function getPerson( tasks:Tasks ):String {
+        	if( tasks ) {
+        		if( tasks.previousTask ) {
+        			return String( tasks.previousTask.personDetails.personFirstname );
+        		}	
+        	}
+        	return '';
+        }
+        
+        /**
+        * set todolist header name
+        */
+        private function setToDoName():void {
+        	if( ViewMessageTask ) {
+        		if( ViewMessageTask.currentState == 'replyView' ) {
+        			ViewMessageTask.currentState = 'inboxView';
+        		}        	
+        	}
+        	model.workflowState = 0;
+        	model.pdfloader = true;
+        	model.pdfFileCollection.source = []; 
+        }
+        
+        /**
+        * open the main project view
+        */
+        private function openMainProject():void {
+        	if( model.mainProjectState != 1 ) {
+	        	 model.currentMainProject = model.currentProjects;
+			 	 model.mainProjectState = 1;
+			 	 model.preloaderVisibility = true;
+        	}
+		 	model.mainClass.navigateModule( "Dashboard" ).dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+        }
+        
+        private function adminMonitorName( id:String ):void {			
+			var eventproducer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_PRODU_ADMIN );				
+			eventproducer.adminmonitorscreen = id;
+			eventproducer.dispatch();
+		}
+		
+		/**
+		 * in FAB loggin he can view other person todolist by selecting the corresponding person from combobox
+		 */
+		private function changePerson():void {		
+			//model.person = Persons( changeList.selectedItem );
+			model.businessCard = model.person;
+			model.taskCollection = new ArrayCollection();
+			model.taskCollection.refresh();
+			var taskEv:TasksEvent = new TasksEvent( TasksEvent.EVENT_GET_TASKS );
+			taskEv.dispatch();
+		}
+		
+		/**
+		 * update the current logged in person
+		 */
+		private function loadCurrentPerson():void {
+	        for( var i:int = 0; i < model.personsArrCollection.length; i++ ) {
+				var item:Persons = Persons( model.personsArrCollection.getItemAt( i ) );			
+				if( item.personId == model.person.personId ) {
+					//changeList.selectedIndex = i;
+				} 
+			}
+		}
+		
+		/**
+		 * sort tasks by status 
+		 */
+		 private function onStatusChange():void {
+			for each( var item:Object in model.taskCollection ) {
+				item.tasks.filterFunction = sortByStatus;
+				item.tasks.refresh();
+			}
+			model.taskCollection.refresh();
+		} 
+		
+		/**
+		 * filter function for tasks sorting
+		 */
+		 private function sortByStatus( item:Tasks ):Boolean {
+	  		var retVal:Boolean = false;
+	  		if( Status( statusList.selectedItem ).statusLabel == 'All' ) {
+	  			return true;
+	  		}
+			if ( item.taskStatusFK == Status( statusList.selectedItem ).statusId ) { 
+				retVal = true;
+			}
+			return retVal;
+	  	} 
+	  	
+	  	/**
+		 * label function for displaying person details in combobox
+		 */
+		private function concatName( item:Persons ):String {
+			return item.personFirstname + ' ' + item.personLastname + ',' + GetVOUtil.getCompanyObject( item.companyFk ).companyname;
+		} 
+		 
+		private function tasksContinuity():void {
+			updateTask();
+        	model.workflowState = 0;
+        	comments.text='';
+		}
+		
+		private var refreshEvent:RefreshEvent = new RefreshEvent( RefreshEvent.REFRESH );
+		private var kh:KeyHandler; 
+		private function onRefresh():void{
+			refreshEvent.dispatch();
+		}
+	]]>
+</mx:Script>
+	<mx:Canvas    styleName="mainBgContainer" top="0" left="0" right="0" bottom="0">
+		<view:bussinessCard right="5" id="buzCard" width="300" height="61" top="10"/>
+		<mx:Button toolTip="Refresh" right="15" top="15" styleName="refereshBtn" visible="{Boolean(!model.workflowState)}" click="onRefresh()" />       
+		<mx:Text text="{model.loc.getString('TodoList')}" id="todoLabel" visible="{Boolean(!model.workflowState)}" 
+			 styleName="mainProjectHeader"/>
+		<mx:Canvas id="changePersonBox"  visible="false" top="3" left="3" width="{width - buzCard.width-40}">
+			<mx:Label text="Select" id="profileLabel" verticalCenter="0"  left="0"/>
+			<mx:ComboBox id="changeList" left="{profileLabel.width+10}" top="0" 
+				dataProvider="{model.personsArrCollection}" labelFunction="concatName" 
+				change="changePerson()" creationComplete="{loadCurrentPerson()}" />
+			<mx:Label text="Select" right="{statusList.width+10}" verticalCenter="0"/>
+			<mx:ComboBox id="statusList" right="0" visible="true" includeInLayout="{statusList.visible}" 
+				dataProvider="{model.taskStatusColl}" labelField="statusLabel" change="onStatusChange()"/>		
+		</mx:Canvas>
+		
+		<mx:VBox width="{width - buzCard.width-40}" height="61" top="10" left="40"  verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Text text="{model.currentTasks.workflowtemplateFK.taskLabel}" visible="{Boolean(model.workflowState)}" 
+				fontSize="14" id="todoTaskLabel" styleName="mainProjectHeader"/>
+			<mx:Label text="{model.currentProjects.projectName}" visible="{Boolean(model.workflowState)}" 
+					  id="mytext" width="{width - buzCard.width-75}" color="#b9b717" styleName="mainProjectHeader"  selectable="false"/>
+		</mx:VBox>
+		<mx:VRule strokeWidth="1" left="35" height="69" top="2" width="1" visible="{Boolean(model.workflowState)}"/>
+		
+		<mx:Button  styleName="backTODO" click="setToDoName()" top="2" left="0"
+			id="backTotoDoList" visible="{Boolean(model.workflowState)}"/>
+		<mx:Button id="MainProjectView" styleName="backMPV"  top="{4+backTotoDoList.height}" left="0"
+			click="openMainProject()" visible="{Boolean(model.workflowState)}"/>	
+	
+			<mx:VBox width="100%" height="100%" top="75" left="5" right="5" bottom="5" 
+				 verticalAlign="bottom" styleName="bgBorderContainer"
+				verticalGap="0" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0">
+				<mx:ViewStack id="stack" selectedIndex="{ getView( model.workflowState ) }" paddingBottom="0" paddingTop="0" paddingRight="0" 
+					          paddingLeft="0" width="100%" height="100%" change="onStackChildIndexChange()">
+					          
+						<mx:Canvas width="100%" height="100%">
+					    	<view:ToDoListComp id="toDoListComp" width="100%" height="100%" dataProvider="{ model.taskCollection }" />      	
+					    </mx:Canvas>
+					    
+					    <mx:Canvas width="100%" height="100%">
+							<todo:OrderReceptionScreen  id="OrderReceptionScreen" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:TechnicalPreparationScreen id="TechnicalPreparationScreen" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ProcessValidationScreen id="ProcessValidationScreen" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:TechnicalPreparationScreen id="PreparationTechniqueScreen" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:TechnicalPreparationScreen id="RealisationScreen" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="ContolScreen" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="RelectureScreen" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="LancementCorrectionScreen" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="RealisationCorrectionScreen" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="ControlCorrection" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ContolScreen id="RelecutreCorrection" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:DepartLivration id="LancementLivration" />
+						</mx:Canvas>	
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:DepartLivration id="DepartLivration" />
+						</mx:Canvas>
+							
+						<mx:Canvas width="100%" height="100%">
+							<todo:CloseProjectScreen id="CloseProjectScreen" />
+						</mx:Canvas>
+							
+						<mx:Canvas width="100%" height="100%">
+							<todo:NewOrderScreen id="NewOrderScreen"  projectProperty="{ model.propertiespresetsCollection }"/>
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:ViewMessageTask archive="updateTask()" id="ViewMessageTask"  messageFileDownload="{ model.messageFileCollection }" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:CloseScreen id="CloseScreenView" />
+						</mx:Canvas>
+						
+						<mx:Canvas width="100%" height="100%">
+							<todo:StandByScreen updateTask="updateTask()" id="standByScreenView" />
+						</mx:Canvas>
+							
+						<mx:Canvas width="100%" height="100%">
+							<todo:IndPDFScreen id="IndPDFScreen"  archive="onArchiveVisible()"/>
+						</mx:Canvas>
+				</mx:ViewStack>	 
+		 
+				<view:WindowShade label="File Upload" opened="false" width="100%" visible="{ model.fileAccess }" includeInLayout="{ model.fileAccess }">
+					<view:Upload id="uploadComp" height="170" basicFileCollection="{ model.basicFileCollection }"
+						         basicFileVisible="{ ( model.currentUserProfileCode == 'OPE' ) }"/>
+				</view:WindowShade>		         
+			
+				<mx:HBox id="commentBox" verticalAlign="middle" width="100%" height="60" horizontalGap="10" paddingRight="10"
+					visible="false" includeInLayout="false">
+					<mx:Text text="{model.loc.getString('commentsFrom')+ getPerson(model.currentTasks)}" width="110" textAlign="right"/>
+					<mx:TextArea id="commentArea" editable="false" htmlText="{commentText}" styleName="textAreaReader" 
+					width="50%" height="80%" horizontalCenter="0"/>
+					<mx:Text text="{model.loc.getString('comments')}" width="110" textAlign="right"/>
+					<mx:TextArea id="comments"  change="{model.currentTaskComment=comments.text}" 
+					width="50%" height="80%" horizontalCenter="0"/>
+				</mx:HBox>
+				<mx:HBox width="100%"  includeInLayout="{Boolean(model.workflowState)}" visible="{Boolean(model.workflowState)}" verticalAlign="middle">
+					<mx:Label text="{model.loc.getString('submitOption')}" visible="{Boolean(prevTask.label.length)}"/>
+					<mx:Button id="prevTask" styleName="previousBtn" label="{model.workflowstemplates.optionPrevLabel}" includeInLayout="{Boolean(prevTask.label.length)}" visible="{Boolean(prevTask.label.length)}" click="checkAvailableTasks(event,false)"/>
+					<mx:Button id="nextTask" styleName="nextBtn" label="{model.workflowstemplates.optionNextLabel}" includeInLayout="{Boolean(nextTask.label.length)}" visible="{Boolean(nextTask.label.length)}" click="checkAvailableTasks(event,true)"/>
+					<mx:Button id="loopTask" styleName="loopBtn" label="{model.workflowstemplates.optionLoopLabel}" includeInLayout="{Boolean(loopTask.label.length)}" visible="{Boolean(loopTask.label.length)}" click="checkAvailableTasks(event,true)"/>
+					<mx:Button id="jumpTask" styleName="jumbBtn" label="{model.workflowstemplates.optionJumpLabel}" includeInLayout="{Boolean(jumpTask.label.length!=1)}" visible="{Boolean(jumpTask.label.length!=1)}" click="checkAvailableTasks(event,true)"/>
+					<mx:Button id="Archive"	label="archive"	includeInLayout="{ _archiveVisibility }" visible="{ _archiveVisibility }" click="onArchiveClick()"/>
+				</mx:HBox>          						
+			</mx:VBox>
+			
+	</mx:Canvas>
+</mx:Canvas>

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Events" table="events">
+        <id name="eventId" type="integer" column="event_ID">
+            <generator class="increment" />
+        </id>
+        <property type="date" name="eventDateStart">
+            <column name="event_date_start" />
+        </property>
+        <property name="eventType">
+            <column name="event_type" />
+        </property>
+        <property name="personFk">
+            <column name="person_FK" />
+        </property>
+        <property name="taskFk">
+            <column name="task_FK" />
+        </property>
+        <property name="projectFk">
+            <column name="project_FK" />
+        </property>
+        <property name="details">
+            <column name="details" />
+        </property>
+        <property name="eventName">
+			<column name="event_Name" />
+		</property>
+    </class> 
+    <query name="Events.findById">
+        select e from Events e, Teamlines t, Projects p where t.projectID = p.projectId and e.projectFk = p.projectId and t.personID = ?
+    </query>
+    <query name="Events.findByIdName">
+        select e from Events e where e.projectFk = ? and e.eventName = ?
+    </query>
+    <query name="Events.findByDate">
+        select u from Events u where u.eventDateStart = ?
+    </query>
+    <query name="Events.findByDateBetween">
+        select u from Events u where u.eventDateStart&gt;=? and  u.eventDateStart-1 &lt;=?
+    </query>
+</hibernate-mapping>

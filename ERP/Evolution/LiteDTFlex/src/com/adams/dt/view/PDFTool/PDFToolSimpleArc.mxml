@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="noteUpdater()" 
+	xmlns:PDFTool="com.adams.dt.view.PDFTool.*" width="100%" height="100%" verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" creationPolicy="all" >
+	<mx:Binding destination="curTask" source="model.currentProjects.finalTask.workflowtemplateFK.taskCode"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import mx.rpc.IResponder;
+			import com.adams.dt.model.vo.EventStatus;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.PhasesEvent;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.event.OpenToDoListScreenEvent; 
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Tasks;
+		
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import mx.effects.easing.Circular;
+			import mx.effects.Resize;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import mx.events.ListEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.ModelLocator;
+			import mx.events.ResizeEvent;
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var mainArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var tempArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+			public var miniReaderPropertyStatus:Boolean = false;
+			
+			[Bindable]
+			private var curTask:String = "";
+			
+			 private var shadow:DropShadowFilter = new DropShadowFilter();
+			 private var _imgURL:String;
+			 public function get imgURL():String
+			 {
+			 	return _imgURL;
+			 }
+			 public function set imgURL(value:String):void
+			 {
+			 	displayINDScreen = false;
+			 	pdfTool.img1URL = "";
+			 	pdfTool.img2URL = value; 
+			 	_imgURL = value;
+			 	//_dataProvider=new ArrayCollection(new Array(value))
+			 	dataProvideFunction()
+			 }
+			 public function imgURLs(img1:String, img2:String):void
+			 {
+			 	trace("Compare ::: imgURLs");
+			 	displayINDScreen = false;
+			 	pdfTool.img1URL = img1;
+			 	pdfTool.img2URL = img2; 
+			 	_imgURL = img1;
+			 	//_dataProvider=new ArrayCollection(new Array(img1))
+			 	dataProvideFunction()
+			 }
+			private function noteUpdater():void{
+				 shadow.distance = 4;
+				 shadow.blurX=shadow.blurY=6;
+				 shadow.alpha=0.8;
+				 shadow.angle = -90;
+				 dataProvideFunction(); 
+			} 
+			[Bindable]
+			private var rowCo:Number=1;
+			[Bindable]
+			private var columnCo:Number=1;
+			private var _dataProvider:ArrayCollection = new ArrayCollection();
+			[Bindable(event="dataProviderChange")]
+			public function set dataProvider (value:ArrayCollection):void
+			{
+				if (value != _dataProvider)
+				{
+					if (_dataProvider)
+					{
+						_dataProvider.removeEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange);
+					}
+					
+					_dataProvider = value;
+					if (_dataProvider)
+					{
+						_dataProvider.addEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange,false,0,true);
+					}
+					dispatchEvent (new Event ("dataProviderChange"));
+				} 
+				dataProvideFunction()
+			}
+			
+						
+			public function get dataProvider ():ArrayCollection
+			{
+				return _dataProvider;
+			}
+			private function onDataProviderChange (event:CollectionEvent):void
+			{
+				if ((event.kind == CollectionEventKind.ADD) ||
+					(event.kind == CollectionEventKind.REMOVE) ||
+					(event.kind == CollectionEventKind.REPLACE) ||
+					(event.kind == CollectionEventKind.RESET))
+				{
+					dispatchEvent (new Event ("dataProviderChange"));
+					dataProvideFunction()
+				}
+			}
+			
+			[Bindable]
+			private var currentSelectedPage:Number=0;
+			
+			[Bindable(event="dataProviderChange")]
+			private function dataProvideFunction():void{ 
+				model.pdfTileList = true;
+				BackBtn.visible = true;
+				PageNav.visible = true;
+				/***
+				 *  dataProvider length equalto 0. file not found label disply 
+				 *  otherwise pdf page disply
+				 ***/
+				var pdfLength:Number = dataProvider.length;
+				subProfileFileNotfound.visible=(pdfLength == 0)?true:false; 
+				subProfileFileNotfound.includeInLayout=(pdfLength == 0)?true:false;
+				trace("dataProvider.length : "+dataProvider.length)
+				model.pdfDetailVO.notesModificationHistoryAC = new ArrayCollection();
+			    if(dataProvider.length==1){			    	
+			    	if(!model.pdfDetailVO.localeBool){
+			    		model.pdfDetailVO.localeBool = true;
+			    		tileList.selectedItem = dataProvider.getItemAt(0);
+			    		tileList.selectedIndex = 0;
+			    		currentSelectedPage = 0;
+			    	}
+			    	tileList.rowCount=1;tileList.columnCount=1;
+			    	model.pdfTileList = false;
+			    	BackBtn.visible = false;
+			    	PageNav.visible = false;
+			    }
+                if(dataProvider.length==2){tileList.rowCount=1;tileList.columnCount=2;}
+                if(dataProvider.length>2 && dataProvider.length<=4){tileList.rowCount=2;tileList.columnCount=2;}
+                if(dataProvider.length>4 && dataProvider.length<=6){tileList.rowCount=2;tileList.columnCount=3;}
+                if(dataProvider.length>6 && dataProvider.length<=9){tileList.rowCount=3;tileList.columnCount=3;}
+                if(dataProvider.length>9 && dataProvider.length<=12){tileList.rowCount=3;tileList.columnCount=4;}
+                if(dataProvider.length>12){tileList.rowCount=3;tileList.columnCount=5;}
+                if(dataProvider.length>0){
+                	model.pdfloader = false;
+                }else{                	
+                	model.pdfloader = true;
+                }
+                dataProvider.refresh();
+			} 
+			private function tileList_itemClick(evt:ListEvent):void {
+				model.pdfTileList = false;
+				var event : CommentEvent = new CommentEvent(CommentEvent.GET_COMMENT);
+				if(model.compareTask){
+					if(model.compareTask.taskId != 0&&model.comaparePdfFileCollection.length>0){
+						
+						model.compareTask.taskFilesPath = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).filePath//TileList(evt.currentTarget).selectedItem.filePath;
+						event.compareFileFk = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).remoteFileFk;
+					}
+				}
+				currentSelectedPage = TileList(evt.currentTarget).selectedIndex;
+				if(model.currentTasks && !miniReaderPropertyStatus)
+				{	
+					model.currentTasks.previousTask.taskFilesPath = TileList(evt.currentTarget).selectedItem.filePath;
+				}
+				else
+				{
+					pdfTool.img2URL = TileList(evt.currentTarget).selectedItem.filePath; 	
+				}
+				model.currentSwfFile = FileDetails(TileList(evt.currentTarget).selectedItem);
+				event.fileFk = model.currentSwfFile.remoteFileFk;	
+				CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}
+			private function pageNavigation(page:Number):void
+			{
+				trace("Page ; "+page);
+				model.pdfTileList = false;
+				var event : CommentEvent = new CommentEvent(CommentEvent.GET_COMMENT);
+				if(model.compareTask){
+					if(model.compareTask.taskId != 0&&model.comaparePdfFileCollection.length>0){
+						
+						model.compareTask.taskFilesPath = FileDetails(model.comaparePdfFileCollection.getItemAt(page)).filePath//TileList(evt.currentTarget).selectedItem.filePath;
+						event.compareFileFk = FileDetails(model.comaparePdfFileCollection.getItemAt(page)).remoteFileFk;
+					}
+				}
+				currentSelectedPage = page;
+				if(model.currentTasks && !miniReaderPropertyStatus)
+				{
+					model.currentTasks.previousTask.taskFilesPath = dataProvider[page].filePath;
+				}
+				else
+				{
+					pdfTool.img2URL = dataProvider[page].filePath; 	
+				}	
+				model.currentSwfFile = FileDetails(dataProvider[page]);
+				event.fileFk = model.currentSwfFile.remoteFileFk;	
+				CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}
+			private function checkFileExist(path:String):Boolean{
+				var file:File = new File(path);
+				return file.exists;
+			} 
+			 private function onDownLoadComplete(fileObj:FileDetails):void {
+	        	var downLoadedfile:File = new File(fileObj.filePath); 
+	           	var copyToLocation:File = File.documentsDirectory.resolvePath(fileObj.fileName);
+	           	if(!copyToLocation.exists){
+	        		downLoadedfile.copyTo(copyToLocation,true);
+	           	}
+	           	pdfTool.pdfURL = copyToLocation.nativePath;
+	       	}
+	       	private function onComparePdfChange():void{
+	       		var tasks:Tasks = comparePdf.selectedItem.tasks;
+	       		if(tasks!=null){
+	       			model.compareTask = tasks;
+		       		var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+					if(model.compareTask.fileObj!=null){			
+						var result:SQLResult = delegate.getSwfFileDetails(model.compareTask.fileObj);
+						var array:Array = [];
+						array = result.data as Array;
+						if(array!=null){
+							model.comaparePdfFileCollection = new ArrayCollection(array);
+							model.compareTask.taskFilesPath = model.comaparePdfFileCollection.getItemAt(0).filePath;
+							
+						}else{
+							var fileEvents:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_SWFFILEDETAILS);
+							fileEvents.fileDetailsObj = model.compareTask.fileObj;
+							CairngormEventDispatcher.getInstance().dispatchEvent(fileEvents);
+							model.loadComareTaskFiles = true;
+						}
+		       		}
+	       		}
+	       	}
+	       	
+	       	private function onNotesChangesSave():void
+	       	{
+	       		var str:String = "";
+	       		for(var i:Number=0;i<model.pdfDetailVO.notesModificationHistoryAC.length;i++)
+	       		{
+	       			str += "\nName : " + model.pdfDetailVO.notesModificationHistoryAC.getItemAt(i).name  + "\n";
+	       			str += "Title : " + model.pdfDetailVO.notesModificationHistoryAC.getItemAt(i).title + "\n";
+	       			str += "Comment : " + model.pdfDetailVO.notesModificationHistoryAC.getItemAt(i).desc + "\n";
+	       			str += "Status : " + model.pdfDetailVO.notesModificationHistoryAC.getItemAt(i).status + "\n";
+	       			str += "============================";
+	       		}
+	       		details = str;
+	       					
+	       		var messageOperator:Tasks = createMessage( 'OPE' );
+			 	messageOperator.personFK = Utils.getProfilePerson( 'OPE' ).personId;
+				var messageOperatorEvent:TasksEvent = new TasksEvent( TasksEvent.CREATE_MSG_TO_OPE_TASKS );
+				messageOperatorEvent.tasks = messageOperator;
+				messageOperatorEvent.dispatch();
+				
+				
+	       		model.pdfDetailVO.notesModificationHistoryAC = new ArrayCollection();
+	       	}
+	       	
+	       	
+	       	private var details:String = '';
+	       	private function createMessage( profile:String ):Tasks {
+			var taskData:Tasks = new Tasks();
+			taskData.taskId = NaN;
+			taskData.projectObject = model.currentProjects;
+			
+			var domain:Categories = Utils.getDomains( model.currentProjects.categories );
+			model.messageDomain = domain;
+			
+			var by:ByteArray = new ByteArray();
+			var sep:String = "&#$%^!@";
+			var replySubject:String = model.currentProjects.projectName;
+			var str:String = model.person.personFirstname + sep + replySubject + sep + details + sep + model.person.personId + "," + model.person.defaultProfile;
+			by.writeUTFBytes( str );
+			taskData.taskComment = by;
+			
+			var status:Status = new Status();
+			status.statusId = TaskStatus.WAITING;
+			taskData.taskStatusFK = status.statusId;
+			taskData.tDateCreation = model.currentTime;
+			taskData.workflowtemplateFK = getMessageTemplate( getProfileId( profile ) );	
+			taskData.tDateEndEstimated = Utils.getCalculatedDate( model.currentTime, taskData.workflowtemplateFK.defaultEstimatedTime ); 
+			taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;
+			
+			return taskData;
+		}
+		
+		private function getMessageTemplate( pro:int ):Workflowstemplates {
+			var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection( model.messageTemplatesCollection, model.currentProjects.workflowFK );
+			for each( var item:Workflowstemplates in  messageTemplateCollection ) {
+				if( item.profileFK == pro ) {
+					return item;
+				}
+			}
+			return null;
+		}
+		private function getProfileId( str:String ):int {
+			for each( var pro:Profiles in model.teamProfileCollection ) {
+				if( pro.profileCode == str ) {
+					return pro.profileId;
+				}
+			}
+			return 0;
+		}
+	       
+	       	[Bindable]
+	       	public var displayINDScreen:Boolean;
+		]]>
+	</mx:Script>
+	<PDFTool:PDFTool id="pdfTool" img1URL="{model.compareTask.taskFilesPath}" 
+		img2URL="{displayINDScreen ? model.currentTasks.taskFilesPath : model.currentTasks.previousTask.taskFilesPath}"
+		dataProvider="{model.pdfDetailVO.commentListArrayCollection}"
+		miniReaderPropertyStatus="{miniReaderPropertyStatus}"/>
+	<mx:ComboBox visible="{model.compareTasksCollection.length>2?true:false}" includeInLayout="{visible}" id="comparePdf" width="120" left="10" top="10" dataProvider="{model.compareTasksCollection}" change="onComparePdfChange()" labelField="label" selectedIndex="{model.compareTasksCollection.length-1}"/>	
+	<mx:Button id="BackBtn"
+			useHandCursor="true"
+			buttonMode="true" x="{(comparePdf.visible)?125:0}" y="10"
+			label="Back"
+			click="{model.pdfTileList = true}"/>
+	<mx:HBox bottom="10" left="40" >
+		<mx:Button id="sendNoteChangesBtn" label="Save" 
+				click="onNotesChangesSave();"
+				enabled="{(model.pdfDetailVO.notesModificationHistoryAC.length!=0)}"
+				includeInLayout="{sendNoteChangesBtn.visible}" visible="{((model.currentUserProfileCode != 'OPE')?( 
+							 curTask == OpenToDoListScreenEvent.EVENT_OPEN_REALISATIONSCREEN || 
+							 curTask == OpenToDoListScreenEvent.EVENT_OPEN_REALISATIONSCREENCORRECTION || 
+							 curTask == OpenToDoListScreenEvent.EVENT_OPEN_REALISATIONCORRECTIONSCREEN ||
+							 curTask == OpenToDoListScreenEvent.EVENT_OPEN_REALISATIONCORRECTIONINCOMPLETESCREEN):false)}"/>
+		<mx:HBox id="PageNav" >
+			<!--<mx:TextInput text="{currentSelectedPage},{(currentSelectedPage != 0)},{(currentSelectedPage != dataProvider.length-1)}"/>-->
+			<mx:Button styleName="prevPageBtn"
+				useHandCursor="{(currentSelectedPage != 0)}"
+				buttonMode="{(currentSelectedPage != 0)}"
+				enabled="{(currentSelectedPage != 0)}"
+				click="pageNavigation(--currentSelectedPage);"
+				toolTip="Previous Page"/>
+			<mx:Button styleName="nextPageBtn"
+				useHandCursor="{(currentSelectedPage != dataProvider.length-1)}"
+				buttonMode="{(currentSelectedPage != dataProvider.length-1)}" 
+				enabled="{(currentSelectedPage != dataProvider.length-1)}"
+				click="pageNavigation(++currentSelectedPage);"
+				toolTip="Next Page"/>
+		</mx:HBox>	
+	
+	</mx:HBox>	
+	<!--<mx:TileList id="tileList" visible="{model.pdfTileList}" includeInLayout="{tileList.visible}"
+		itemRenderer="{new ClassFactory(PDFTileItemRenderer)}"
+		liveScrolling="true"
+		themeColor="haloSilver"
+		verticalScrollPolicy="auto" dataProvider="{dataProvider}"
+		width="{this.width}" height="{this.height}" backgroundColor="#333333" color="#FFFFFF" textRollOverColor="#000000" textSelectedColor="#000000"
+		itemClick="tileList_itemClick(event);"  selectionColor="#CCCCCC" rollOverColor="#D6D6D6"/>-->
+	<mx:TileList id="tileList" visible="{model.pdfTileList}" includeInLayout="{tileList.visible}"
+		itemRenderer="{new ClassFactory(PDFTileItemRenderer)}"
+		liveScrolling="true"
+		styleName="pdfPageTileList"		
+		verticalScrollPolicy="auto" dataProvider="{dataProvider}"
+		width="{this.width}" height="{this.height}" 
+		itemClick="tileList_itemClick(event);" />
+	<mx:Label id="subProfileFileNotfound" text="File Not Found" fontSize="11" fontWeight="bold" verticalCenter="0" horizontalCenter="0"/>
+</mx:Canvas>

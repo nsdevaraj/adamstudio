@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Tasks" table="tasks">
+        <id name="taskId" type="integer" column="task_ID">
+            <!-- <generator class="increment" /> --> 
+            <generator class="sequence">
+    			<param name="sequence">TASKS_TASK_ID_SEQ</param>
+  			</generator>            
+        </id>
+        <property name="taskCommentBlob">
+            <column name="task_comment" />
+        </property>
+        <property name="tDateCreation">
+            <column name="t_date_creation" />
+        </property>
+        <property name="tDateInprogress">
+            <column name="t_date_inprogress" />
+        </property>
+        <property name="tDateEnd">
+            <column name="t_date_end" />
+        </property>
+        <property name="tDateEndEstimated">
+            <column name="t_date_end_estimated" />
+        </property>
+        <property name="tDateDeadline">
+            <column name="t_date_deadline" />
+        </property>
+        <property name="waitingTime">
+            <column name="waiting_time" />
+        </property>
+        <property name="onairTime">
+            <column name="onair_time" />
+        </property>
+        <property name="estimatedTime">
+            <column name="estimated_time" />
+        </property>
+        <property name="deadlineTime">
+            <column name="deadline_time" />
+        </property>
+        <property name="wftFK">
+            <column name="workflow_template_FK" />
+        </property>
+        <property name="personFK">
+            <column name="person_FK" />
+        </property> 
+        <property name="taskStatusFK">
+            <column name="task_status_FK" />
+        </property>
+        <property name="projectFk">
+            <column name="project_FK" />
+        </property>
+        <many-to-one name="fileObj" class="com.adams.dt.pojo.FileDetails" column="task_files_path" cascade="none" lazy="false" />
+        <many-to-one name="previousTask" class="com.adams.dt.pojo.Tasks" column="previous_task_FK" cascade="none" lazy="false" />
+        <many-to-one name="nextTask" class="com.adams.dt.pojo.Tasks" column="next_task_FK" cascade="none" lazy="false" />
+    </class> 
+    <query name="Tasks.findById">
+    select u from Tasks u where u.taskId in (select distinct t.taskId from Tasks t, Workflowstemplates w, Status s, 
+                                Grouppersons go, Grouppersons gu, Teamlines tl, Groups g    
+                                where t.taskStatusFK = s.statusId and s.type = 'task_status' 
+                                 and (s.statusLabel='waiting' or s.statusLabel='in_progress' or s.statusLabel='stand_by') and 
+                                t.wftFK =w.workflowTemplateId  and go.groupFk !=g.groupId
+                                and go.groupFk = gu.groupFk and g.authLevel='ROLE_COM'
+                        and tl.personID = go.personFk
+                        and tl.projectID = t.projectFk 
+                        and tl.profileID = w.profileFK  
+                        and gu.personFk = ? )
+    </query>
+    <query name="Tasks.findRssListById">
+    select p.projectName, u.taskCommentBlob, u.tDateCreation, u.taskId from Tasks u, Projects p where p.projectId = u.projectFk and u.taskId in (select distinct t.taskId from Tasks t, Workflowstemplates w, Status s, 
+                                Grouppersons go, Grouppersons gu, Teamlines tl, Groups g    
+                                where t.taskStatusFK = s.statusId and s.type = 'task_status' 
+                                 and (s.statusLabel='waiting' or s.statusLabel='in_progress' or s.statusLabel='stand_by') and 
+                                t.wftFK =w.workflowTemplateId  and go.groupFk !=g.groupId
+                                and go.groupFk = gu.groupFk and g.authLevel='ROLE_COM'
+                        and tl.personID = go.personFk
+                        and tl.projectID = t.projectFk 
+                        and tl.profileID = w.profileFK  
+                        and gu.personFk = ? )
+    </query>
+    <query name="Tasks.findByDate">
+        select u from Tasks u, Projects p, Status s where u.tDateInprogress &lt;= ? and u.projectFk = p.projectId and p.projectStatusFK = s.statusId and s.type = 'project_status' and (s.statusLabel='waiting' or s.statusLabel='in_progress' or s.statusLabel='urgent'))
+    </query>
+    <query name="Tasks.findByDateBetween">
+        select u from Tasks u where u.tDateCreation&gt;=? and  u.tDateCreation-1 &lt;=?
+    </query>
+    <query name="Tasks.findByDateEnd">
+        select u from Tasks u where u.tDateEnd = ?
+    </query>
+    <query name="Tasks.findByDateBetweenEnd">
+        select u from Tasks u where u.tDateEnd&gt;=? and  u.tDateEnd-1 &lt;=?
+    </query>
+    <query name="Tasks.findTasksList">
+        select u from Tasks u where u.projectFk=?
+    </query>
+    <query name="Tasks.findMailList">
+        select u from Tasks u where u.taskId in (select distinct t from Tasks t,Status s where t.taskStatusFK = s.statusId and s.type = 'task_status' and (s.statusLabel='waiting' or s.statusLabel='in_progress' or
+        s.statusLabel='stand_by') and t.taskId = ?)
+    </query> 
+    <query name="Tasks.findByTaskId">
+        select u from Tasks u where u.taskId = ?
+    </query>     
+    <query name="Tasks.findMaxTaskId">
+    	select  t.taskId, t.projectFk, t.tDateCreation, t.tDateEnd from Tasks t where t.taskId = (select max(t1.taskId) from Tasks t1 where t1.personFK=? and t1.taskStatusFK=10) 
+    </query> 
+    <query name="Tasks.findByEmailId">
+        select u from Tasks u where u.taskId in (select distinct t.taskId from Tasks t, Workflowstemplates w, Status s, Grouppersons go, Grouppersons gu, Teamlines tl, Persons per, Events ev    
+                        where t.taskStatusFK = s.statusId 
+                        and s.type = 'task_status' 
+                        and (s.statusLabel='waiting' or s.statusLabel='in_progress' or s.statusLabel='stand_by') 
+                        and t.wftFK = w.workflowTemplateId 
+                        and go.groupFk = gu.groupFk
+                        and tl.personID = go.personFk
+                        and tl.projectID = t.projectFk 
+                        and tl.profileID = w.profileFK  
+                        and gu.personFk = per.PersonId 
+                        and t.taskId = ev.taskFk and ev.eventName = ?)
+    </query>
+   
+</hibernate-mapping>

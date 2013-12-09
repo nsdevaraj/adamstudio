@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	xmlns:view="com.adams.dt.view.components.*" styleName="bgContainer"
+	 creationComplete="onCreationComplete()" >
+	 <mx:Script>
+	 	<![CDATA[
+	 		import com.adams.dt.event.generator.SequenceGenerator;
+	 		import mx.rpc.IResponder;
+	 		import com.adams.dt.event.TeamlineEvent;
+	 		import com.adams.dt.event.TasksEvent;
+	 		import com.adams.dt.event.PropertiespjEvent;
+	 		import com.adams.dt.event.ProjectsEvent;
+	 		import com.adams.dt.event.PhasesEvent;
+	 		import com.adams.dt.model.vo.Phases;
+	 		import com.adams.dt.event.PDFTool.CommentEvent;
+	 		import com.adams.dt.event.FileDetailsEvent;
+	 		import com.adams.dt.event.EventsEvent;
+	 		import com.adams.dt.model.ModelLocator; 
+	 	 	[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+		
+	 		private function onCreationComplete():void{
+	 			selectedDateVal.selectedDate = new Date();
+	 			
+	 		}
+	 		private function onDateChange():void{
+	 			model.presetTime = selectedDateVal.selectedDate;
+	 			model.presetTime.hours = hour.value;
+	 			model.presetTime.minutes = time.value; 
+	 		}
+	 		private function setDebug():void{
+	 			model.debug = debug.selected;
+	 		}
+	 		private function deleteAllFn():void{
+				var eventsEvent:EventsEvent = new EventsEvent(EventsEvent.EVENT_DELETEALL_EVENTS);
+	 			var fileDetailEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_DELETEALL_FILEDETAILS);
+	 			var notesEvent:CommentEvent = new CommentEvent(CommentEvent.DELETEALL_COMMENT);
+	 			var phaseEvent:PhasesEvent = new PhasesEvent(PhasesEvent.EVENT_DELETEALL_PHASES);
+	 			var projectEvent:ProjectsEvent = new ProjectsEvent(ProjectsEvent.EVENT_DELETEALL_PROJECTS);
+	 			var propertiespjEvent:PropertiespjEvent = new PropertiespjEvent(PropertiespjEvent.EVENT_DELETEALL_PROPERTIESPJ);
+	 			var taskEvent:TasksEvent = new TasksEvent(TasksEvent.EVENT_DELETEALL_TASKS);
+	 			var teamlineEvent:TeamlineEvent = new TeamlineEvent(TeamlineEvent.EVENT_DELETEALL);
+	 			var eventsArr:Array = [eventsEvent,fileDetailEvent,notesEvent,phaseEvent,projectEvent,propertiespjEvent,taskEvent,teamlineEvent]; 
+	 			var handler:IResponder = null;
+	 			var seq:SequenceGenerator = new SequenceGenerator(eventsArr,handler)
+	  			seq.dispatch();
+	 		}
+	 		
+	 	]]>
+	 </mx:Script>
+	 <mx:Form  verticalCenter="0" horizontalCenter="0">
+	 	<mx:FormItem label="Select Date">
+			<mx:DateField id="selectedDateVal" change="onDateChange()" yearNavigationEnabled="true" monthNames="{ model.monthNames }"/>	 		
+	 	</mx:FormItem>
+	 	<mx:FormItem label="Select Time">
+	 	<mx:HBox>
+			<mx:NumericStepper id="hour" minimum="1" maximum="24" value="6"/>
+			<mx:Label text=":"/>
+			<mx:NumericStepper id="time" minimum="1" maximum="59"/>	
+	 	</mx:HBox>
+	 	</mx:FormItem>
+	 	<mx:FormItem label="Enable Set Time">
+	 		<mx:CheckBox id="debug" change="setDebug()"/>
+	 	</mx:FormItem>
+	 	<mx:FormItem label="DeleteAll">
+	 		<mx:Button id="deleteAll" click="deleteAllFn()"/>
+	 	</mx:FormItem>
+	 	
+	 </mx:Form>
+</mx:Canvas>

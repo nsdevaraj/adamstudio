@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:components="com.adams.scrum.views.components.*">
+	<fx:Script>
+		<![CDATA[ 			 
+			import com.adams.scrum.models.vo.CurrentInstance;
+			import com.adams.scrum.models.vo.Sprints;
+			import com.adams.scrum.models.vo.Stories;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.ArrayCollection;
+			
+			[Inject]
+			public var currentInstance:CurrentInstance; 
+			
+			
+			/** <p>
+			 * Initiate of the renderer object handled
+			 * </p>
+			 */
+			[Bindable]
+			private var story:Stories;
+			
+			protected function editButton_clickHandler(event:MouseEvent):void
+			{
+				Object(owner).renderSignal.dispatch(NativeList.STORYMODIFY,story);
+			}
+			
+			protected function deleteButton_clickHandler(event:MouseEvent):void
+			{
+				Object(owner).renderSignal.dispatch(NativeList.STORYDELETE,story);
+			}
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if(value){
+					story= value as Stories;
+					if(story.processed){
+						asStoryLbl.text ='';
+						storyId.text = story.storyId.toString();
+						if(story.productObject)if(story.productObject.productRoles) asStoryLbl.text = story.productObject.productRolesArr[story.asLabel];
+						iWantStoryLbl.text = story.IWantToLabel;
+						soThtiCanStoryLbl.text = story.soThatICanLabel;
+						if(story.versionObject)
+						versionStoryLbl.text = story.versionObject.versionLbl;
+						storypoints.text = story.storypoints.toString();
+						storyPriority.text = Utils.findPriority(story).toString();
+						if(story.taskSet.length!=0){
+							storyTask.text = "Yes";
+						}else{
+							storyTask.text = "No";
+						}
+						if(currentSprint){
+							buttonOnOffId.label = getEnabled(currentSprint.storySet);
+							callLater( setLabel,[currentSprint.storySet]);
+						}else{
+							buttonOnOffId.label = 'Select'	
+						}
+						statusBtn.styleName = Utils.getStatusSkinName(story.storyStatusFk,Utils.STORY);
+						
+						editButton.visible = visibleEditButton();
+						buttonOnOffId.visible = visibleAddRemove();
+						deleteButton.visible = visibleRemoveButton();
+					}
+				}
+			}
+			protected function setLabel(storySet:ArrayCollection):void{
+				buttonOnOffId.label = getEnabled(storySet);
+			}
+				
+			/**
+			 * The function to handle story select event
+			 * the current story is selected for the current selected sprint
+			 * <p>
+			 * In addition, it dispatches signal to the owner of the renderer
+			 * </p>
+			 */				
+			protected function onBtnChangeHandler(event:Event):void
+			{				
+				if(currentSprint){
+					if(buttonOnOffId.label == "Add"){ 
+						Object(owner).renderSignal.dispatch(NativeList.STORYSPRINTSELECTED,story);
+					}else{ 
+						Object(owner).renderSignal.dispatch(NativeList.STORYDESELECTED,story);
+					} 
+				}
+			}
+			
+			[Bindable]
+			private static var _currentSprint:Sprints;
+			 
+			public static function get currentSprint():Sprints
+			{
+				return _currentSprint;
+			}
+			
+			public static function set currentSprint(value:Sprints):void
+			{ 
+				_currentSprint =value;	 
+			}
+			
+			protected function getEnabled(storySet:ArrayCollection):String
+			{
+				var bool:String = 'Add'; 
+				for each(var iterStory:Stories in storySet){
+					if(iterStory.storyId == story.storyId)
+					{
+						bool ='Remove';
+						break;
+					}
+				}	 
+				return bool;
+			}
+			private function visibleRemoveButton():Boolean{				
+				return Object(owner).removeRendererProperty;
+			}
+			private function visibleEditButton():Boolean{				
+				return Object(owner).editRendererProperty;
+			}
+			private function visibleAddRemove():Boolean{	
+				return Object(owner).addRemoveRendererProperty;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:Group width="100%" height="100%">
+		<s:HGroup verticalAlign="middle" top="1" bottom="0" horizontalAlign="left" left="5" right="5" variableColumnWidth="false" columnWidth="100">
+			<s:Label id="storyId"  
+					 width="30" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<s:HGroup>
+			<s:Button id="editButton" width="50" label="Edit" styleName="EditIcon" click="editButton_clickHandler(event)"
+					 visible="{visibleEditButton()}" />
+			</s:HGroup>
+			<s:Label id="asStoryLbl"  
+					 width="100%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<s:Label id="iWantStoryLbl"  
+					 width="100%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			
+			<s:Label id="soThtiCanStoryLbl"  
+					 width="100%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<s:Label id="versionStoryLbl"  
+					 width="100%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<s:Label id="storypoints" />
+			<s:Label id="storyPriority" />
+			<s:Group>
+				<s:Button id="statusBtn"/>
+			</s:Group>
+			<s:Label id="storyTask" />
+			<s:Group>
+				<s:Button width="50" id="buttonOnOffId" label="{getEnabled(_currentSprint.storySet)}" 
+						  click="onBtnChangeHandler(event)" visible="{visibleAddRemove()}" />
+			</s:Group>	
+			<s:HGroup> 
+				<s:Button id="deleteButton" width="50" label="Delete" click="deleteButton_clickHandler(event)"
+						  styleName="DeleteSkin" visible="{visibleRemoveButton()}" />
+			</s:HGroup>
+		</s:HGroup>
+	</s:Group>
+</s:ItemRenderer>

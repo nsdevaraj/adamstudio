@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	<mx:Image id="img" maintainAspectRatio="true" horizontalAlign="center" width="100%" height="100%" source="{data.thumbnailImage}"/>
+	<mx:Label text="{data.title}" horizontalCenter="0" />
+</mx:VBox>

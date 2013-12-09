@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 styleName="transparentBackground" minHeight="500"	width="100%" height="100%"
+		 horizontalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.containers.TitleWindow;
+			import mx.controls.Image;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			private var titWin:TitleWindow;
+			private function loadImagePopup(eve:MouseEvent):void{
+				var img:Image = new Image();
+				img.source = Image(eve.currentTarget).source;
+				img.addEventListener(Event.COMPLETE, handleImageComplete);
+				titWin = new TitleWindow();
+				titWin.showCloseButton = true;
+				titWin.addEventListener(CloseEvent.CLOSE,function():void{PopUpManager.removePopUp(titWin);})
+				titWin.addChild(img);
+			}
+			private function handleImageComplete(eve:Event):void{
+				var cwid:Number = Image(eve.currentTarget).contentWidth
+				var cht:Number = Image(eve.currentTarget).contentHeight
+				trace(Image(eve.currentTarget).contentWidth+"VV")
+				titWin.x = (FlexGlobals.topLevelApplication.width/2)-(cwid/2);
+				titWin.y = (FlexGlobals.topLevelApplication.height/2)-(cht/2);
+				PopUpManager.addPopUp(titWin,DisplayObject(FlexGlobals.topLevelApplication),true);
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Label styleName="introTitle" text="Process" fontSize="24" left="15" top="15"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+	<!--<mx:Canvas width="100%">
+	<mx:Image id="scrumImg" left="0" top="0" source="@Embed('assets/images/Scrum.png')"/>
+	<mx:Image  right="0" top="30" source="@Embed('assets/images/rugby.png')"/>	
+	</mx:Canvas>-->
+	
+	
+	<mx:VBox width="100%"   horizontalAlign="center">
+		<mx:HBox width="100%"  >
+			<mx:Image buttonMode="true" id="jwfImg" height="200" source="assets/images/process/job_work_flow.png" maintainAspectRatio="false" click="loadImagePopup(event)" width="33%"/>
+			<mx:Image buttonMode="true" id="onestepImg" height="200" source="assets/images/process/one_step_corrections.png" maintainAspectRatio="false" click="loadImagePopup(event)" width="34%"/>
+			<mx:Image buttonMode="true" id="serverImg" height="200" source="assets/images/process/server.png" click="loadImagePopup(event)" maintainAspectRatio="false" width="33%"/>	
+		</mx:HBox>
+		
+		<mx:Text 	fontSize="12"	 width="100%" styleName="contFont" height="100%" id="three" 
+					selectable="false" >
+			<mx:htmlText><![CDATA[<p textAlign="justify">We receive Creations, charts, and basic elements from our retailers, brand owners, design and creative agencies to make Design, artworking and repro. Consulting services proposed to work closely with decision makers to re-engineer processes. Our main concentration is on Layouts, text and image manipulation, color formats, and sharp printing techniques. We have an efficient dual checking system with the guidance of European Professionals.<br></br>
+85 workstations fully dedicated to packaging artworks and repro.<br> <br>
+<b>Operating systems :</b><br>
+Workstations dedicated to packaging production are 100% Apple with the last version of system.<br> 
+<p>File servers are under Linux or Apple environments.</p>
+<p>Adobe Create Suite CS4 (included Illustrator, Photoshop, Indesign, etc.) + ArtPro and Deskpack.</p>
+<p>2 - 3 shifts/day, 1200 to1700 refernces delivered / month (2009)</p> 
+				</p>]]>
+			</mx:htmlText>
+		</mx:Text>
+		
+		
+		
+	</mx:VBox>	
+</mx:VBox>
+

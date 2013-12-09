@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%"
+	height="100%"
+	x="0" y="0"
+	xmlns:components="com.adams.dt.view.PDFTool.components.*" 
+	xmlns:PDFTool="com.adams.dt.view.PDFTool.*"
+	>
+	<!--<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="{Capabilities.screenResolutionX*0.9}"
+	height="{Capabilities.screenResolutionY*0.9}"
+	x="0" y="0"
+	xmlns:components="com.adams.dt.view.PDFTool.components.*" 
+	xmlns:PDFTool="com.adams.dt.view.PDFTool.*"
+	showCloseButton="true"
+	close="removeMe();"
+	title="Mini PDF Reader">-->
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			import com.adams.dt.model.ModelLocator;
+			 [Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			 /*private function removeMe():void {
+                PopUpManager.removePopUp(this);
+            } */
+		]]>
+	</mx:Script>
+	<components:FSDisplay width="100%"
+		height="100%"
+		id="fsScreen"
+		styleName="fullscreenBgColor"
+		verticalScrollPolicy="off"
+		horizontalScrollPolicy="off">
+		<mx:Canvas width="100%"
+			height="100%"
+			styleName="bgContainer" >
+				<PDFTool:PDFToolSimpleArc id="pdfTool" miniReaderPropertyStatus="true" width="100%" height="100%" dataProvider="{model.pdfFileCollection}"/> 
+		</mx:Canvas>
+	</components:FSDisplay>
+</mx:Canvas>

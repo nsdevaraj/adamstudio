@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/halo"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:layouts="layouts.*" width="100%" height="100%" minHeight="600" styleName="transparentBackground"  >
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenLite;
+			
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.IndexChangeEvent;
+			private var dataSet:Array = ['assets/ShowcaseIMG/general.png',
+				'assets/ShowcaseIMG/planning.png',
+				'assets/ShowcaseIMG/team.png',
+				'assets/ShowcaseIMG/communication.png',
+				'assets/ShowcaseIMG/dashboard.png',
+				'assets/ShowcaseIMG/pdf.png',
+				'assets/ShowcaseIMG/workflow.png',
+				'assets/ShowcaseIMG/chat.png'];
+			private var collection:ArrayCollection = new ArrayCollection(dataSet);
+		/* 	
+		
+			
+			 */
+			public function scrollGroup ( n : int ) : void
+			{
+				var scrollPoint : Point = coverflow.layout.getScrollPositionDeltaToElement( n );
+				var duration : Number = ( Math.max( scrollPoint.x, coverflow.layout.target.horizontalScrollPosition ) - Math.min( scrollPoint.x, coverflow.layout.target.horizontalScrollPosition )) * .002;
+				TweenLite.to( coverflow.layout, duration, { horizontalScrollPosition: scrollPoint.x });
+			}
+			
+			protected function timeMachine_creationCompleteHandler () : void
+			{
+				var perspectiveProjection : PerspectiveProjection = new PerspectiveProjection();
+				
+				perspectiveProjection.projectionCenter = new Point( coverflow.width * .5, coverflow.height * .5 );
+				coverflow.transform.perspectiveProjection = perspectiveProjection;
+				coverflow.transform.perspectiveProjection.fieldOfView = 20.0;
+			}
+			protected function timeMachine_caretChangeHandler ( event : IndexChangeEvent ) : void
+			{
+				scrollGroup( event.newIndex );
+				event.target.invalidateDisplayList();
+			}
+		]]>
+	</fx:Script>
+	
+	<mx:Text left="15" width="100%" textAlign="left" text="Showcase" styleName="introTitle" fontSize="24"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+
+	 
+	
+	<s:List id="coverflow" contentBackgroundAlpha="0"
+			itemRenderer="renderers.CoverflowPanelRenderer"
+			left="15"
+			height="400" width="100%"
+			top="65"
+			right="15" 
+			dataProvider="{collection}"
+			selectedIndex="3"
+			caretChange="timeMachine_caretChangeHandler(event)"
+			creationComplete="callLater(timeMachine_creationCompleteHandler)"
+			scroller="{null}">
+		
+		<s:layout>
+			<layouts:CoverflowLayout id="coverflowLayout"
+									 distance="{150}"
+									 index="{1 }"
+									 rotation="{70}" />
+		</s:layout>
+	</s:List>
+	
+	<mx:VBox width="100%" left="15" verticalGap="0" top="{560}">
+
+		<mx:Text width="100%" styleName="contFont">
+			<mx:htmlText>
+				<![CDATA[<p align="justify"><b>We are specialized in :</b><br><li>workflow environment</li><li>B-to-B application tools </li><li>Dedicated to specific professional processes</li><li>Dynamic data vizualisation online</li></p>]]>
+			</mx:htmlText>
+		</mx:Text>
+		<mx:Text width="100%" styleName="contFont">
+			<mx:htmlText>
+				<![CDATA[<p align="justify">Please ask for a personal demo online at : <a href='mailto:info@brennus-software.com' 
+				fontColor='#ff0000'><u>info@brennus-software.com</u></a></p>
+				]]>
+			</mx:htmlText>
+		</mx:Text>
+	</mx:VBox>
+
+	<!--<s:VGroup left="10"
+			  verticalCenter="0">
+		<s:List id="panels"
+				selectedIndex="{coverflow.selectedIndex}"
+				dataProvider="{collection}"
+				change="coverflow.selectedIndex = event.newIndex" />
+		
+		<s:Label text="Index" />
+		<s:HSlider id="indexSlider"
+				   minimum="0"
+				   maximum="{collection.length - 1}"
+				   stepSize="1"
+				   liveDragging="true"
+				   value="@{ coverflow.selectedIndex }" />
+		<s:HGroup>
+			<s:Button label="Prev"
+					  enabled="{coverflow.selectedIndex > 0}"
+					  click="coverflow.selectedIndex -= 1" />
+			<s:Button label="Next"
+					  enabled="{coverflow.selectedIndex &lt; collection.length - 1}"
+					  click="coverflow.selectedIndex += 1" />
+		</s:HGroup>
+	</s:VGroup>
+	
+	<s:VGroup bottom="10"
+			  horizontalCenter="0">
+		<s:Label text="Distance" />
+		<s:HSlider id="distanceSlider"
+				   minimum="1"
+				   maximum="300"
+				   value="150"
+				   liveDragging="true" />
+		<s:Label text="Rotation" />
+		<s:HSlider id="rotationSlider"
+				   minimum="0"
+				   maximum="100"
+				   value="70"
+				   liveDragging="true" />
+	</s:VGroup>-->
+</mx:VBox>

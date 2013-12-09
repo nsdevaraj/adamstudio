@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	preinitialize="onPreInitialize()" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/halo" 
+	minWidth="1024" minHeight="768"  
+	xmlns:views="com.adams.dt.views.*" 	        
+	addedToStage="this.addedToStageHandler(event)">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[	
+			import org.spicefactory.parsley.flex.FlexContextBuilder;
+			import com.adams.dt.beans.Beans;  
+			
+			protected function onPreInitialize():void {
+				// init building all context parameters using context Builder 
+				// with reference this (Application) 
+				FlexContextBuilder.build(Beans,this);
+			}
+			// On the added to stage event
+			protected function addedToStageHandler(event:Event):void {
+				// to Add the wiring to this view 
+				dispatchEvent(new Event('configureIOC', true));
+			} 
+	 		
+		]]>
+	</fx:Script>
+	<fx:Declarations> 
+	</fx:Declarations>
+	<views:MyView width="100%" height="100%"/>
+</s:Application>

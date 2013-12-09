@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="library://ns.adobe.com/flex/halo"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:fx ="http://ns.adobe.com/mxml/2009" minHeight="500"
+	 width="100%" height="100%"  xmlns:local="view.*" >
+<fx:Script>
+	<![CDATA[
+		import mx.controls.Alert;
+			import mx.effects.easing.*;
+			private function addWindow(str:String):void{
+				if(str=="panel1"){
+					/* var windo:WhatDoWeDoPanel=new WhatDoWeDoPanel();
+					windo.width=5;
+					windo.setStyle("addedEffect", panel_addEffect);
+					windo.setStyle("removedEffect", panel_removeEffect);
+					mainContent.addChild(windo); */
+					pageViewer.selectedIndex = 0;
+				} 
+				if(str=="panel2"){
+					pageViewer.selectedIndex = 1;
+				} 
+				if(str=="panel3"){
+					pageViewer.selectedIndex = 2;
+				}
+				if(str=="panel4"){
+					pageViewer.selectedIndex = 3;
+				}
+			} 
+			public function backtoHome():void{
+				//pageViewer.visible = false;
+				pageViewer.selectedIndex = 4;
+			}
+			
+	]]>
+</fx:Script>
+<fx:Declarations>
+	<mx:Sequence id="panel_addEffect">
+		<mx:Resize heightFrom="0" heightTo="20" easingFunction="Circular.easeOut"/>
+        <mx:Resize widthFrom="5" widthTo="{mainContent.width}" easingFunction="Circular.easeInOut" duration="250"/>
+        <mx:Resize heightFrom="20" heightTo="{mainContent.height}"  easingFunction="Circular.easeInOut" duration="350"/>
+    </mx:Sequence>
+	
+	<mx:Sequence id="panel_removeEffect">
+		<mx:Resize heightFrom="{mainContent.height}" heightTo="20"  easingFunction="Circular.easeInOut" duration="350"/>
+		<mx:Resize widthFrom="{mainContent.width}" widthTo="5" easingFunction="Circular.easeInOut" duration="250"/>
+        <mx:Resize heightFrom="20" heightTo="0" easingFunction="Circular.easeOut"/>
+    </mx:Sequence>
+	
+	<s:Bounce id="sineEasing"
+			  />
+	<s:Power id="powerEasing"
+			 exponent="4"/>
+	
+	
+	<s:Move id="hideEf"
+			yFrom="0"
+			yTo="{pageViewer.height}"
+			duration="540"
+			easer="{powerEasing}"/>
+	<s:Move id="showEf"
+			yFrom="{pageViewer.height}"
+			yTo="0"
+			duration="540"
+			easer="{powerEasing}"/>
+	
+</fx:Declarations>
+     
+	
+	<mx:Canvas id="mainContent" width="980" top="0" horizontalCenter="0" 
+			   horizontalScrollPolicy="off">
+		<mx:Image id="img1" top="20" source="{ImageResourceExample.introImage}" />
+		<mx:Text selectable="false" text='"User experience enhancement with the most efficient web 2.0 technologies"'
+				 textAlign="center" top="50" width="{mainContent.width-(img1.width+img2.width+40)}" 
+				 styleName="introTitle" horizontalCenter="0"/>
+		<mx:Image id="img2" source="{ImageResourceExample.adobeSolutionLogo}" right="25" top="10"/>
+		<mx:Image source="{ImageResourceExample.ria}" right="50" top="130"/> 
+		<mx:HBox id="introContent" left="15" right="15" top="{img1.height+20}" 
+				 styleName="transparentBackground" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+			<mx:VBox width="600" height="160">
+				<mx:Label text="RIA Scrum team provider"  styleName="headerText"/>
+				<mx:TextArea  editable="false" verticalScrollPolicy="off" focusEnabled="false" selectable="false" width="100%" height="100%">
+					<mx:htmlText>
+						<![CDATA[<p align="left"><b>We manage your RIA projects with :</b><li>Quality & Reactivity</li><li>To be updated</li><li>Methodology => Agile/Scrum</li><li>Main Expertise Adobe Flex Technologies</li><li>Low Costs</li></p>]]>
+					</mx:htmlText>
+				</mx:TextArea>
+			</mx:VBox>
+			<mx:VBox width="100%" height="100%">
+				<mx:Label text="Latest news"  styleName="headerText"/>
+				<mx:TextArea  width="100%" height="100%" editable="false" selectable="false">
+					<mx:htmlText>
+						<![CDATA[<p align="justify">> <i>July 12th, 2009</i><br/> Doctrack RIA beta released<br/><br/>> <i>Aug. 1st, 2009</i><br/> Flex training center opened</p>]]>
+					</mx:htmlText>
+				</mx:TextArea>
+			</mx:VBox>
+		</mx:HBox>
+		<mx:Canvas id="aboutCanvas" left="0" right="0" top="{introContent.y+introContent.height}"
+				   borderColor="#898989" borderStyle="solid"  height="160" backgroundColor="#151515">
+			<mx:filters>
+				<fx:Array>
+					<mx:DropShadowFilter alpha="0.7" angle="90"
+										 distance="3" blurX="3" blurY="3" strength="1" quality="1"/>
+				</fx:Array> 
+			</mx:filters>
+			<local:SlidingContainer width="100%" height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+				<local:WhatDoWeDo useHandCursor="true" buttonMode="true" click="addWindow('panel1')"/>
+				<local:HowtoBuild useHandCursor="true" buttonMode="true" click="addWindow('panel2')"/>
+				<local:Howtoadd useHandCursor="true" buttonMode="true" click="addWindow('panel3')"/>
+				<local:WhoisBrennus useHandCursor="true" buttonMode="true" click="addWindow('panel4')"/>
+			</local:SlidingContainer>
+		</mx:Canvas>
+	</mx:Canvas>
+	<mx:ViewStack id="pageViewer" selectedIndex="4" creationPolicy="all" width="980" top="15" bottom="20">
+		<local:WhatDoWeDoPanel showEffect="showEf"  hideEffect="hideEf"/> 
+		<local:HowtoBuildPanel showEffect="showEf" hideEffect="hideEf"/>
+		<local:HowtoaddPanel showEffect="showEf" hideEffect="hideEf"/>
+		<local:WhoisBrennusPanel showEffect="showEf" hideEffect="hideEf"/>
+		<mx:Canvas height="100%" width="100%"/>
+	</mx:ViewStack>
+</mx:Canvas>

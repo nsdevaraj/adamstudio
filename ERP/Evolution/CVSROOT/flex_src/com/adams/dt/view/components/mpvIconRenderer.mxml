@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	left="0"
+	right="0"
+	height="25" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Button id="mpv" styleName="mpvIcon"
+				verticalCenter="0"
+				horizontalCenter="0"/>
+</mx:Canvas>

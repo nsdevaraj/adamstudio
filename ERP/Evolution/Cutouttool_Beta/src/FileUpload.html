@@ -1,0 +1,46 @@
+<html>
+<body>
+<script language="javascript">
+//<!--
+function getFlexApp(appName) {
+  if (navigator.appName.indexOf ("Microsoft") !=-1) {
+    return window[appName];
+  } else {
+    return document[appName];
+  }
+}
+
+var txtFile;
+var txtSize;
+function FileNameDetails(sFile)
+{
+	alert(sFile)
+	txtFile = escape(sFile);
+	var filepathname = txtFile;
+  	getFlexApp("FlexJSTutorial").addFileNameDetails(filepathname);
+}
+//-->
+</script>
+<center>
+  <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+  		id="FlexJSTutorial" width="0" height="0"
+  		codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+  		<param name="movie" value="AppletSender.swf" />
+  		<param name="quality" value="high" />
+  		<param name="bgcolor" value="#869ca7" />
+  		<param name="allowScriptAccess" value="always" />
+  		<embed src="AppletSender.swf" quality="high" bgcolor="#869ca7"
+  			width="0" height="0" name="FlexJSTutorial" align="middle"
+  			play="true"
+  			loop="false"
+  			quality="high"
+  			allowScriptAccess="always"
+  			type="application/x-shockwave-flash"
+  			pluginspage="http://www.adobe.com/go/getflashplayer">
+  		</embed>
+  </object>
+  <br>
+  <applet name="dndname" code="DNDApplet.class" archive="DNDApplet.jar" width="100%" height="100%"></applet>
+  </center>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+				xmlns:view="com.adams.dt.view.components.*"
+				showCloseButton="true" title="DEMANDES de VALIDATIONS : Selection des destinataires" 
+				width="700" layout="vertical" headerHeight="30"  
+               	horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+    			mouseDownOutside="onClose()"
+     			styleName="bgContainer" 
+    			close="onClose()" 
+				creationComplete="updateProperties()">
+	<mx:Metadata>
+		[Event(name="confirmationChecked", type="flash.events.Event")]
+	</mx:Metadata>			
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.TasksEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Persons;
+			
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import com.adams.dt.model.vo.Propertiespj;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var _selectedPersons:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+		    private var model:ModelLocator = ModelLocator.getInstance();
+		    [Bindable]
+		    public var titleName:String = '';
+		    
+		    private var _projectProperty:ArrayCollection;
+			[Bindable]
+			public function get projectProperty():ArrayCollection {
+				return _projectProperty;
+			}
+			public function set projectProperty( value:ArrayCollection ):void {
+				_projectProperty = value; 
+			}
+			
+		    private function updateProperties():void { 
+				for( var i:int = 0; i < projectProperty.length; i++ ) {				
+					var item:Propertiespresets = Propertiespresets( projectProperty.getItemAt( i ) );
+					var visible:Proppresetstemplates = checkTemplate( item );
+					if( this.hasOwnProperty( "label_" + item.fieldName ) && ( this[ "label_" + item.fieldName ] ) ) {
+						if( visible ) {		
+							this[ "label_" + item.fieldName ].visible = true;			
+							this[ "label_" + item.fieldName ].label = visible.fieldLabel;
+						}
+						else {
+							this[ "label_" + item.fieldName ].visible = false;
+						}
+					} 
+				}
+		    }
+			
+			/**
+			 * check the property existence in Proppresetstemplates
+			 */
+			private function checkTemplate( preset:Propertiespresets ):Proppresetstemplates {
+				for each( var item:Proppresetstemplates in model.currentProjects.presetTemplateFK.propertiesPresetSet ) {
+					if( preset.propertyPresetId == item.propertypresetFK ) {
+						if(!item.companyFK){
+							return item;
+						}
+						else if(Utils.getClientFK(model.currentProjects.categories) == item.companyFK ){
+							return item;	
+						}
+					}
+				}
+				return null;
+			}	
+			
+			/**
+			 * get the property value from projects
+			 */
+			private function getPropertyValue( id:int ):String {
+				for each( var item:Propertiespj in model.currentProjects.propertiespjSet ) {
+					if( item.propertyPreset.propertyPresetId == id ) {
+						return item.fieldValue;
+					}
+				}
+				return '';
+			}
+		    
+		    /**
+		    *  Update the Selected Person Text in the Traffic view
+		    */	
+		    private function changeTrafficText( item:Persons, switchString:String ):String {
+		    	var result:String ='' ; 
+		    	var curPersonName:String;
+		    	if( item.personId != 0 )
+		    		curPersonName = GetVOUtil.getCompanyObject( item.companyFk ).companyname + '-' + item.personLastname + ', '+ item.personFirstname;
+		    	else
+		    		curPersonName = '';	
+		    	switch( switchString ) {
+		    		case 'COM':
+		    			result = curPersonName; 
+		    		break;
+		    		case 'CHP':
+		    			result = curPersonName;
+		    		break;
+		    		case 'CPP':
+		    			result = curPersonName;
+		    		break;
+		    		case 'IND':
+		    			if( curPersonName != '' ) {
+		    				result = curPersonName.substring( 0, curPersonName.indexOf( '-' ) );	
+		    			}
+		    			else
+		    				result = curPersonName;
+		    		break;
+		    		case 'AGN':
+		    			result = curPersonName;
+		    		break;
+		    		case 'EPR':
+		    			if( curPersonName != '' ) {
+		    				result = curPersonName.substring( 0, curPersonName.indexOf( '-' ) );	
+		    			}
+		    			else
+		    				result = curPersonName;
+		    		break;
+		    		default:
+		    		break;
+		    	}  
+		    	return result;
+		    }
+		    
+		    private function onConfirmationClick( event:MouseEvent ):void {
+		    	if(  _selectedPersons.length > 0 ) {
+		    		onCheckClose();
+		    		model.selectedPersons_FileAccess = _selectedPersons; 
+		    		dispatchEvent( new Event( 'confirmationChecked' ) );
+		    	}
+		    	onClose();	
+		    }
+		    
+		    private function onCheckClose():void {
+		    	for( var i:int = 0; i < _selectedPersons.length; i++ ) {
+		    			model.fromConfirmation = _selectedPersons.getItemAt( i ).profileCode + "_" + "1";
+		    	}
+		    }
+		    
+		    private function onSelectPerson( event:Event ):void {
+		    	var selectedName:String = event.currentTarget.name;
+		    	var isSelected:Boolean = event.currentTarget.selected;
+		    	var obj:Object = {};
+		    	obj.profileId = Utils.getProfileId( selectedName );
+		    	switch( selectedName ) {
+		    		case 'CHP':
+		    			obj.personId = model.CP_Person.personId;
+		    			obj.profileCode = 'CHP';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		case 'CPP':
+		    			obj.personId = model.CPP_Person.personId;
+		    			obj.profileCode = 'CPP';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		case 'COM':
+		    			obj.personId = model.comPerson.personId;
+		    			obj.profileCode = 'COM';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		case 'AGN':
+		    			obj.personId = model.agencyPerson.personId;
+		    			obj.profileCode = 'AGN';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		case 'IND':
+		    			obj.personId = model.indPerson.personId;
+		    			obj.profileCode = 'IND';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		case 'EPR':
+		    			obj.personId = model.impPerson.personId;
+		    			obj.profileCode = 'EPR';
+		    			checkExistItem( obj, isSelected );
+		    		break;
+		    		default:
+		    		break;
+		    	}
+		    }
+		    
+			private function onClose():void {
+		    	PopUpManager.removePopUp( this );
+		    }
+		    
+		    private function checkExistItem( obj:Object, isSelected:Boolean ):void {
+		    	var sort:Sort = new Sort(); 
+			    sort.fields = [ new SortField( 'personId' ) ];
+			    _selectedPersons.sort = sort;
+			    _selectedPersons.refresh(); 
+				var cursor:IViewCursor = _selectedPersons.createCursor();
+				var found:Boolean = cursor.findAny( obj );	
+				if( found ) {
+					_selectedPersons.removeItemAt( _selectedPersons.getItemIndex( cursor.current ) );
+				} 	
+				if( isSelected )	_selectedPersons.addItem( obj );
+			}
+		    
+		]]>
+	</mx:Script>
+	<view:Upload id="uploadComp" height="170" basicFileCollection="{ model.basicFileCollection }"
+				 basicFileVisible="{ ( model.currentUserProfileCode == 'OPE' ) }"/>
+	<mx:Form width="100%" height="100%">
+		<mx:FormItem id="label_product_manager" direction="horizontal" width="100%">
+            <mx:TextInput id="chpId" text="{ changeTrafficText( model.CP_Person, 'CHP' ) }" width="100%" editable="false" />
+            <mx:CheckBox enabled="{chpId.text.length!=0}" change="onSelectPerson( event )" name="CHP"/>
+        </mx:FormItem>
+        <mx:FormItem id="label_chef_project_pack" direction="horizontal" width="100%">
+            <mx:TextInput id="cppId" text="{ changeTrafficText( model.CPP_Person, 'CPP' ) }" width="100%" editable="false" />
+            <mx:CheckBox enabled="{cppId.text.length!=0}" change="onSelectPerson( event )" name="CPP"/>
+        </mx:FormItem>
+    	<mx:FormItem id="label_commercial" direction="horizontal" width="100%">
+             <mx:TextInput id="comId" text="{ changeTrafficText( model.comPerson, 'COM' ) }" width="100%" editable="false" />
+             <mx:CheckBox enabled="{comId.text.length!=0}"  change="onSelectPerson( event )" name="COM"/>
+        </mx:FormItem>
+        <mx:FormItem id="label_creation_agency" direction="horizontal" width="100%">
+             <mx:TextInput id="agnId" text="{ changeTrafficText( model.agencyPerson, 'AGN' ) }" width="100%" editable="false" />
+             <mx:CheckBox enabled="{agnId.text.length!=0}" change="onSelectPerson( event )" name="AGN"/>
+        </mx:FormItem>
+        <mx:FormItem id="label_industry_supplier" direction="horizontal" width="100%">
+             <mx:TextInput id="indId" text="{ changeTrafficText( model.indPerson, 'IND' ) }" width="100%" editable="false" />
+             <mx:CheckBox enabled="{indId.text.length!=0}" change="onSelectPerson( event )" name="IND"/>
+        </mx:FormItem>
+        <mx:FormItem id="label_impremiur" direction="horizontal" width="100%">
+             <mx:TextInput id="impId" text="{ changeTrafficText( model.impPerson, 'EPR' ) }" width="100%" editable="false" />
+             <mx:CheckBox enabled="{impId.text.length!=0}"  change="onSelectPerson( event )" name="EPR"  />
+        </mx:FormItem>
+    </mx:Form>
+	<mx:ControlBar horizontalAlign="center">
+		<mx:Button id="confirmBTN" label="{ _selectedPersons.length >0 ? 'Send' : 'Cancel' }" click="onConfirmationClick( event )"/>			
+	</mx:ControlBar>			
+</mx:TitleWindow>

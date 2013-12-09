@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+        private var styleSheet:StyleSheet;
+    private var urlLoader:URLLoader;
+            import mx.effects.easing.*;
+            import mx.charts.series.items.PieSeriesItem;
+            import mx.charts.events.ChartItemEvent;
+
+            private function pieChart_itemClick(evt:ChartItemEvent):void {
+                var item:PieSeriesItem = evt.hitData.chartItem as PieSeriesItem;
+                var degrees:Number = radiansToDegrees(item.startAngle);
+                var arr:Array = [];
+                if (checkBox.selected) {
+                    arr[item.index] = 0.2;
+                }
+                pieSeries.perWedgeExplodeRadius = arr;
+                pieSeries.startAngle -= degrees;
+                dp.refresh();
+            }
+
+            private function radiansToDegrees(radians:Number):Number {
+                return radians * (180 / Math.PI);
+            }
+          
+        ]]>
+	</mx:Script>
+	<mx:XMLListCollection id="dp">
+		<mx:source>
+			<mx:XMLList>
+				<product label="Corrections"
+					data="3"/>
+				<product label="1st Release"
+					data="4"/>
+			</mx:XMLList>
+		</mx:source>
+	</mx:XMLListCollection>
+	<mx:ApplicationControlBar dock="true"
+		includeInLayout="false"
+		visible="false">
+		<mx:CheckBox id="checkBox"
+			label="Use perWedgeExplodeRadius:"
+			labelPlacement="left"
+			selected="true"/>
+	</mx:ApplicationControlBar>
+	<mx:PieChart id="pieChart"
+		dataProvider="{dp}"
+		showDataTips="true"
+		itemClick="pieChart_itemClick(event);"
+		height="180"
+		width="200">
+		<mx:series>
+			<mx:PieSeries id="pieSeries"
+				field="@data"
+				nameField="@label">
+				<mx:showDataEffect>
+					<mx:SeriesInterpolate duration="1500"
+						easingFunction="{Elastic.easeOut}"/>
+				</mx:showDataEffect>
+				<mx:filters>
+					<mx:DropShadowFilter />
+				</mx:filters>
+			</mx:PieSeries>
+		</mx:series>
+	</mx:PieChart>
+	<!--  <mx:Legend dataProvider="{pieChart}"  direction="horizontal" />-->
+</mx:VBox>

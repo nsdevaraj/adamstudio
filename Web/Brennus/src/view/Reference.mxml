@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 styleName="transparentBackground" width="100%" height="100%">
+
+	<mx:Text text="Reference" styleName="introTitle" fontSize="24"/>
+
+	<mx:HRule width="100%" />
+	<mx:Canvas width="100%" height="100%" minHeight="500">
+		<mx:VBox >
+			<mx:Image source="@Embed('assets/images/accordvalmy.png')" />
+			<mx:Image source="@Embed('assets/images/carrefour.png')" />
+		</mx:VBox>
+		
+	</mx:Canvas>
+	
+</mx:VBox>

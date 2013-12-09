@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Proppresetstemplates" table="prop_presets_templates">
+        <id name="proppresetstemplatesId" type="integer" column="prop_presets_templates_ID">
+            <generator class="increment" />
+        </id> 
+        <property name="presetstemplatesFk">
+            <column name="presets_templates_FK" />
+        </property>
+        
+        <property name="fieldLabel">
+            <column name="field_label" />
+        </property> 
+        <property name="fieldOptionsValue">
+            <column name="field_options_value" />
+        </property> 
+		<property name="propertypresetFK">
+            <column name="properties_presets_FK" />
+        </property>
+    </class> 
+</hibernate-mapping>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" borderThickness="0" 
+	initialize="init()" layout="absolute" backgroundColor="#000000" backgroundAlpha="0" 
+	showStatusBar="false" showTitleBar="false" creationComplete="creationComplete()">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.ConfigDetailsDAODelegate;
+			import mx.core.Application;
+			import mx.controls.SWFLoader;
+			
+			private var decrptedLoader:Loader = new Loader();
+			private var loadedBytes:ByteArray = new ByteArray(); 
+			private var saveMode:Boolean;
+			private var key:String;
+			private var urlLoader:URLLoader;
+			private var loaderContext:LoaderContext = new LoaderContext(true, new ApplicationDomain(ApplicationDomain.currentDomain), null);
+			private function closingApplication(evt:Event):void {
+				evt.stopImmediatePropagation();
+			}
+		    private function creationComplete():void{
+				nativeWindow.addEventListener(Event.CLOSING,closingApplication, false, 0,true);		    	
+		    }
+		    private function init():void{
+		    	var bounds:Rectangle = Screen.mainScreen.visibleBounds;
+		    	this.nativeWindow.x=0;
+				this.nativeWindow.y=((Capabilities.os.search("Mac") >= 0)?20:0);
+				this.nativeWindow.width=bounds.bottomRight.x;
+				this.nativeWindow.height=bounds.bottomRight.y-((Capabilities.os.indexOf("Mac OS") >= 0)?20:0);
+		
+				var swfsource:String='';
+				var filepath:String='';
+				 var delegate:ConfigDetailsDAODelegate = new ConfigDetailsDAODelegate();
+				var result:SQLResult = delegate.getAllConfigDetails()
+				var array:Array = [];
+				array = result.data as Array;
+				
+				
+				urlLoader = new URLLoader;
+				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+				
+				urlLoader.addEventListener ( Event.COMPLETE, initListener );
+				urlLoader.addEventListener ( IOErrorEvent.IO_ERROR, onIOError );
+				var loader:SWFLoader = new SWFLoader();
+				var value:String;
+				saveMode  = mode.saveMode;
+				saveMode ? value = "DTFlex.swf" :  value =File.applicationDirectory.nativePath+File.separator+'DTFlexenc.abc';
+				if(Capabilities.os.search("Mac") >= 0) filepath = "file://";
+				swfsource=filepath+value;
+				if(array!=null){
+					 for each(var obj:Object in array){
+					 	if(obj.Property == 'Copyright'){
+							key = obj.Value;
+							urlLoader.load(new URLRequest(filepath+value));
+					 	}
+					}
+				}
+				loader.percentHeight = 100;
+				loader.percentWidth = 100;
+				loader.addChild(decrptedLoader); 
+				addChild(loader);
+			}
+			private function onIOError ( pEvt:IOErrorEvent ):void
+			{
+				dispatchEvent ( pEvt );	
+			}
+			private function initListener(event:Event):void{
+				loaderContext.checkPolicyFile = false
+				loaderContext.allowLoadBytesCodeExecution = true;
+ 				loadedBytes = event.target.data;
+ 				if(saveMode){
+					saveFile(encrypt(loadedBytes,key));
+ 					Application.application.exit();
+ 				}else{   
+ 				 	loadedBytes = encrypt(loadedBytes,key);
+ 					decrptedLoader.loadBytes(loadedBytes,loaderContext);
+ 				 }
+			}    
+			private function saveFile(saveBArray:ByteArray):void{
+				var fileObj:File = new File(); 
+ 				fileObj = File.desktopDirectory.resolvePath('DTFlexenc.abc');
+ 				var fileStre:FileStream = new FileStream(); 
+ 				fileStre.open(fileObj,FileMode.WRITE);
+				fileStre.writeBytes(saveBArray,0,saveBArray.length);
+				fileStre.close();
+			}
+			private function encrypt(binaryData:ByteArray, key:String):ByteArray{
+				var keyIndex:Number=0;
+				for(var i:Number=0;i<binaryData.length;i++){
+					binaryData[i]=binaryData[i]^key.charCodeAt(keyIndex);
+					keyIndex++;
+					if(keyIndex>=key.length)
+						keyIndex=0;
+				}
+				return binaryData;
+			} 
+			  
+		]]>
+	</mx:Script>
+	<mx:Model id="mode" source="mode.xml"/>
+</mx:WindowedApplication>

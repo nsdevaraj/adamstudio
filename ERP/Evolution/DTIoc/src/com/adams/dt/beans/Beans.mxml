@@ -1,0 +1,47 @@
+<mx:Object xmlns:mx="http://www.adobe.com/2006/mxml" xmlns="org.spicefactory.parsley.tag.core.*"
+	   		xmlns:control="com.adams.dt.controls.*"
+	        xmlns:vo="com.adams.dt.model.vo.*" 
+	        xmlns:collections="com.adams.dt.model.collections.*" 
+	        xmlns:delegate="com.adams.dt.delegates.*" 
+	        xmlns:util="com.adams.dt.utils.*">
+    <mx:Script>
+    	<![CDATA[
+    		import com.adams.dt.dao.DAOObject;
+    		import com.adams.dt.dao.CRUDObject;
+    		import com.adams.dt.dao.ServiceObject;
+    		import com.adams.dt.controls.DAOCommand;
+    		import com.adams.dt.utils.Destination;
+    		import com.adams.dt.utils.Action; 
+    	]]>
+    </mx:Script>
+    <!-- Service -->
+    <mx:RemoteObject 
+        id="_remoteService" channelSet="{auth}" 
+        showBusyCursor="true" />
+        
+    <mx:ChannelSet id="auth"  >
+    	<mx:AMFChannel uri="http://localhost:8080/DTFlex/spring/messagebroker/amf"/>
+    </mx:ChannelSet>
+    
+    <!-- DAO -->
+    <MxmlObjectDefinitionFactoryTag id="personDao" type="{ DAOObject }">
+    	 <PropertyDecoratorTag name="target" idRef="personCrud"/> 
+    	<!--<PropertyDecoratorTag name="target" idRef="personService"/>--> 
+	</MxmlObjectDefinitionFactoryTag>
+	 
+    <MxmlObjectDefinitionFactoryTag id="personCrud" type="{ CRUDObject }">
+    	<PropertyDecoratorTag name="valueObject" idRef="personsVO"/>
+	</MxmlObjectDefinitionFactoryTag>  
+
+    <!--<MxmlObjectDefinitionFactoryTag id="personService" type="{ ServiceObject }">
+    	<PropertyDecoratorTag name="valueObject" idRef="personsVO"/>
+	</MxmlObjectDefinitionFactoryTag>-->
+ 
+	<!--  Sequences -->
+ 	<control:LoginControl id="login"/> 
+ 	
+ 	<!-- Model -->
+	<vo:Persons id ="personsVO" destination="{Destination.PERSON_DESTINATION}"/>
+    <collections:PersonCollection id="personCollection"/>
+	<delegate:AbstractDelegate id="delegate"/>
+</mx:Object>

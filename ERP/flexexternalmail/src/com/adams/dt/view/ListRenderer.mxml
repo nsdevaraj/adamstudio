@@ -1,0 +1,195 @@
+<?xml version="1.0" ?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	left="0"
+	right="0"
+	height="35">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+    		import com.adams.dt.model.vo.Tasks;
+    		import com.adams.dt.model.vo.TaskStatus;
+    		import com.adams.dt.model.vo.Profiles;
+    		import com.adams.dt.model.ModelLocator;
+    		import mx.controls.Alert;
+    		import mx.utils.ObjectUtil;
+    		[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#in_progress")]
+   			private var INPROGRESS:Class;
+   			[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#waiting")]
+   			private var WAITING:Class;
+   			[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#deliverd")]
+   			private var DELIVERED:Class;    			
+   			
+   			[Embed("assets/swf/MainInterface.swf#deliverd")]
+   			private var FINISHED:Class; 
+   			
+   			[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#stand_by")]
+   			private var ARCHIVED:Class;
+   			
+   			[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#in_progress_red")]
+   			private var URGENTINPROGRESS:Class;
+   			
+   			[Bindable]
+    		[Embed("assets/swf/MainInterface.swf#waiting_red")]
+   			private var URGENTWAITING:Class;
+   			   			
+   			[Bindable]
+   			private var color:String='redButton';
+   			[Bindable]
+   			private var model:ModelLocator = ModelLocator.getInstance();
+   			private var profile:String =  Profiles(model.profilesCollection.getItemAt(0)).profileCode;
+    		private function getImage(dataStr:int):Class{
+    			if(Tasks(data).projectObject.projectStatusFK == ProjectStatus.URGENT){
+    				return getUrgentImage(dataStr);
+    			}else{
+    				var commonClass:Class;
+	    			switch(dataStr){
+	    				case TaskStatus.WAITING:
+	    					//return ImageResourceEmbedClass.WAITING;
+	    					return commonClass = WAITING;
+	    				break ;
+	    				case TaskStatus.INPROGRESS:
+	    					//return ImageResourceEmbedClass.INPROGRESS;
+	    					return commonClass = INPROGRESS;
+	    				break;
+	    				case TaskStatus.STANDBY:
+	    					//return ImageResourceEmbedClass.ARCHIVED;
+	    					return commonClass = ARCHIVED;
+	    				break;
+	    				case TaskStatus.NOTSTARTED:
+	    					//return ImageResourceEmbedClass.DELIVERED;
+	    					return commonClass = DELIVERED;
+	    				break;
+	    				case TaskStatus.FINISHED:
+	    					//return ImageResourceEmbedClass.FINISHED;
+	    					return commonClass = FINISHED;
+	    				break; 
+	    			}
+	    		}
+    			return new Class();
+    		} 
+    		private function getUrgentImage(dataStr:int):Class{
+    				var commonClass:Class;
+    				switch(dataStr){
+	    				case TaskStatus.WAITING:
+	    					//return ImageResourceEmbedClass.URGENTWAITING;
+	    					return commonClass = URGENTWAITING;
+	    				break ;
+	    				case TaskStatus.INPROGRESS:
+	    					//return ImageResourceEmbedClass.URGENTINPROGRESS;
+	    					return commonClass = URGENTINPROGRESS;
+	    				break;
+	    				case TaskStatus.STANDBY:
+	    					//return ImageResourceEmbedClass.ARCHIVED;
+	    					return commonClass = ARCHIVED;
+	    				break;
+	    				case TaskStatus.NOTSTARTED:
+	    					//return ImageResourceEmbedClass.DELIVERED;
+	    					return commonClass = DELIVERED;
+	    				break;
+	    				case TaskStatus.FINISHED:
+	    					//return ImageResourceEmbedClass.FINISHED;
+	    					return commonClass = FINISHED;
+	    				break; 
+	    			}
+    			return new Class();
+    		}
+    		 private function TaskStatusColor(startDate:Date,endDate:Date):String{
+    			
+    			var DiffDay:Number=ObjectUtil.dateCompare(startDate,endDate);
+    			
+    			if(DiffDay==0){
+    				color="todoGreenBTN";
+    			}else if(DiffDay==1){
+    				color="todoBlueBTN";
+    			}else if(DiffDay==-1){
+    				color="todoRedBTN";
+    			}else{
+    				color="todoRedBTN";
+    			}
+    			return color;
+    		} 
+    		
+    		public static var monthDisplay:Array =  ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","sep",
+		 								"Oct","Nov","Dec"];
+    		public function getDate(date:Date):String{
+    			//'4-feb-2009 09:30'
+    			var str:String = date.date+"-"+monthDisplay[date.month]+"-"+date.fullYear+" "+date.hours+":"+date.minutes;
+    			return str;
+    		}
+    		public function get visibility():Boolean{
+    			if(profile == 'CLT'){
+    				return false;
+    			}
+    			return true;
+    		}
+    		private function setWidth(val:int):int{
+    			return val<=190?190:val;
+    		}    		
+ 
+    	]]>
+	</mx:Script>
+	<mx:HBox styleName="todoListBg" horizontalGap="0" verticalAlign="middle" horizontalAlign="center" left="0"	right="0" top="0" bottom="0">
+		
+		<mx:Canvas width="55"
+			height="100%">
+			<mx:Image id="image" verticalCenter="0"	horizontalCenter="0" source="{getImage(data.taskStatusFK)}" width="22"	height="22"/>
+		</mx:Canvas>
+		
+		<mx:Canvas width="100%" id="cont"
+			height="100%">
+			<mx:Label styleName="menuText"
+				text="{data.projectObject.projectName}"
+				verticalCenter="0"
+				horizontalCenter="0"
+				fontSize="13"
+				color="#cccccc"
+				textAlign="center"
+				width="{cont.width}"/>
+		</mx:Canvas>
+		
+		<!-- <mx:Button label="{Tasks(data).previousTask.workflowtemplateFK.profileObject.profileCode}"   height="26" width="{(this.width-55)/4}"
+			    	styleName="{TaskStatusColor(data.previousTask.tDateEnd,data.previousTask.tDateDeadline)}" visible="{visibility}" 
+			    	/>-->
+		<!--includeInLayout="{visibility}"-->
+		
+		<mx:Button label="{data.workflowtemplateFK.taskLabelTodo}"
+			height="26"
+			width="{(this.width-180)/4}"
+			styleName="{TaskStatusColor(data.tDateEnd,data.tDateDeadline)}"/>
+			
+		<mx:Canvas width="{setWidth((this.width-180)/4)}"   
+			height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Label verticalCenter="0" 
+				horizontalCenter="0"
+				styleName="menuText"
+				text="{'From '+Tasks(data).previousTask.workflowtemplateFK.profileObject.profileLabel+': '+getDate(data.tDateCreation)}"
+				fontSize="11"
+				textAlign="center"
+				width="{(this.width-180)/4}"
+				color="#cccccc"/>
+		</mx:Canvas>
+		
+		<mx:Canvas width="70"
+			height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Label verticalCenter="0"
+				horizontalCenter="0"
+				styleName="menuText"
+				text="{data.projectObject.categories.categoryName}"
+				fontSize="11"
+				textAlign="center"
+				width="{(this.width-110)/4}"
+				color="#cccccc"
+				visible="{visibility}"/>
+			<!--includeInLayout="{visibility}"-->
+		</mx:Canvas>
+		
+		<mx:Canvas width="55" height="100%">			 
+		</mx:Canvas>
+	</mx:HBox>
+</mx:Canvas>

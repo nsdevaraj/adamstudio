@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  
+	 width="100%" >
+	
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.Utils;
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Companies;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.event.PropPresetTemplateEvent;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import mx.collections.ArrayCollection;
+			
+			
+			
+			[Bindable]
+			public var presetCompany:Boolean;
+			
+			
+			
+			/**
+			 * Get the Domain Collection 
+			 * */
+			[Bindable]
+			private var _companyCollProvider:ArrayCollection;
+			[Bindable]
+			public function get companyCollProvider() : ArrayCollection {
+				return _companyCollProvider
+			}
+			
+			public function set companyCollProvider( value :ArrayCollection ) : void {
+				_companyCollProvider =  value;
+				
+			} 
+			/**
+			 * Get the Selected ProppresetTemplate...
+			 * */
+			[Bindable]
+			private var _tempPropPresetTemp : Proppresetstemplates;
+			public function get tempPropPresetTemp( ) :Proppresetstemplates {
+				return _tempPropPresetTemp 
+			}
+			public function set tempPropPresetTemp( value :Proppresetstemplates ) : void {
+				_tempPropPresetTemp = value;
+				
+			}
+			[Bindable]
+			private var _curCategory : Categories
+			public function get curCategory( ) :Categories {
+				return _curCategory 
+			}
+			public function set curCategory( value :Categories ) : void {
+				_curCategory = value;
+				comboWorkFlow.selectedItem = value 
+			}
+			[Bindable]
+			private var _curCompany : Companies
+			public function get curCompany( ) :Companies {
+				return _curCompany 
+			}
+			public function set curCompany( value :Companies ) : void {
+				_curCompany = value; 
+				companyFK = value.companyid
+				checkDuplicateVisible()
+				checkVisibility();
+			}
+			private function checkVisibility() : void  {
+				var companyInt:int
+				if(comboWorkFlow.selectedItem != null){
+					companyInt = GetVOUtil.getCompanyObjectCode( Categories( comboWorkFlow.selectedItem ).categoryCode ).companyid
+				} else{
+					companyInt = 0;
+				}
+				if(Utils.getAvailability(_tempPropPresetTemp , companyInt )){
+			 	 		presetCompany = true;
+			 	}else{
+			 		presetCompany = false;
+			 	}
+			 	
+			}
+			[Bindable]
+			public var companyFK:int 
+			 private function comboChecking( ) : void {
+			 	checkDuplicateVisible();
+			 	checkVisibility();
+			 	var companyInt:int = GetVOUtil.getCompanyObjectCode( Categories( comboWorkFlow.selectedItem ).categoryCode ).companyid;
+			 	var companyStr:String = comboWorkFlow.selectedLabel
+			 	if( _tempPropPresetTemp.companyFK == 0 && companyInt != 0  ){
+			 		Alert.show("This property will be used only for Domain "+companyStr, "Comapny Update", Alert.OK | Alert.CANCEL, this, comapanyListener, null, Alert.OK);
+			 	}
+			 	if( _tempPropPresetTemp.companyFK != 0 && companyInt == 0  ){
+			 		comboWorkFlow.selectedIndex =1 
+			 		Alert.show("The company value can't be Empty", "Comapny Update", Alert.OK , this, comapanyListener, null, Alert.OK);
+			 	}
+			 	companyFK = companyInt;
+			 } 
+			 private function comapanyListener(eventObj:CloseEvent):void {
+               if (eventObj.detail==Alert.CANCEL) {
+                   comboWorkFlow.selectedIndex = 0;
+                }
+            }
+            [Bindable]
+            public var DuplicateVisible:Boolean;
+			private function checkDuplicateVisible() :void {
+					var companyInt:int				   
+				    if(comboWorkFlow.selectedItem == null ){
+				    	companyInt = 0;
+				    }else{
+				    	companyInt = GetVOUtil.getCompanyObjectCode( Categories( comboWorkFlow.selectedItem ).categoryCode ).companyid;
+				    }
+					
+					if( _tempPropPresetTemp.companyFK == companyInt ){
+						DuplicateVisible = false
+					}else if( _tempPropPresetTemp.companyFK != companyInt ||  _tempPropPresetTemp.companyFK != 0){
+						DuplicateVisible = true;
+					}
+			}
+		]]>
+	</mx:Script> 
+	
+	<mx:Label id="editLbl"  top="0" left="0" text="Edit Panel" styleName="subHeader"/>
+	
+	<mx:Label id="companyLbl" text="Company Name:" left="0" top="{editLbl.height+editLbl.y+5}"/>
+	<mx:ComboBox id="comboWorkFlow" dataProvider="{_companyCollProvider}" 
+		top="{editLbl.height+editLbl.y+5}" left="{companyLbl.width+5}" 
+		labelField="categoryName" change="{comboChecking()}"/>
+ 
+</mx:Canvas>

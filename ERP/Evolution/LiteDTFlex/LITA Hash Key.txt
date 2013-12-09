@@ -1,0 +1,7 @@
+awubpwedtmpdbsphbmuthomTobbaautp
+
+pdfServerDir = /home/brennus/pdfswftools/pdf2swf-multipage.sh
+
+http://217.109.119.53:8180/DTFlex/
+http://62.193.234.4:8180/DTFlex/
+http://localhost:8080/DTFlex/

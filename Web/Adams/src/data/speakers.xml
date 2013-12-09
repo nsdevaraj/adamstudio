@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<speakers>
+	<speaker>
+		<name>Chandra Deepan, ASI</name>
+		<photo>assets/images/flex@Beach/deepan.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/Parsley.pdf?gda=YruYvz4AAAAYs5_ego50xGTZlHy9yRLh6VOc_KQhS6T7XJXxqpwimOjjb0DP5ubuQ4xDitt7t7_jsKXVs-X7bdXZc5buSfmx</pdfFile>
+		<file>http://joelhooks.com/2009/07/14/inversion-of-control-and-dependency-injection-with-flex-using-the-parsley-application-framework-part-2/</file>
+		<file2></file2>
+		<blog></blog>
+	</speaker>
+	<speaker>
+		<name>NS Devaraj, ASI</name>
+		<photo>assets/images/flex@Beach/deva.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/mate.pdf?gda=CqMO2jsAAAAYs5_ego50xGTZlHy9yRLhVeymjVLZa2JBgN1JOv0UHiVvFhauFpXgPnaKkbhMrYoGRdr3QrylPkw2aRbXD_gF</pdfFile>
+		<file>http://mate.asfusion.com/assets/content//presentations/mate_max_code.zip</file>
+		<file2>http://github.com/joelhooks/robotlegs-examples-ImageGalleryPM/archives/master</file2>
+		<blog>http://nsdevaraj.wordpress.com/</blog>
+	</speaker>
+	<speaker>
+		<name>Peter Elst, Cocoon</name>
+		<photo>assets/images/flex@Beach/peter.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/AS3Signals.pdf?gda=51pSTkEAAAAYs5_ego50xGTZlHy9yRLhPkUbd3L_12spwjc6rDHbW_T--gX4wul6T0ueiHlJUO5TCT_pCLcFTwcI3Sro5jAzlXFeCn-cdYleF-vtiGpWAA</pdfFile>
+		<file></file>
+		<file2></file2>
+		<blog>http://www.peterelst.com/blog/</blog>
+	</speaker>
+	<speaker>
+		<name>Ganesh Gandhi, ASI</name>
+		<photo>assets/images/flex@Beach/gandhi.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/AIR2.pdf?gda=-wSsAzsAAAAYs5_ego50xGTZlHy9yRLhPkUbd3L_12spwjc6rDHbW-yi6vR817lxMTDi8aCFdJ8GRdr3QrylPkw2aRbXD_gF</pdfFile>
+		<file>http://flexatbeach.googlegroups.com/web/AIR2%20Beta%20Sample.zip?gda=2yBpt08AAAAYs5_ego50xGTZlHy9yRLhc2Xt0mOcG4CUZulUXDbCkly3N5zCFxPgX4uZdsbvygy0yakcLS33ctAN_ah3jYA-nHMhSp_qzSgvndaTPyHVdA</file>
+		<file2></file2>
+		<blog></blog>
+	</speaker>
+	<speaker>
+		<name>Senthil Kumar, ASI</name>
+		<photo>assets/images/flex@Beach/senthil.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/Flar.pdf?gda=0lp-ozsAAAAYs5_ego50xGTZlHy9yRLhyjg776EfitvJVBBCJnAbFW5DmTdo_YjIDSsbw5HszrIGRdr3QrylPkw2aRbXD_gF</pdfFile>
+		<file>http://www.flartoolkitdocs.org/</file>
+		<file2></file2>
+		<blog></blog>
+	</speaker>
+	<speaker>
+		<name>Alaguvel, ASI</name>
+		<photo>assets/images/flex@Beach/alaguvel.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/Flex4V4.pdf?gda=fRyeMD4AAAAYs5_ego50xGTZlHy9yRLhyjg776EfitvJVBBCJnAbFWbW9HCNPbzUX5PZqfIeUbzjsKXVs-X7bdXZc5buSfmx</pdfFile>
+		<file>http://flexatbeach.googlegroups.com/web/LayoutDemo.zip?gda=iZUCH0EAAAAYs5_ego50xGTZlHy9yRLhibbOiUxSwoAywo_bpqCVmXuZo-vXgWtPRHd1dB_A7TdTCT_pCLcFTwcI3Sro5jAzlXFeCn-cdYleF-vtiGpWAA</file>
+		<file2></file2>
+		<blog>http://www.alaguvel.wordpress.com</blog>
+	</speaker>
+	<speaker>
+		<name>Michael Chaize, Adobe</name>
+		<photo>assets/images/flex@Beach/mike.png</photo>
+		<pdfFile></pdfFile>
+		<file></file>
+		<file2></file2>
+		<blog>http://codemoiunmouton.wordpress.com/</blog>
+	</speaker>
+	<speaker>
+		<name>Sakthivel, ASI</name>
+		<photo>assets/images/flex@Beach/sakthivel.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/Scrum.pdf?gda=EYsIKTwAAAAYs5_ego50xGTZlHy9yRLhVArUthtpmiePcbbWTZllQ_n8Zh342UKFoJZs9_RRiqz9Wm-ajmzVoAFUlE7c_fAt</pdfFile>
+		<file></file>
+		<file2></file2>
+		<blog></blog>
+	</speaker>
+	<speaker>
+		<name>Iyswarya, ASI</name>
+		<photo>assets/images/flex@Beach/aish.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/away3d.pdf?gda=rde_Jz0AAAAYs5_ego50xGTZlHy9yRLh4HnjZnYEjacsT-njAWWD2JTGYE4OEZxZBG6lddSnIUzlNv--OykrTYJH3lVGu2Z5</pdfFile>
+		<file></file>
+		<file2></file2>
+		<blog></blog>
+	</speaker>
+	<speaker>
+		<name>Sathappan, Gravitin</name>
+		<photo>assets/images/flex@Beach/sathappan.png</photo>
+		<pdfFile>http://flexatbeach.googlegroups.com/web/Introduction%20to%20WebORB.pdf?gsc=d-97oAsAAACgEwiYOb8R3aN3VojbDv0Y</pdfFile>
+		<file></file>
+		<file2></file2>
+		<blog>http://gravitin.com</blog>
+	</speaker>
+</speakers>

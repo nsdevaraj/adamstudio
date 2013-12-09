@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Profiles" table="profiles">
+        <id name="profileId" type="integer" column="Profile_ID">
+            <generator class="increment" />
+        </id>
+        <property name="profileLabel">
+            <column name="Profile_label" />
+        </property>
+        <property name="profileCode">
+            <column name="Profile_code" />
+        </property>
+        <property name="profileBckgdImage">
+            <column name="Profile_bckgd_image" />
+        </property>
+    </class> 
+    <query name="Profiles.findById">
+        select u from Profiles u where u.profileId = ?
+    </query>
+    <query name="Profiles.findByNums">
+        select r from Profiles r,Teamlines t where t.personID=? and t.projectID = ?
+                         and t.profileID = r.profileId  
+    </query>
+    <query name="Profiles.findProfilesList">
+        select distinct p from Profiles p,Teamlines t where t.profileID = p.profileId and t.personID = ?
+    </query>
+    <query name="Profiles.findByName">
+        select u from Profiles u where u.profileLabel = ?
+    </query>
+    <query name="Profiles.findByMailProfileId">
+        select u from Profiles u where u.profileId = ?
+    </query>
+</hibernate-mapping>

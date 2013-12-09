@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	 styleName="transparentBackground" width="100%" height="100%">
+ 
+ 
+<mx:Text text="Contact US" styleName="introTitle" fontSize="24"/>
+<mx:HRule width="100%" />
+ 
+	<mx:Canvas width="100%" height="100%" minHeight="500">
+		<mx:Text width="100%" height="100%">
+				<mx:htmlText>
+					<![CDATA[<p align='center'>Embassy House Herbert Park Lane Ballsbridge Dublin 4 Ireland<br>Tel: +353 (0) 14 40 41 92 Fax: +353 (0) 14 43 07 54<br>info@brennus-software.com</p>
+					]]>
+				</mx:htmlText>
+		</mx:Text>
+		
+	</mx:Canvas>
+	
+</mx:VBox>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<videos>
+	<video>
+		<title>Parsley</title>
+		<videoid>MrGKO7IvOeU</videoid>
+		<videoid>5jk0TFgev0k</videoid>
+		<videoid>_w4oNIu0fm8</videoid>
+		<videoid>6wuoQFJb1Vg</videoid>
+		<videoid>sVQDZ5RJxbc</videoid>
+		<thumb>assets/images/flex@Beach/parsley.png</thumb>
+		
+	</video>
+	<video>
+		<title>Mate</title>
+		<thumb>assets/images/flex@Beach/mate.png</thumb>
+		<videoid>pk8SU20PSJ8</videoid>
+		<videoid>mN-5543FeD0</videoid>
+		<videoid>ZIu0YrzxgSM</videoid>
+		<videoid>GDaD6viGhCY</videoid>
+	</video>
+	<video>
+		<title>AS3 Signals</title>
+		<thumb>assets/images/flex@Beach/as3signal.png</thumb>
+		<videoid>nuwVey483OQ</videoid>
+		<videoid>ZG3BP-j3TkE</videoid>
+		<videoid>7tgEGGqOvBA</videoid>
+		<videoid>25pEPvW_t5U</videoid>
+		<videoid>Anps1t4QIKQ</videoid>
+	</video>
+	<video>
+		<title>FLAR</title>
+		<thumb>assets/images/flex@Beach/flar.png</thumb>
+		<videoid>21zGzucijhY</videoid>
+		<videoid>OApOMLI5N3Y</videoid>
+	</video>
+	<video>
+		<title>Air 2</title>
+		<thumb>assets/images/flex@Beach/air2.png</thumb>
+		<videoid>jdmsOiRt9pY</videoid>
+		<videoid>Qh54IR8JNZU</videoid>
+		<videoid>v0RLSl_IUSY</videoid>
+		<videoid>PVAj0SKUkeA</videoid>
+		<videoid>mrGO0QPPq3w</videoid>
+	</video>
+	<video>
+		<title>Flex 4</title>
+		<thumb>assets/images/flex@Beach/flex4.png</thumb>
+		<videoid>BM99YUF35Ps</videoid>
+		<videoid>r329ZCrehrY</videoid>
+		<videoid>Nt_lIKr1-CE</videoid>
+		<videoid>u9CJ8MdIsX4</videoid>
+	</video>
+	<video>
+		<title>Flash Catalyst</title>
+		<videoURL>http://mmse.na3.acrobat.com/p12687790/</videoURL>
+		<thumb>assets/images/flex@Beach/flashcat.png</thumb>
+	</video>
+	<video>
+		<title>Scrum</title>
+		<thumb>assets/images/flex@Beach/scrum.png</thumb>
+		<videoid>XnrmOzS1hTk</videoid>
+	</video>
+	<video>
+		<title>Away 3D</title>
+		<thumb>assets/images/flex@Beach/away3d.png</thumb>
+		<videoid>ii03iNQ7bQM</videoid>
+	</video>
+	<video>
+		<title>WebORB .NET</title>
+		<thumb>assets/images/flex@Beach/weborb.png</thumb>
+		<videoid>FAuYy1IE49Y</videoid>
+		<videoid>C7-rr6vLLzI</videoid>
+		<videoid>gvxiLxfStCI</videoid>
+		<videoid>2O0D_WiwXvE</videoid>
+	</video>
+	<video>
+		<title>Robot Legs</title>
+		<thumb>assets/images/flex@Beach/mate.png</thumb>
+		<videoid>_aXifpHXWb0</videoid>
+		<videoid>5yg0P0qGFao</videoid>
+		<videoid>zvjFmkQ7e2Q</videoid>
+	</video>
+	
+	<video>
+		<title>Feedback</title>
+		<thumb>assets/images/flex@Beach/feedback.png</thumb>
+		<videoid>ZCNboaSrqfs</videoid>
+	</video>
+</videos>

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test>
+  <settings>
+    <product>Full</product>
+    <step>Step1,Step2,Step3</step>
+    <interface>Fred/Extended</interface>
+    <mode>Test</mode>
+  </settings>
+  <information>
+    <testid></testid>
+    <totalquestions>50</totalquestions>
+    <totaltime>3600</totaltime>
+    <remainingtime>3000</remainingtime>
+  </information>
+  <userinformation>
+    <userid></userid>
+  </userinformation>
+  <questionlist>
+		<question set="154">
+		  <questionid>1234</questionid>
+		  <visited>1</visited>
+		  <marked>1</marked>
+		  <annotation>
+			<![CDATA[ annotation for question 1 ]]> 
+		  </annotation>
+		  <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ In a clinical study  examining the properties of &#946;-blockers, it is found that the atrioventricular  node is targeted and that the PR interval on ECG is lengthened. ]]>
+			</description>
+			<image>img1.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utilize the inositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Blockers cause a decrease in Na2p<font face='GG Superscript' >+2p</font> and Ca<font face='GG Superscript' >+</font>  currents]]>
+			</distractor>
+			<distractor>
+			 <![CDATA[Blockers cause a decrease in protein kinase C]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Blockers cause an increase in cyclic adenosine monophosphate]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[Atelectasis refers to lung collapse. It is divided into four types. Absorptive (obstructive) atelectasis results from airway obstruction, such as occurs with mucus, tumors, or foreign bodies. The air within the lungs distal to the obstruction is absorbed, the lung collapses, and the mediastinum then shifts toward the collapsed lung. With compression, atelectasis fluid within the pleural cavity, such as seen with congestive heart failure (CHF), causes increased pleural pressure, which collapses lung tissue. In this instance the mediastinum shifts away from the collapsed lung. In contraction, atelectasis fibrosis causes collapse of lung tissue. Patchy atelectasis may result from loss of pulmonary surfactant, which is seen in hyaline membrane disease of the newborn.Atelectasis refers to lung collapse. It is divided into four types. Absorptive (obstructive) atelectasis results from airway obstruction, such as occurs with mucus, tumors, or foreign bodies. The air within the lungs distal to the obstruction is absorbed, the lung collapses, and the mediastinum then shifts toward the collapsed lung. With compression, atelectasis fluid within the pleural cavity, such as seen with congestive heart failure (CHF), causes increased pleural pressure, which collapses lung tissue. In this instance the mediastinum shifts away from the collapsed lung. In contraction, atelectasis fibrosis causes collapse of lung tissue. Patchy atelectasis may result from loss of pulmonary surfactant, which is seen in hyaline membrane disease of the newborn.]]>
+		  </explanation>
+		</question>	
+		  <question set="154">
+		  <questionid>1235</questionid>
+		  <visited>1</visited>
+		  <marked>1</marked>
+		  <annotation>
+			<![CDATA[ annotation for question 1 ]]> 
+		  </annotation>
+		  <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An 85-year-old with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img2.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Which of the following is  true abou]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utiWhich of the following is  true abou]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[ReceptoWhich of the following is  true abouism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[RecepWhich of the following is  true abouhate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		 <question set="154">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img3.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Which of the following is  true abouol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors Which of the following is  true abouiphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the Which of the following is  true abou  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the inositol Which of the following is  true abou]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		 <question set="123">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>4</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img4.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utilize the inositolWhich of the following is  true abou mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the inositol triphosphate  Which of the following is  true abou]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the Which of the following is  true abou triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utiWhich of the following is  true abouinositol triphosphate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>
+		 <question set="123">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>1</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An 85-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+		<image>img1.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utiliWhich of the following is  true abounositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[RecWhich of the following is  true abouze the inositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize Which of the following is  true abounositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utiliWhich of the following is  true abouhe inositol triphosphate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		 <question set="123">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An 85-year with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img2.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utilize the Which of the following is  true abou triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the inosWhich of the following is  true abouhosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilWhich of the following is  true aboue inositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utWhich of the following is  true abouiphosphate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		
+		 <question set="-1">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An 85-year with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img3.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utilize the Which of the following is  true abou triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the inosWhich of the following is  true abouhosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilWhich of the following is  true aboue inositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utWhich of the following is  true abouiphosphate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		
+		 <question set="0">
+		  <questionid>1235</questionid>
+		  <visited>0</visited>
+		  <marked>0</marked>
+		  <annotation>
+			<![CDATA[]]> 
+		  </annotation>
+		   <useranswer>2</useranswer>
+		  <correctanswer>2</correctanswer>
+		  <timetaken>65</timetaken>
+		  <stem>
+			<description>
+			  <![CDATA[ An 85-year with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+			</description>
+			<image>img4.jpg</image>
+			<imagecomment>Image comment will come here..</imagecomment>
+		  </stem>
+		<leadin><![CDATA[Which of the following is  true about &#946;-blockers and &#946; receptors?]]></leadin>
+		  <distractorlist>
+			<distractor>
+			  <![CDATA[Receptors utilize the Which of the following is  true abou triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilize the inosWhich of the following is  true abouhosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utilWhich of the following is  true aboue inositol triphosphate  mechanism]]>
+			</distractor>
+			<distractor>
+			  <![CDATA[Receptors utWhich of the following is  true abouiphosphate  mechanism]]>
+			</distractor>
+		  </distractorlist>
+		  <explanation>
+		  	<![CDATA[An 85-year-old man with a history of congestive heart failure, diabetes, and alcohol-induced dilated cardiomyopathy presents to the emergency department with a chief complaint of shortness of breath. In an effort to treat himself, he recently restarted a  course of calcium channel blockers prescribed years ago by his previous cardiologist. Physical examination yields significant jugular venous distention, an S<font face='Arial' size='8' >3</font>, and diffuse rales bilaterally. X-ray film of the chest reveals pulmonary edema with cardiomegaly. ]]>
+		  </explanation>
+		</question>	
+		
+  </questionlist>
+</test>

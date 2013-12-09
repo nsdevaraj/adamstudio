@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	 initialize="readFromFile()">
+	<mx:Script>
+		<![CDATA[
+		import flash.utils.setTimeout;
+		import flash.net.navigateToURL;
+		import mx.messaging.messages.ErrorMessage;
+		import mx.events.CloseEvent;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import mx.rpc.IResponder;
+		import com.adams.dt.event.generator.SequenceGenerator;
+
+    	import mx.controls.Alert;
+		import com.adams.dt.event.ChannelSetEvent;
+    	import com.adams.dt.event.AuthenticationEvent;
+    	import com.adams.dt.model.vo.LoginVO;
+    	import com.adams.dt.model.ModelLocator;
+        import com.adobe.cairngorm.control.CairngormEventDispatcher;
+        
+		[Bindable]	
+		public var autoLogin:Boolean;
+		[Bindable]
+		private var prefsXML:XML;
+		public var userID:String;
+		public var passwordStr:String;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();   
+		private var _monitorValue:Boolean;
+		private var _logginOut:Boolean;
+	   
+	   	public function get logginOut():Boolean
+	   	{
+	   		return _logginOut;
+	   	}
+	   	public function set logginOut(str:Boolean):void
+	   	{
+		   	if(str){
+		   		saveToFile('','');	
+		   	}
+	   
+	   } 
+       public function loginUser() : void
+       {
+			var loginVO : LoginVO = new LoginVO();
+			loginVO.userName = usernameTxt.text;
+			loginVO.password = passwordTxt.text;
+			var csevent:ChannelSetEvent = new ChannelSetEvent( ChannelSetEvent.SET_CHANNEL );
+			csevent.loginVO = loginVO;
+			csevent.dispatch(); 
+			setTimeout(saveRememberPassword,2000);
+       }
+       private function saveRememberPassword():void
+       {
+	       	if(model.loginErrorMesg==""){
+	          	if(autoLogin){
+					saveToFile(userID,passwordStr);			
+				}else{
+					if(prefsXML==null){
+						saveToFile('', '');	
+					}
+				}
+	         }
+       }
+       public function saveToFile(user:String,password:String):void 
+       { 
+   			model.userNameTxt = user;
+   			model.passwordTxt = password;
+			var file:File = File.userDirectory;
+			file = file.resolvePath("apSettings.xml");
+			var fileStream:FileStream = new FileStream(); 
+			fileStream.openAsync(file, FileMode.WRITE);
+			var fileText:String = '<root><userID>'+model.userNameTxt+'</userID><passWord>'+model.passwordTxt+'</passWord><language>'+'Fr'+'</language><sound>'
+			+model.enableAlertSound+'</sound><alert>'+model.alertDisplayTime+'</alert><AutoStart>'+model.launchOnStartUp+'</AutoStart></root>'; 
+			fileStream.writeUTFBytes(fileText);
+			fileStream.close(); 
+		}
+		public function readFromFile():void 
+		{
+			switch (model.CF){
+				case 1:
+				loginContent.width = 417;
+				loginContent.height = 229;
+				break;
+				case 2:
+				loginContent.width = 417;
+				loginContent.height = 242;
+				break;
+				case 3:
+				loginContent.width = 427;
+				loginContent.height = 202;
+				break;
+				case 4:
+				loginContent.width = 427;
+				loginContent.height = 202;
+				break;
+				case 5:
+				loginContent.width = 422;
+				loginContent.height = 202;
+				break;
+				case 6:
+				loginContent.width = 417;
+				loginContent.height = 229;
+				break;
+			}
+			var file:File = File.userDirectory;
+			file = file.resolvePath("apSettings.xml");
+			var fileStream:FileStream = new FileStream(); 
+			fileStream.openAsync(file, FileMode.READ);
+			fileStream.addEventListener(IOErrorEvent.IO_ERROR, errorHandler, false, 0,true);  
+			fileStream.addEventListener(Event.COMPLETE, processXMLData, false, 0,true); 
+		}
+		public function errorHandler(event:IOErrorEvent):void 
+		{  
+		}				
+		public function processXMLData(event:Event):void 
+		{ 
+			prefsXML = XML(event.currentTarget.readUTFBytes(event.currentTarget.bytesAvailable));
+			event.currentTarget.close();	
+			if( ( String(prefsXML.userID).length > 0 ) && ( String(prefsXML.userID) != "null" ) ) {
+				model.userNameTxt = prefsXML.userID
+				model.passwordTxt = prefsXML.passWord
+				autoLogin = true;
+				auto.selected = autoLogin;					
+				usernameTxt.text = model.userNameTxt;
+				passwordTxt.text = model.passwordTxt; 
+				loginUser();
+			}
+			model.alertDisplayTime = prefsXML.alert;
+		 	model.launchOnStartUp = prefsXML.AutoStart;
+		 	model.enableAlertSound = prefsXML.sound;
+			//NativeApplication.nativeApplication.startAtLogin = prefsXML.AutoStart=="true"?true:false; 
+			usernameTxt.setFocus();
+			 
+		}	
+		public function login(eve:MouseEvent = null):void 
+		{ 
+			model.preloaderVisibility = true;		
+			userID = usernameTxt.text;
+		    passwordStr = passwordTxt.text;
+			loginUser();
+		}
+		    ]]>
+</mx:Script>
+<mx:Canvas id="loginContent" styleName="loginPanelStyle" verticalCenter="-10" horizontalCenter="0">
+	<mx:Form id="loginForm"
+		verticalCenter="35"
+		horizontalCenter="20"
+		verticalGap="15">
+		<mx:FormItem id="usernameLabel"
+		label="Nom d'utilisateur:" fontSize="12">
+			<mx:TextInput id="usernameTxt"
+				text="{model.login.userName}"/>
+				<!--text="{model.login.userName}"-->
+		</mx:FormItem>
+		<mx:FormItem id="passwordLabel"
+		label="Mot de passe:"
+			fontSize="12">
+			<mx:TextInput id="passwordTxt"
+				text="{ model.login.password }"
+				displayAsPassword="true"
+				enter="login()" />
+				<!--text="{ model.login.password }"-->
+		</mx:FormItem>
+		
+		<mx:FormItem horizontalAlign="right">
+			<mx:Button id="loginLabel"
+			label="Connexion"
+				click="login()" />
+		</mx:FormItem>
+	</mx:Form>
+ 	<mx:Button id="closeBtn" styleName="loginCloseBTN" click="stage.nativeWindow.close()"/>
+	<mx:Text id="errorMesg" 
+		text="{model.loginErrorMesg}"
+		visible="{model.loginErrorMesg!=null}"
+		filters="{[new DropShadowFilter(1, 45)]}"
+		styleName="loginErrorTxt"/>
+	<mx:CheckBox id="auto" styleName="autoLoginCheckBox"
+		change="{autoLogin=auto.selected}"
+		label="Se souvenir de moi"
+		bottom="27"
+		left="20"/>
+</mx:Canvas>		
+
+</mx:Canvas>

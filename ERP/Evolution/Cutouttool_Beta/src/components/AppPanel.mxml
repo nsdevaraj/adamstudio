@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" xmlns:qs="components.qs.controls.*" height="100%"  xmlns:cmp = "components.*" initialize="initCan()" 
+		creationComplete="{Controller.getInstance().registerView = this}">
+<mx:Metadata>
+	[Event(name="logOut", type="flash.events.Event")]
+</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import mx.events.CloseEvent;
+		import business.AccessRights;
+		import controller.Controller;
+		import mx.core.Application;
+		import mx.controls.Text;
+		import mx.effects.easing.Elastic;
+		import mx.effects.easing.Bounce;
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+		import mx.effects.Resize;
+		import mx.controls.Image;
+		private var macToolTip:Text = new Text();
+		private var logOutTip:Text = new Text();
+		[Bindable] public var images:Array;
+		private var type:String = Controller.getInstance().userObj.type;
+		private var macItems:ArrayCollection = AccessRights['type'+type];
+		[Bindable]
+		public var selectedChildVal:Number = 0;
+		public function initCan():void{
+			type = Controller.getInstance().userObj.type;
+			macItems = AccessRights['type'+type];
+			var images:Array = [];
+			for(var i:int=0;i<macItems.length;i++)
+ 			{
+				images.push(macItems[i].src);
+			}
+			this.images = images;
+			loadStack()
+		}
+		private var _childName:String='';
+		public function set childName(str:String):void{
+			_childName = str
+			loadChild();
+		}
+		public function loadStack():void{
+			trace("----------------->")
+			view.selectedIndex = Application.application.currentViewIndex;
+		}
+		private function overItem(event:Event):void{
+			event.currentTarget.scaleX = 1;
+			event.currentTarget.scaleY = 1;
+		}
+		private function outItem(event:Event):void{
+			event.currentTarget.scaleX = .5;
+			event.currentTarget.scaleY = .5;
+		}
+		private function clickItem(event:Event):void{
+			var nameId:String = macItems[Fisheye(event.currentTarget).selectedIndex].name;
+			fromother=false;
+			switch(nameId){
+				case 'newTask':
+				view.selectedChild = newTaskView;
+				if(newTaskForm!=null)newTaskForm.init();
+				break;
+				case 'pendingTask':
+					view.selectedChild = pendingTaskView;
+					if(cutoutInterface!=null)cutoutInterface.init();		
+				break;
+				case 'report':
+				view.selectedChild = reportView;
+				if(reportForm!=null) reportForm.init();
+				break;
+				case 'backOffice':
+				view.selectedChild = backOfficeView;
+					if(backOff!=null) backOff.init();
+				break;
+				case 'logOut':
+					confirmLogOut();
+					
+				break;
+				default:
+
+				break;
+			} 
+		}
+		private function confirmLogOut():void{
+			Alert.show("Are sure you want to logout", "Message", Alert.YES | Alert.NO,this,logOutHandler,null,Alert.NO);
+		}
+		private function logOutHandler(event:CloseEvent):void{
+			 if (event.detail==Alert.YES) {
+                   dispatchEvent(new Event("logOut"));
+             }
+		}
+		private function loadChild():void{			
+			switch(_childName){
+				case 'NewTask':
+					selectedChildVal=1;
+					view.selectedChild = newTaskView;
+					if(newTaskForm!=null)newTaskForm.init();
+				break;
+				case 'PendingTask':
+					selectedChildVal=0;
+					view.selectedChild = pendingTaskView;
+					if(cutoutInterface!=null)cutoutInterface.init();						
+				break;
+				case 'Report':
+					selectedChildVal=2;
+					view.selectedChild = reportView;
+					if(reportForm!=null) reportForm.init();
+				break;
+				case 'BackOffice':
+					selectedChildVal=3;
+					view.selectedChild = backOfficeView;
+					if(backOff!=null) backOff.init()
+				break;
+			}
+			fromother=false;
+			Application.application.currentViewIndex = selectedChildVal;
+		}
+		/* public var cutoutInterface:CutOutToolInterface;
+		public var newTaskForm:CutOutToolInterface;
+		public var reportForm:Re;
+		public var backOff:BackOffice;
+		public var userForm:UserRegistrationForm; */
+		/* public function loadNewTask():void{
+			
+		}
+		public function loadPendingTask():void{
+			
+		}
+		public function loadReport():void{
+			
+		}
+		public function loadBackOffice():void{
+			
+		} */
+		private function loadUserReg():void{
+			view.selectedChild = userRegView;
+			if(userForm!=null){
+				userForm.init();
+			}
+		}
+		
+		private function feRollOver(event:MouseEvent):void{
+			 if(macStage.numChildren!=2){
+			 	macStage.removeChild(macToolTip);	
+			 }
+			var index:int = Fisheye(event.currentTarget).hilightedItemIndex;
+			macToolTip.text =(index!=-1)? macItems[Fisheye(event.currentTarget).hilightedItemIndex].name:'';
+			macToolTip.x = (event.currentTarget.mouseX+fisheye.x -60);
+			macToolTip.y = 78;
+			macToolTip.setStyle("color",0x000000);
+			macToolTip.setStyle("fontSize",15);
+			macToolTip.setStyle("fontWeight","bold");
+			macToolTip.setStyle("backGroundColor","bold");
+			macToolTip.selectable = false;
+			macStage.addChild(macToolTip);
+		}
+		private function remText():void{
+			if(macStage.numChildren!=2){
+			 	macStage.removeChild(macToolTip);	
+			 }
+		}
+		public var fromother:Boolean = false;
+		public var fromotherStr:String = '';
+		private var _id:String = ''
+		private function loadSelectedtaskVal(event:Event):void{
+			view.selectedChild = pendingTaskView;
+			_id = event.currentTarget._id;
+			fromotherStr = event.currentTarget.id;			
+			fromother = true;
+			if(cutoutInterface!=null){
+				cutoutInterface.assignSelectedvalues(_id);
+			}
+			
+		}
+		private function loadThetask():void{
+			if(fromother){
+				cutoutInterface.assignSelectedvalues(_id);
+			} 
+		}
+		private function loadOtherItem():void{
+			if(fromotherStr == "reportForm"){
+				childName = "Report";
+			}else{
+				childName = "BackOffice";
+			}
+		}
+		public function init():void{
+		}
+		public function garbageCollection():void{
+			
+		}
+		
+	]]>
+</mx:Script>
+<mx:Parallel id="mvIN">
+        <mx:Fade duration="200" />
+        <mx:Move xFrom="500"
+                easingFunction="Elastic.easeOut"
+                duration="1000" />
+    </mx:Parallel>
+    <mx:Parallel id="mvOUT">
+        <mx:Fade duration="500" alphaTo="0" />
+        <mx:Move xTo="-300"  easingFunction="Elastic.easeIn"
+                duration="500" />
+        
+    </mx:Parallel>
+<mx:Resize id="imgEff" duration="100"  />
+<mx:Fade easingFunction="{Bounce.easeIn}"   id="myFI" duration="200" alphaFrom="0" alphaTo="1"/>
+<mx:Fade easingFunction="{Bounce.easeIn}"   id="myFO" duration="200" alphaFrom="1" alphaTo="0"/>
+<mx:Move easingFunction="{Elastic.easeOut}" id="myWU" duration="100" xTo="{-1000}"/>
+    <mx:Move easingFunction="{Bounce.easeIn}"  id="myWD" duration="200" xFrom="{stage.width}"/>
+      <mx:VBox width="100%" height="100%" horizontalAlign="center"  creationCompleteEffect="mvIN" verticalAlign="middle"  paddingTop="25">		
+		<mx:ViewStack id="view" width="100%" height="90%" selectedIndex="{selectedChildVal}" >
+			<mx:HBox horizontalAlign="center" verticalAlign="middle" id="pendingTaskView" label="pendingTaskLable" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}" >
+				<cmp:CutOutToolInterface id="cutoutInterface" loadOtherForm="{loadOtherItem()}" creationComplete="{loadThetask()}"/>
+			</mx:HBox>
+			<mx:HBox horizontalAlign="center" verticalAlign="middle" id="newTaskView" label="newTaskLable" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}" >
+				<cmp:NewTask id="newTaskForm" newTaskCreationComplete="{childName = 'PendingTask'}"/>
+			</mx:HBox>			
+			<mx:HBox horizontalAlign="center" verticalAlign="middle" id="reportView" label="reportLable" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}" >
+				<cmp:MonthReport_ChartRep id="reportForm" loadSelectedTask="{loadSelectedtaskVal(event)}"/>
+			</mx:HBox>
+			<mx:HBox horizontalAlign="center" verticalAlign="middle" id="backOfficeView" label="backOfficeLable" width="100%" height="100%" hideEffect="{myFO}" showEffect="{mvIN}" >
+				<cmp:BackOffice id="backOff" loadSelectedTask="{loadSelectedtaskVal(event)}" loadUserRegistration="{loadUserReg()}"/>
+			</mx:HBox>
+			<mx:HBox horizontalAlign="center" verticalAlign="middle" id="userRegView" label="new User Registration" width="100%" height="100%" hideEffect="{myFO}" showEffect="{mvIN}" >
+				<cmp:UserRegistrationForm id="userForm" loadBackOff="{childName = 'BackOffice'}"/>
+			</mx:HBox>			
+		</mx:ViewStack>	
+	<mx:Canvas id="macStage" width="100%" height="100"  horizontalScrollPolicy="off" verticalScrollPolicy="off" >
+		<mx:HBox horizontalAlign="center" bottom="0" height="100%" verticalAlign="bottom" width="100%" >
+			<mx:ApplicationControlBar width="400" height="60"  />	
+		</mx:HBox>
+	
+		<mx:HBox width="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off"  height="100%" id="macBox" horizontalGap="15" horizontalAlign="center" verticalAlign="bottom" paddingBottom="8" >
+			 
+			<qs:Fisheye id="fisheye" width="300" height="100%" dataProvider="{images}" 
+				stateProperty="currentState" click="clickItem(event)" mouseOut="remText()" mouseMove="feRollOver(event)" rolloverValue="hilighted" defaultValue="" selectedValue="selected"
+				verticalAlign="bottom"
+				horizontalAlign="center" >			
+				<qs:itemRenderer>
+					<mx:Component id="imageRenderer">
+						<qs:BitmapTile>
+							<qs:states>
+								<mx:State name="selected">
+									<mx:SetStyle name="borderStyle" value="none" />
+									<mx:SetStyle name="borderAlpha" value="0" />
+									<mx:SetStyle name="borderWidth" value="3" />
+									<mx:SetProperty name="filters" />
+								</mx:State>
+								<mx:State name="hilighted">
+									<mx:SetProperty name="filters" />
+								</mx:State>
+							</qs:states>						
+						</qs:BitmapTile>
+					</mx:Component>
+				</qs:itemRenderer>
+			</qs:Fisheye>
+			
+		</mx:HBox>	
+		
+	</mx:Canvas> 
+</mx:VBox>	
+	
+</mx:Canvas>

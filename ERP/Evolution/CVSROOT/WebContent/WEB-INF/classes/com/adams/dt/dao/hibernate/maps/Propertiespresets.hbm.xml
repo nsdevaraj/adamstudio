@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Propertiespresets" table="properties_presets">
+        <id name="propertyPresetId" type="integer" column="property_preset_ID">
+            <generator class="increment" />
+        </id>
+        <property name="fieldLabel">
+            <column name="field_label" />
+        </property>
+        <property name="fieldName">
+            <column name="field_name" />
+        </property>
+        <property name="fieldType">
+            <column name="field_type" />
+        </property>
+        <property name="fieldOptionsValue">
+            <column name="field_options_value" />
+        </property>
+        <property name="fieldDefaultValue">
+            <column name="field_default_value" />
+        </property>
+        <property name="editablePropertyPreset">
+            <column name="editable" />
+        </property>
+    </class> 
+    <query name="Propertiespresets.findByName">
+        select u from Propertiespresets u where u.fieldName= ?
+    </query>
+</hibernate-mapping>

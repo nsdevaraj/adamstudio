@@ -1,0 +1,581 @@
+/*
+
+Copyright (c) @year@ @company.name@, All Rights Reserved 
+
+@author   @author.name@
+@contact  @author.email@
+@project  @project.name@
+
+@internal 
+
+*/
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace components "com.adams.dt.view.components.*";
+@namespace autocomplete "com.adams.dt.view.components.autocomplete.*";
+
+@font-face
+{
+	fontFamily: Calibri;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: true;
+}
+@font-face
+{
+	fontFamily: Calibri;
+	src: url("/assets/fonts/CALIBRIB.TTF");
+	font-weight:bold;
+	embedAsCFF: true;
+}
+@font-face
+{
+	fontFamily: CalibriMX;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: false;
+}
+mx|Button,mx|DateChooser,mx|List{
+	font-family: Calibri;
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+}
+mx|TextInput{
+	fontFamily:CalibriMX;
+} 
+mx|UITextFormat,mx|UITextField{
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+}
+mx|Alert{
+	font-family: Calibri;
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+	background-color:#313235;
+}
+mx|DateField {
+	font-family: Calibri;
+	textInputClass: ClassReference("mx.controls.MXFTETextInput");
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+} 
+mx|Accordion{
+	content-background-alpha:0;
+	border-alpha:0;
+}
+ 
+mx|TabNavigator{
+	content-background-alpha:0;
+	content-background-color:#ff0000;
+	background-color:#0000ff;
+	background-alpha:0;
+}
+s|DropDownList{
+	skin-class:ClassReference('assets.skins.DropDownSkin');
+}
+.headerLabel{
+	color:#b6b6b6;
+}
+s|Label.deadLineLabel{
+	color:#d0d11c;
+}
+s|Application{
+	chrome-color:#2d3239;
+	content-background-color:#313235;
+	color:#bdbdbd;
+	fontFamily: Calibri;
+	skin-class:ClassReference('assets.skins.ApplicationSkin');
+	background-color:#2d3540;
+	symbol-color:#ffff00;
+	focus-color:#efefef;
+}
+s|TextArea{
+	border-color : #4f4f4f;
+}
+s|Panel{
+	background-color:#3f3f3f;
+} 
+s|NumericStepper.dateStepper{
+	skin-class:ClassReference('assets.skins.NumericStepperSkin');
+}
+s|DataGrid{
+	skin-class:ClassReference('assets.skins.DataGridSkin');
+	roll-over-color:#5a5a5a;
+	selection-color:#3f646b;
+	caret-color:#313235;
+	content-background-alpha:0;
+	border-color:#232323;
+}
+mx|List{
+	selection-color:#3f646b;
+	alternating-item-colors:#323334,#3c3d3f;
+	border-color:#4f4f50;
+	roll-over-color:#5a5a5a;
+}
+s|List{
+	roll-over-color:#5a5a5a;
+	selection-color:#3f646b;
+	caret-color:#313235;
+	border-color:#4f4f50;
+	alternating-item-colors:#323334,#3c3d3f;
+	content-background-alpha:0;
+}
+s|List.fileList{
+	roll-over-color:#5a5a5a;
+	selection-color:#3f646b;
+	caret-color:#313235;
+	border-color:#4f4f50;
+	border-alpha:0;
+	content-background-alpha:0;
+}
+s|ToggleButton.fullScreenToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	overSkin:Embed('assets/images/admin_over.png');
+	upSkin:Embed('assets/images/admin.png');
+	downSkin:Embed('assets/images/admin.png');
+	selectedSkin:Embed('assets/images/admin_over.png');
+}
+s|ToggleButton.newProjectToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	overSkin:Embed('assets/images/newProject_over.png');
+	upSkin:Embed('assets/images/newProject.png');
+	downSkin:Embed('assets/images/newProject.png');
+	selectedSkin:Embed('assets/images/newProject_over.png');
+}
+s|ToggleButton.dashboardToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	overSkin:Embed('assets/images/dashBoard_over.png');
+	upSkin:Embed('assets/images/dashBoard.png');
+	downSkin:Embed('assets/images/dashBoard.png');
+	selectedSkin:Embed('assets/images/dashBoard_over.png');
+}
+s|ToggleButton.todoToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	overSkin:Embed('assets/images/todo_over.png');
+	upSkin:Embed('assets/images/todo.png');
+	downSkin:Embed('assets/images/todo.png');
+	selectedSkin:Embed('assets/images/todo_over.png');
+}
+s|Button.fullScreenBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/fullScreen_over.png');
+	upSkin:Embed('assets/images/fullScreen.png');
+	downSkin:Embed('assets/images/fullScreen.png');
+	disabledSkin:Embed('assets/images/fullScreen.png');
+}
+s|Button.refreshBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/refresh_over.png');
+	upSkin:Embed('assets/images/refresh.png');
+	downSkin:Embed('assets/images/refresh.png');
+	disabledSkin:Embed('assets/images/refresh.png');
+}
+s|Button.settingsBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/settings_over.png');
+	upSkin:Embed('assets/images/settings.png');
+	downSkin:Embed('assets/images/settings.png');
+	disabledSkin:Embed('assets/images/settings.png');
+}
+s|Button.logoutBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/logout_over.png');
+	upSkin:Embed('assets/images/logout.png');
+	downSkin:Embed('assets/images/logout.png');
+	disabledSkin:Embed('assets/images/logout.png');
+}
+s|Button.backU{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/backU.png');
+	upSkin:Embed('assets/images/backU_over.png');
+	downSkin:Embed('assets/images/backU_over.png');
+	disabledSkin:Embed('assets/images/backU.png');
+}
+s|Button.dropdownArrow{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/dropdownArrow_over.png');
+	upSkin:Embed('assets/images/dropdownArrow.png');
+	downSkin:Embed('assets/images/dropdownArrow.png');
+	disabledSkin:Embed('assets/images/dropdownArrow_over.png');
+}
+s|Button.personSelection{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/personSelection_over.png');
+	upSkin:Embed('assets/images/personSelection.png');
+	downSkin:Embed('assets/images/personSelection.png');
+	disabledSkin:Embed('assets/images/personSelection_over.png');
+}
+/*General Screen*/
+/*s|Button.mailIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/mail_over.png');
+	upSkin:Embed('assets/images/mail.png');
+	downSkin:Embed('assets/images/mail.png');
+	disabledSkin:Embed('assets/images/mail_over.png');
+}*/
+s|Button.standBy{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/standby_over.png');
+	upSkin:Embed('assets/images/standby.png');
+	downSkin:Embed('assets/images/standby.png');
+	disabledSkin:Embed('assets/images/standby_over.png');
+}
+/**/
+s|Button.rssIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/rss.png');
+	upSkin:Embed('assets/images/rss.png');
+	downSkin:Embed('assets/images/rss.png');
+	disabledSkin:Embed('assets/images/rss.png');
+}
+/*Todo*/
+s|Button.saveIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/save_over.png');
+	upSkin:Embed('assets/images/save.png');
+	downSkin:Embed('assets/images/save.png');
+	disabledSkin:Embed('assets/images/save_over.png');
+}
+/*Todo_Status Icons*/
+s|Button.statusNormal{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/status_over.png');
+	upSkin:Embed('assets/images/status.png');
+	downSkin:Embed('assets/images/status.png');
+	disabledSkin:Embed('assets/images/status_over.png');
+}
+s|Button.statusSelected{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/status_selected.png');
+	upSkin:Embed('assets/images/status_selected.png');
+	downSkin:Embed('assets/images/status_selected.png');
+	disabledSkin:Embed('assets/images/status_selected.png');
+}
+s|Button.statusPreSelect{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/status.png');
+	upSkin:Embed('assets/images/status_over.png');
+	downSkin:Embed('assets/images/status_over.png');
+	disabledSkin:Embed('assets/images/status.png');
+}
+s|Button.noteBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/note_over.png');
+	upSkin:Embed('assets/images/note.png');
+	downSkin:Embed('assets/images/note.png');
+	disabledSkin:Embed('assets/images/note_over.png');
+}
+/*Todo_Status Icons with Label*/
+s|Button.statusNormalIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/status_over.png');
+	upSkin:Embed('assets/images/status.png');
+	downSkin:Embed('assets/images/status.png');
+	disabledSkin:Embed('assets/images/status_over.png');
+}
+s|Button.statusSelectedIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/status_selected.png');
+	upSkin:Embed('assets/images/status_selected.png');
+	downSkin:Embed('assets/images/status_selected.png');
+	disabledSkin:Embed('assets/images/status_selected.png');
+}
+s|Button.statusPreSelectIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/status.png');
+	upSkin:Embed('assets/images/status_over.png');
+	downSkin:Embed('assets/images/status_over.png');
+	disabledSkin:Embed('assets/images/status.png');
+}
+/**/
+/*Files*/
+s|Button.previewItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/preview_over.png');
+	upSkin:Embed('assets/images/files/preview.png');
+	downSkin:Embed('assets/images/files/preview.png');
+	disabledSkin:Embed('assets/images/files/preview.png');
+}
+s|Button.compareItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/compare_over.png');
+	upSkin:Embed('assets/images/files/compare.png');
+	downSkin:Embed('assets/images/files/compare.png');
+	disabledSkin:Embed('assets/images/files/compare.png');
+}
+
+s|Button.renameItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/rename_over.png');
+	upSkin:Embed('assets/images/files/rename.png');
+	downSkin:Embed('assets/images/files/rename.png');
+	disabledSkin:Embed('assets/images/files/rename.png');
+}
+s|Button.deleteItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/delete_over.png');
+	upSkin:Embed('assets/images/files/delete.png');
+	downSkin:Embed('assets/images/files/delete.png');
+	disabledSkin:Embed('assets/images/files/delete.png');
+}
+s|Button.infoItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/info_over.png');
+	upSkin:Embed('assets/images/files/info.png');
+	downSkin:Embed('assets/images/files/info.png');
+	disabledSkin:Embed('assets/images/files/info.png');
+}
+s|Button.downloadItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/download_over.png');
+	upSkin:Embed('assets/images/files/download.png');
+	downSkin:Embed('assets/images/files/download.png');
+	disabledSkin:Embed('assets/images/files/download.png');
+}
+s|Button.replaceItem{
+	skin-class:ClassReference('assets.skins.IconLabelFileSkin');
+	overSkin:Embed('assets/images/files/replace_over.png');
+	upSkin:Embed('assets/images/files/replace.png');
+	downSkin:Embed('assets/images/files/replace.png');
+	disabledSkin:Embed('assets/images/files/replace.png');
+}
+s|Button.optionsItem{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/files/option_over.png');
+	upSkin:Embed('assets/images/files/option.png');
+	downSkin:Embed('assets/images/files/option.png');
+	disabledSkin:Embed('assets/images/files/option.png');
+}
+/**/
+
+s|Button.addPersonIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/addIcon_over.png');
+	upSkin:Embed('assets/images/addIcon.png');
+	downSkin:Embed('assets/images/addIcon.png');
+	disabledSkin:Embed('assets/images/addIcon_over.png');
+}
+s|Button.modifyIcon{
+	skin-class:ClassReference('assets.skins.Button_IconLabelSkin');
+	overSkin:Embed('assets/images/modifyIcon_over.png');
+	upSkin:Embed('assets/images/modifyIcon.png');
+	downSkin:Embed('assets/images/modifyIcon.png');
+	disabledSkin:Embed('assets/images/modifyIcon_over.png');
+}
+s|Button.mpvIcon{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/mpvIcon_over.png');
+	upSkin:Embed('assets/images/mpvIcon.png');
+	downSkin:Embed('assets/images/mpvIcon.png');
+	disabledSkin:Embed('assets/images/mpvIcon.png');
+}
+s|Button.mesgCloseIcon{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/msgCloseIcon.png');
+	upSkin:Embed('assets/images/msgCloseIcon.png');
+	downSkin:Embed('assets/images/msgCloseIcon.png');
+	disabledSkin:Embed('assets/images/msgCloseIcon.png');
+}
+s|Button.deleteBtn{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/deleteIcon_over.png');
+	upSkin:Embed('assets/images/deleteIcon.png');
+	downSkin:Embed('assets/images/deleteIcon.png');
+	disabledSkin:Embed('assets/images/deleteIcon.png');
+}
+
+
+s|ToggleButton.priorityToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	overSkin:Embed('assets/images/yellowStar.png');
+	upSkin:Embed('assets/images/grayStar.png');
+	downSkin:Embed('assets/images/grayStar.png');
+	selectedSkin:Embed('assets/images/yellowStar.png');
+}
+s|ToggleButton.sortDateToggle{
+	skin-class:ClassReference('assets.skins.toggleButton.SortToggleButtonSkin');
+	overSkin:Embed('assets/images/sortIconUp.png');
+	upSkin:Embed('assets/images/sortIconUp.png');
+	downSkin:Embed('assets/images/sortIconUp.png');
+	selectedSkin:Embed('assets/images/sortIconDown.png');
+}
+s|ButtonBar.textAlignBar{
+	skin-class:ClassReference('assets.skins.ButtonBar.ButtonBarSkin');
+}
+s|ButtonBar.todoStatusBar{
+	skin-class:ClassReference('assets.skins.ButtonBar.TodoButtonBarSkin');
+}
+s|ButtonBar.generalButtonBar{
+	skin-class:ClassReference('assets.skins.ButtonBar.ButtonBarSkin');
+}
+
+s|FormHeading{
+	font-size:18;
+	color:#959595;
+	font-weight:normal;
+}
+s|FormItem{
+	skin-class:ClassReference('assets.skins.form.FormItemSkin');
+	font-weight:normal;
+}
+s|FormItem.stackedForm{
+	skinClass : ClassReference("assets.skins.form.StackedFormItemViewSkin");
+}
+s|ToggleButton.ampmChooser{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonPlainSkin');
+}
+/*s|BorderContainer.controlsBg{
+background-color:#313235;
+border-color:#515154;
+}*/
+s|BorderContainer{
+	background-color:#313235;
+	border-color:#515154;
+}
+.projectHeaderBC{
+	background-color:#000000;
+	border-color:#515154;
+}
+
+.bgColor{
+	background-color:#ffffff;
+}
+
+autocomplete|AutoCompleteView{
+	skin-class:ClassReference('com.adams.dt.view.AutoCompleteSkin');
+}
+components|TitledBorderBox{
+	skin-class:ClassReference('assets.skins.ResizableTitledBorderBoxSkin');
+	borderColor:#515154;
+	backgroundColor:#313235;
+	titleStyleName:subHeaderLabel;
+	dropShadowVisible:true; 
+}
+/* PDFTool Skins */
+s|ToggleButton.LineBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#LineTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+}
+s|ToggleButton.RectangleBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+}
+s|ToggleButton.NormalRectangleBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIconOver');
+}
+s|ToggleButton.NoteOnOffBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOffSkin');
+}
+s|ToggleButton.NoteExpandCollpseBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#ExpandBtnSkin');
+}
+s|ToggleButton.PlayPauseBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#pauseButtonDownSkin');
+}
+s|ToggleButton.OvalBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+}
+s|ToggleButton.PathBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+}
+s|ToggleButton.RegionPointerToggleSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkinSelected');
+}
+s|Button.PDF1BtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIconSelect');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIconSelect');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIcon');
+	disabled-alpha: 0.5;
+}
+s|Button.PDF2BtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIconSelect');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIconSelect');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIcon');
+	disabled-alpha: 0.5;
+}
+s|Button.HelpBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	disabled-alpha: 0.5;
+}
+s|Button.CompareBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	disabled-alpha: 0.5;
+}
+s|Button.doubleViewToggleBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewUp');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewOver');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewOver');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewUp');
+	disabled-alpha: 0.5;
+}
+s|ToggleButton.commentListDisplayBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListOpenSkin');
+}
+s|Button.commentBoxBtnSkin{
+	color: #eeeeee;
+	disabled-color: #cccccc;
+}
+s|TextInput.commentBoxTxtSkin{
+	color: #eeeeee;
+	disabled-color: #cccccc;
+}
+/*Report Screen Icons*/
+s|Button.savePdfIcon{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/pdf_over.png');
+	upSkin:Embed('assets/images/pdf.png');
+	downSkin:Embed('assets/images/pdf.png');
+	disabledSkin:Embed('assets/images/pdf_over.png');
+}
+s|Button.saveXlsIcon{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	overSkin:Embed('assets/images/xls_over.png');
+	upSkin:Embed('assets/images/xls.png');
+	downSkin:Embed('assets/images/xls.png');
+	disabledSkin:Embed('assets/images/xls_over.png');
+}

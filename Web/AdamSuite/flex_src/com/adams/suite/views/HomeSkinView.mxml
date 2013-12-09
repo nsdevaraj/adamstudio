@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:mediators="com.adams.suite.views.mediators.*" xmlns:components="com.adams.suite.views.components.*" 
+		xmlns:views="com.adams.suite.views.*" >	
+	 
+	<fx:Metadata>
+		[HostComponent("com.adams.suite.views.mediators.HomeViewMediator")]
+	</fx:Metadata>   
+	<fx:Declarations> 
+		<mx:EmailValidator id="eMailValid" source="{mailId}" property="text"/>
+	</fx:Declarations>
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<s:Rect top="0" bottom="0" width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#212223"/>
+		</s:fill>
+	</s:Rect>
+	 
+	 <s:VGroup width="100%" height="100%" id="mainView" color="#3b3c3e" paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5">
+		<s:HGroup verticalAlign="middle" width="100%">
+			<s:TabBar id="LearnTestToggle"  selectedIndex="0">
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:Object upSource="@Embed('assets/images/learnMode.png')"
+								   selectedSource="@Embed('assets/images/learnMode_selected.png')"
+								   label="learn" toolTip="Learn Mode" />
+						<fx:Object upSource="@Embed('assets/images/testMode.png')"
+								   selectedSource="@Embed('assets/images/testMode_selected.png')"
+								   label="test" toolTip="Take up Test" />
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:TabBar>
+			<s:Label id="modeChange" text="LearnMode" styleName="headerStyle"/>
+			<mx:Spacer width="100%"/>
+			<s:Label id="timerLbl" maxDisplayedLines="1" styleName="headerStyle"/>
+			<components:NativeButton id="finishBtn" styleName="FinishIcon" toolTip="Finish"  visible="false" includeInLayout="false" />
+			<components:NativeButton id="feedbackbtn" toolTip="FeedBack" styleName="FeedBackIcon" />
+		</s:HGroup>
+		 <s:HGroup width="100%" height="100%">
+			 <s:Group width="300" height="100%">
+				 <s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#2b2c2d" /></s:fill></s:Rect>
+				 <s:Rect left="10" right="10" top="38" bottom="10"><s:fill><s:SolidColor color="#3a3c3d" /></s:fill></s:Rect>
+				 <s:HGroup top="10" left="10" right="10" horizontalAlign="right" verticalAlign="middle">
+					 <s:Label id="ChapterText" text="Chapter:"/>
+					 <s:DropDownList id="chapterSelection"  requireSelection="true" width="160"/>	 
+				 </s:HGroup>
+				 <s:Scroller top="38" left="10" right="10" bottom="10">
+					 <s:Group width="100%" height="100%" >
+					 <mx:Tree id="tocList" contentBackgroundAlpha="0" labelField="@label" borderVisible="false" color="#ffffff"
+							 width="100%" height="100%"  useRollOver="false" defaultLeafIcon="@Embed('assets/images/pdf.png')"/>
+					 </s:Group>
+				 </s:Scroller>	 
+			 </s:Group>
+			 <s:Group width="100%" height="100%">
+				 <s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#2b2c2d" /></s:fill></s:Rect>
+				 <s:Rect left="10" right="10" top="38" bottom="50"><s:fill><s:SolidColor color="#3a3c3d" /></s:fill></s:Rect>
+				 <views:Question id="question" top="10" bottom="50" left="20" right="10"/>
+				<!-- <mx:DataGrid id="qlist" top="10" bottom="50" left="20" right="10" editable="true" selectable="true"/>-->
+				 <s:HGroup right="10" bottom="10">
+					 <components:NativeButton id="firstBtn" styleName="FirstIcon" width="40" height="25" toolTip="First" />
+					 <components:NativeButton id="backBtn" styleName="BackIcon" width="40" height="25"  toolTip="Previous" />
+					 <components:NativeButton id="nextBtn" styleName="NextIcon" width="40" height="25" toolTip="Next" />
+					 <components:NativeButton id="lastBtn" styleName="LastIcon" width="40" height="25" toolTip="Last" />
+				 </s:HGroup>
+			 </s:Group>
+		 </s:HGroup>
+	 </s:VGroup> 
+	<!--POPUP FEEDBACK FORM-->
+	<s:Group width="100%" height="100%" id="feedBackForm" visible="false">
+		
+		<s:Rect width="100%" height="100%" alpha=".6"><s:fill><s:SolidColor color="#ffffff" /></s:fill></s:Rect>
+		<s:Group verticalCenter="0" horizontalCenter="0" >
+			<s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#2b2c2d" /></s:fill></s:Rect>
+			<s:Rect left="10" right="10" top="38" bottom="50"><s:fill><s:SolidColor color="#3a3c3d" /></s:fill></s:Rect>
+			
+			<mx:Form top="40" bottom="60" left="10" right="10">
+				<mx:FormItem label="Name" required="true">
+					<s:TextInput id="nameInput" width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="EmailId" required="true">
+					<s:TextInput id="mailId" width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="Comments" required="true" >
+					<s:TextArea id="feedback" width="200"/>
+				</mx:FormItem>
+			</mx:Form>
+			
+				<s:Label bottom="55" left="15" right="15" text="Note : you can suggest a question to be added in the FlexMock"/>
+				<s:HGroup bottom="0" height="55" verticalAlign="middle" left="10" right="10" horizontalAlign="center">
+					<components:NativeButton id="subFeedBack" label="Submit"/>
+					<components:NativeButton id="canFeedBack" label="Cancel"/>
+				</s:HGroup>
+		<s:Label text="Feedback"  styleName="headerStyle" horizontalCenter="0" top="10" left="10"/>
+		</s:Group>
+	</s:Group>
+</s:Skin>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml"
+	initialize="loadServerAddress()" enabled="{!model.preloaderVisibility}" 
+	layout="absolute" 
+	creationComplete="onCreationComplete()"
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" 
+	frameRate="24" resizing="false" 
+	xmlns:view="com.adams.dt.view.mainView.*"
+	xmlns:control="com.adams.dt.control.*"
+	xmlns:service="com.adams.dt.business.*"
+	xmlns:preloader="com.adams.dt.view.PDFTool.*">
+	 
+		<mx:Style source="assets/category/css/AppStyle.css"/>
+		<mx:Script> 
+			<![CDATA[
+			import mx.messaging.channels.StreamingAMFChannel;
+			import mx.messaging.events.ChannelEvent; 
+			import mx.core.UIComponent;
+			import com.adams.dt.business.ConfigDetailsDAODelegate;
+			import com.adams.dt.business.util.Register;
+			import com.adams.dt.view.components.chatscreen.asfile.MessageWindow;
+			import mx.managers.SystemManager;
+			import mx.core.Window;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.LocalDataBaseEvent;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.ViewState;
+			import mx.core.Container;
+			import mx.controls.Button;
+			import mx.core.Application;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.LangEvent;
+			import mx.messaging.ChannelSet;
+			import mx.collections.ArrayCollection;
+			import mx.messaging.channels.AMFChannel;
+			import air.update.ApplicationUpdaterUI;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.business.util.FramerateThrottler;
+			import adobe.utils.ProductManager;
+			import com.adams.dt.event.TranslationEvent;
+			
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
+			private var AlertWindow:MessageWindow = new MessageWindow();
+			private const IDLETIME:int = 120; //Seconds
+			[Bindable]
+			private var CFVisible:Boolean;
+			[Bindable]
+			private var DFVisible:Boolean;
+			private var serverFS:String;  
+			private var myevalLoader:URLLoader;
+			private var register :Register = new Register();
+			private function loadConfigDB():void{
+				 var delegate:ConfigDetailsDAODelegate = new ConfigDetailsDAODelegate();
+				var result:SQLResult = delegate.getAllConfigDetails()
+				var array:Array = [];
+				array = result.data as Array;
+				if(array!=null){
+					var configArrColl:ArrayCollection= new ArrayCollection(array);
+					for each(var obj:Object in configArrColl){
+						model[obj.Property] = obj.Value;
+					}
+				}  
+				 
+				var evalMinutesXML:String = model.evalMins;
+				var evalXMLURL:URLRequest = new URLRequest(evalMinutesXML);
+				myevalLoader = new URLLoader(evalXMLURL);
+				myevalLoader.addEventListener("complete", evalxmlLoaded,false,0,true);
+				
+				serverFS = model.FileServer; 
+				initialSetup(); 
+				loadCSS(); 
+			}
+			private function loadCSS():void{
+				switch(model.CF){
+					case 1:
+					StyleManager.loadStyleDeclarations('assets/category/css/DTStyle.swf');
+					break;
+					case 2:
+					StyleManager.loadStyleDeclarations('assets/category/css/CFStyle.swf');
+					break;
+					case 3:
+					StyleManager.loadStyleDeclarations('assets/category/css/DFStyle.swf');
+					break;
+					case 4:
+					StyleManager.loadStyleDeclarations('assets/category/css/GrayStyle.swf');
+					break;
+					case 5:
+					StyleManager.loadStyleDeclarations('assets/category/css/DiaDemStyle.swf');
+					break;
+					case 6:
+					StyleManager.loadStyleDeclarations('assets/category/css/DTGrayShine.swf');
+					break;
+				}
+			}
+			private function evalxmlLoaded(event:Event):void{
+				var evalXML:XML = XML(myevalLoader.data);
+				model.evalMinutes = int(evalXML.minutes);
+				register.checkRegistration();
+			}
+	 		private function init():void{
+				appUpdater.configurationFile = new File("app:/updateConfig.xml"); 
+				appUpdater.initialize();
+				appUpdater.isNewerVersionFunction=checkUpdate;
+
+				var langchannel:AMFChannel = new AMFChannel("my-polling-amf", model.serverLocation+"spring/messagebroker/amfpolling");
+   				var channelSet:ChannelSet = new ChannelSet();   				
+   				channelSet.addChannel(langchannel);
+   				model.langChannelSet = channelSet; 
+
+   				var pushchannel:AMFChannel = new AMFChannel("my-longpolling-amf", model.serverLocation+"spring/messagebroker/amflongpolling");
+   				var pushchannelSet:ChannelSet = new ChannelSet();
+   				pushchannelSet.addChannel(pushchannel);
+   				pushchannelSet.addChannel(langchannel);
+   				model.pushchannelset = pushchannelSet;
+   				model.pushadminchannelset = pushchannelSet; 
+   				   				
+   				var chatchannel:StreamingAMFChannel = new StreamingAMFChannel("my-streaming-amf", model.serverLocation + "spring/messagebroker/streamingamf");
+   				pushchannelSet.addChannel( chatchannel );
+   				model.chatChannelset = pushchannelSet; 
+   							   				 		 
+	    		initIdleWatch();
+				
+				var bounds:Rectangle = Screen.mainScreen.visibleBounds;
+				this.showGripper=false;
+				this.showStatusBar=false;
+				this.showTitleBar=false;
+				this.nativeWindow.x=0;
+				this.nativeWindow.y=((Capabilities.os.search("Mac") >= 0)?20:0);
+				this.width=bounds.bottomRight.x;
+				this.height=bounds.bottomRight.y-((Capabilities.os.indexOf("Mac OS") >= 0)?20:0);
+			}  
+			
+			private function onCreationComplete():void {
+				model.mainClass = this;
+			}
+			
+			public function navigateModule( id :String ):Button {
+				if(model.CF==2) return Button( CFMaincontainer.buttonCon.getChildByName( id ) );
+				else if(model.CF==3) return Button( DFMaincontainer.buttonCon.getChildByName( id ) );
+				else if(model.CF==4) return Button( whiteMaincontainer.buttonCon.getChildByName( id ) );
+				else if(model.CF==5) return Button( diaDemMaincontainer.buttonCon.getChildByName( id ) );
+				else if(model.CF==6) return Button( LegrandMaincontainer.buttonCon.getChildByName( id ) );
+				
+		    	else return Button( mainContainer.buttonCon.getChildByName( id ) ); 
+			}
+			
+			public function reboot():void {
+				var app:WindowedApplication = WindowedApplication(Application.application);
+				var mgr:ProductManager = new ProductManager("airappinstaller");
+				mgr.launch("-launch "+app.nativeApplication.applicationID+" "+app.nativeApplication.publisherID);
+				app.close();
+			}
+			
+			public function getView( workflowState : Number ) : int {
+	        	if( model.workflowState == ViewState.LOGGED_IN_SCREEN ) {
+	        		return  ViewState.LOGGED_IN_SCREEN; 
+	            }	       
+	            return workflowState;     
+	        } 
+	        
+			private function checkUpdate (currentVersion:String,updateVersion:String):Boolean {
+			  	return updateVersion >currentVersion;
+			}
+						  
+			private function loadServerAddress():void{
+				FramerateThrottler.initialize();
+				FramerateThrottler.enabled = true;
+				FramerateThrottler.onlyThrottleOnMac = false;
+				loadConfigDB()
+		    }
+
+			private function initialSetup():void{
+			  	model.parentFolderName= serverFS;
+			  	init();
+				initChannel();
+				var levent :LangEvent= new LangEvent(LangEvent.EVENT_GET_ALL_LANGS);
+    			CairngormEventDispatcher.getInstance().dispatchEvent( levent );
+			}
+			
+			private function initChannel():void {
+				var channel:AMFChannel = new AMFChannel("my-amf", model.serverLocation+"spring/messagebroker/amf");
+ 				var channelSet:ChannelSet = new ChannelSet([channel]);
+				model.channelSet =  channelSet;
+			}
+		 
+			private function initIdleWatch():void {
+		        NativeApplication.nativeApplication.idleThreshold = IDLETIME;
+		        NativeApplication.nativeApplication.addEventListener(Event.USER_IDLE, onIdle,false,0,true);
+		        NativeApplication.nativeApplication.addEventListener (Event.USER_PRESENT, onPresence,false,0,true);
+		    }
+		    
+		    private function onIdle(event:Event):void {
+		    	var timeStamp:Date = model.currentTime;
+				var diffmins:int = -(model.serverLastAccessedAt.time - timeStamp.time)/60000;
+ 				(diffmins>1)? model.bgUploadFile.idle=true:model.bgUploadFile.idle=false;
+		    }
+		    
+		    private function onPresence(event:Event):void {
+		        //idlemsg.text = "Status: Active again - status will change if idle for more than " + IDLETIME + " seconds";
+		    }
+		    
+		    private var oldstr:String='' 
+		    public function debug(str:String=''):void {
+			    AlertWindow = new MessageWindow();
+			    var message:String = str+oldstr
+				AlertWindow.createWindow(this,"DEBUG",message,"",false);
+				oldstr= str;
+		    }  
+			]]>
+		</mx:Script>
+	<service:Services id="service"/>
+	<control:DTController/>
+	<mx:ViewStack selectedIndex="{ model.dtState }" creationPolicy="auto" width="100%" height="100%"> 
+		<view:LoginPanel id="loginPanel"  width="100%" height="100%" logginOut="{ model.logOutApplication }"/>	
+		<view:MainContainer id="mainContainer" width="100%" height="100%"/>
+		<view:CFmainContainer id="CFMaincontainer" width="100%" height="100%"/>
+		<view:DFmainContainer id="DFMaincontainer" width="100%" height="100%"/>
+		<view:GrayMainContainer id="whiteMaincontainer" width="100%" height="100%"/>
+		<view:GrayMainContainer id="diaDemMaincontainer" width="100%" height="100%"/>
+		<view:LegrandMainContainer id="LegrandMaincontainer" width="100%" height="100%"/>
+	</mx:ViewStack>
+	<preloader:PreloaderPage id="_preloader" visible="{ model.preloaderVisibility }"/>
+</mx:WindowedApplication>

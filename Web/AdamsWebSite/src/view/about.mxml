@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" width="100%"
+	 >
+<mx:Script>
+	<![CDATA[
+		import mx.rpc.events.ResultEvent;
+		import mx.events.SliderEvent;
+		import flash.net.*;
+		private function RadioGroup_itemClick(event:Event):void{
+		
+		if(event.target.selectedValue=='r1'){
+		t1.setStyle("fontSize",18);
+		t1.setStyle("fontWeight","Bold");
+		
+		}else if(event.target.selectedValue=='r2'){
+			
+		}else if(event.target.selectedValue=='r3'){
+			t3.setStyle("fontSize",18);
+		t3.setStyle("fontWeight","Bold");
+		}else if(event.target.selectedValue=='r4'){
+			
+		}else {
+			
+		}
+		//Application.application.Procedes_combo.selectedItem=event.target.selectedValue;
+	}
+	private function sliderChange(event:SliderEvent):void { 
+		if(HsAudience.value>3000){
+			t1.setStyle("fontSize",12);
+		t1.setStyle("fontWeight","Normal");
+		t5.setStyle("fontSize",18);
+		t5.setStyle("fontWeight","Bold");
+		}else if(HsAudience.value >6000){
+			t2.setStyle("fontSize",18);
+		t2.setStyle("fontWeight","Bold");
+		}else{
+			t7.setStyle("fontSize",18);
+		t7.setStyle("fontWeight","Bold");
+		}
+		
+		if(HsCompany.value<1000){
+			t3.setStyle("fontSize",12);
+		t3.setStyle("fontWeight","Normal");
+		t7.setStyle("fontSize",18);
+		t7.setStyle("fontWeight","Bold");
+		}else if(HsCompany.value >6000){
+			t6.setStyle("fontSize",18);
+		t6.setStyle("fontWeight","Bold");
+		}else{
+			t3.setStyle("fontSize",18);
+		t3.setStyle("fontWeight","Bold");
+		t6.setStyle("fontSize",12);
+		t6.setStyle("fontWeight","Normal");
+		}
+		
+		
+	}
+	private function CheckBoxChange():void { 
+		if(chk1.selected){
+		t5.setStyle("fontSize",18);
+		t5.setStyle("fontWeight","Bold");
+		t3.setStyle("fontSize",12);
+		t3.setStyle("fontWeight","Normal");
+		}
+		if(chk2.selected){
+		t2.setStyle("fontSize",18);
+		t2.setStyle("fontWeight","Bold");
+		t1.setStyle("fontSize",12);
+		t1.setStyle("fontWeight","Normal");
+		t6.setStyle("fontSize",12);
+		t6.setStyle("fontWeight","Normal");
+		}
+		if(chk3.selected){
+		t7.setStyle("fontSize",18);
+		t7.setStyle("fontWeight","Bold");
+		t3.setStyle("fontSize",12);
+		t3.setStyle("fontWeight","Normal");
+		t1.setStyle("fontSize",12);
+		t1.setStyle("fontWeight","Normal");
+		}
+		if(chk4.selected){
+		t1.setStyle("fontSize",18);
+		t1.setStyle("fontWeight","Bold");
+		t5.setStyle("fontSize",18);
+		t5.setStyle("fontWeight","Bold");
+		t6.setStyle("fontSize",12);
+		t6.setStyle("fontWeight","Normal");
+		t7.setStyle("fontSize",12);
+		t7.setStyle("fontWeight","Normal");
+		}
+		if(chk5.selected){
+		t3.setStyle("fontSize",18);
+		t3.setStyle("fontWeight","Bold");
+		t7.setStyle("fontSize",12);
+		t7.setStyle("fontWeight","Normal");
+		}
+		if(chk6.selected){
+		t2.setStyle("fontSize",18);
+		t2.setStyle("fontWeight","Bold");
+		t5.setStyle("fontSize",12);
+		t5.setStyle("fontWeight","Normal");
+		}
+	}
+	
+     public function sendMail(e:Event):void {
+        var u:URLRequest = new URLRequest("mailto:" + "pm@brennus-software.com");
+        navigateToURL(u,"_self");
+     }
+	
+	]]>
+</mx:Script>
+<mx:Style>
+
+</mx:Style>
+<mx:Text text="Contact US" styleName="introTitle" fontSize="24"/>
+<mx:HRule width="100%" />
+<mx:RadioButtonGroup  id="RadioGroup" itemClick="RadioGroup_itemClick(event)" />
+
+<mx:HBox    paddingLeft="12" horizontalGap="150">
+	<mx:VBox width="50%" height="100%" verticalGap="0" >
+		<mx:Label   text="Project type" styleName="headerText" />
+		<mx:Grid >
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="30" height="100%">
+					<mx:RadioButton id="rd1"  value="r1" label="Dedicated application"  group="{RadioGroup}" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:RadioButton id="rd2"  value="r2" label="eCommerce" group="{RadioGroup}" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:RadioButton  id="rd3" value="r3" label="Informational" group="{RadioGroup}" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:RadioButton id="rd4"  value="r4" label="Datamining" group="{RadioGroup}" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:RadioButton id="rd5" value="r5" label="Decision dashboard" group="{RadioGroup}" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+				</mx:GridItem>
+			</mx:GridRow>
+			
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:Label  text="Targeted audience" styleName="headerText"/>
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox  id="chk1" label="Intranet"  change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox  id="chk2" label="Extranet"  change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox  id="chk3" label="Public"  change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:Label text="Audience:" styleName="headerText" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:HBox>
+						<mx:Label text="&lt;10" fontSize="12"  fontWeight="bold"  />
+						<mx:HSlider id="HsAudience" minimum="10" maximum="10000" snapInterval="1" change="sliderChange(event)" />
+						<mx:Label text="&gt;10000" fontSize="12"  fontWeight="bold"  />
+					</mx:HBox>
+				</mx:GridItem>
+			</mx:GridRow>
+		</mx:Grid>
+		
+		<mx:Grid>
+		<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:Label   text="Your company"  styleName="headerText"/>
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox  id="chk4" label="Has an IT department"  change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox id="chk5" label="Has web development skills" change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:CheckBox id="chk6"  label="Has RIA expertise" change="CheckBoxChange()" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:Label  text="People in your company:" styleName="headerText" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%" colSpan="2">
+					<mx:HBox>
+					<mx:Label text="&lt;10" fontSize="12"  fontWeight="bold"  />
+					<mx:HSlider id="HsCompany" minimum="10" maximum="10000" snapInterval="1" change="sliderChange(event)"/>
+					<mx:Label text="&gt;10000" fontSize="12"  fontWeight="bold"  />
+					</mx:HBox>
+				</mx:GridItem>
+			</mx:GridRow>
+		</mx:Grid>
+	</mx:VBox>
+	
+	 
+	
+ 
+	<mx:VBox width="50%" height="100%">
+		<mx:Grid>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label    text="Benefits" styleName="headerText" textDecoration="underline"  />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t1" fontSize="12"  text="ergonomics in user interfaces" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t2" fontSize="12"  text="appealing designs" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+				<mx:Label id="t3" fontSize="12"  text="realtime multimedia" />
+				</mx:GridItem>
+				
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t4" fontSize="12"  text="web ressources" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t5" fontSize="12"  text="efficiency and productivity" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t6" fontSize="12"  text="free deployment and upgrade" />
+				</mx:GridItem>
+			</mx:GridRow>
+			<mx:GridRow width="100%" height="100%">
+				<mx:GridItem width="100%" height="100%">
+					<mx:Label id="t7" fontSize="12"  text="complex information overview" />
+				</mx:GridItem>
+			</mx:GridRow>
+		</mx:Grid> 
+		<mx:Spacer height="50"/>
+		<mx:HBox  >
+		<mx:Text useHandCursor="true" click="sendMail(event)" selectable="false"  text="Get in touch with the RIA business leader you need" textDecoration="underline" color="#009cff" width="100" height="50"/>
+		<mx:Image source="@Embed('assets/images/brennus_logo.png')"/>
+		</mx:HBox>
+		
+	</mx:VBox> 
+</mx:HBox>	
+	
+</mx:Module>

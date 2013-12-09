@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" showCloseButton="true" horizontalAlign="center"  
+	            close="onClose( event )" layout="vertical" headerHeight="30" title="New Sprint" verticalAlign="middle" 
+	            styleName="bgContainer" mouseDownOutside="onClose( event )" >
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.view.mainView.NewProject;
+		import mx.events.FlexMouseEvent;
+		import mx.events.CloseEvent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.CategoriesEvent;
+		import com.adams.dt.model.vo.Categories;
+		import mx.managers.PopUpManager;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance(); 
+		[Bindable]
+		public var selectedCategory:Categories;
+		[Bindable]
+		private var valueVisible:Boolean;
+		
+		private function createDomain():void{
+			if( ( domainName.text == '' ) || ( enddate.selectedDate == null ) ) {
+				valueVisible = true;
+			}
+			else {
+				var domain:Categories = new Categories();
+				domain.categoryName = domainName.text;
+				domain.categoryCode = selectedCategory.categoryCode;
+				domain.categoryStartDate = model.currentTime;
+				domain.categoryEndDate = enddate.selectedDate;
+				model.selectedDomainWorkflows = selectedCategory.domainworkflowSet;
+				var createDomain:CategoriesEvent = new CategoriesEvent( CategoriesEvent.EVENT_CREATENEW_DOMAIN );
+				createDomain.categories = domain;
+				CairngormEventDispatcher.getInstance().dispatchEvent( createDomain );
+				_cancelButton.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+				
+			}
+		}
+		
+		private function onCancel( event:MouseEvent ):void {
+			PopUpManager.removePopUp( this );
+		}
+		
+		private function onClose( event:Event ):void {
+			if( ( event.type == CloseEvent.CLOSE ) || ( FlexMouseEvent.MOUSE_DOWN_OUTSIDE ) ) { 
+				_cancelButton.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+			}	
+		}
+		
+	]]>
+</mx:Script>
+	<mx:Form>
+		<mx:FormItem label="Domain Name" required="true">
+			<mx:TextInput id="domainName" restrict="A-Z"/>	 		
+	 	</mx:FormItem>
+	 	<mx:FormItem label="Select End Date" required="true">
+	 		<mx:DateField id="enddate" selectableRange="{ { rangeStart: model.currentTime } }"/>
+	 	</mx:FormItem>
+	</mx:Form>
+	<mx:Label text="Fields with * are Mandatory !!!" color="Red" includeInLayout="{ valueVisible }" visible="{ valueVisible }"/>
+	<mx:HBox>
+		<mx:Button label="Create" click="createDomain()"/>
+		<mx:Button id="_cancelButton" label="Cancel" click="onCancel( event )"/>
+	</mx:HBox>
+</mx:TitleWindow>

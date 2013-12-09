@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  xmlns:view="com.adams.dt.view.components.*"
+	  styleName="contsWidth"  width="100%" height="100%"
+	  xmlns:cmp="com.adams.dt.view.*"
+	  xmlns:todo="com.adams.dt.view.components.todolistscreens.*" creationComplete="init()">
+	  
+	  <mx:Binding source="model.chatCollection" destination="this.refreshChatData"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.StringUtils;
+			import com.adams.dt.model.vo.SMTPEmailVO;
+			import com.adams.dt.event.SMTPEmailEvent;
+			import com.adams.dt.event.chatevent.ChatDBEvent;
+			import com.adams.dt.model.vo.Chat;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.business.util.SMTPUtil;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.scheduler.taskClasses.TaskData;
+		
+			import com.adams.dt.model.vo.EventStatus;
+			import mx.managers.CursorManager;
+			import mx.events.CloseEvent;
+			import com.adams.dt.event.EventsEvent;
+			 
+			import mx.collections.IViewCursor;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import mx.rpc.IResponder;
+			import mx.binding.utils.BindingUtils;
+			import com.adams.dt.event.EventsEvent;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.vo.Events;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.view.Tracability_Planning;
+			import mx.core.UIComponent;
+			import mx.effects.easing.Elastic;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.tracability.TaskBusinessCard;
+			import com.adams.dt.model.scheduler.taskClasses.ColouredEntry;
+			import mx.events.ListEvent;
+			import mx.events.ItemClickEvent;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Workflows;
+			import com.adams.dt.event.PropertiespresetsEvent;
+			import com.adams.dt.model.vo.Categories;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.OpenToDoListScreenEvent;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Projects;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			public var viewerReference:UIComponent;
+			private var isShowing:Boolean;
+			
+			[Bindable]
+			public var dpProperty:ArrayCollection;	
+			private var sep:String = "&#$%^!@";				
+			
+			private function getBody(str:String):String{
+				return str.split(sep)[2];
+			}			
+						
+			private var _itemIndex:Object;
+			public function get itemIndex():Object {
+				return _itemIndex;
+			} 
+			
+			public function set itemIndex( value:Object ):void {
+				_itemIndex = value;
+				if( value.selectionIndex != -1 ) {
+					planningDg.selectedIndex = getSelectedIndex( value.selectionIndex ); 
+					navigateGrid();
+				}
+			}
+			
+			private function getSelectedIndex( value:int ):int {
+				var collect:ArrayCollection = planningDg.dataProvider as ArrayCollection;
+				var returnValue:int;
+				for( var i:int = 0; i < collect.length; i++ ) {
+					if( ColouredEntry( collect.getItemAt( i ) ).selectionId == value ) {
+						returnValue = i;
+						break;
+					}
+				}
+				return returnValue;
+			}
+			
+			private function onItemClick( event:ListEvent ):void {
+				var obj:Object = new Object();
+				obj.selectionIndex = ColouredEntry( planningDg.selectedItem ).selectionId;
+				model.tracTaskContent.setGlow( viewerReference, obj );
+			}
+			
+			private function getTasks( value:ColouredEntry ):Tasks {
+				for each( var item:Tasks in model.taskData.taskList ) {
+					if( item.taskId == value.selectionId )
+						return item;
+				}
+				return null;
+			}
+			
+			private function navigateGrid():void {
+				if( !planningDg.selectedItem.isCurrentTask ) {
+					var taskPath:String = planningDg.selectedItem.taskFilePath;
+					var taskComment:String = planningDg.selectedItem.taskComment;
+					var taskLabel:String = planningDg.selectedItem.taskLabel;
+					var taskBCard:TaskBusinessCard = planningDg.selectedItem.taskBusinessCard;
+					var profileTask:String = planningDg.selectedItem.profileTask;
+					model.tracTaskContent.createPlanDates( getTasks( planningDg.selectedItem as ColouredEntry ), planningDg.selectedIndex );
+					
+					tracability.commentArea.htmlText = taskComment;
+					tracability.labelTask.text = taskLabel;
+					tracability.pic.source = taskBCard.perPicture;
+					tracability.personName.text = taskBCard.personFirstName+" "+taskBCard.personLastName;
+					tracability.personPosition.text = taskBCard.pesonPosition+" "+taskBCard.company.companyname; 
+					if( stack.selectedIndex != 1 ) stack.selectedIndex = 1;
+				}
+				else {
+					if( stack.selectedIndex == 1 ) stack.selectedIndex = 0;
+				}
+			}
+			
+			private function onBackClick():void {
+				stack.selectedIndex = 0;
+			}
+			
+			public function onCharcter(item:Object):String {
+				var charact:String = item.taskComment;	
+				var returnStr:String = '';
+				if(charact.indexOf("&#$%^!@")!=-1)
+					returnStr = getBody(charact);
+				else
+					returnStr = charact;
+				
+                return returnStr;
+			}
+			
+			private function onLabelFun(item:Object):String {
+				return String(item.taskComment).substring(0,100);
+			}
+			
+			private function startDateFun(item:Object,col:DataGridColumn):String {
+				return String(item.startDate).split(" ")[0]+" "+String(item.startDate).split(" ")[1]+" "+String(item.startDate).split(" ")[2]+" "+String(item.startDate).split(" ")[3]+" "+String(item.startDate).split(" ")[5];
+			}
+			
+			private function endDateFun(item:Object,col:DataGridColumn):String {
+				var returnValue:String;
+				if( item.isCurrentTask )
+					returnValue = '';
+				else
+					returnValue = String(item.endDate).split(" ")[0]+" "+String(item.endDate).split(" ")[1]+" "+String(item.endDate).split(" ")[2]+" "+String(item.endDate).split(" ")[3]+" "+String(item.endDate).split(" ")[5]; 	
+				return returnValue;
+			}
+			
+			public function calcRowColor( item:Object ):String {
+				
+				var color:String;
+				if( item.isCurrentTask ) { 
+			    	color = CSSStyleDeclaration(StyleManager.getStyleDeclaration('.planningDetailCurrentTask')).getStyle('color');//0xFFFF00;
+				}
+				else {
+					color = CSSStyleDeclaration(StyleManager.getStyleDeclaration('.planningDetailTask')).getStyle('color');//0xDDDDDD;
+				}
+				return color;
+		    }
+		    
+		    public function calcFontStyle( item:Object ):String {
+				var fontStyle:String;
+				var checkTask:Tasks = getTasks( item as ColouredEntry );
+				if( Utils.checkTemplateExist( model.backTask, checkTask.wftFK ) ) {
+					fontStyle = 'italic';
+				}
+				else {
+					fontStyle = 'normal';
+				}
+				return fontStyle;
+		    }
+		    
+		    private function makeSorting( value:ArrayCollection ):ArrayCollection {
+		    	var sort:Sort = new Sort(); 
+            	sort.fields = [ new SortField( "selectionId" ) ];
+            	sort.reverse();
+            	value.sort = sort;
+            	value.refresh();
+            	return value;
+		    }
+		    
+		    /***
+		    *  Events
+		    **/
+		    public function init():void {
+				model.modelPropertyEventsColl.addEventListener( CollectionEvent.COLLECTION_CHANGE, onCollectionChange,false,0,true );
+			}
+		    private var _projectPropertyEvents:ArrayCollection;
+			[Bindable(event="projectPropertyEventChange")]
+			public function set propertyEvents (value:ArrayCollection):void
+			{
+				if(!model.modelPropertyEventsColl.hasEventListener(CollectionEvent.COLLECTION_CHANGE)){
+					model.modelPropertyEventsColl.addEventListener(CollectionEvent.COLLECTION_CHANGE,onCollectionChange,false,0,true);
+				}
+				if(!hasEventListener("projectPropertyEventChange")) addEventListener("projectPropertyEventChange",onCollectionChange,false,0,true);
+					if(value!=null){
+						_projectPropertyEvents = value;
+						dispatchEvent (new Event ("projectPropertyEventChange"));
+					}
+			}
+			public function get propertyEvents ():ArrayCollection
+			{
+				return _projectPropertyEvents;
+			}
+			
+			public function onCollectionChange(event:Event):void{ 
+				setProvider(propertyEvents);
+			}
+			public function setProvider( value:ArrayCollection ):void {
+				var loopLength:int = value.length;
+				var dataCollectionProperty:ArrayCollection = new ArrayCollection();
+				for( var i:int = 0;i < loopLength;i++ ) 
+				{
+					var eventvo:Events = Events( value.getItemAt( i ) );
+					var obj:Object={};	
+					obj.EventId = eventvo.eventId;
+					obj.StartDate = eventvo.eventDateStart;
+					obj.EventType = eventvo.eventType;
+					obj.PersonName = GetVOUtil.getPersonObject(eventvo.personFk).personFirstname;
+					if(eventvo.workflowtemplatesFk!=0)
+					obj.TaskLabel = GetVOUtil.getWorkflowTemplate( eventvo.workflowtemplatesFk).taskLabel;
+					obj.ProjectName = GetVOUtil.getProjectObject(eventvo.projectFk).projectName;
+					if(eventvo.details!=null)
+						obj.Details = (eventvo.details).toString();
+					else
+						obj.Details = '';
+					obj.EventName = eventvo.eventName;
+					 
+					switch( eventvo.eventName )
+					{
+						case 'Property Updation':	
+								dataCollectionProperty.addItem(obj);							
+								break;								
+					} 
+				}
+				dpProperty = dataCollectionProperty;
+				//GridProperty.dataProvider = dpProperty; 
+								
+				var sort:Sort = new Sort(); 
+	            sort.fields = [new SortField("TaskLabel")];
+	            dpProperty.sort = sort;
+	            dpProperty.refresh(); 
+			} 
+			[Bindable]
+			private var eventview:Object = new Object();
+			public function checkBackTask(work:Workflowstemplates):Boolean{
+				for each(var item:Workflowstemplates in model.backTask){
+					if(item.workflowTemplateId == work.workflowTemplateId)return true;
+				}
+				return false;
+			}
+			/* private function onEventItemClick( event:ListEvent ):void {
+				var eventIds:int = int((GridProperty.selectedItem).EventId);
+				for each(var item:Object in dpProperty)
+				{
+					if(item.EventId == eventIds)
+					{
+						eventview = item;
+						eveStack.selectedIndex = 1;
+					}					
+				}
+				
+			} */
+			
+			private function onPlanTabChange( event:Event ):void {
+				var selectedTab:int = TabNavigator( event.currentTarget ).selectedIndex;
+				/* if( selectedTab == 1 ) {
+					if( eveStack.selectedIndex != 0 ) {
+						eveStack.selectedIndex = 0;
+					}
+					var ehandle:IResponder = new Callbacks( PropertyScreenView );
+					var eEvent:EventsEvent = new EventsEvent( EventsEvent.EVENT_GETCURRENTPROJECT_PROPERTY, ehandle );	          
+					eEvent.dispatch();
+                }
+                if( selectedTab == 2 ) {
+                	var handler:IResponder = new Callbacks( updateMessageData );
+                	var msgEvent:EventsEvent = new EventsEvent( EventsEvent.EVENT_GETCURRENTPROJECT_EVENTS, handler );	
+                	msgEvent.dispatch();
+                }
+                if( selectedTab == 3 ) {
+                	if( chatStack.selectedIndex != 0 ) {
+						chatStack.selectedIndex = 0;
+					}
+                	var handler:IResponder = new Callbacks( updateChatData );
+                	var createChatEvt:ChatDBEvent = new ChatDBEvent( ChatDBEvent.EVENT_GET_CHAT, handler );
+					createChatEvt.chatprojectId = model.currentProjects.projectId;
+					createChatEvt.dispatch(); 
+                } */
+			}
+			
+			private function PropertyScreenView( rpcEvent:Object ):void {
+				setProvider( model.modelPropertyEventsColl );
+			}	
+			
+			private var openLink:String="";
+	        private function createIMPMail():void{ 
+	        	try
+	        	{     	
+					var message:String = "Messieurs,<div><div><br></div><div>Nous sommes en charge de la photogravure de la reference citee en objet.</div><div>Merci de bien vouloir consulter et valider le process technique en cliquant le lien suivant :</div><div><br></div><div><a href=";
+					var postmessage:String  = "</div><div><br></div><div>Vous y trouverez le fichier PDF agence dans l'onglet 'Files'.</div><div>Nous realiserons les photogravures sur reception de votre validation en ligne.</div><div>Merci de votre collaboration.</div><div><br></div></div>";
+					 
+					/* var impemailuser:String = model.tempImpPerson.personLogin;
+					var impemailpwd:String = model.tempImpPerson.personPassword; */
+					
+					var impemailuser:String = StringUtils.replace(escape(model.encryptor.encrypt(model.tempImpPerson.personLogin)),'+','%2B');
+					var impemailpwd:String = StringUtils.replace(escape(model.encryptor.encrypt(model.tempImpPerson.personPassword)),'+','%2B');
+				
+					var urllink:String = model.serverLocation+"ExternalMail/flexexternalmail.html?type=All%23ampuser="+impemailuser+"%23amppass="+impemailpwd+"%23amptaskId="+model.tempImpTasks.taskId+"%23ampprojId="+model.tempImpTasks.projectObject.projectId
+					var urlText:String = message+model.serverLocation+"ExternalMail/flexexternalmail.html?type=All%23ampuser="+impemailuser+"%23amppass="+impemailpwd+"%23amptaskId="+model.tempImpTasks.taskId+"%23ampprojId="+model.tempImpTasks.projectObject.projectId+'>Link -&gt;</a>'+urllink+postmessage;
+					openLink=urllink;
+					
+					//-----------NEW SERVER EMAIL ADD START------------------------
+					//SMTPUtil.mail(model.tempImpPerson.personEmail,'Reminder :'+model.tempImpTasks.projectObject.projectName,urlText);
+						
+					var eEvent:SMTPEmailEvent = new SMTPEmailEvent( SMTPEmailEvent.EVENT_CREATE_SMTPEMAIL );
+					var _smtpvo:SMTPEmailVO = new SMTPEmailVO();
+					_smtpvo.msgTo = model.tempImpPerson.personEmail;
+					_smtpvo.msgSubject = 'Reminder :'+model.tempImpTasks.projectObject.projectName;   
+					_smtpvo.msgBody = urlText;
+					eEvent.smtpvo = _smtpvo;
+					eEvent.dispatch();
+					//-----------END ------------------------
+					
+					Alert.buttonWidth = 100;
+	                //Alert.yesLabel = "Link";
+	                Alert.okLabel = "Close";
+					//Alert.show("A Mail has been sent to IMP "+model.tempImpPerson.personEmail,"",1|2,null,alertClickHandler);
+					Alert.show("A Mail has been sent to IMP "+model.tempImpPerson.personEmail,"");
+					EventsUpdateIMPUse(urllink);
+	        	}
+	        	catch(r:Error)
+	        	{
+	        		CursorManager.removeBusyCursor(); 
+	        	}
+	        }
+	        private function alertClickHandler(event:CloseEvent):void {
+	            if (event.detail==Alert.YES)
+	            {
+	             	navigateToURL(new URLRequest(openLink),"_blank");
+	            }
+	        } 
+	        private function EventsUpdateIMPUse(impURL:String):void
+			{
+				var eventArr:Array = []
+				var eEvent:EventsEvent = new EventsEvent(EventsEvent.EVENT_CREATE_EVENTS);
+		  		var _events:Events = new Events();
+				_events.eventDateStart = model.currentTime;
+				_events.eventType = EventStatus.IMPMAIL;   //Task create
+				_events.personFk = model.person.personId;
+				//_events.taskFk = model.tempImpTasks.taskId;
+				_events.taskFk = (model.tempImpTasks!=null)?model.tempImpTasks.taskId:0;	
+				_events.workflowtemplatesFk = (model.tempImpTasks!=null)?model.tempImpTasks.wftFK:0;			
+				_events.projectFk = model.tempImpTasks.projectObject.projectId;
+				//_events.details = model.tempImpPerson.personEmail;
+				var by:ByteArray = new ByteArray();
+				//var str:String = model.tempImpPerson.personEmail+"\n"+"RemindMail - IMP URL :"+impURL;
+				var str:String = model.tempImpPerson.personEmail+"\n"+GetVOUtil.getCompanyObject(model.tempImpPerson.companyFk).companyname+"Remind - URL :"+impURL;
+				by.writeUTFBytes(str);
+				_events.details = by;
+				_events.eventName = "Property Updation";		
+				eEvent.events = _events;					
+				eEvent.dispatch();
+			}
+			public function impVisible(arrColl:ArrayCollection):Boolean
+			{
+				var colouredTaskvo:ColouredEntry = getImpTasks(arrColl);	
+				if(colouredTaskvo!=null)
+				{						
+					if(colouredTaskvo.profileTask == "IMPRIMEUR" )
+					{
+						var taskvo:Tasks = getTasks(colouredTaskvo);	
+						if((taskvo.taskStatusFK == TaskStatus.INPROGRESS) || (taskvo.taskStatusFK == TaskStatus.WAITING))
+						{	
+							model.tempImpTasks = taskvo;
+							tempImprimeiur()
+		  					if((model.currentUserProfileCode == 'TRA') || (model.currentUserProfileCode == 'FAB'))
+								return true;
+							else
+								return false;
+						}				
+					}
+					else
+					{
+						return false;
+					}
+				}			
+				return false;
+			}
+			private function tempImprimeiur():void   	
+			{
+				model.tempImpPerson = GetVOUtil.getPersonObject(model.impPersonId);
+			}
+			private function getImpTasks( value:ArrayCollection ):ColouredEntry {
+				for each( var item:ColouredEntry in value ) {
+					if(item.profileTask == "IMPRIMEUR")
+					{
+						var taskvo:Tasks = getTasks(item);	
+						if((taskvo.taskStatusFK == TaskStatus.INPROGRESS) || (taskvo.taskStatusFK == TaskStatus.WAITING))
+						{	
+							return item;
+						}	
+					}
+				}
+				return null;
+			}
+		
+			[Bindable]
+		    public var displayIMPRewind:Boolean;
+			
+			/* private function updateMessageData( rpcEvent:Object ):void {
+				getDataProvider();
+				msgTask = new Tasks();
+				messageviewerId.messageFileDownload = model.messageFileCollection;			
+			}
+			
+			[Bindable]
+			private var msgTask:Tasks = new Tasks();
+			private function onMessageItemClick():void {
+				msgTask = dasboardGridMessage.selectedItem.Task as Tasks;	
+				var tempCollection:ArrayCollection = model.messageFileCollection;
+				currentDisplyFile( tempCollection ); {	
+				if( msgStack.selectedIndex == 0 )
+					msgStack.selectedIndex = 1;
+				}	
+			} */
+			
+			private function msgstartDateFun(item:Object,col:DataGridColumn):String {
+				return String(item.Date).split(" ")[0]+" "+String(item.Date).split(" ")[1]+" "+String(item.Date).split(" ")[2]+" "+String(item.Date).split(" ")[3]+" "+String(item.Date).split(" ")[5];
+			}
+			private function chatstartDateFun(item:Object,col:DataGridColumn):String {
+				return String(item.Date).split(" ")[0]+" "+String(item.Date).split(" ")[1]+" "+String(item.Date).split(" ")[2]+" "+String(item.Date).split(" ")[3]+" "+String(item.Date).split(" ")[5];
+			}
+			
+			[Bindable]
+			private var dataProvider:ArrayCollection = new ArrayCollection();
+			private function getDataProvider():void{
+				dataProvider = new ArrayCollection();
+				for each( var item:Events in  model.currentProjectMessages ) {
+					var tasks:Tasks = new Tasks();
+					tasks.taskId = item.taskFk
+					var messageTask:Tasks = getMsgTasks(tasks);	
+					var object:Object = new Object();
+					object["Date"] = messageTask.tDateCreation;
+					object["Task"] = messageTask;
+					object["Subject"] = getSubject(String(messageTask.taskComment));
+					object["From"] = getFromName(String(messageTask.taskComment));
+					object["To"] = messageTask.personDetails.personFirstname;
+					dataProvider.addItem( object );
+				}
+			}
+			
+			private function getSubject( str:String ):String {
+				return str.split( sep )[ 1 ];
+			}
+			
+			private function getFromName( str:String ):String {
+				return str.split( sep )[ 0 ];
+			}
+				
+			[Bindable]
+			private var currentFileCollection:ArrayCollection = new ArrayCollection();
+			private function currentDisplyFile( value:ArrayCollection ):void {
+				if( currentFileCollection.length != 0 ) {
+					currentFileCollection.removeAll();
+				}
+				else {
+					currentFileCollection = new ArrayCollection();
+				} 
+				/* for each( var item:FileDetails in value ) {				
+					if( item.taskId == msgTask.taskId ){
+						if(item.visible == true){
+							currentFileCollection.addItem( item );
+						}
+					}
+				}
+				messageviewerId.repdownload.dataSource = currentFileCollection; */
+			}
+			
+			private var cursor:IViewCursor;
+			private function getMsgTasks( item:Object ):Tasks {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [ new SortField( "taskId" ) ];
+	            model.currentProjectTasksCollection.sort = sort;
+	            model.currentProjectTasksCollection.refresh();  
+				cursor = model.currentProjectTasksCollection.createCursor();
+				var found:Boolean = cursor.findAny( item );
+				return Tasks( cursor.current );
+	       }
+		
+		   /* private function onMsgBackClick():void {
+		   		msgStack.selectedIndex = 0;     	
+		   } */
+		   private var _refreshChatData:ArrayCollection;
+			[Bindable]
+			public function get refreshChatData():ArrayCollection {
+				return _refreshChatData;
+			}
+			public function set refreshChatData( value:ArrayCollection ):void {
+				if( value ) {
+					 _refreshChatData = makeRefreshChatData( value );
+				}
+			}
+			private function makeRefreshChatData( arrC:ArrayCollection ):ArrayCollection {
+				var tempChatCollection:ArrayCollection = new ArrayCollection();
+				for each( var item:Chat in  arrC ) {		    		 
+			    	tempChatCollection.addItem( item );	
+		    	}
+		    	return tempChatCollection;
+		    }
+		   
+		   /* [Bindable]
+			 private var commonChatVo:Chat = new Chat();
+			private function onChatItemClick():void {
+				commonChatVo = dasboardGridChat.selectedItem.ChatAll as Chat;	
+				if( chatStack.selectedIndex == 0 )
+					chatStack.selectedIndex = 1;
+			}	
+		   [Bindable]
+		   private var arrayChatCollection:ArrayCollection = new ArrayCollection();
+		   private function updateChatData( rpcEvent:Object ):void {
+		   		model.chatCollection = rpcEvent.result as ArrayCollection;	
+		   		getDataProviderChat(model.chatCollection);
+		   		commonChatVo = new Chat();
+						
+			}
+			[Bindable]
+			private var dataProviderChat:ArrayCollection = new ArrayCollection();
+			private function getDataProviderChat( chatValue:ArrayCollection ):void {
+				var loopChatLength:int = chatValue.length;
+				dataProviderChat = new ArrayCollection();
+				for each( var item:Chat in chatValue ) {
+					var chatvo:Chat = new Chat();
+					chatvo.chatId = item.chatId
+					var chatDetails:Chat = getChatOrder(chatvo);	
+					var object:Object = new Object();
+					object["ChatAll"] = chatDetails;
+					object["SenderId"] = chatDetails.senderId;
+					object["SenderName"] = chatDetails.senderName;
+					object["Description"] = chatDetails.description;
+					object["Date"] = chatDetails.chatDateentry
+					object["ProjectName"] = GetVOUtil.getProjectObject(chatDetails.projectFk).projectName;
+					dataProviderChat.addItem( object );
+				} 
+			}
+			private var cursorchat:IViewCursor;
+			private function getChatOrder( item:Object ):Chat {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [ new SortField( "chatId" ) ];
+	            model.chatCollection.sort = sort;
+	            model.chatCollection.refresh();  
+				cursorchat = model.chatCollection.createCursor();
+				var found:Boolean = cursorchat.findAny( item );
+				return Chat( cursorchat.current );
+	       }
+	       private function onChatBackClick():void {
+		   		chatStack.selectedIndex = 0;     	
+		   }*/
+	       	
+	   	]]>
+	</mx:Script>
+	<mx:TabNavigator id="onTabNavSelectId" width="100%" height="100%" 
+		change="onPlanTabChange( event )">
+			<mx:ViewStack label="Tasks" id="stack" creationPolicy="all"  width="100%" height="100%">
+				<mx:VBox id="_firstChild" verticalAlign="middle" horizontalAlign="center" width="100%" height="100%">
+					<!--<mx:Button id="resendBtn" label="Remind IMP" click="createIMPMail()" 
+						visible="{displayIMPRewind ? (impVisible(model.taskData.taskEntryCollection.getItemAt( 0 ) as ArrayCollection)) : false}"
+						 includeInLayout="{displayIMPRewind ? (impVisible(model.taskData.taskEntryCollection.getItemAt( 0 ) as ArrayCollection)) : false}"/>-->
+					<mx:DataGrid id="planningDg" width="100%" height="100%" itemClick="onItemClick( event )" dataProvider="{ makeSorting( model.taskData.taskEntryCollection.getItemAt( 0 ) as ArrayCollection ) }"> 
+						<mx:columns>
+						 	<mx:DataGridColumn id="dataGridTaskId"
+				                    dataField="taskLabel"
+				                    headerText="Task Name"
+				                    width="200">
+				                    <mx:itemRenderer>
+				                    	<mx:Component>			                    		
+				                    			<mx:Label dataChange="this.text = data.taskLabel, 
+				                    			          this.setStyle( 'color', outerDocument.calcRowColor( data ) ),
+				                    			          this.setStyle( 'fontStyle', outerDocument.calcFontStyle( data ) )"/>
+				                    	</mx:Component>
+				                    </mx:itemRenderer>
+				            </mx:DataGridColumn>        
+				            <mx:DataGridColumn id="dataGridProfileTask"
+				                    dataField="profileTask"
+				                    headerText="Profile"
+				                    width="200">
+				                    <mx:itemRenderer>
+				                    	<mx:Component>			                    		
+				                    			<mx:Label dataChange="this.text = data.profileTask, 
+				                    			                      this.setStyle( 'color', outerDocument.calcRowColor( data ) ),
+				                    			                      this.setStyle( 'fontStyle', outerDocument.calcFontStyle( data ) )"/>
+				                    	</mx:Component>
+				                    </mx:itemRenderer>
+				            </mx:DataGridColumn>
+				            <mx:DataGridColumn id="dataGridStart" 
+				            		labelFunction="startDateFun"
+				                    headerText="Start Date"
+				                    width="200">
+				                    <mx:itemRenderer>
+				                    	<mx:Component>			                    		
+				                    			<mx:Label dataChange="this.setStyle( 'color', outerDocument.calcRowColor( data ) ),
+				                    			                      this.setStyle( 'fontStyle', outerDocument.calcFontStyle( data ) )"/>
+				                    	</mx:Component>
+				                    </mx:itemRenderer>
+				            </mx:DataGridColumn>
+				            <mx:DataGridColumn id="dataGridComments"
+				                    headerText="Comments"
+				                    width="200">			                    
+				                    <mx:itemRenderer>
+				                    	<mx:Component>			                    		
+				                    			<mx:Label dataChange="this.htmlText=outerDocument.onCharcter( data ),
+				                    			                      this.setStyle( 'fontStyle', outerDocument.calcFontStyle( data ) )"/>
+				                    	</mx:Component>
+				                    </mx:itemRenderer>			             	
+				             </mx:DataGridColumn>
+				             <mx:DataGridColumn id="dataGridEnd"	
+				             		labelFunction="endDateFun"		                    
+				                    headerText="End Date"
+				                    width="200">
+				                    <mx:itemRenderer>
+				                    	<mx:Component>			                    		
+				                    			<mx:Label dataChange="this.setStyle( 'color', outerDocument.calcRowColor( data ) ),
+				                    			                      this.setStyle( 'fontStyle', outerDocument.calcFontStyle( data ) )"/>
+				                    	</mx:Component>
+				                    </mx:itemRenderer>
+				            </mx:DataGridColumn>
+				        </mx:columns>
+	    			</mx:DataGrid>
+			</mx:VBox>
+			<mx:Canvas id="tracContainer" width="100%" height="100%" >
+				<cmp:Tracability_Planning enabledValue="false" id="tracability" labelsArray="{ model.tracTaskContent.labelsArray }"
+											 datesArray="{ model.tracTaskContent.planDates }"
+											 top="0" width="100%" bottom="0"
+											 visible="true"
+											 />
+				<mx:Button toolTip="Back To Details" id="backbutton" styleName="categoryBackBTN" 
+					right="22" top="5" click="onBackClick()" />							 
+			</mx:Canvas>	
+		</mx:ViewStack>
+		
+		<!--<mx:ViewStack label="Events" id="eveStack" width="100%" height="100%">
+			<mx:VBox width="100%" height="100%">
+				<mx:DataGrid id="GridProperty" rowHeight="30" dataProvider="{ dpProperty }" height="100%" width="100%" itemClick="onEventItemClick(event)">
+					<mx:columns> 
+					    <mx:DataGridColumn dataField="StartDate"/>
+					    <mx:DataGridColumn dataField="PersonName"/>
+					    <mx:DataGridColumn dataField="TaskLabel"/> 
+					    <mx:DataGridColumn dataField="Details"/>	
+		  			</mx:columns>
+				</mx:DataGrid>
+            </mx:VBox>	
+			<mx:Canvas width="100%" height="100%">
+				<mx:Button toolTip="Back To Events" styleName="categoryBackBTN"  click="eveStack.selectedIndex=0"
+					       top="2" right="15"/>
+				<todo:PropertyViewer id="propViewer" eventName="{eventview}" top="0" left="0" right="0" bottom="0"  
+					                 visible="{eventview.EventId}" includeInLayout="{visible}"/>
+			</mx:Canvas>	
+		</mx:ViewStack>
+		
+		<mx:ViewStack label="Messages" id="msgStack" width="100%" height="100%" creationPolicy="all">
+			<mx:VBox width="100%" height="100%">
+		        <mx:DataGrid itemClick="onMessageItemClick()"  id="dasboardGridMessage" dataProvider="{dataProvider}" width="100%" height="100%">
+					<mx:columns>
+		 				 <mx:DataGridColumn dataField="Date" labelFunction="msgstartDateFun" />
+				         <mx:DataGridColumn dataField="Subject"/>
+				         <mx:DataGridColumn dataField="From"/>
+				         <mx:DataGridColumn dataField="To"/>
+		  			</mx:columns>
+				</mx:DataGrid>
+			</mx:VBox>	
+		    <mx:Canvas width="100%" height="100%">
+				<todo:MessageViewer id="messageviewerId" messageFileDownload="{ currentFileCollection }" 
+				                           task="{ msgTask }"/>
+				<mx:Button toolTip="Back To Details" id="_backbutton" styleName="categoryBackBTN" 
+						   right="15" top="5" click="onMsgBackClick()" />                           
+			</mx:Canvas>	                           
+		</mx:ViewStack>
+		<mx:ViewStack label="Chat" id="chatStack" width="100%" height="100%" creationPolicy="all">
+			<mx:VBox width="100%" height="100%">
+		        <mx:DataGrid itemClick="onChatItemClick()" id="dasboardGridChat" dataProvider="{dataProviderChat}" width="100%" height="100%">
+					<mx:columns>
+		 				 <mx:DataGridColumn dataField="Date" labelFunction="chatstartDateFun" />
+				         <mx:DataGridColumn dataField="SenderName"/>
+				         <mx:DataGridColumn dataField="Description"/>
+		  			</mx:columns>
+				</mx:DataGrid>
+			</mx:VBox>				
+		    <mx:Canvas width="100%" height="100%">
+				<todo:ChatViewer id="chatviewerId" chatDetails="{ commonChatVo }"/>
+				<mx:Button toolTip="Back To Details" id="_backChatbutton" styleName="categoryBackBTN" 
+						   right="15" top="5" click="onChatBackClick()" />                           
+			</mx:Canvas>	                           
+		</mx:ViewStack>-->
+	</mx:TabNavigator>
+	
+</mx:Canvas>

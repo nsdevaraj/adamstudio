@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:view="com.adams.dt.view.components.*"
+		xmlns:components="com.adams.swizdao.views.components.*" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" 
+		xmlns:autocomplete="com.adams.dt.view.components.autocomplete.*" 
+		xmlns:layout="com.adams.dt.view.layout.*">	 
+	<s:Scroller  id="newprojectScroll" height="100%" >
+			<s:Group id="newProjectForm" >
+				<s:FormItem label="Department:" top="0" left="0" required="true">
+					<s:DropDownList id="domain" width="180" labelField="categoryName"/>
+				</s:FormItem>
+				<s:FormItem label="Client    :" left="67" top="30" required="true">
+					<autocomplete:PropertyCompleteView id="brand" width="180" labelField="fieldOptionsValue" forceOpen="true"		   
+											skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<s:FormItem label="Reference :" left="134" top="60" required="true">
+					<autocomplete:PropertyCompleteView id="refId" width="180" labelField="projectName" forceOpen="true" 
+													   skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<s:FormItem label="Task      :" left="201" top="90" required="true">
+					<autocomplete:PropertyCompleteView id="department" width="180" labelField="fieldOptionsValue" forceOpen="true"
+													   skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<s:FormItem label="Priority :" left="0" top="120">
+					<view:PriorityComponent id="priority" width="180" paddingLeft="15"/>
+				</s:FormItem>	
+				<s:FormItem label="Deadline  :" right="0" top="120">
+					<view:TimeController id="clt_date"/>
+				</s:FormItem>	
+				<s:FormItem label="Comments  :" id="commentsItem" width="100%" height="120" top="180">	
+					<view:TextEditor id="comment" width="515" height="120"/>
+				</s:FormItem>
+				<s:FormItem label="File Upload:" id="fileItem"  top="{commentsItem.y + commentsItem.height + 10}">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:Group id="fileTile" width="515" height="100"/>	
+				</s:FormItem>
+				<s:FormItem top="{fileItem.y + fileItem.height-20}" right="0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:Button id="projectCreation" label="Create Project" />
+					<s:Button id="projectReset" label="Reset" includeInLayout="{projectReset.visible}" visible="false" />
+					<s:Button label="Aborted" id="abortedBtn" includeInLayout="{abortedBtn.visible}" 
+							  visible="false"/>
+				</s:FormItem>
+			</s:Group>
+	</s:Scroller>
+</s:Skin>

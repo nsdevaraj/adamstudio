@@ -1,0 +1,5 @@
+CLT ==> emg 	: test
+TRA ==> diadem 	: test
+FAB ==> ben	: test
+OPE ==> asi 	: test
+

@@ -1,0 +1,40 @@
+<mx:Object 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:tag="org.spicefactory.parsley.tag.core.*"
+	xmlns:msg="org.spicefactory.parsley.tag.messaging.*"
+	xmlns:test="org.spicefactory.parsley.testmodel.*"
+	xmlns:model="org.spicefactory.parsley.core.decorator.injection.*">
+	
+	<mx:Script>
+		<![CDATA[
+			import org.spicefactory.parsley.flex.mxmlconfig.core.CoreModel;		
+			import org.spicefactory.parsley.flex.view.module.model.*;		
+			import flash.events.Event;
+		]]>
+	</mx:Script>
+	
+	<tag:MxmlObjectDefinitionFactoryTag type="{ClassNotCompiledIntoRootApp}">
+		<tag:PropertyDecoratorTag name="dependency" idRef="mdep"/>
+		<msg:MessageHandlerDecorator method="onAnything" selector="anything" type="{Event}"/>
+	</tag:MxmlObjectDefinitionFactoryTag>
+	
+	<tag:MxmlObjectDefinitionFactoryTag id="mdep" type="{ModuleDependency}"/>
+	
+	<tag:MxmlObjectDefinitionFactoryTag id="child" type="{CoreModel}">
+		<tag:ConstructorDecoratorTag>
+			<mx:String>module</mx:String>
+			<mx:int>9</mx:int>
+		</tag:ConstructorDecoratorTag>
+		<tag:PropertyDecoratorTag name="booleanProp" value="true"/>
+		<tag:PropertyDecoratorTag name="refProp" idRef="dependency"/>
+		<tag:PropertyDecoratorTag name="arrayProp">
+			<tag:ArrayTag>
+				<mx:String>AA</mx:String>
+				<mx:String>BB</mx:String>
+				<tag:ObjectReferenceTag idRef="dependency"/>
+			</tag:ArrayTag>
+		</tag:PropertyDecoratorTag>
+	</tag:MxmlObjectDefinitionFactoryTag> 
+	
+	
+</mx:Object> 

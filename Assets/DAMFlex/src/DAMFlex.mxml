@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:mainHosts="com.adams.dam.view.hosts.mainHosts.*"
+					   xmlns:control="com.adams.dam.control.*"
+					   xmlns:service="com.adams.dam.business.*"
+					   minWidth="1000" minHeight="800"
+					   initialize="windowedapplication1_initializeHandler(event)"
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dam.business.delegates.ConfigDetailsDAODelegate;
+			import com.adams.dam.model.ModelLocator;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			protected function windowedapplication1_initializeHandler( event:FlexEvent ):void {
+				var delegate:ConfigDetailsDAODelegate = new ConfigDetailsDAODelegate();
+				var result:SQLResult = delegate.getAllConfigDetails();
+				var array:Array = result.data as Array;
+				
+				if( array ) {
+					var configArrColl:ArrayCollection= new ArrayCollection( array );
+					
+					for each( var obj:Object in configArrColl ) {
+						if( model.hasOwnProperty( obj.Property ) ) {
+							model[ obj.Property ] = obj.Value;
+						}
+					} 
+					model.parentFolderName = model.FileServer;
+				}  
+			}
+			
+			protected function windowedapplication1_creationCompleteHandler( event:FlexEvent ):void 	{
+				model.mainClass = this;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<service:Services/>
+		<control:DAMController/>
+	</fx:Declarations>
+	
+	<fx:Style source="assets/css/DAMStyle.css"/>	
+
+	<mainHosts:MainView width="100%" height="100%" skinClass="com.adams.dam.view.skins.mainSkins.MainViewSkin"/>
+	
+</s:WindowedApplication>

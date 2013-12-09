@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" 
+		   xmlns:components="com.adams.scrum.views.components.*" xmlns:renderers="com.adams.scrum.views.renderers.*"> 
+	<fx:Script>
+		<![CDATA[ 			 
+			import com.adams.scrum.models.vo.CurrentInstance;
+			import com.adams.scrum.models.vo.Tasks;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Image;
+			import mx.core.IVisualElement;
+			import mx.core.mx_internal;
+			import mx.events.FlexEvent;
+			
+			import spark.events.RendererExistenceEvent;
+			
+			use namespace mx_internal;
+
+			
+			/**
+ 			 * The function to handle create ticket event
+ 			 * 
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */			
+			protected function createTicketHandler(event:MouseEvent):void
+			{
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TICKETCREATED,task);
+			} 
+			
+			/**
+			 * The function to handle Ticket Detail
+			 * 
+			 * <p>
+			 * In addition, it dispatches signal to the owner of the renderer
+			 * </p>
+			 */			
+			protected function ticketDetailHandler(event:MouseEvent):void
+			{
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TICKETDETAIL,task);
+			} 
+			
+			[Bindable]
+			public var task:Tasks;
+			public static var dataCollection:Array;
+			
+			[Bindable]
+			private var _statusColl:ArrayCollection = new ArrayCollection([
+				{toolTip:"Waiting",statusIcon:"W",statusId:Utils.taskStatusWaiting},
+				{toolTip:"InProgress",statusIcon:"P",statusId:Utils.taskStatusInProgress}, 
+				{toolTip:"Done",statusIcon:"D",statusId:Utils.taskStatusFinished},
+			]); 
+			/**
+ 			 * The task selection button handler
+ 			 * the particular task is assigned or removed from the selected sprint
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */				
+			protected function onBtnchangeHandler(event:Event):void
+			{
+				if(onBtn.label == "ON")
+				{
+					onBtn.label = "OFF"
+					task.visible = 1;
+				}else{
+					onBtn.label = "ON"
+					task.visible = 0;
+				}
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKVISIBLEUPDATE,task);
+			}
+			/**
+ 			 * the Status Button change handler
+ 			 * the selected status is sent only if new status is assigned.
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */			
+			protected function clickHandler(event:Event):void {
+				var currentStatus:int = task.taskStatusFk; 
+				if(statusBtn.selectedItem && task.visible!=0){
+					getStatusName(statusBtn.selectedItem);
+					if(currentStatus!=task.taskStatusFk )
+						Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKSTATUSUPDATE,task);
+				}
+				
+			}
+            private function getStatusName( item:Object):void{
+				task.taskStatusFk = item.statusId; 
+			}
+			/**  
+ 			 * <p>
+ 			 * To set the button selection based on the task status on init
+ 			 * </p>
+			 */			
+			private function getStatusButton( statusId:int):void{
+				for each(var obj:Object in _statusColl){
+					if(obj.statusId == statusId){
+						statusBtn.selectedItem = obj;
+						break;
+					}
+				}
+			}
+			/**
+ 			 * <p>
+ 			 * Initiates the Task Renderer Object, the task status is set with toggle Button Selection
+ 			 * </p>
+			 */			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if(value && taskLbl != null && taskLbl!=null){
+					taskLbl.text = '';
+					taskType.text = '';
+					task = value as Tasks; 
+					if(task.taskComment) taskLbl.text = task.taskComment.toString();
+					getStatusButton(task.taskStatusFk);
+					if(task.taskType!=-1 && dataCollection.length>0)
+						taskType.text = dataCollection[task.taskType];
+					
+					taskEstimatedLbl.text = task.estimatedTime.toString();	
+					taskDoneLbl.text = task.doneTime.toString();
+					taskRemainingLbl.text = taskRemainingTime(int(taskEstimatedLbl.text),int(taskDoneLbl.text));
+					if(task.visible == 0)
+					{
+						onBtn.label="ON"
+					}else{
+						onBtn.label="OFF"
+					}
+					
+					taskLbl.enabled = visibleOnOff();
+					deleteBtn.enabled = visibleOnOff();
+					onBtn.enabled = visibleOnOff(); 
+					createTicketBtn.enabled = visibleOnOff();
+					statusBtn.visible = visibleStatusButton();
+					
+				}
+			}
+			private function taskRemainingTime(estmateTime:int,doneTime:int):String{
+				var totalremaining:int = 0;
+				totalremaining = estmateTime - doneTime;
+				return totalremaining.toString();
+			}
+			private function visibleOnOff():Boolean{
+				return Object(owner).getParentList().addOnOffRendererProperty;
+			}
+			private function visibleStatusButton():Boolean{				
+				return Object(owner).getParentList().addStatusProperty;
+			}
+			/**
+			 * update the editable task for those task comment
+			 **/
+			protected function taskLbl_enterHandler(event:FlexEvent):void
+			{
+				 task.taskComment = Utils.StrToByteArray(taskLbl.text);
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKLABELUPDATE,task);  
+				
+			}  
+
+			/**
+			 *   Delete the task When user Clicked the Delete Button
+			 **/
+			protected function deleteBtn_clickHandler(event:MouseEvent):void
+			{
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKDELETE,task); 
+		
+			}
+ 
+			protected function edtTaskMessage_clickHandler(event:MouseEvent):void
+			{ 
+				task.taskComment = Utils.StrToByteArray(taskLbl.text);
+				Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKLABELUPDATE,task); 
+			}
+			
+			protected function taskLbl_focusOutHandler(event:FocusEvent):void
+			{
+				 taskLbl.textAddBtn = false;
+				taskLbl.setStyle("borderVisible",false) 
+				
+			}
+
+			protected function taskLbl_mouseUpHandler(event:MouseEvent):void
+			{
+				taskLbl.setStyle("borderVisible",true) 
+				taskLbl.textSelected = true;
+				taskLbl.textAddBtn = true;
+				
+				if(event.target as Image)
+				{
+					task.taskComment = Utils.StrToByteArray(taskLbl.text);
+					Object( owner ).getParentList().renderSignal.dispatch(NativeList.TASKLABELUPDATE,task);
+				}
+			}
+
+			protected function taskLbl_initializeHandler(event:FlexEvent):void
+			{
+				taskLbl.textAddBtn = false;
+				taskLbl.setStyle("borderVisible",false)
+			}
+
+
+			protected function taskLbl_mouseDownHandler(event:MouseEvent):void
+			{
+				taskLbl.setStyle("borderVisible",false)
+			}
+
+		]]>
+	</fx:Script>
+	<s:Group width="100%" >
+		<s:Rect top="1" left="1" right="1" bottom="0">
+			<s:fill>
+				<s:SolidColor id="backgroundSolidColor" color="#ffffff" />
+			</s:fill>
+		</s:Rect>
+		<s:HGroup verticalAlign="middle" top="1" bottom="0" left="5" right="5">
+			<s:Button label="Delete" width="50" id="deleteBtn" click="deleteBtn_clickHandler(event)" enabled="{visibleOnOff()}"/>
+			<s:Button label="OFF" width="50" id="onBtn" click="onBtnchangeHandler(event)" enabled="{visibleOnOff()}"/>
+			<s:Label id="taskType" 
+					 color="0x000000"
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<renderers:TextInputSave id="taskLbl"
+						 skinClass="assets.skins.TextSkin"
+						 color="0x000000" 
+						 width="100%"
+						 enter="taskLbl_enterHandler(event)"
+						 focusOut="taskLbl_focusOutHandler(event)"
+						 mouseUp="taskLbl_mouseUpHandler(event)" 
+						 initialize="taskLbl_initializeHandler(event)"
+						 mouseDown="taskLbl_mouseDownHandler(event)"
+						 />
+			<mx:Spacer width="20%"/>
+			<s:ButtonBar id="statusBtn" visible="{visibleStatusButton()}" dataProvider="{_statusColl}" labelField="statusIcon"
+						skinClass="assets.skins.ButtonBarSkin" change="clickHandler(event)">
+				<s:layout><s:HorizontalLayout variableColumnWidth="false" gap="15" columnWidth="50" /></s:layout>
+			</s:ButtonBar>
+			<s:HGroup variableColumnWidth="false" columnWidth="22" verticalAlign="middle">
+				<s:TextInput id="taskEstimatedLbl" editable="false" />	
+				<s:TextInput id="taskDoneLbl" editable="false" click="ticketDetailHandler(event)"/>
+				<s:Label id="taskRemainingLbl" maxDisplayedLines="1"  showTruncationTip="true" />	
+			</s:HGroup>
+			<components:NativeButton id="createTicketBtn" label="Ticket" styleName="NewIcon" width="70" click="createTicketHandler(event)" enabled="{visibleOnOff()}"/>  
+		</s:HGroup>
+	</s:Group>
+</mx:Canvas>

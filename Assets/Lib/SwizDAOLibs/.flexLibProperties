@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="com.adams.swizdao.controller.ServiceController"/>
+    <classEntry path="com.adams.swizdao.dao.CRUDObject"/>
+    <classEntry path="com.adams.swizdao.dao.IAbstractDAO"/>
+    <classEntry path="com.adams.swizdao.dao.PagingDAO"/>
+    <classEntry path="com.adams.swizdao.model.LocalDbAccess"/>
+    <classEntry path="com.adams.swizdao.model.collections.AbstractCollection"/>
+    <classEntry path="com.adams.swizdao.model.collections.ICollection"/>
+    <classEntry path="com.adams.swizdao.model.processor.AbstractProcessor"/>
+    <classEntry path="com.adams.swizdao.model.processor.IVOProcessor"/>
+    <classEntry path="com.adams.swizdao.model.vo.AbstractVO"/>
+    <classEntry path="com.adams.swizdao.model.vo.ConfigVO"/>
+    <classEntry path="com.adams.swizdao.model.vo.CurrentInstance"/>
+    <classEntry path="com.adams.swizdao.model.vo.IValueObject"/>
+    <classEntry path="com.adams.swizdao.model.vo.LocalSQLStatements"/>
+    <classEntry path="com.adams.swizdao.model.vo.PushMessage"/>
+    <classEntry path="com.adams.swizdao.model.vo.SignalVO"/>
+    <classEntry path="com.adams.swizdao.response.AbstractResult"/>
+    <classEntry path="com.adams.swizdao.response.SignalSequence"/>
+    <classEntry path="com.adams.swizdao.service.NativeChannelSet"/>
+    <classEntry path="com.adams.swizdao.service.NativeConsumer"/>
+    <classEntry path="com.adams.swizdao.service.NativeProducer"/>
+    <classEntry path="com.adams.swizdao.service.NativeRemoteObject"/>
+    <classEntry path="com.adams.swizdao.signals.AbstractSignal"/>
+    <classEntry path="com.adams.swizdao.signals.PushRefreshSignal"/>
+    <classEntry path="com.adams.swizdao.signals.ResultSignal"/>
+    <classEntry path="com.adams.swizdao.util.Action"/>
+    <classEntry path="com.adams.swizdao.util.ArrayUtil"/>
+    <classEntry path="com.adams.swizdao.util.DateUtils"/>
+    <classEntry path="com.adams.swizdao.util.Description"/>
+    <classEntry path="com.adams.swizdao.util.EncryptUtil"/>
+    <classEntry path="com.adams.swizdao.util.ErrorHandler"/>
+    <classEntry path="com.adams.swizdao.util.FileNameSplitter"/>
+    <classEntry path="com.adams.swizdao.util.FormUtils"/>
+    <classEntry path="com.adams.swizdao.util.GetVOUtil"/>
+    <classEntry path="com.adams.swizdao.util.ObjectUtils"/>
+    <classEntry path="com.adams.swizdao.util.StringUtils"/>
+    <classEntry path="com.adams.swizdao.views.components.CustomTextInput"/>
+    <classEntry path="com.adams.swizdao.views.components.NativeButton"/>
+    <classEntry path="com.adams.swizdao.views.components.NativeDataGroup"/>
+    <classEntry path="com.adams.swizdao.views.components.NativeDatagrid"/>
+    <classEntry path="com.adams.swizdao.views.components.NativeList"/>
+    <classEntry path="com.adams.swizdao.views.components.NativePanel"/>
+    <classEntry path="com.adams.swizdao.views.mediators.AbstractViewMediator"/>
+    <classEntry path="com.adams.swizdao.views.mediators.IViewMediator"/>
+    <classEntry path="com.briankotek.mediateview.MediateViewMetadataTag"/>
+    <classEntry path="com.briankotek.mediateview.MediateViewProcessor"/>
+    <classEntry path="com.briankotek.mediateview.ViewMediator"/>
+    <classEntry path="com.hurlant.crypto.Crypto"/>
+    <classEntry path="com.hurlant.crypto.prng.ARC4"/>
+    <classEntry path="com.hurlant.crypto.prng.IPRNG"/>
+    <classEntry path="com.hurlant.crypto.prng.Random"/>
+    <classEntry path="com.hurlant.crypto.rsa.RSAKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.AESKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.BlowFishKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.CBCMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.CFB8Mode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.CFBMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.CTRMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.DESKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.ECBMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.ICipher"/>
+    <classEntry path="com.hurlant.crypto.symmetric.IMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.IPad"/>
+    <classEntry path="com.hurlant.crypto.symmetric.IStreamCipher"/>
+    <classEntry path="com.hurlant.crypto.symmetric.ISymmetricKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.IVMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.NullPad"/>
+    <classEntry path="com.hurlant.crypto.symmetric.OFBMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.PKCS5"/>
+    <classEntry path="com.hurlant.crypto.symmetric.SimpleIVMode"/>
+    <classEntry path="com.hurlant.crypto.symmetric.TripleDESKey"/>
+    <classEntry path="com.hurlant.crypto.symmetric.XTeaKey"/>
+    <classEntry path="com.hurlant.math.BarrettReduction"/>
+    <classEntry path="com.hurlant.math.BigInteger"/>
+    <classEntry path="com.hurlant.math.ClassicReduction"/>
+    <classEntry path="com.hurlant.math.IReduction"/>
+    <classEntry path="com.hurlant.math.MontgomeryReduction"/>
+    <classEntry path="com.hurlant.math.NullReduction"/>
+    <classEntry path="com.hurlant.math.bi_internal"/>
+    <classEntry path="com.hurlant.util.Base64"/>
+    <classEntry path="com.hurlant.util.Hex"/>
+    <classEntry path="com.hurlant.util.Memory"/>
+    <classEntry path="com.nsdevaraj.swiz.processors.MediateSignalProcessor"/>
+    <classEntry path="com.nsdevaraj.swiz.processors.SignalsProcessor"/>
+    <classEntry path="org.osflash.signals.DeluxeSignal"/>
+    <classEntry path="org.osflash.signals.IDeluxeSignal"/>
+    <classEntry path="org.osflash.signals.IDispatcher"/>
+    <classEntry path="org.osflash.signals.ISignal"/>
+    <classEntry path="org.osflash.signals.ISignalOwner"/>
+    <classEntry path="org.osflash.signals.Signal"/>
+    <classEntry path="org.osflash.signals.events.GenericEvent"/>
+    <classEntry path="org.osflash.signals.events.IBubbleEventHandler"/>
+    <classEntry path="org.osflash.signals.events.IEvent"/>
+    <classEntry path="org.osflash.signals.natives.INativeDispatcher"/>
+    <classEntry path="org.osflash.signals.natives.NativeMappedSignal"/>
+    <classEntry path="org.osflash.signals.natives.NativeRelaySignal"/>
+    <classEntry path="org.osflash.signals.natives.NativeSignal"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests>
+    <namespaceManifestEntry manifest="manifest.xml" namespace="http://swizdao.swizframework.org"/>
+  </namespaceManifests>
+</flexLibProperties>

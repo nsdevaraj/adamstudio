@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:layouts="com.packaging.layouts.*" width="100%" height="100%" minHeight="600" styleName="transparentBackground"  >
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import spark.events.IndexChangeEvent;
+			 
+		]]>
+	</fx:Script>
+	
+	<mx:Text left="15" width="100%" textAlign="left" text="Showcase" styleName="introTitle" fontSize="24"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+	
+	
+	<mx:Canvas width="100%">
+		<mx:SWFLoader source="assets/swf/PvModel.swf" horizontalCenter="0"/>	
+	</mx:Canvas>
+	 
+	
+	<mx:VBox width="100%" left="15" verticalGap="0" top="{560}">
+		
+		<mx:Text width="100%" styleName="contFont">
+			<mx:htmlText>
+				<![CDATA[<p align="justify"><b>We are specialized in :</b><br><li>workflow environment</li><li>B-to-B application tools </li><li>Dedicated to specific professional processes</li><li>Dynamic data vizualisation online</li></p>]]>
+			</mx:htmlText>
+		</mx:Text>
+		<mx:Text width="100%" styleName="contFont">
+			<mx:htmlText>
+				<![CDATA[<p align="justify">Please ask for a personal demo online at : <a href='mailto:info@brennus-software.com' 
+				fontColor='#ff0000'><u>info@brennus-software.com</u></a></p>
+				]]>
+			</mx:htmlText>
+		</mx:Text>
+	</mx:VBox>
+	 
+</mx:VBox>

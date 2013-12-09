@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%" creationComplete="updateProperties()"
+	height="100%" xmlns="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.PropertiespjEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.event.ProjectsEvent;
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.ModelLocator;
+	
+			/**
+			 * Archive the project and create the close task for all the members in team
+			 * 
+			 */
+			private function archive():void
+			{		
+				model.currentTasks.taskStatusFK= TaskStatus.FINISHED;
+				model.currentTasks.tDateEnd = model.currentTime;
+				var projects:Projects = model.currentTasks.projectObject;				
+				projects.projectStatusFK= ProjectStatus.ARCHIVED;	
+				projects.projectDateEnd = model.currentTime;
+				model.currentProjects= projects;		
+				model.modelCloseTaskArrColl = new ArrayCollection();
+				model.closeTaskCollection = new ArrayCollection();
+				var closeProjectCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.closeProjectTemplate,model.currentProjects.workflowFK);	
+				for each(var wTemp:Workflowstemplates in closeProjectCollection){
+					var taskData:Tasks = new Tasks();
+					taskData.taskId = NaN;
+					taskData.previousTask = model.currentTasks;
+					taskData.projectObject = model.currentProjects;
+					var status:Status = new Status();
+					status.statusId = TaskStatus.WAITING;
+					taskData.taskStatusFK = status.statusId;
+					taskData.taskComment = getComment();
+					taskData.tDateCreation = model.currentTime;
+					taskData.workflowtemplateFK = wTemp;
+					model.closeTaskCollection.addItem(taskData); 
+				}
+				
+				onNavigationSave();
+			}
+		/**
+		 * override the gotoPrevTask and update the properties 
+		 */
+		override public function gotoPrevTask():void {
+			//model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+			//model.currentProjects= model.currentTasks.projectObject;
+			var arrc:ArrayCollection = property.getPropertiespjSet();
+			var totalConcat:ArrayCollection = new ArrayCollection( arrc.source.concat( model.extraPropertyCollection.source ) );
+			model.currentTasks.projectObject.propertiespjSet = totalConcat;
+			model.currentProjects= model.currentTasks.projectObject;
+			super.gotoPrevTask();
+		}
+		/**
+		 * override the gotoNextTask 
+		 * update the properties, archive the projects 
+		 */
+		override public function gotoNextTask():void {
+			//model.propertiespjCollection = property.getPropertiespjSet();
+			//model.currentProjects = model.currentTasks.projectObject;
+			var arrc:ArrayCollection = property.getPropertiespjSet();
+			var totalConcat:ArrayCollection = new ArrayCollection( arrc.source.concat( model.extraPropertyCollection.source ) );
+			model.currentTasks.projectObject.propertiespjSet = totalConcat;
+			model.currentProjects = model.currentTasks.projectObject;
+			archive();
+        }
+		
+		override public function updateProperties():void {
+			property.updateProperties();
+		}
+		private function onNavigationSave():void {
+			model.propertiespjCollection = property.getPropertiespjSet();
+			var pjresult:String = Utils.pjParameters(model.propertiespjCollection );
+	
+			var closeProject:ProjectsEvent = new ProjectsEvent(ProjectsEvent.EVENT_ORACLE_CLOSEPROJECT );	
+			closeProject.prop_fieldvalue = String(pjresult.split("#&#")[0]).slice(0,-1); 	
+			closeProject.prop_presetId = String(pjresult.split("#&#")[1]).slice(0,-1);	
+			closeProject.projectclosingMode = "archived";
+			closeProject.dispatch(); 
+		}
+		
+		private function onSave():void {
+			model.propertiespjCollection = property.getPropertiespjSet();
+
+			var pjresult:String = Utils.pjParameters(model.propertiespjCollection );
+		
+			var handler:IResponder = new Callbacks( onPropertiesSave ); 		
+			var bulkupdatepropPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_ORACLE_BULKUPDATE_PROPERTIESPJ );
+			bulkupdatepropPjEvent.prop_projectId = String(model.currentProjects.projectId);
+			bulkupdatepropPjEvent.prop_presetId = String(pjresult.split("#&#")[1]).slice(0,-1);
+			bulkupdatepropPjEvent.prop_prefieldvalue = String(pjresult.split("#&#")[0]).slice(0,-1);
+			bulkupdatepropPjEvent.dispatch();
+		}
+		
+		private function onPropertiesSave( rpcEvent:Object ):void {
+			if( model.mainProjectState == 1 ) {
+				if( model.updateMPV )	model.updateMPV = false;
+				else	model.updateMPV = true;
+			}
+		}
+		
+		]]>
+	</mx:Script>
+	<mx:Button id="saveButton" click="onSave()" label="Save" top="5" right="25"/>
+	<Depart id="property" projectProperty="{ model.propertiespresetsCollection }" y="{ saveButton.y + saveButton.height + 5 }"/>
+</TodoList>

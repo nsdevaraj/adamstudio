@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.dt.view.components.*"
+		xmlns:layout="com.adams.dt.view.layout.*">	 	
+	<fx:Script>
+		<![CDATA[
+			/*
+			
+			Copyright (c) 2011 Adams Studio India, All Rights Reserved 
+			
+			@author   V.Kumar
+			@contact  kutti.kumar@gmail.com
+			@project  PDFTool
+			
+			@internal 
+			
+			*/
+		]]>
+	</fx:Script>
+	<s:Scroller  id="fileUploadScroll" height="100%" >
+		<s:Group id="fileUploadForm" >		
+			<s:FormItem label="File Upload:" id="fileItem">
+				<s:layout><s:HorizontalLayout /></s:layout>
+				<s:Group id="fileTile" width="600" height="200"/>	
+			</s:FormItem>
+			<s:FormItem top="{fileItem.y + fileItem.height-20}" right="0">
+				<s:Button id="uploadButId" label="Upload" />
+			</s:FormItem>
+			<s:Label id="filedetail"/>
+		</s:Group>	
+	</s:Scroller>
+</s:Skin>

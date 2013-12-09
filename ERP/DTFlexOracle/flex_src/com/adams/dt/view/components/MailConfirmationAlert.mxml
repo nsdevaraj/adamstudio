@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	showCloseButton="true" title="Mail has been sent to" 
+				layout="vertical" headerHeight="30"   width="100%"
+               	horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+    			mouseDownOutside="onClose()"
+     			styleName="bgContainer"  
+    			close="onClose()" creationComplete="dispalyConfirmation()">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Label;
+			import mx.containers.FormItem;
+			import mx.collections.ArrayCollection;
+			private  var _confirmationProvider:ArrayCollection;
+			
+			public function set confirmationProvider(val:ArrayCollection):void{
+				_confirmationProvider = val;
+			}
+			public function get confirmationProvider():ArrayCollection{
+				return _confirmationProvider;
+			}
+			import mx.managers.PopUpManager;
+		
+			private function onClose():void {
+		    	PopUpManager.removePopUp( this );
+		    }
+		    
+		    public function dispalyConfirmation():void{
+		    	var formItem:FormItem;
+		    	var contentLabel:Label;
+		    	
+		    	for(var i:int =0;i<confirmationProvider.length;i++){
+		    		formItem = new FormItem();
+		    		contentLabel = new Label();
+		    		formItem.addChild(contentLabel);
+		    		formItem.label = confirmationProvider.getItemAt(i).formLab;
+		    		contentLabel.text = confirmationProvider.getItemAt(i).contentLab;
+		    		confirmationDisplayForm.addChild(formItem);
+		    	}
+		    }
+		    
+		]]>
+	</mx:Script>
+	<mx:Form id="confirmationDisplayForm" width="100%" height="100%">
+		
+    </mx:Form>
+    <mx:ControlBar width="100%" horizontalAlign="center" verticalAlign="middle">
+    	<mx:Button label="Close" click="onClose()" />
+    </mx:ControlBar>
+	 
+</mx:TitleWindow>

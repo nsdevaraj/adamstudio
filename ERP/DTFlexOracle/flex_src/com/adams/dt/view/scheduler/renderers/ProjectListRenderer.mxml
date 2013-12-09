@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" verticalAlign="middle" borderStyle="solid" toolTip="{ info }"
+				borderSides="[ 'bottom' ]" paddingLeft="16" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			
+			[Bindable]
+			public var prjLabel:String;
+			
+			private var _backGroundColor:uint;
+			public function set backGroundColor( value:uint ):void {
+				_backGroundColor = value;
+				setStyle( 'backgroundColor', value );
+				setStyle( 'borderStyle', 'none' );
+			} 
+			
+			private var _info:String;
+			[Bindable]
+			public function get info():String {
+				return _info;
+			}
+			public function set info( value:String ):void {
+				_info = value;
+			}
+			
+			private var _refName:String;
+			[Bindable]
+			public function get refName():String {
+				return _refName;
+			}
+			public function set refName( value:String ):void {
+				_refName = value;
+			}
+			
+			private var _isClickable:Boolean;
+			[Bindable]
+			public function get isClickable():Boolean {
+				return _isClickable;
+			}
+			public function set isClickable( value:Boolean ):void {
+				_isClickable = value;
+				if( value ) {
+					if( !hasEventListener( MouseEvent.CLICK ) ) {
+						addEventListener( MouseEvent.CLICK, onClick );
+					}
+				}
+				else {
+					if( hasEventListener( MouseEvent.CLICK ) ) {
+						removeEventListener( MouseEvent.CLICK, onClick );
+					}
+				}
+			}
+			
+			private function onClick( event:MouseEvent ):void {
+				dispatchEvent( new Event( "itemSelected" ) );
+			}
+			
+			
+		]]>
+	</mx:Script>
+	<mx:Label text="{ prjLabel }"/>
+</mx:VBox>

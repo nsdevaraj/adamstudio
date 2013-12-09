@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*">	
+	<s:Form id="correctionForm" width="100%" height="100%">	
+		<s:FormItem label="ProjectName :" >	
+			<s:Label id="projectNameId" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="Comments" width="100%" height="120">	
+			<s:TextArea id="comments" width="500" height="120" editable="false"/>
+		</s:FormItem>		
+		<s:FormItem label="Files :">
+			<s:Group id="fileTile" width="500" height="120" />	
+		</s:FormItem>
+	</s:Form>
+	<s:Group width="100%" height="30"  bottom="0">
+		<s:layout>
+			<s:HorizontalLayout variableColumnWidth="false" columnWidth="100" />
+		</s:layout>
+		<components:NativeButton id="previousNavigationId" label="PreviousTask"/>		
+		<components:NativeButton id="nextNavigationId" label="NextTask"/>
+	</s:Group> 
+</s:Skin>

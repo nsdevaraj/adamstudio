@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+  		width="100%"  height="100%" styleName="bgBorderContainer" 
+  		 xmlns:msg="com.adams.dt.view.Message.*"
+	  	creationComplete="onCreationComplete()" verticalGap="0">
+	<mx:Metadata>
+		[Event(name="uploadComplete", type="flash.events.Event")]
+	</mx:Metadata> 
+	
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.FileCategory;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.events.ListEvent;
+			import mx.events.ItemClickEvent;
+			import mx.utils.ObjectUtil;
+			import com.adams.dt.event.ApplicationStatusEvent;
+			import com.adams.dt.model.ModelLocator;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.controls.Alert;
+			import mx.rpc.AsyncToken;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			 import mx.core.Application;
+			private var refUploadFile:File;
+			private var arrBool:Boolean;
+			[Bindable]
+			public var uploadItem:Array = [];
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();
+			public var my:ArrayCollection = new ArrayCollection();
+			public var UploadFiles:Array = [];
+			private var file:File;
+			public var type:String;
+			
+			private var cursor:IViewCursor;
+			
+			private var _basicFileCollection:ArrayCollection;
+			[Bindable]
+			public var basicFiles:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+	       	public var basicFileVisible:Boolean;
+				
+			[Bindable(event="basicFileChange")]
+			public function set basicFileCollection (value:ArrayCollection):void
+			{
+				basicFiles = new ArrayCollection();
+				if(!hasEventListener("basicFileChange")) addEventListener("basicFileChange",updateContainer,false,0,true);
+					if(value!=null){
+						_basicFileCollection = value; 
+						dispatchEvent (new Event ("basicFileChange"));
+					}
+			}			
+			public function get basicFileCollection ():ArrayCollection
+			{
+				return _basicFileCollection;
+			}
+			private function updateContainer(event:Event):void{
+				basicFiles = new ArrayCollection();
+				
+				for each( var item:FileDetails in basicFileCollection){				
+					if(item.visible == true)
+					{		 
+						basicFiles.addItem(item);
+						basicFiles.refresh();						
+					}
+				}		
+				if(basicFiles.length!=0){
+					if(basicFilesId!=null){	
+						basicFilesId.dataProvider = basicFiles; 
+						basicFilesId.dataProvider.refresh();
+					}
+				}
+				
+			} 	
+			/* public function basicFilesFunction():void
+			{
+				model.basicAttachFileCommon = new ArrayCollection();
+				
+				if(model.sendBasicFileArr.length!=0)	
+				{	
+					var len:int = model.sendBasicFileArr.length;
+					for(var i:int = 0;i < len; i++)
+					{
+						var tempFiledetails:FileDetails = model.sendBasicFileArr[i] as FileDetails;					
+						var fileduplicate:FileDetails = new FileDetails();
+						fileduplicate.fileId = NaN;
+						fileduplicate.fileName = tempFiledetails.fileName;
+						fileduplicate.filePath = tempFiledetails.filePath;
+						fileduplicate.fileDate = tempFiledetails .fileDate;
+						//fileduplicate.taskId = taskid;
+						fileduplicate.categoryFK = tempFiledetails.categoryFK;
+						fileduplicate.type = 'Tasks';//tempFiledetails.type;
+						fileduplicate.storedFileName = tempFiledetails.storedFileName;
+						fileduplicate.projectFK = tempFiledetails.projectFK;
+						//MARCH 17 by kumar
+						//fileduplicate.visible = '';
+						fileduplicate.visible = tempFiledetails.visible;
+						fileduplicate.releaseStatus = tempFiledetails.releaseStatus;
+						var checkInd:String = '';
+   						if(tempFiledetails.miscelleneous!=null){
+   							checkInd = (tempFiledetails.miscelleneous).substring(3,(tempFiledetails.miscelleneous).length);
+   							fileduplicate.miscelleneous = checkInd;
+   						}
+						if(tempFiledetails.fileCategory){
+							fileduplicate.fileCategory = '';
+						}
+						fileduplicate.page = tempFiledetails.page;
+						model.basicAttachFileCommon.addItem(fileduplicate);
+					}	
+				} 
+			} */
+			public function sendBasicFiles(ev:Object):void{  
+					model.sendBasicFileArr = basicFilesId.selectedItems;
+					//basicFilesFunction();
+					model.agenceAttachFileCommon = new ArrayCollection();
+					if(model.sendBasicFileArr.length!=0)	
+					{	
+						var len:int = model.sendBasicFileArr.length;
+						for(var i:int = 0;i < len; i++)
+						{
+							var tempFiledetails:FileDetails = model.sendBasicFileArr[i] as FileDetails;
+							model.agenceAttachFileCommon.addItem(tempFiledetails);
+						}
+					}
+					
+			}	
+			
+			public function set dataProvider(arr:Array):void{
+				UploadFiles.concat(arr);
+			}
+			
+			public function get dataProvider():Array{
+				return UploadFiles;
+			}
+			private var _fileCategory:String = '';
+			public function set fileCategory(str:String):void{
+				_fileCategory = str;
+			}
+			public function get fileCategory():String{
+				return _fileCategory;
+			}
+			private function onCreationComplete():void{
+				refUploadFile = new  File();
+				addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragIn,false,0,true);
+				addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onDragDrop,false,0,true);
+				refUploadFile.addEventListener(Event.SELECT,onFileSelect,false,0,true);
+				
+				basicFileCollection = model.basicFileCollection;				
+ 			}
+			private function removeListeners():void{
+				removeEventListener(NativeDragEvent.NATIVE_DRAG_DROP,onDragDrop);
+				removeEventListener(NativeDragEvent.NATIVE_DRAG_ENTER,onDragIn);
+			}
+			private var dropedFileObject:File = new File
+			private function onDragDrop(e:NativeDragEvent):void{
+				var arr:Array = e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+				var arr_Len:int=arr.length;
+				var incomingItems:Array = [];
+				var incomingCollection:ArrayCollection = new ArrayCollection();
+				for( var k:int = 0;k < UploadFiles.length;k++ ) {
+					incomingCollection.addItem( UploadFiles[ k ] );
+				}
+				for( var j:int = 0;j < arr_Len;j++ ) {
+					if( checkDuplicateItem( arr[ j ], incomingCollection ) ) {
+						arr[ j ] = undefined;
+					}
+				}
+				for( var l:int = 0;l <  arr_Len;l++ ) {
+					if( arr[ l ] != undefined ) {
+						incomingItems.push( arr[ l ] );
+					}
+				}
+				for(var i:int=0;i<incomingItems.length;i++){
+					var dropedFileObject:File = incomingItems[i];					
+					UploadFiles.push({name:dropedFileObject.name, size:formatFileSize(dropedFileObject.size), status:"initial",fileObj:dropedFileObject});
+					var fileObj:Object = new Object();
+					fileObj.name = dropedFileObject.name;
+					fileObj.sourcePath = dropedFileObject.nativePath
+					fileObj.destinationpath = model.currentDir;
+					fileObj.fileCategory = fileCategory;
+					fileObj.type = type;      
+					if(model.currentTasks!=null){
+						fileObj.taskId = model.currentTasks.taskId;
+						if(model.currentTasks.workflowtemplateFK.profileObject.profileCode=="FAB"){
+							fileObj.miscelleneous = "FAB"; 
+						}
+						if(fileObj.type=="Tasks"&&dropedFileObject.extension=="pdf"){
+							model.pdfConversion = true;
+							model.currentTasks.swfConversion = true;
+						}
+					}
+					fileObj.type = type;
+					model.currentProjectFiles.addItem(fileObj);					
+				}
+				listFiles.dataProvider  = UploadFiles; 
+			}
+		
+			private function onDragIn(e:NativeDragEvent):void{
+				if(e.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT)){
+					var files:Array = e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+					NativeDragManager.acceptDragDrop(this);
+				}
+			}
+			// Called to add file(s) for upload
+			private function addFiles():void {
+				file = new File();
+				file.browseForOpenMultiple("Upload");
+				file.addEventListener(FileListEvent.SELECT_MULTIPLE,onFileSelect,false,0,true);
+			}
+			private var count:int=0;
+			private var filesToUpload:ArrayCollection = new ArrayCollection();
+			
+			private function onFileSelect(event:FileListEvent):void {
+				var arr:Array = event.files;
+				var arr_Len:int=arr.length;
+				var incomingItems:Array = [];
+				var incomingCollection:ArrayCollection = new ArrayCollection();
+				for( var k:int = 0;k < UploadFiles.length;k++ ) {
+					incomingCollection.addItem( UploadFiles[ k ] );
+				}
+				for( var j:int = 0;j < arr_Len;j++ ) {
+					if( checkDuplicateItem( arr[ j ], incomingCollection ) ) {
+						arr[ j ] = undefined;
+					}
+				}
+				for( var l:int = 0;l <  arr_Len;l++ ) {
+					if( arr[ l ] != undefined ) {
+						incomingItems.push( arr[ l ] );
+					}
+				}
+				//model.currentProjectFiles = new ArrayCollection();
+				for(var i:int = 0; i<incomingItems.length;i++){					
+					UploadFiles.push({  name:incomingItems[i].name, size:formatFileSize(incomingItems[i].size), status:"initial"}); 
+					var fileObj:Object = new Object();
+					fileObj.name = incomingItems[i].name;
+					fileObj.sourcePath = incomingItems[i].nativePath
+					fileObj.destinationpath = model.currentDir;					
+					fileObj.type = type;
+					fileObj.fileCategory = fileCategory;
+					if(model.currentTasks){
+						fileObj.taskId = model.currentTasks.taskId;	
+						if(model.currentTasks.workflowtemplateFK.profileObject.profileCode=="FAB"){
+							fileObj.miscelleneous = "FAB"; 
+						}
+						if(fileObj.type=="Tasks"&&incomingItems[i].extension=="pdf"){
+							model.pdfConversion = true;
+							model.currentTasks.swfConversion = true;
+						}				
+					}
+					model.currentProjectFiles.addItem(fileObj);
+				}
+				listFiles.dataProvider  = UploadFiles;
+			}
+ 			
+			private function formatFileSize(numSize:Number):String {
+				var strReturn:String;
+				numSize = Number(numSize / 1000);
+				strReturn = String(numSize.toFixed(1) + " KB");
+				if (numSize > 1000) {
+					numSize = numSize / 1000;
+					strReturn = String(numSize.toFixed(1) + " MB");
+					if (numSize > 1000) {
+						numSize = numSize / 1000;
+						strReturn = String(numSize.toFixed(1) + " GB");
+					}
+				}				
+				return strReturn;
+			}
+			
+			private function RemoveFiles():void {
+				if( listFiles.selectedItem == null ) {
+					Alert.show(model.loc.getString('pleaseSelectAtleastOneItem'));
+				}
+				else {
+					var selectedArray:Array = listFiles.selectedIndices;
+					for(var i:int = 0;i < selectedArray.length;i++ ) {
+						checkDuplicateItem(UploadFiles[ i ],model.currentProjectFiles,true);							
+						UploadFiles[ i ] = undefined;
+					}
+					var newItems:Array = [];
+					for( var j:int = 0; j <  UploadFiles.length;j++ ) {
+						if( UploadFiles[ j ] != undefined ) {
+							newItems.push( UploadFiles[ j ] );
+						}
+					}
+					UploadFiles = newItems;
+					listFiles.dataProvider  = UploadFiles;
+				}
+			}
+			
+			private function checkDuplicateItem( item:Object, dp:ArrayCollection,projectfile:Boolean=false ):Boolean {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [new SortField("name")];
+	            dp.sort = sort;
+	            dp.refresh(); 
+				cursor =  dp.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if(	found&&	projectfile){
+					dp.removeItemAt(dp.getItemIndex(cursor.current));
+				}	
+				return found;
+	       } 
+			
+		]]>
+	</mx:Script>
+	<mx:Canvas width="100%" height="100%"  >
+		<mx:DataGrid id="listFiles" left="5" top="0" bottom="25" right="{basicFileVisible?5:315}"
+				allowMultipleSelection="true" verticalScrollPolicy="auto" 
+				draggableColumns="false" resizableColumns="false" sortableColumns="false">
+				<mx:columns >
+					<mx:DataGridColumn width="220" headerText="{model.loc.getString('files')}"    dataField="name" wordWrap="true" textAlign="center"/>
+					<mx:DataGridColumn width="50" headerText="{model.loc.getString('size')}"   dataField="size" textAlign="center"/>
+				</mx:columns >
+			</mx:DataGrid>
+			
+			<mx:HBox horizontalAlign="right" verticalAlign="middle"  right="{basicFileVisible?5:315}"
+				bottom="0" left="5" paddingRight="10" paddingTop="5">
+					<mx:LinkButton id="btn" toolTip="Add file(s)" styleName="attachBtn" click="addFiles()" 
+						label="{model.loc.getString('selectFiles')}" />
+					<mx:Button id="removeButton" styleName="deleteIcon" toolTip="{model.loc.getString('removeFiles')}" 
+						buttonMode="true" click="RemoveFiles()"/>						
+			</mx:HBox>
+			<msg:RadioBoxListComponent id="basicFilesId"  
+				 width="300" right="0" top="25" bottom="0" click="sendBasicFiles(event)"
+					dataProvider="{basicFiles}" labelField="fileName" allowMultipleSelection="false"
+				 	visible="{basicFileVisible ? false : true}" includeInLayout="{basicFileVisible ? false : true}"
+					itemRenderer="com.adams.dt.view.Message.RadioBoxRenderer" />
+		
+			 <mx:Canvas top="0" width="300"  visible="{basicFileVisible ? false : true}" includeInLayout="{basicFileVisible ? false : true}"
+			 	 bottom="{basicFiles.length==0?0:basicFilesId.height}" right="0" styleName="darkBgContainer" >
+				<mx:Label text="{basicFiles.length==0?'No Basic Files Available':'Agence Files'}" verticalCenter="0" horizontalCenter="0"  /> 	
+			 </mx:Canvas>
+	</mx:Canvas>
+	 
+</mx:VBox>

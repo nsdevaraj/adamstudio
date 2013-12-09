@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" 
+		  verticalAlign="middle">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dt.util.Utils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.collections.IList;
+			
+			import spark.components.ToggleButton;
+			
+			private var _selectedState:String;
+			[Bindable]
+			public function get selectedState():String {
+				return _selectedState;
+			}
+			public function set selectedState( value:String ):void {
+				_selectedState = value;
+				if( value == '' ) {
+					if( numElements != 0 ) {
+						getElementAt( 0 ).dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+					}
+				}
+				else {
+					_selectedIndex = dataProvider.getItemIndex( value );
+					upDateComponent();
+				}
+			}
+			
+			private var _selectedIndex:int = -1;
+			public function get selectedIndex():int {
+				return _selectedIndex;
+			}
+			
+			private var _dataProvider:IList;
+			public function get dataProvider():IList {
+				return _dataProvider;
+			}
+			public function set dataProvider( value:IList ):void {
+				if( value is ArrayCollection ) {
+					var dataList:IList = new ArrayList();
+					for each( var item:Object in value ) {
+						dataList.addItem( item[ Utils.OPTIONS_PROP ] );
+					}
+					_dataProvider = dataList;
+				}
+				else {
+					_dataProvider = value;
+				}
+				updateDataProvider();
+			}
+			
+			private function updateDataProvider():void{
+				removeAllElements();
+				for( var i:int = 0; i < dataProvider.length; i++ ) {
+					var rb:ToggleButton = new ToggleButton();
+					rb.toolTip = String( dataProvider.getItemAt( i ) );
+					rb.styleName = "priorityToggle";
+					rb.addEventListener( MouseEvent.CLICK, onToggleClick );
+					addElement( rb );
+				}
+				_selectedIndex = 0;
+				upDateComponent();
+			}
+			
+			protected function onToggleClick( event:MouseEvent ):void {
+				var selectedIndex:int = getElementIndex( event.currentTarget as ToggleButton );
+				selectedState = String( dataProvider.getItemAt( selectedIndex ) );
+			}
+			
+			protected function upDateComponent():void {
+				for( var i:int = 0; i <= selectedIndex; i++ ) {
+					ToggleButton( getElementAt( i ) ).selected = true;
+				}
+				for(var j:int = ( numElements - 1 ); j > selectedIndex; j-- ) {
+					ToggleButton( getElementAt( j ) ).selected = false;
+				}
+				if( selectedIndex == 0 ) {
+					ToggleButton( getElementAt( 0 ) ).enabled = false;
+				}
+				else {
+					ToggleButton( getElementAt( 0 ) ).enabled = true;
+				}
+			}
+		]]>
+	</fx:Script>
+</s:HGroup>

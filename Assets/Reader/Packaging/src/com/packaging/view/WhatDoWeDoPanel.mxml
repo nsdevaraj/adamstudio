@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	 width="100%" height="100%"	horizontalCenter="0" horizontalScrollPolicy="off"
+	 styleName="transparentBackground">
+	 <mx:Script>
+	 	<![CDATA[
+			
+	 	]]>
+	 </mx:Script>
+	 <mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" 
+	 	click="{parentDocument.backtoHome()}"/>
+   
+	 <mx:VBox paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15" width="100%" height="100%">
+	 <mx:Label styleName="introTitle" text="What Do We Do?" fontSize="24" left="15" top="15"/>
+     	  <mx:HRule width="100%"/>
+     <mx:HBox width="100%" height="100%">
+	     <mx:Image left="15" top="50" source="{ImageResourceExample.AnimationImg1}"/>
+	     <mx:Text fontSize="20" width="100%" styleName="contFont" height="100%" selectable="false">
+				<mx:htmlText><![CDATA[<p align="justify">We provides specialized development resources to systems integrators and web agencies.
+					<br>We provide application conception and development solutions through a proven mix of local expertise and remote concentrated development capacity respond rapidly to our clients rich internet application projects requirements through our onsite ScrumMasters and concentrated software development poles using our proprietary DevTrack™ interface.</p>]]>
+		     </mx:htmlText>
+			</mx:Text>
+		</mx:HBox>
+		</mx:VBox>
+</mx:Canvas>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx"> 
+	<fx:Script>
+		<![CDATA[
+			import com.adams.suite.models.vo.CurrentInstance;
+			import com.adams.suite.utils.Utils;
+			import com.adams.suite.views.Question;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.controls.Label;
+			
+			import org.osflash.signals.Signal;
+			
+			import spark.components.CheckBox;
+			import spark.components.HGroup;
+			import spark.components.RadioButton;
+			private var _isAnswerCorrect:Boolean;
+			private var rbtn:RadioButton;
+			private var qlabel:Label;
+			private var hBox:HGroup;
+			private var cbox:CheckBox;
+			private static const ANSWER:String = 'y';
+			private var _curData:XML;
+			private var cBoxArr:Array;
+			[Bindable]
+			public var qStat:Array; 
+			//Question type Multiple Radio type Question
+			private static const MRQTYPE:String = "singleChoice";
+			//Question type Multiple Choice Question
+			private static const MCQTYPE:String = "multiChoice";
+			//Question type True or False
+			private static const TFTYPE:String = "tf";
+			[Bindable]
+			[Inject]
+			public var currentInstance:CurrentInstance; 
+			public var updateSelectionSignal:Signal = new Signal();
+			public function get curData():XML
+			{
+				return _curData;
+			}
+ 			private var bulletArr:Array = ['A','B','C','D','E','F'];
+
+			public function set curData(value:XML):void
+			{
+				_curData = value;
+				removeAllElements();
+				cBoxArr = [];
+				if(_curData.question.@type == MRQTYPE || _curData.question.@type == TFTYPE){
+					for(var i:int=0;i<_curData.answer.length();i++){
+						rbtn= new RadioButton();
+						qlabel = new Label();
+						hBox = new HGroup();
+						hBox.addElement(qlabel);
+						hBox.addElement(rbtn);
+						addElement(hBox);
+						qlabel.text = bulletArr[i]
+						rbtn.label = _curData.answer[i];
+						rbtn.addEventListener(MouseEvent.CLICK,updateSelection);
+						cBoxArr.push(rbtn);
+					}
+				}else{
+					for(var j:int=0;j<_curData.answer.length();j++){
+						cbox = new CheckBox();
+						qlabel = new Label();
+						hBox = new HGroup();
+						hBox.addElement(qlabel);
+						hBox.addElement(cbox);
+						addElement(hBox);
+						qlabel.text =bulletArr[j]
+						cbox.label = _curData.answer[j];
+						cbox.addEventListener(MouseEvent.CLICK,updateSelection);
+						cBoxArr.push(cbox);
+					}
+				}
+				qStat =[]; 
+				if(curqStat!= null){ 
+					initSelection(); 
+				}  
+			}
+			 
+			//Status of current question, selections and answered correcly or not
+			public static var curqStat:Array;  //replace to data Group comp 
+			private function initSelection():void{
+				if(curData.question.@type == 'singleChoice' || curData.question.@type == 'tf'){
+					//radiobtn
+					for(var j:int = 0; j < curData.answer.length(); j++)
+					{
+						cBoxArr[j].selected = curqStat[j+1];
+						if(currentInstance.isResultReviewMode == false){
+							if(cBoxArr[j].selected){
+								cBoxArr[j].setStyle("color","red");
+								cBoxArr[j].setStyle("wrongAnswer","0xff0000");
+							}
+							if(String(curData.answer[j].@correct) == ANSWER){
+								cBoxArr[j].setStyle("color","green");
+								cBoxArr[j].setStyle("wrongAnswer","0x00ff00");
+							}
+							//cBoxArr[j].enabled=false
+							
+						}
+					} 
+				}else{
+					//checkbox
+					for(var i:int = 0; i < curData.answer.length(); i++)
+					{	          
+						cBoxArr[i].selected = curqStat[i+1];
+						if(cBoxArr[i].selected ) {
+							prevSelection = cBoxArr[i] as CheckBox;
+							cnt++
+						}
+						if(currentInstance.isResultReviewMode == false){
+							if(cBoxArr[i].selected){
+								cBoxArr[i].setStyle("color","red");
+								cBoxArr[i].setStyle("wrongAnswer","0xff0000");
+							}
+							if(String(curData.answer[i].@correct) == ANSWER){
+								cBoxArr[i].setStyle("color","green");
+								cBoxArr[i].setStyle("wrongAnswer","0x00ff00");
+							}
+							//cBoxArr[i].enabled=false
+						}
+					} 
+				} 
+			}
+			private var cnt:int = 0;
+			private function updateSelection(event:Event):void{
+				if(curData.question.@type == 'singleChoice' || curData.question.@type == 'tf'){
+					//radiobtn
+					for(var j:int = 0; j < curData.answer.length(); j++)
+					{
+						qStat[j+1] = cBoxArr[j].selected;
+					}
+					if(curData.answer[cBoxArr.indexOf(event.currentTarget)].@correct==ANSWER){
+						_isAnswerCorrect = true;
+					}else{
+						_isAnswerCorrect = false;
+						
+					} 
+					updateSelectionSignal.dispatch(qStat);
+				}else{
+					//checkbox
+					cnt =0;
+					_isAnswerCorrect = true;        
+					for(var i:int = 0; i < curData.answer.length(); i++)
+					{
+						if(cBoxArr[i].selected != (curData.answer[i].@correct==ANSWER)){
+							_isAnswerCorrect = false;
+						} 
+						if(cBoxArr[i].selected){
+							cnt = cnt+1
+						}
+					} 
+					if(cnt==2){
+						prevSelection = (event.currentTarget) as CheckBox;
+						updateSelectionSignal.dispatch(qStat);
+					}else if(cnt>2){
+						prevSelection.selected = false;
+						prevSelection = (event.currentTarget) as CheckBox;
+					}
+					for(var k:int = 0; k < curData.answer.length(); k++)
+					{
+						qStat[k+1] = cBoxArr[k].selected;
+					} 
+				}
+				qStat[0] = _isAnswerCorrect;
+				//updateSelectionSignal.dispatch(qStat);
+			} 
+			 private var prevSelection:CheckBox;
+		]]>
+	</fx:Script>
+</s:VGroup>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<book width="499" height="665">
+<page pageNo="1">
+	<thumbL>assets/images/thumb/Svmmac_L_1.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_1.swf</thumbP>
+	<pageL>assets/images/page/1_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/1_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="video">
+			<url>assets/pageAssets/video/SuperBolt.flv</url>
+			<landscape x="145" y="265" width="205" height="150"/>
+			<portrait x="180" y="445" width="230" height="175"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="2">
+	<thumbL>assets/images/thumb/Svmmac_L_2.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_2.swf</thumbP>
+	<pageL>assets/images/page/2_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/2_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="video">
+			<url>assets/pageAssets/video/laurent_clause_ipad.flv</url>
+			<landscape x="721" y="80" width="264" height="217"/>
+			<portrait x="491" y="101" width="237" height="196"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="3">
+	<thumbL>assets/images/thumb/Svmmac_L_3.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_3.swf</thumbP>
+	<pageL>assets/images/page/3_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/3_Svmmac_v.swf</pageP>
+	<assets/>
+</page>
+<page pageNo="4">
+	<thumbL>assets/images/thumb/Svmmac_L_4.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_4.swf</thumbP>
+	<pageL>assets/images/page/4_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/4_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="image">
+			<url>assets/pageAssets/image/xserve02.jpg</url>
+			<landscape x="482" y="203" width="35" height="35"/>
+			<portrait x="250" y="360" width="35" height="35"/>
+		</Asset>
+		<Asset type="image">
+			<url>assets/pageAssets/image/xserve04.jpg</url>
+			<landscape x="533" y="205" width="35" height="35"/>
+			<portrait x="250" y="410" width="35" height="35"/>
+		</Asset>
+		<Asset type="image">
+			<url>assets/pageAssets/image/XServe.jpg</url>
+			<landscape x="582" y="205" width="35" height="35"/>
+			<portrait x="250" y="460" width="35" height="35"/>
+		</Asset>
+		<Asset type="image">
+			<url>assets/pageAssets/image/xserve03.jpg</url>
+			<landscape x="632" y="204" width="35" height="35"/>
+			<portrait x="250" y="505" width="35" height="35"/>
+		</Asset>
+		<Asset type="video">
+			<url>assets/pageAssets/video/iPhone.flv</url>
+			<landscape x="693" y="483" width="294" height="220"/>
+			<portrait x="375" y="664" width="335" height="270"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="5">
+	<thumbL>assets/images/thumb/Svmmac_L_5.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_5.swf</thumbP>
+	<pageL>assets/images/page/5_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/5_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="image">
+			<url>assets/pageAssets/image/Ipad_BDpage1.png</url>
+			<landscape x="895" y="540" width="97" height="123"/>
+			<portrait x="637" y="766" width="91" height="118"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="6">
+	<thumbL>assets/images/thumb/Svmmac_L_6.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_6.swf</thumbP>
+	<pageL>assets/images/page/6_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/6_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="swf3D">
+			<url>assets/pageAssets/swf/RepousseSpin.swf</url>
+			<landscape x="38" y="162" width="360" height="243"/>
+			<portrait x="36" y="176" width="343" height="243"/>
+		</Asset>
+		<Asset type="image">
+			<url>assets/pageAssets/image/Java.jpg</url>
+			<landscape x="894" y="211" width="95" height="165"/>
+			<portrait x="638" y="299" width="95" height="166"/>
+		</Asset>
+		<Asset type="swf">
+			<url>assets/pageAssets/swf/Tower.swf</url>
+			<landscape x="711" y="471" width="242" height="242"/>
+			<portrait x="490" y="690" width="242" height="242"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="7">
+	<thumbL>assets/images/thumb/Svmmac_L_7.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_7.swf</thumbP>
+	<pageL>assets/images/page/7_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/7_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="image">
+			<url>assets/pageAssets/image/vlc.jpg</url>
+			<landscape x="756" y="523" width="232" height="191"/>
+			<portrait x="265" y="540" width="206" height="170"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="8">
+	<thumbL>assets/images/thumb/Svmmac_L_8.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_8.swf</thumbP>
+	<pageL>assets/images/page/8_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/8_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="audio">
+			<url>assets/pageAssets/audio/Quatuor4 closeness 2.mp3</url>
+			<landscape x="224" y="323" width="100" height="100"/>
+			<portrait x="325" y="307" width="113" height="123"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="9"> 
+	<thumbL>assets/images/thumb/Svmmac_L_9.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_9.swf</thumbP>
+	<pageL>assets/images/page/9_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/9_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="image">
+			<url>assets/pageAssets/image/panoramici.jpg</url>
+			<landscape x="540" y="242" width="355" height="100"/>
+			<portrait x="148" y="386" width="542" height="135"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="10">
+	<thumbL>assets/images/thumb/Svmmac_L_10.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_10.swf</thumbP>
+	<pageL>assets/images/page/10_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/10_Svmmac_v.swf</pageP>
+	<assets>
+		<Asset type="video">
+			<url>assets/pageAssets/video/tableconnect.flv</url>
+			<landscape x="613" y="64" width="340" height="219"/>
+			<portrait x="35" y="725" width="338" height="215"/>
+		</Asset>
+	</assets>
+</page>
+<page pageNo="11">
+	<thumbL>assets/images/thumb/Svmmac_L_11.swf</thumbL>
+	<thumbP>assets/images/thumb/Svmmac_P_11.swf</thumbP>
+	<pageL>assets/images/page/11_Svmmac_h.swf</pageL>
+	<pageP>assets/images/page/11_Svmmac_v.swf</pageP>
+	<assets/>
+</page>
+</book>

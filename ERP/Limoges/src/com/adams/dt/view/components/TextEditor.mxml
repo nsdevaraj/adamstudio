@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			import flash.text.engine.FontPosture;
+			import flash.text.engine.FontWeight;
+			
+			import flashx.textLayout.conversion.ConversionType;
+			import flashx.textLayout.conversion.TextConverter;
+			import flashx.textLayout.formats.TextAlign;
+			import flashx.textLayout.formats.TextDecoration;
+			import flashx.textLayout.formats.TextLayoutFormat;
+			
+			import mx.events.ColorPickerEvent;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			private var _getText:String;
+			
+			[Bindable]
+			public function get getText():String{
+				_getText = TextConverter.export(editor.textFlow,TextConverter.TEXT_LAYOUT_FORMAT,ConversionType.STRING_TYPE).toString();
+				return _getText;
+			}
+			
+			public function set getText(value:String):void{
+				_getText = value;
+			}
+			
+			protected function editor_selectionChangeHandler(evt:FlexEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				fontDDL.selectedItem = txtLayFmt.fontFamily;
+				sizeDDL.selectedItem = txtLayFmt.fontSize;
+				boldBtn.selected = (txtLayFmt.fontWeight == FontWeight.BOLD);
+				italBtn.selected = (txtLayFmt.fontStyle == FontPosture.ITALIC);
+				underBtn.selected = (txtLayFmt.textDecoration == TextDecoration.UNDERLINE);
+				colorCP.selectedColor = txtLayFmt.color;
+				lineBtn.selected = txtLayFmt.lineThrough;
+				
+				switch (txtLayFmt.textAlign) {
+					case TextAlign.LEFT:
+						txtAlignBB.selectedIndex = 0;
+						break;
+					case TextAlign.CENTER:
+						txtAlignBB.selectedIndex = 1;
+						break;
+					case TextAlign.RIGHT:
+						txtAlignBB.selectedIndex = 2;
+						break;
+					case TextAlign.JUSTIFY:
+						txtAlignBB.selectedIndex = 3;
+						break;
+					default:
+						txtAlignBB.selectedIndex = -1;
+						break;
+				}
+			}
+			
+			protected function fontDDL_changeHandler(evt:IndexChangeEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.fontFamily = fontDDL.selectedItem;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function sizeDDL_changeHandler(evt:IndexChangeEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.fontSize = sizeDDL.selectedItem;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function boldBtn_clickHandler(evt:MouseEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.fontWeight = (txtLayFmt.fontWeight == FontWeight.BOLD) ? FontWeight.NORMAL : FontWeight.BOLD;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function italBtn_clickHandler(evt:MouseEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.fontStyle = (txtLayFmt.fontStyle == FontPosture.ITALIC) ? FontPosture.NORMAL : FontPosture.ITALIC;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function underBtn_clickHandler(evt:MouseEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.textDecoration = (txtLayFmt.textDecoration == TextDecoration.UNDERLINE) ? TextDecoration.NONE : TextDecoration.UNDERLINE;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function colorCP_changeHandler(evt:ColorPickerEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.color = colorCP.selectedColor;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+			
+			protected function txtAlignBB_changeHandler(evt:IndexChangeEvent):void {
+				if (txtAlignBB.selectedItem) {
+					var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+						editor.selectionAnchorPosition,
+						editor.selectionActivePosition);
+					txtLayFmt.textAlign = txtAlignBB.selectedItem.value;
+					editor.setFormatOfRange(txtLayFmt,
+						editor.selectionAnchorPosition,
+						editor.selectionActivePosition);
+					editor.setFocus();
+				}
+			}
+			
+			protected function lineBtn_clickHandler(evt:MouseEvent):void {
+				var txtLayFmt:TextLayoutFormat = editor.getFormatOfRange(null,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				txtLayFmt.lineThrough = lineBtn.selected;
+				editor.setFormatOfRange(txtLayFmt,
+					editor.selectionAnchorPosition,
+					editor.selectionActivePosition);
+				editor.setFocus();
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout gap="0" />
+	</s:layout>
+	<s:HGroup width="100%">
+		<s:DropDownList id="fontDDL"
+						width="150" selectedIndex="0"
+						change="fontDDL_changeHandler(event);">
+			<s:dataProvider>
+				<s:ArrayList source="[Calibri,Arial,Verdana,Times New Roman,Trebuchet MS]" />
+			</s:dataProvider>
+		</s:DropDownList>
+		<s:DropDownList id="sizeDDL"
+						width="60" selectedIndex="2"
+						change="sizeDDL_changeHandler(event);">
+			<s:dataProvider>
+				<s:ArrayList source="[8,10,12,14,16,24,36,72]" />
+			</s:dataProvider>
+		</s:DropDownList>
+		<s:ToggleButton id="boldBtn"
+						label="B"
+						fontWeight="bold"
+						width="30"
+						click="boldBtn_clickHandler(event);" />
+		<s:ToggleButton id="italBtn"
+						label="I"
+						fontStyle="italic"
+						width="30"
+						click="italBtn_clickHandler(event);" />
+		<s:ToggleButton id="underBtn"
+						label="U" 
+						textDecoration="underline"
+						width="30"
+						click="underBtn_clickHandler(event);" />
+		<s:ToggleButton id="lineBtn"
+						label="S"
+						lineThrough="true"
+						width="30"
+						click="lineBtn_clickHandler(event);" />
+		<mx:ColorPicker id="colorCP"
+						change="colorCP_changeHandler(event);" />
+		<s:ButtonBar id="txtAlignBB" styleName="textAlignBar"
+					 arrowKeysWrapFocus="true"
+					 labelField="label"
+					 width="120"
+					 change="txtAlignBB_changeHandler(event);">
+			<s:dataProvider>
+				<s:ArrayList>
+					<fx:Object icon="@Embed('assets/images/alignLeft.png')" label="Align Left" value="{TextAlign.LEFT}" />
+					<fx:Object icon="@Embed('assets/images/alignCenter.png')" label="Align Center" value="{TextAlign.CENTER}" />
+					<fx:Object icon="@Embed('assets/images/alignRight.png')" label="Align Right" value="{TextAlign.RIGHT}" />
+					<fx:Object icon="@Embed('assets/images/alignJustify.png')" label="Align Justify" value="{TextAlign.JUSTIFY}" />
+				</s:ArrayList>
+			</s:dataProvider>
+		</s:ButtonBar>
+	</s:HGroup>
+	<s:TextArea id="editor"
+				focusEnabled="false"
+				width="100%" height="100%"
+				minHeight="50"
+				selectionChange="editor_selectionChangeHandler(event);"/>
+</s:Group>

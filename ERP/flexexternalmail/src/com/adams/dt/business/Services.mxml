@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cairngorm:ServiceLocator xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:cairngorm="com.universalmind.cairngorm.business.*">
+	<mx:Script>
+		<![CDATA[
+    		import com.adams.dt.model.ModelLocator; 
+    		import mx.rpc.events.InvokeEvent;
+    		
+    		public static const TASK_SERVICE:String = 'mail'; //task
+    		public static const FILE_DETAIL_SERVICE:String = 'mailFile';
+    		public static const WORKFLOW_TEMPLATE_SERVICE:String = 'mailworkflowstemplates';
+    		public static const PERSON_SERVICE:String = 'personmail';
+    		
+    		public static const PROPERTY_PRESET_SERVICE:String = 'mailpropertiespreset';
+    		public static const PHASE_SERVICE:String = 'mailphases';
+    		public static const PROJECT_SERVICE:String = 'mailproject';
+    		public static const PROPERTIES_PJ_SERVICE:String = 'mailpropertiespj';
+    		public static const UPLOAD_SERVICE:String = 'fileIOdownload';
+    		public static const PROFILE_SERVICE:String = 'mailprofiles';
+    		public static const TEAMLINE_SERVICE:String = 'mailteamline';
+    		public static const TRANSLATE_SERVICE:String = 'translate';
+    		public static const LANG_SERVICE:String = 'maillang';
+    		public static const CATEGORY_SERVICE:String = 'mailcategory';
+    		public static const STATUS_SERVICE:String = 'mailstatus';
+    		public static const EVENT_SERVICE:String = 'mailevents';
+    		public static const PRESETTEMPLATE_SERVICE:String = 'mailpresetTemplate';
+    		public static const PHASE_TEMPLATE_SERVICE:String = 'mailphasestemplate';
+    		public static const NOTE_SERVICE:String = 'mailnote';
+    		
+    		public static const COMPANY_SERVICE:String = 'mailcompany';
+    		
+    		
+    		
+    		[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			private function serviceInvoked(event:mx.rpc.events.InvokeEvent):void{
+				var timeStamp:Date = model.currentTime;
+				var diffmins:int = -(model.serverLastAccessedAt.time - timeStamp.time)/60000;
+ 				model.serverLastAccessedAt = timeStamp;
+ 				//(diffmins>1)? model.bgUploadFile.idle=true:model.bgUploadFile.idle=false;
+				trace(event.currentTarget.toString()+ ' here ' )
+			} 
+    	]]>
+	</mx:Script> 
+	<mx:Producer id="personchatstatus" destination="chatmessage" channelSet="{model.pushchannelset}" />
+	<mx:Consumer id="personchatinstatus" destination="chatmessage" channelSet="{model.pushchannelset}" />
+	
+	<mx:RemoteObject showBusyCursor="true"
+		id="mail" invoke="serviceInvoked(event)"
+		destination="mail" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailpropertiespreset" invoke="serviceInvoked(event)"
+		destination="mailpropertiespreset" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailphases" invoke="serviceInvoked(event)"
+		destination="mailphases" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailproject" invoke="serviceInvoked(event)"
+		destination="mailproject" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailpropertiespj" invoke="serviceInvoked(event)"
+		destination="mailpropertiespj" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailFile" destination="mailFile" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject id="fileIOdownload" showBusyCursor="true"
+		destination="fileIOdownload" channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailworkflowstemplates" invoke="serviceInvoked(event)"
+		destination="mailworkflowstemplates" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="personmail" invoke="serviceInvoked(event)"
+		destination="personmail" concurrency="single"
+		channelSet="{model.channelSet}"/> 	
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailprofiles" invoke="serviceInvoked(event)"
+		destination="mailprofiles" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailteamline" invoke="serviceInvoked(event)"
+		destination="mailteamline" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="maillang" invoke="serviceInvoked(event)"
+		destination="maillang" concurrency="single"
+		channelSet="{model.langChannelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailcategory" invoke="serviceInvoked(event)"
+		destination="mailcategory" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailstatus" invoke="serviceInvoked(event)"
+		destination="mailstatus" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailevents" invoke="serviceInvoked(event)"
+		destination="mailevents" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailpresetTemplate" invoke="serviceInvoked(event)"
+		destination="mailpresetTemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailphasestemplate" invoke="serviceInvoked(event)"
+		destination="mailphasestemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailnote" invoke="serviceInvoked(event)"
+		destination="mailnote" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="mailcompany" invoke="serviceInvoked(event)"
+		destination="mailcompany" concurrency="single"
+		channelSet="{model.channelSet}"/>
+		
+			
+	<mx:HTTPService id="translate" invoke="serviceInvoked(event)"
+		url="{model.GOOGLETEXT + model.TSOURCE+model.textSource + model.LANPAIR + model.currentTranslation.sourceLanguage+model.PAIRCODE+model.destLanguage}"
+		useProxy="false" concurrency="single"
+		showBusyCursor="true"
+		resultFormat="text"/>
+	
+</cairngorm:ServiceLocator>

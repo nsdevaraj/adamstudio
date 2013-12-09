@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:df="com.adams.dt.business.datafilter.data.*"
+	xmlns:f="com.adams.dt.business.datafilter.data.filters.*"
+	xmlns:searchView="com.adams.dt.view.*"
+	xmlns:view="com.adams.dt.view.components.*"
+	xmlns:mainView="com.adams.dt.view.mainView.*"
+	styleName="contsWidth" 
+	height="100%" xmlns:components="com.adams.dt.view.PDFTool.components.*" 
+	creationComplete="onCreationComplete()">
+	
+	<mx:Binding source="model.mainProjectState" destination="this.indexChange"/>
+
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.RefreshEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.adams.dt.event.PagingEvent; 
+			import com.adams.dt.model.vo.Propertiespj; 
+			import com.adams.dt.view.components.technicalTemplate.PropPresetTemplate;
+			import mx.events.MenuEvent;
+			import mx.controls.Menu;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.event.PropertiespjEvent;
+			import mx.managers.PopUpManager;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.ListEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.formatters.SwitchSymbolFormatter;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Reports;
+			import com.adams.dt.view.AbstractGridComponent;
+			import com.adams.dt.business.util.Utils;
+			import mx.events.FlexEvent;
+			import com.adams.dt.model.vo.Projects;
+			import mx.events.ItemClickEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import mx.collections.ArrayCollection;
+			import mx.effects.Fade;
+ 			import com.adams.dt.model.ModelLocator;
+		
+ 		
+ 		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		[Bindable]
+		private var _searchProjectInput:ArrayCollection;
+		[Bindable]
+		private var _searchDomainInput:ArrayCollection;
+		[Bindable]
+		private var _searchCategoryInput:ArrayCollection;
+		[Bindable]
+		private var _isShowing:Boolean;
+		public var switchIndex:int;
+		[Bindable]
+		private var _totalProperty:Array = [];
+		[Bindable]
+		private var _totalQueries:Array = []; 
+		[Bindable]
+		private var _statusLabel:String;
+		[Bindable]
+		private var _totalCollection:ArrayCollection = new ArrayCollection();
+		private var _tempProjectLength:int;
+		[Bindable]
+		private var menu:Menu;
+		
+		private var _indexChange:int = 0;
+		[Bindable]
+		public function get indexChange():int {
+			return _indexChange;
+		}
+		
+		public function set indexChange( value:int ):void {
+			_indexChange = value;
+			init();
+		}
+		
+		private function init():void {
+			if( indexChange == 0 ) {
+				backContainer.selectedIndex = 0;
+			}
+			else {
+				if( _mpv ) {
+					_mpv._mainProjectScreen.addEventListener( 'changeMPVIndex', onMPVIndexChange,false,0,true );
+					_mpv._mainProjectScreen.updateProject ( model.currentMainProject, switchIndex );
+				}
+			}
+		}
+		
+		private function onMPVIndexChange( event:Event ):void {
+			backContainer.selectedIndex = 1;
+			_mpv._mainProjectScreen.removeEventListener( 'changeMPVIndex', onMPVIndexChange );
+		}
+		
+		private function onCreationComplete():void {
+			setTableData( model.tabsCollection );
+			init();
+			model.projectsCollection.addEventListener( CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChange,false,0,true );
+		}
+		
+		private function onProjectsCollectionChange( event:CollectionEvent ):void {
+			if( event.kind == CollectionEventKind.REFRESH || event.kind == CollectionEventKind.UPDATE ) {
+				if( gridComponent.valueSet ) {
+					if( _tempProjectLength != model.projectsCollection.length ) {
+						for( var i:int = _tempProjectLength; i < model.projectsCollection.length; i++ ) {
+							var obj:Object = {};
+							Utils.modifyTableData( Projects( model.projectsCollection.getItemAt( i ) ), _totalProperty, _totalQueries, obj, _totalCollection );
+							_totalCollection.addItem( obj );
+						}
+						_tempProjectLength = model.projectsCollection.length;
+						updateGridComponent();
+					}
+					else {
+						if( ( model.currentProjects.projectId != 0 ) && ( _tempProjectLength == model.projectsCollection.length ) ) {
+							Utils.modifyTableData( model.currentProjects, _totalProperty, _totalQueries, Utils.projectMap( model.currentProjects, _totalCollection ), _totalCollection );
+							_totalCollection.refresh();
+							updtaeChartGrid();
+						}	
+					}
+				}
+				else {
+					maketableProvider();
+				}		
+			}
+		}
+		
+		private function maketableProvider():void {
+			if( !gridComponent.valueSet ) {
+				_tempProjectLength = model.projectsCollection.length;
+				_totalCollection = Utils.setTableData( model.projectsCollection, _totalProperty , _totalQueries );
+				if( _totalCollection.length != 0 ) updateGridComponent();
+			}
+		}
+		
+		private function updateGridComponent():void {
+			gridComponent.gridProvider = getSelectedTabView( _totalCollection );
+			updtaeChartGrid();
+		}
+		
+		private function updtaeChartGrid():void {
+			gridComponent.gridProvider.refresh();
+			if( gridComponent._autoComplete._input.text.length == 0 )
+				gridComponent.chartProvider();
+			else
+				gridComponent.selector.dispatchEvent( new ListEvent( ListEvent.CHANGE ) );
+		}
+		
+		private function getSelectedTabView( arrc:ArrayCollection ):ArrayCollection {
+			var result:ArrayCollection = new ArrayCollection();
+			var profCode:String;
+			var departureValue:String;
+			var arrivalValue:String;
+			for each( var obj:Object in arrc ) {
+				var prj:Projects = Utils.getDashboardProject( obj );
+				switch( _statusLabel ) { 
+					case 'projectDateEndIsNull':
+						switchIndex = 2;
+						if( !prj.projectDateEnd )	result.addItem( obj );
+					break;
+					case 'projectDateEndIsNotNull':
+						switchIndex = 2; 
+						if( prj.projectDateEnd )	result.addItem( obj );
+					break; 
+					case 'CLT':
+						switchIndex = 3; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode == 'CLT')
+							result.addItem( obj );
+					break; 
+					case 'OPE':
+						switchIndex = 3; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode == 'OPE')
+							result.addItem( obj );
+					break; 
+					case 'EPR':
+						switchIndex = 3; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode == 'EPR')
+							result.addItem( obj );
+					break; 
+					case 'FAB':
+						switchIndex = 3; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode == 'FAB')
+							result.addItem( obj );
+					break; 
+					case 'TRA':
+						switchIndex = 3; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode == 'TRA' )
+							result.addItem( obj );
+					break; 
+					case 'All':
+						switchIndex = 0; 
+						result.addItem( obj );
+					break;
+					case 'CurrentYear':
+						switchIndex = 0; 
+						if( prj.projectDateStart.getFullYear() == model.currentTime.getFullYear() )
+							result.addItem( obj );
+					break;
+					case 'SUB':
+						switchIndex = 0; 
+						if( getSubProfileCollection( prj ) )
+							result.addItem( obj );
+					break;
+					case 'TRAFAB':
+						profCode = GetVOUtil.getWorkflowTemplate( prj.wftFK ).profileObject.profileCode;
+						switchIndex = 0; 
+						if( profCode == 'TRA' || profCode == 'FAB' )
+							result.addItem( obj );
+					break;
+					case 'DepartureDateIsNull':
+						switchIndex = 0; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).taskCode == 'P5T03A' ) {
+							departureValue = Utils.getPropertyValue( prj, 'departure_date_start', false );
+							if( departureValue == '' || departureValue == null ) {
+								result.addItem( obj );
+							}
+						}
+					break;
+					case 'ArrivalDateIsNull':
+						switchIndex = 0; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).taskCode == 'P5T03A' ) {
+							departureValue = Utils.getPropertyValue( prj, 'departure_date_start', false );
+							arrivalValue = Utils.getPropertyValue( prj, 'departure_date_end', false );
+							if( ( departureValue && departureValue != '' )  && ( arrivalValue == null || arrivalValue == '' ) ) {
+								result.addItem( obj );
+							}
+						}
+					break;
+					case 'CurrentMonthArrival':
+						switchIndex = 0; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).taskCode == 'P5T03A' ) {
+							departureValue = Utils.getPropertyValue( prj, 'departure_date_start', false );
+							arrivalValue = Utils.getPropertyValue( prj, 'departure_date_end', false );
+							if( ( departureValue && departureValue != '' )  && ( arrivalValue && arrivalValue != '' ) ) {
+								if( ( int( arrivalValue.split( '/' )[ 1 ] ) - 1 ) == model.currentTime.getMonth() ) {
+									result.addItem( obj );
+								}
+							}
+						}
+					break;
+					case 'PreviousMonthArrival':
+						switchIndex = 0; 
+						if( GetVOUtil.getWorkflowTemplate( prj.wftFK ).taskCode == 'P5T03A' ) {
+							departureValue = Utils.getPropertyValue( prj, 'departure_date_start', false );
+							arrivalValue = Utils.getPropertyValue( prj, 'departure_date_end', false );
+							if( ( departureValue && departureValue != '' )  && ( arrivalValue && arrivalValue != '' ) ) {
+								if( ( int( arrivalValue.split( '/' )[ 1 ] ) - 1 ) == ( model.currentTime.getMonth() - 1 ) ) {
+									result.addItem( obj );
+								}
+							}
+						}
+					break;
+					default:
+					break;
+				}
+			}
+			result = makeSorting( result, 'projectId' );
+			return result;
+		}
+		
+		private function getSubProfileCollection( prj:Projects ):Boolean {
+			var propPj:Propertiespj;
+			if( Utils.getPropertyValue( prj, 'chp_validation', false ) == '1' )
+				return true;
+			if( Utils.getPropertyValue( prj, 'cpp_validation', false ) == '1' )
+				return true;	
+			if( Utils.getPropertyValue( prj, 'agn_validation', false ) == '1' )
+				return true;
+			if( Utils.getPropertyValue( prj, 'comm_validation', false ) == '1' )
+				return true;
+			if( Utils.getPropertyValue( prj, 'ind_validation', false ) == '1' )
+				return true;
+			if( Utils.getPropertyValue( prj, 'imp_validation', false ) == '1' )
+				return true;		
+			return false;
+		}
+		
+		private function makeSorting( value:ArrayCollection, sortString:String ):ArrayCollection {
+	    	var sort:Sort = new Sort(); 
+        	sort.fields = [ new SortField( sortString ) ];
+        	sort.reverse();
+        	value.sort = sort;
+        	value.refresh();
+        	return value;
+	    }
+		private var refreshEvent:RefreshEvent = new RefreshEvent( RefreshEvent.REFRESH );
+		private function onRefresh():void{
+			if( sqlColums ){
+				gridComponent.valueSet=false;
+				setTableData( model.tabsCollection );
+				refreshEvent.dispatch();
+			}else{
+				refreshEvent.dispatch();
+			}
+		}
+		public function setTableData( dataCollection:ArrayCollection ):void {
+			if( !gridComponent.valueSet ) {
+				var pushLabels:Array = [];
+				for( var i:int = 0; i < dataCollection.length; i++ ) {
+					var report:Reports = dataCollection.getItemAt( i ) as Reports;
+					pushLabels.push( report.reportName );
+					for each( var str:String in report.fieldArray ) {
+						if( _totalProperty.indexOf( str ) == -1 ){
+							_totalQueries.push( report.booleanArray[ report.fieldArray.indexOf( str ) ] );
+							_totalProperty.push( str );
+						}	
+					} 
+				}
+				createAndShow( pushLabels );
+			}
+		}
+		
+		private function sqlResult( ev:Object ):void {
+		    var report:Reports=model.currentReport;
+			_statusLabel = report.projectStatus;
+			gridComponent.reportLabel = report.reportName;
+			gridComponent.property = report.fieldArray;
+			gridComponent.columnWidthArray = report.widthArray; 
+			gridComponent.gridColumns = report.headerArray;
+			gridComponent.pieChartfield = report.pieChartCol.columnName;
+			gridComponent.stackChartfield = report.stackBarCol.columnName;
+			gridComponent._pieChartTitle = report.pieChartName; 
+			gridComponent._columnChartTitle = report.stackBarName;
+			if( !gridComponent.valueSet )	maketableProvider();
+			else	updateGridComponent();
+		}  
+		
+		[Bindable]
+		private var sqlColums:Boolean
+		private function toggleClickHandler( event:MenuEvent ):void {
+			popB.label = event.label;
+			var report:Reports;
+			for each( var item:Reports in model.tabsCollection ) {
+				if( item.reportName == event.label ) {
+					report = item;
+					break;
+				}	
+			}
+			if( report ) {
+				model.currentReport = report;
+				 var sqlEvArr:Array=[];
+				for( var i:int = 0; i < report.booleanArray.length; i++ ) {
+					var query:String = report.booleanArray[i]; 
+					if(query!='0' && query!='1'){
+						var sqlEv:PagingEvent = new PagingEvent(PagingEvent.EVENT_GET_SQL_QUERY);
+						sqlEv.queryString = query;
+						sqlEv.colIndex = i;
+						sqlEvArr.push(sqlEv);
+					} 
+				}
+				var handler:IResponder = new Callbacks( sqlResult );
+		 		var eventSeq:SequenceGenerator = new SequenceGenerator( sqlEvArr, handler );
+		  		eventSeq.dispatch();
+		  		if(sqlEvArr.length ==0){
+			  		sqlResult(null);
+			  		sqlColums=false;
+		  		}else{
+		  			sqlColums=true;
+		  		}
+			}
+		}
+
+		private function onStackChange( event:ItemClickEvent ):void {
+			var index:int = event.currentTarget.selectedIndex;
+			if( index == 0 ) {
+				if( _stack.selectedIndex != 0 )	{
+					_stack.selectedIndex = 0;
+					_xlsButton.visible = true;
+				}
+			}
+			else {
+				var dataCollection:ArrayCollection = gridComponent.myGrid.dataProvider as ArrayCollection;
+				if( dataCollection.length == 0 ) {
+					Alert.show( 'There Are No Items To Show' );
+				} 
+				else {
+					if( _stack.selectedIndex != 1 ) {
+						setScheduler( dataCollection );
+						_stack.selectedIndex = 1;
+						_xlsButton.visible = false; 
+					}
+				}
+			}
+		}
+		
+		private function setScheduler( dataCollection:ArrayCollection ):void {
+			var resultCollection:ArrayCollection = Utils.matchingProjects( dataCollection );
+			var domainCollection:ArrayCollection = new ArrayCollection();
+			var categoryCollection:ArrayCollection = new ArrayCollection();
+			for each( var prjObj:Projects in resultCollection ) {
+				if( !Utils.checkDuplicateItem( prjObj.categories.domain, domainCollection, 'categoryId' ) )
+					domainCollection.addItem( prjObj.categories.domain );
+				if( !Utils.checkDuplicateItem( prjObj.categories, categoryCollection, 'categoryId' ) )
+					categoryCollection.addItem( prjObj.categories );	
+			}
+			if( ( domainCollection.length != 0 ) && ( categoryCollection.length != 0 ) ) {
+				_searchProjectInput = resultCollection;
+				_searchDomainInput = domainCollection;
+				_searchCategoryInput = categoryCollection; 
+			}
+			_graphicNavigator.selectedIndex = 0;
+		}
+		
+		private function onSchedulerComplete( event:FlexEvent ):void {
+			PendingSearchView( event.currentTarget ).selectedProjectsSet = _searchProjectInput;
+			PendingSearchView( event.currentTarget ).domainCollection = _searchDomainInput;
+			PendingSearchView( event.currentTarget ).categoryCollection = _searchCategoryInput;
+		}
+		
+		private function onSaveClick( event:MouseEvent ):void {
+			var compareStr:String = Button( event.currentTarget ).name;
+			if( _stack.selectedIndex == 0 ) {
+				if( compareStr == 'printer' ) {
+				}	
+				else if( compareStr == 'pdf' ) {
+					gridComponent.exportPDF();
+				}
+				else if( compareStr == 'xls' ) {
+					gridComponent.exportExcel();
+				}
+			}
+			else {
+				PendingSearchView( _graphicNavigator.selectedChild ).exportPDF();
+			}
+		} 
+			 
+		private function openImpSelection():void {
+			 var impWindow:IFlexDisplayObject = PopUpManager.createPopUp( model.mainClass, PropPresetTemplate, true );
+			 PopUpManager.centerPopUp( impWindow );
+		}   
+		
+		private function createAndShow( togglePro:Array ):void {
+			menu = new Menu();
+	 		menu.width = 250;
+	 		menu.dataProvider = togglePro;
+	 		menu.addEventListener( ItemClickEvent.ITEM_CLICK, toggleClickHandler,false,0,true);
+	 		var event:MenuEvent = new MenuEvent( ItemClickEvent.ITEM_CLICK );
+			event.label = togglePro[ 0 ];
+			menu.dispatchEvent( event );
+	 		popB.popUp = menu;
+		}
+    ]]>
+	</mx:Script>
+	<components:FSDisplay width="100%" height="100%" id="fsScreen" 
+		                  styleName="fullscreenBgColor" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+		<!--DAHSBOARD AND MPV SCREENS VIEWSTACK-->
+		<mx:ViewStack id="backContainer"  width="100%" top="0" bottom="0" selectedIndex="0">
+		              
+			<mx:Canvas id="gridContainer"  width="100%" top="0" bottom="0">
+				<mx:Text text="{model.loc.getString('Dashboard')}"	styleName="mainProjectHeader"/>
+				<mx:HRule id="_hRule"  width="100%" height="1" top="73"/>
+					
+				<!--GRID/GRAPHIC VIEWSTACK-->
+				<mx:ViewStack id="_stack" top="75" left="5" bottom="5" right="5" borderStyle="none" 
+			                  paddingTop="10" >
+			                  
+					<mx:Canvas width="100%" height="100%" >
+						<mx:PopUpButton top="0" left="0"  click="popB.open()" id="popB" width="250"/>
+						<searchView:AbstractGridComponent top="{popB.height}"  
+						                                  id="gridComponent" reportTitle="{ reportTitle.text }"/>
+					</mx:Canvas>
+					
+					<mx:TabNavigator id="_graphicNavigator" width="100%" height="100%" creationPolicy="none">
+						<searchView:PendingSearchView id="_pendingScheduler" inputStream="Actual" label="Actual" selectedProjectsSet="{ _searchProjectInput }" 
+					                          	      domainCollection="{ _searchDomainInput }" categoryCollection="{ _searchCategoryInput }" creationComplete="onSchedulerComplete( event )"/>
+						<searchView:PendingSearchView id="_actualScheduler" inputStream="Planned" label="Planned" selectedProjectsSet="{ _searchProjectInput }"
+					                                  domainCollection="{ _searchDomainInput }" categoryCollection="{ _searchCategoryInput }" creationComplete="onSchedulerComplete( event )"/>
+					</mx:TabNavigator>	
+				</mx:ViewStack>
+				
+				<!--GRID HEADER-->
+				<mx:HBox top="75" right="5" verticalAlign="middle" id="tools" styleName="communicationMailIconBg"  
+			             paddingBottom="3" paddingTop="3" paddingLeft="5" paddingRight="5">
+				 	<mx:Button styleName="techTempSettings" click="openImpSelection()" visible="{model.currentUserProfileCode=='FAB'|| model.currentUserProfileCode=='TRA'}" includeInLayout="{model.currentUserProfileCode=='FAB'|| model.currentUserProfileCode=='TRA'}"/>  
+					<mx:Text text="Views ::" styleName="mainProjectHeader" fontSize="13"/>
+					<mx:ToggleButtonBar top="75" right="10" itemClick="onStackChange( event )" buttonMode="true" selectedIndex="0" id="_buttonBar">
+						<mx:dataProvider>
+							<mx:Array>
+								<mx:Object toolTip="List View" icon="{ImageResourceEmbedClass.LISTVIEWICON}"/>
+								<mx:Object toolTip="Graphic View" icon="{ImageResourceEmbedClass.GRAPHICVIEWICON}"/>
+							</mx:Array>
+					 	</mx:dataProvider>
+					</mx:ToggleButtonBar>
+					<mx:Spacer width="30"/>
+					<mx:Text text="{ model.appName + ' Report ::' }"  styleName="mainProjectHeader" fontSize="13" id="reportTitle" />
+					<mx:Button styleName="Innerpdf" buttonMode="true" name="pdf" click="onSaveClick( event )" 
+						       enabled="{ ( model.projectsCollection.length > 0 ) ? true : false }"/>
+	        		<mx:Button id="_xlsButton" styleName="xlSheet" buttonMode="true" name="xls" click="onSaveClick( event )"
+	        		           showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"
+	        		           enabled="{ ( model.projectsCollection.length > 0 ) ? true : false }"/>	
+				</mx:HBox>	
+			</mx:Canvas>
+			
+			<!--MAINPROJECTVIEW SCREENS-->
+			<mainView:MainProjectView id="_mpv" width="100%" height="100%" top="0" left="5" bottom="5" right="5"/>
+		</mx:ViewStack>
+		
+		<!--BUSSINESSCARD-->
+		<view:bussinessCard right="5" id="buzCard" width="300" height="61" top="5"/>
+		<mx:HBox id="_divider" right="15"  
+		top="15" verticalAlign="middle" horizontalAlign="center"
+   		paddingLeft="3" paddingRight="3" >
+			<mx:Button styleName="fullScreenBtnSkin" toolTip="Fullscreen" click="{fsScreen.fullScreen()}"  />	
+			<mx:Button styleName="refereshBtn" toolTip="Refresh" click="{onRefresh();}" />       
+		</mx:HBox>
+	</components:FSDisplay>
+</mx:Canvas>

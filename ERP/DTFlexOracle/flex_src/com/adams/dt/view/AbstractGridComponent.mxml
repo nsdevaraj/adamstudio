@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"   width="100%" height="100%"
+	       xmlns:Gview="com.adams.dt.view.dataGridSearch.mainComponent.*"
+	       xmlns:comp="com.adams.dt.view.components.*"  xmlns:dateFilter="com.adams.dt.view.components.todolistscreens.dateFilter.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.sortingevent.SortingEvent;
+			import com.adams.dt.business.util.DateUtils;
+			import com.adams.dt.view.dataGridSearch.renderers.TextColorRenderer;
+			import com.adams.dt.view.dataGridSearch.renderers.HTMLTextRenderer;
+			import com.adams.dt.view.dataGridSearch.renderers.ImageRenderer;
+			import com.adams.dt.model.mainView.ViewFactory;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import org.alivepdf.data.Grid;
+            import org.alivepdf.layout.Align;
+			import org.alivepdf.data.GridColumn;
+			import org.alivepdf.saving.Method;
+			import org.alivepdf.fonts.Style;
+			import org.alivepdf.images.ImageFormat;
+			import org.alivepdf.colors.RGBColor;
+			import org.alivepdf.drawing.Joint;
+			import org.alivepdf.layout.Size;
+			import org.alivepdf.layout.Unit;
+			import org.alivepdf.layout.Layout;
+			import org.alivepdf.layout.Orientation;
+			import org.alivepdf.display.Display;
+			import org.alivepdf.fonts.FontFamily;
+			import mx.utils.Base64Encoder;
+			import org.alivepdf.pdf.PDF;
+			import com.adams.dt.event.chartsBinding.BindChartEvent;
+			import mx.core.UIComponent;
+			import mx.controls.Alert;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import mx.events.ListEvent;
+			import com.adams.dt.event.PersonsEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Projects;
+			import mx.collections.ArrayCollection;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.ModelLocator;
+			
+			private var _myPDF:PDF;
+			private var gBytes:ByteArray = new ByteArray();
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			private var view:ViewFactory = ViewFactory.getInstance();
+			
+			[Bindable]
+			private var _columnSelectArray:Array;
+			
+			[Bindable]
+			public var pieChartfield:String;
+			[Bindable]
+			public var stackChartfield:String;
+			[Bindable]
+			private var _departArray:Array = ['"mois"', 'Today Departures', 'Other Departures'];
+			[Bindable]
+			public var gridColumnWidth:Array;
+			[Bindable]
+			public var isChartVisible:Boolean = true;
+			[Bindable]
+			public var _columnChartTitle:String;
+			[Bindable]
+			public var _pieChartTitle:String;
+			[Bindable]
+			private var _totalResult:String;
+			[Bindable]
+			public var reportTitle:String = '';
+			[Bindable]
+			public var reportLabel:String;
+			public static const ITEM_SELECT:String = 'itemSelectedEvent';
+			public var valueSet:Boolean;
+			public var columnWidthArray:Array;
+			
+			private var _gridProvider:ArrayCollection;
+			[Bindable]
+			public function get gridProvider():ArrayCollection {
+				return _gridProvider;
+			} 
+			public function set gridProvider( value:ArrayCollection ):void {
+				if( !valueSet )	valueSet = true;
+				_gridProvider = value;
+			}
+			
+			private var _property:Array;
+			[Bindable]
+			public function get property():Array {
+				return _property;
+			} 
+			public function set property( value:Array ):void {
+				_property = value;
+			}
+			
+			private var _gridColumns:Array;
+			[Bindable]
+			public function get gridColumns():Array {
+				return _gridColumns;
+			} 
+			public function set gridColumns( value:Array ):void {
+				_gridColumns = value;
+				_columnSelectArray = [];
+				_columnSelectArray.push( 'All' );
+				for( var i:int = 0; i < value.length; i++ ) {
+					_columnSelectArray.push(  value[ i ] );
+				}
+				selector.selectedIndex = 0; 
+				_autoComplete.labelField = selector.selectedItem as String;
+				//_autoComplete.selectedColumn = value.indexOf( _autoComplete.labelField );
+			}
+			
+			 private function onCombochange( event:ListEvent ):void {
+			 	//var currentSelection:String = ComboBox( event.currentTarget ).selectedItem as String;
+			 	var currentIndex:int = ComboBox( event.currentTarget ).selectedIndex;
+			 	
+				_autoComplete.labelField = currentIndex !=0 ? property[currentIndex-1] : 'All';
+				//_autoComplete.selectedColumn = gridColumns.indexOf( _autoComplete.labelField );
+	        	//_autoComplete.makeDispatching();
+	        }
+			 
+			private function getGridColumns( value:Array ):Array {
+				if( !view.getColumnRef( reportLabel ) ) {
+					var columnsReturn:Array = [];
+					for ( var i:int = 0; i < value.length ; i++ ) {
+						var DGColumn:DataGridColumn = new DataGridColumn();
+						if( columnWidthArray[ i ] != 0 )	DGColumn.width = columnWidthArray[ i ];
+						if( property[ i ] == 'chp_validation' ||
+						    property[ i ] == 'cpp_validation' ||
+						    property[ i ] == 'agn_validation' ||
+						    property[ i ] == 'comm_validation' ||
+						    property[ i ] == 'ind_validation' ||
+						    property[ i ] == 'imp_validation' ) {
+						    DGColumn.itemRenderer = new ClassFactory( ImageRenderer );	
+						}
+						/* else if( property[ i ] == 'commentFromPreviousTask'){
+							DGColumn.itemRenderer = new ClassFactory( TxtRenderer );
+						} */
+						else {
+							DGColumn.itemRenderer = new ClassFactory( TextColorRenderer );
+							//DGColumn.itemRenderer = new ClassFactory( ColorRenderer );
+							
+						} 
+						DGColumn.dataField = property[ i ];
+						DGColumn.headerText = value[ i ];
+						DGColumn.headerRenderer = new ClassFactory( Label );
+						columnsReturn.push( DGColumn );
+					}
+					view.addColumnRef( reportLabel, columnsReturn );
+					return columnsReturn;
+				}
+				else {
+					return view.getColumnRef( reportLabel );
+				}
+			}
+			
+			private function clickHandler( event:ListEvent ):void {
+				var prj:Object = myGrid.selectedItem;
+				model.currentProjects = Utils.getDashboardProject( prj );     
+				model.currentMainProject = model.currentProjects;   
+				model.mainProjectState = 1; 
+				model.preloaderVisibility = true;
+			}
+			
+			private function categoryAxis_labelFunc( item:Object, prevValue:Object, axis:CategoryAxis, categoryItem:Object ):String {
+                var datNum:Number = Date.parse( item );
+                var tempDate:Date = new Date( datNum );
+                return shortDateFormatter.format( tempDate ).toUpperCase();
+            }
+			
+			public function chartProvider():void{
+				_totalResult = myGrid.dataProvider.length.toString();
+				_pieChart.dataProvider =  Utils.setChartProvider( pieChartfield, myGrid.dataProvider as ArrayCollection ); 
+				_columnChart.dataProvider =  Utils.setChartProvider( stackChartfield, myGrid.dataProvider as ArrayCollection ); 
+			} 
+			
+			public function exportPDF():void {
+				var objectArray:Array = getObjectArray( myGrid.dataProvider as ArrayCollection );
+				var pdfGridColumns:Array = getPdfGridColumns( gridColumns );
+				var filtersDisplay:Array = getfiltersDisplay( myGrid.columns);
+	            _myPDF = new PDF( Orientation.LANDSCAPE, Unit.MM, Size.A4 );     
+	            _myPDF.setDisplayMode( Display.REAL, Layout.SINGLE_PAGE );
+	            
+	            var grid:Grid = new Grid( objectArray, 600, 600, new RGBColor( 0x666666 ), new RGBColor( 0xCCCCCC ), new RGBColor( 0 ), true, new RGBColor( 0x0 ), 1, Joint.MITER );
+	            grid.columns = pdfGridColumns;
+	            _myPDF.addPage();
+	            _myPDF.textStyle( new RGBColor(0), 1 );
+	            _myPDF.setFont( FontFamily.ARIAL, Style.NORMAL, 12 );
+	            _myPDF.addText( reportTitle, 5, 10);
+	            var timeOfSave:Date = model.currentTime;
+	            _myPDF.addText( timeOfSave.toString(), 180, 28);
+	            _myPDF.setFont( FontFamily.ARIAL, Style.UNDERLINE, 10 );
+	            _myPDF.addText( "Filters", 5, 20 );
+	            _myPDF.setFont( FontFamily.ARIAL, Style.NORMAL, 10 );
+	            var cFilters:String = "";
+	            var cFilterSel:String;
+	            for( var i:int=0; i < filtersDisplay.length; i++ ) {
+	              cFilterSel = filtersDisplay[ i ].filterValue;
+	              if( cFilterSel == ( '"'+ filtersDisplay[ i ].filterName + '"' ) ) cFilterSel = "(all)";
+	              _myPDF.addText( ( filtersDisplay[ i ].filterName + " : " + cFilterSel ), 5, 24 + i * 4 );
+	            }
+	            var cYoffset:int = 24 + filtersDisplay.length * 4;
+	            _myPDF.addText( _results.text, 5, cYoffset );
+	            _myPDF.setFont( FontFamily.ARIAL, Style.BOLD, 10 );
+	            if( _pieChart.visible ) {
+	              _myPDF.addImage( _pieChart, 5, cYoffset + 5, 0, 60, ImageFormat.JPG );
+	              _myPDF.addText( _pieChartTitle, 25, cYoffset + 70 );
+	            }
+	            if( _columnChart.visible ) {
+	              _myPDF.addImage( _columnChart, 125, cYoffset + 5, 0, 60, ImageFormat.JPG );
+	              _myPDF.addText( _columnChartTitle, 145, cYoffset + 70 );
+	            }
+	            _myPDF.addPage();
+	            _myPDF.setFont( FontFamily.ARIAL, Style.NORMAL, 8 );
+	            _myPDF.addGrid( grid, 5, 5 );
+	
+	            gBytes = _myPDF.save( Method.LOCAL );
+	
+	            var cFile:File = new File();
+	            cFile = File.userDirectory.resolvePath( "DoctrackReport.pdf" );
+	            cFile.addEventListener( Event.SELECT, onSelectSave,false,0,true );
+	            cFile.browseForSave( "Doctrack report" );
+	        }
+	        
+	        private function onSelectSave( event:Event ):void {
+		        var cFile:File = event.target as File;
+		        var cFS:FileStream = new FileStream();
+		        cFile.removeEventListener( Event.SELECT, onSelectSave );
+		        cFS.open( cFile, FileMode.WRITE );
+		        cFS.writeBytes( gBytes );
+		        cFS.close();
+		        gBytes.length = 0;
+		    }
+		    
+		    private function getObjectArray( value:ArrayCollection ):Array {
+		    	var resultarray:Array = [];
+		    	for each( var item:Object in value ) {
+		    		resultarray.push( item );
+		    	}
+		    	return resultarray;
+		    }
+		    
+		    private function getPdfGridColumns( value:Array ):Array {
+		    	var resultarray:Array = [];
+		    	for( var i:int = 0; i <  value.length; i++ ) {
+		    		var pdfGridColumn:GridColumn = new GridColumn( value[ i ], property[ i ], 25, Align.LEFT, Align.LEFT );
+            		resultarray.push( pdfGridColumn );
+		    	}
+		    	return resultarray;
+		    }
+		    
+		     private function getfiltersDisplay( value:Array ):Array {
+		    	var resultArray:Array = [];
+		    	var obj:Object = {};
+		    	obj.filterName = _autoComplete.labelField;
+		    	obj.filterValue = _autoComplete._input.text;
+		    	resultArray.push( obj );
+		    	return resultArray;
+		    } 
+		    
+		    public function exportExcel():void {
+		    	var gData:Array = getObjectArray( myGrid.dataProvider as ArrayCollection );
+		    	var filtersDisplay:Array = getfiltersDisplay( myGrid.columns );
+		        var cContents:String = Utils.gXLStemplate;
+		        var cDate:String = ( model.currentTime ).toDateString();
+		        var cFilterSel:String;
+		        var cFilters:String = "";
+		        var cColDesc:String = "";
+		        var cHeaders:String = "";
+		        var cRows:String = "";
+		        var cCols:Array;
+		        
+				cContents = cContents.replace( "##DOMAIN##",model.appDomain);
+		        cContents = cContents.replace( "##DATE##", cDate );
+		        cContents = cContents.replace( "##TITLE##", model.appName );
+		        cContents = cContents.replace( "##RESULTS##", _results.text );
+		
+		        for( var i:int=0; i < filtersDisplay.length; i++ ) {
+	            	cFilterSel = filtersDisplay[ i ].filterValue;
+	            	if( cFilterSel == ( '"'+ filtersDisplay[ i ].filterName + '"' ) ) cFilterSel = "(all)";
+		        	cFilters += "<TR><TD></TD><TD ColSpan=\"6\">" + filtersDisplay[ i ].filterName + ": <B>" + cFilterSel + "</B></TD></TR>";
+		        }
+		        
+		        cContents = cContents.replace( "##FILTERS##", cFilters );
+				cCols = myGrid.columns;
+		        
+		        for( var j:int = 0; j < cCols.length; j++ ) {
+		        	cColDesc += "<COL WIDTH=" + cCols[ j ].width + ">";
+		        }
+		        
+		        cContents = cContents.replace( "##COLDESC##", cColDesc );
+				cHeaders = "<TR>"
+		        
+		        for( var k:int = 0; k < cCols.length; k++ ) {
+		        	cHeaders += "<TD><FONT Size=2>" + cCols[ k ].headerText + "</FONT></TD>";
+		        }
+		        
+		        cHeaders += "</TR>"
+		        cContents = cContents.replace( "##HEADERS##", cHeaders );
+		
+		        for( var m:int = 0; m < gData.length; m++ ) {
+		        	cRows += "<TR>";
+		        	for( var n:int = 0; n < myGrid.columns.length; n++ ) {
+				        var fieldEntry:String
+				        var numVal:Number = Number( gData[ m ][ myGrid.columns[ n ].dataField ] )
+				        if( isNaN( numVal ) ){
+				        	fieldEntry = gData[ m ][ myGrid.columns[ n ].dataField ];
+				        }
+				        else {
+				        	fieldEntry = "'"+String( gData[ m ][ myGrid.columns[ n ].dataField ] );
+				        }
+				        cRows += "<TD>" +fieldEntry + "</TD>";
+			        }
+			        cRows += "</TR>";
+		        }
+		        
+		        cContents = cContents.replace( "##ROWS##", cRows );
+				gBytes.writeMultiByte( cContents, "utf-8" );    
+		
+		        var cFile:File = new File();
+		        cFile = File.userDirectory.resolvePath( model.appName +"Report.xls" );
+		        cFile.addEventListener( Event.SELECT, onSelectSave ,false,0,true);
+		        cFile.browseForSave( model.appName +" report" );
+		     }
+		     
+		     /* private function getSelectedIndex( prj:Projects ):Object {
+		     	if( prj ) {
+		     		if( gridProvider ) {
+		     			for each( var obj:Object in gridProvider ) {
+		     				if( obj.projectId == prj.projectId ) {
+		     					return obj;
+		     				}
+		     			}
+		     		}
+		     	}
+		     	return null
+		     } */
+		    [Bindable]
+			private var currentYear:String='';
+			[Bindable]
+			private var currentMonth:String='';
+			
+	    	private function sortingTask(event:SortingEvent):void
+	    	{
+	    		if(SortingEvent.EVENT_GET_SORT_MONTH == event.type)
+	    		{
+	    			currentMonth = event.monthName
+	    		}
+	    		if(SortingEvent.EVENT_GET_SORT_YEAR == event.type)
+	    		{
+	    			currentYear = event.yearName
+	    		}
+	    		sortingView()
+	    	}
+	    	/**
+			 *set the Sorting type , whteher to be done by month and year or year...
+			 */
+	    	private function sortingView():void
+	    	{
+	    		if(currentMonth.length>0)
+	    		{
+	    			gridProvider.filterFunction = filterByYearMonth
+	    			gridProvider.refresh();
+	    		}else if(currentYear.length>0)
+	    		{
+	    			gridProvider.filterFunction = filterByYear
+	    			gridProvider.refresh();
+	    		}
+	    	}
+	    	private function filterByYearMonth(item:Object):Boolean 
+	    	{
+				var retVal:Boolean ;
+				if(DateUtils.getMonth( Utils.getDashboardProject(item).projectDateStart.getMonth() ) == currentMonth&& String(Utils.getDashboardProject(item).projectDateStart.getFullYear()) == currentYear )
+				{
+					retVal = true
+				}   
+				return retVal;
+	    	}
+	    	private function filterByYear(item:Object):Boolean 
+	    	{
+				var retVal:Boolean;
+				 if(String(Utils.getDashboardProject(item).projectDateStart.getFullYear()) == currentYear )
+				{
+					retVal = true
+				}   
+				return retVal;
+	    	}
+	    	private function addSortingListener():void
+	    	{
+	    		dBoardMonth.addEventListener(SortingEvent.EVENT_GET_SORT_MONTH,sortingTask);
+	    		dBoardYear.addEventListener(SortingEvent.EVENT_GET_SORT_YEAR,sortingTask);
+	    		
+	    		dBoardMonth.addEventListener(SortingEvent.EVENT_GET_TOGGLE_NAME,btnSelected);
+	    		dBoardYear.addEventListener(SortingEvent.EVENT_GET_TOGGLE_NAME,btnSelected);
+	    		
+	    	}
+	    	private function btnSelected(event:SortingEvent):void
+			{
+				switch (event.toggleName)
+				{
+					case Utils.WEEK:
+						 dBoardMonth.dateBtn.selected = true;
+						 dBoardYear.dateBtn.selected = true;
+						break;
+					case Utils.MONTH:
+						 weekSorter.dateBtn.selected = false;
+						 dBoardYear.dateBtn.selected = true;
+						 currentMonth = (event.toggleStatus)?event.monthName:'';
+						 currentYear =  dBoardYear.dateBtn.label;
+						 gridProvider.filterFunction = (event.toggleStatus)?filterByYearMonth:filterByYear
+	    				 gridProvider.refresh(); 
+						break;
+					case Utils.YEAR:
+						 dBoardMonth.dateBtn.selected = false;
+						 weekSorter.dateBtn.selected = false;
+						 currentYear = (event.toggleStatus)?String(dBoardYear.dateBtn.label):'';
+					 	 currentMonth = '';
+						 gridProvider.filterFunction = (event.toggleStatus)?filterByYear:null;
+	    				 gridProvider.refresh(); 
+						break;
+				}
+			}
+			
+
+     	]]>
+	</mx:Script>
+	<mx:DateFormatter id="shortDateFormatter" formatString="DD" />
+	
+	<mx:SeriesSlide id="slideIn" direction="down"/>
+    <mx:SeriesSlide id="slideOut" direction="up"/>
+
+	<mx:VBox verticalGap="5" top="5" width="100%"  horizontalCenter="0" height="100%"  >
+			<!--DASHBOARD CHART VIEWER--> 
+			<comp:WindowShade label="Graphiques" width="100%" opened="false">
+				<mx:HBox width="100%" id="reportForm"  
+			      	 height="100%" horizontalAlign="center" >
+				    <mx:VBox horizontalAlign="left" >
+				    	<mx:Text text="{ _pieChartTitle }"  fontSize="18"/>
+				     	<mx:PieChart id="_pieChart" showDataTips="true" width="250" height="250" >
+		       			 	<mx:series>
+		          		 		<mx:PieSeries field="PrjCount" nameField="IMP" labelPosition="callout">
+		          		 			<mx:showDataEffect>
+		                    			<mx:SeriesInterpolate />
+		                			</mx:showDataEffect>
+								</mx:PieSeries>
+		        			</mx:series>
+		     			</mx:PieChart>
+				    </mx:VBox>
+				    <mx:Legend dataProvider="{ _pieChart }"/>
+		    	 	<mx:VBox horizontalAlign="left">
+		    	 		<mx:Text text="{ _columnChartTitle }" fontSize="18"/>
+		    	 		<mx:ColumnChart id="_columnChart"  showDataTips="true" width="250" height="250">
+			        		<mx:horizontalAxis>
+			           			<mx:CategoryAxis id="stackCategory"  categoryField="IMP" />
+			        		</mx:horizontalAxis>
+		       	 			<mx:series> 
+			           			<mx:ColumnSeries id="stackChart" xField="IMP" yField="PrjCount" displayName="Projects" 
+			           				             hideDataEffect="slideOut" showDataEffect="slideIn" 
+			           				             labelPosition="outside"/>
+		        			</mx:series>
+		    	 		</mx:ColumnChart>
+		    	 	</mx:VBox>
+		    	 	<mx:Legend dataProvider="{ _columnChart }"/>
+	     		</mx:HBox>   
+	    	 </comp:WindowShade>
+	    	 	
+	    	 <!--DASHBOARD DATAGRID/AUTOCOMPLETE-->   	  			 
+			<mx:Canvas  minHeight="200" width="100%" height="100%">
+				<mx:Label id="searchText" text="Search" left="10" top="5" />
+				<mx:ComboBox id="selector" width="180" x="{ _autoComplete.x + _autoComplete.width + 10 }" top="5" 
+						dataProvider="{ _columnSelectArray }" 
+						change="onCombochange( event )"/>
+			<!--DASHBOARD DATE SEARCH COMPONENT-->   	
+					<mx:HBox top="5"  x="{ selector.x + selector.width + 10 }">
+						<dateFilter:DateSorter id="dBoardMonth" fieldType="{Utils.MONTH}" 
+							dateSortField="{DateUtils.getMonth((new Date().getMonth()))}" 
+							 sortCollection="{Utils.sortMonthColl}" creationComplete="addSortingListener()"/>
+						<dateFilter:DateSorter id="dBoardYear" fieldType="{Utils.YEAR}" 
+							dateSortField="{String(new Date().getFullYear())}"
+							sortCollection="{ Utils.sortYearColl}"/>
+						<dateFilter:DateSorter id="weekSorter"  
+							 dateSortField="{DateUtils.getMonth(new Date().getMonth())}" fieldType="Week" 
+							 visible="false" includeInLayout="false"/>
+					</mx:HBox>
+				<mx:Label text="{'Result : '+ _totalResult + ' lines' }" id="_results"  
+					top="5" right="10"	visible="{ isChartVisible }" />		
+	             <Gview:DashBoardGrid id="myGrid" left="10" top="{ searchText.y + searchText.height + 10 }" right="10" height="100%"
+	             	columns="{ getGridColumns( gridColumns )}"  
+	             	dataProvider="{ gridProvider }" 
+	             	specificText="{ _autoComplete._input.text }"
+	             	itemClick="clickHandler( event )" 
+	             	draggableColumns="false"
+	             	isDashBoard="true"/>
+	             <Gview:TextComplete id="_autoComplete" styleName="autoCompleteColor"  
+					width="180" x="{ searchText.x + searchText.width + 10 }" top="5" 
+					dataCollection="{ gridProvider }" 
+					nameProperty="{property}" 
+					labelField="All"
+					bindChart="chartProvider()"/>			
+                 <!--selectedItem="{ getSelectedIndex( model.currentProjects ) }"--> 
+           </mx:Canvas>
+	</mx:VBox>	
+</mx:Canvas>

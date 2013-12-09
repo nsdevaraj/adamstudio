@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="com.adams.dt.pojo.Categories" table="categories">
+		<id name="categoryId" type="integer" column="Category_ID">
+			<generator class="increment" />
+		</id>
+		<property name="categoryName">
+			<column name="Category_Name" />
+		</property>
+		<property name="categoryCode">
+			<column name="Category_Code" />
+		</property>
+		<property name="categoryStartDate">
+			<column name="Category_date_start" />
+		</property>
+		<property name="categoryEndDate">
+			<column name="Category_date_end" />
+		</property>
+		<many-to-one name="categoryFK"
+			class="com.adams.dt.pojo.Categories" column="Category_FK"
+			cascade="none" lazy="false" />
+	</class>
+	<query name="Categories.findDomain">
+		select u from Categories u where u.categoryCode = ?
+	</query>
+	<query name="Categories.findByNameId">
+		select u from Categories u where u.categoryName = ? and
+		u.categoryFK.categoryId = ?
+	</query>
+	<query name="Categories.findById">
+		select u from Categories u where u.categoryId = ?
+	</query>
+	<query name="Categories.findByName">
+		select u from Categories u where u.categoryName = ?
+	</query>
+</hibernate-mapping>

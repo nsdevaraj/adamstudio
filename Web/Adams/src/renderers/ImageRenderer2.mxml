@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				  width="100" height="76" clipAndEnableScrolling="false"
+				depth="0" depth.hovered="1">
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			private function downloadFiles(url:String):void{
+				var urlReq:URLRequest = new URLRequest(url)
+				navigateToURL(urlReq);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:CurrencyFormatter id="cf"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+	</s:states>
+
+	<s:transitions>
+		<s:Transition fromState="normal" toState="hovered" autoReverse="true">
+			<s:Parallel target="{img}">
+				<s:Resize startDelay="0" duration="200"/>
+				<s:Fade target="{group}" startDelay="100"/>
+			</s:Parallel>
+		</s:Transition>
+		<s:Transition fromState="*" toState="normal" autoReverse="true">
+			<s:Parallel target="{img}">
+				<s:Resize startDelay="0"  duration="100"/>
+				<s:Fade target="{group}"  />
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+
+	<s:Group id="group" width="100" top="0" bottom="0" visible.normal="false">
+
+		<s:Rect id="rect" width="100" top="0" bottom="30" radiusX="5" radiusY="5" >
+			<s:fill> 
+				<s:SolidColor color="black" alpha="0.3"/>
+			</s:fill>
+		</s:Rect>
+		
+		
+		<s:VGroup width="100%" top="{img.height+3}" bottom="0">
+			<s:HGroup  horizontalCenter="0">
+				<mx:Image source="@Embed('assets/images/flex@Beach/pdf.png')" toolTip="Download PDF" click="downloadFiles(data.pdfFile)" includeInLayout="{data.pdfFile}"/>
+				<mx:Image source="@Embed('assets/images/flex@Beach/file.png')" toolTip="Download File" click="downloadFiles(data.file)" visible="{data.file}" includeInLayout="{data.file}"/>
+				<mx:Image source="@Embed('assets/images/flex@Beach/file.png')" toolTip="Parsley File2" click="downloadFiles(data.file2)" visible="{data.file2}" includeInLayout="{data.file2}"/>
+				<mx:Image source="@Embed('assets/images/flex@Beach/blog.png')" toolTip="Blog" click="downloadFiles(data.blog)" visible="{data.blog}"/>
+			</s:HGroup>
+			<s:Label fontSize="10" styleName="spNameSt"  text="{data.name}" color="#232323" 
+					 horizontalCenter="0"  /> 
+		</s:VGroup>		
+	</s:Group>
+	<mx:Image id="img" source="{data.photo}" top="3" horizontalCenter="0" 
+			  width.normal="69" height="76" width.hovered="34.5" height.hovered="38"/>
+	
+</s:ItemRenderer>

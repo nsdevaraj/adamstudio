@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+		   verticalScrollPolicy="off" horizontalScrollPolicy="off" 
+		   width="70" height="70" click="onClick( event )" 
+		   toolTip="{ data.fileName }"
+		   dataChange="dataChangeAction()">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ToolTipEvent;
+			import com.adams.dt.business.util.FileNameSplitter;
+			import com.adams.dt.view.filemanagement.FileContainer;
+			import mx.core.UITextField;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.fileManagement.RemoveFileEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private var _thumbnailToolTip:ThumbnailTooltip;
+			
+			private var timerForPreloader:Timer = new Timer( 500 );
+			
+			private function onClick( event:MouseEvent ):void {
+				var dispatchingEvent:RemoveFileEvent;
+				
+				if( event.target is Button ) {
+					event.stopPropagation();
+					if( event.target .name == 'Remove' ) {
+						dispatchingEvent = new RemoveFileEvent( RemoveFileEvent.DELETE_ITEM, true, true );
+					}
+					else {
+						dispatchingEvent = new RemoveFileEvent( RemoveFileEvent.REPLACE_ITEM, true, true );
+					}
+				}
+				else {
+					dispatchingEvent = new RemoveFileEvent( RemoveFileEvent.SHOW_ITEM, true, true );
+				} 
+				dispatchingEvent.fileItem = data as FileDetails;
+				dispatchingEvent.releaseContainer = owner;
+				dispatchEvent( dispatchingEvent );
+			}
+			
+			private function dataChangeAction():void 	{
+				if( data.fileSizing == 'Upload' ) {
+					timerForPreloader.addEventListener( TimerEvent.TIMER, preloaderTimerFunction, false, 0, true );
+					timerForPreloader.start();
+				}
+				else {
+					timerForPreloader.stop();
+					timerForPreloader.removeEventListener( TimerEvent.TIMER, preloaderTimerFunction );
+				} 
+			}
+			
+			private var _uploadingLocalFileName:String = "";
+			public function set uploadingLocalFileName( value:String ):void
+			{
+				_uploadingLocalFileName = value;
+			}
+			
+			public function get uploadingLocalFileName():String
+			{
+				return _uploadingLocalFileName;
+			}
+			
+			private var uploadPerformDone:Boolean = false;
+			
+			private function preloaderTimerFunction(evt:TimerEvent):void
+			{
+				if(uploadingLocalFileName == data.fileName ){
+					proess.minimum = 0;
+					proess.maximum = Number(model.uploadingFileBytesTotal);
+					proess.setProgress(Number(model.uploadingFileBytesLoaded),Number(model.uploadingFileBytesTotal))
+					proess.label = Math.round((Number(model.uploadingFileBytesLoaded)/Number(model.uploadingFileBytesTotal))*100)+"%";
+					uploadPerformDone = true;
+				}
+				else{
+					proess.minimum = 0;
+					proess.maximum = 100;
+					proess.setProgress((uploadPerformDone)?100:0,100);
+					timerForPreloader.stop();
+					timerForPreloader.removeEventListener(TimerEvent.TIMER, preloaderTimerFunction);
+				}
+			}
+			
+			private function makeVisible( code:String ):Boolean {
+				if( ( code == 'TRA' || code == 'FAB' ) ) {
+					if( FileContainer( owner ).deleteShow ) {
+							return true;
+					}
+				}
+				return false;
+			}
+			
+			private function replaceVisible( value:Object ):Boolean {
+				if( ( model.clientCode == 'TRA' || model.clientCode == 'FAB' ) ) {
+					if( value ) {
+						var splitObject:Object = FileNameSplitter.splitFileName( value.fileName );
+						if( splitObject.extension == 'pdf' ) {
+							if( FileContainer( owner ).replaceShow ) {
+								return true;
+							}
+						}	
+					}
+				}
+				return false;
+			}
+			
+			// Commented for not showing thumbnail in tooltip, By Deepan
+			
+			/*protected function onToolTipCreate( event:ToolTipEvent ):void {
+				event.toolTip = createToolTip( event.currentTarget.toolTip );
+			}
+			
+			protected function createToolTip( tipText:String ):ThumbnailTooltip {
+				if( !_thumbnailToolTip ) {
+					_thumbnailToolTip = new ThumbnailTooltip();
+				}
+				_thumbnailToolTip.nameOfFiletip = tipText;
+				_thumbnailToolTip.imageSource = (data.swfPath!=null)?data.swfPath:data.imageSource;
+				return _thumbnailToolTip;
+			} */
+			
+			private function getSource( path:String ):* {
+				if( path ) {
+					return path;
+				}
+				return data.imageSource;
+			}
+						
+		]]>
+	</mx:Script>
+	<mx:Binding source="model.uploadingFileName" destination="uploadingLocalFileName"/>
+	<mx:SWFLoader id="swfImg" source="{ getSource( data.thumbnailPath ) }" left="10" top="10" right="10" bottom="20"/>
+		       
+	<mx:Canvas id="bg" styleName="statusHeader" left="1" right="1" height="20" bottom="0">
+		<mx:Label text="{ String( data.fileName ).slice( 0, 7 ) }" verticalCenter="0" horizontalCenter="0"/>		
+	</mx:Canvas>	       			  
+	<mx:VBox width="100%" height="100%" backgroundColor="#555555"
+		verticalAlign="middle" horizontalAlign="center" 
+		visible="{((data.fileSizing=='Upload')?true:false)}">
+			<mx:ProgressBar id="proess" width="50" label="0%" 
+				mode="manual" labelPlacement="center"
+				barColor="#858585"
+				color="black"/>
+	</mx:VBox>
+	<mx:Canvas width="100%" height="100%" backgroundColor="white" backgroundAlpha="0.1"/>
+	<mx:Button styleName="deleteIcon" right="10" top="10" useHandCursor="true" buttonMode="true" mouseChildren="false"
+		       toolTip="Remove The File" visible="{ makeVisible( model.clientCode ) }" name="Remove"
+		       id="deleteButton" includeInLayout="{ deleteButton.visible }" click="onClick( event )"/>
+	<mx:Button styleName="replaceFileIcon" right="10" top="25" useHandCursor="true" buttonMode="true" mouseChildren="false"
+		       toolTip="Replace The File" visible="{ replaceVisible( data ) }" name="Replace"
+		       id="replaceButton" includeInLayout="{ replaceButton.visible }" click="onClick( event )"/>
+</mx:Canvas>

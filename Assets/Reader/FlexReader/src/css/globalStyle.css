@@ -1,0 +1,219 @@
+/* CSS file */
+Application
+{
+	backgroundGradientAlphas: 1.0, 1.0;
+	backgroundGradientColors: #252525, #3E3E3E;
+	theme-color: #CECECE;
+}
+HSlider,VSlider{
+	thumb-up-skin: Embed(source="../assets/swf/interfaceAssets.swf#hsliderThumbUp");
+	thumb-over-skin: Embed(source="../assets/swf/interfaceAssets.swf#hsliderThumbUp");
+	thumb-down-skin: Embed(source="../assets/swf/interfaceAssets.swf#hsliderThumbOver");
+	border-color: #FFFFFF;
+	label-offset: 0; 
+	tick-color: #FFFFFF;
+	tick-length:3;
+	tick-offset:1;
+	color:#FFFFFF;
+}
+ToolTip{
+	color: #000000;
+	background-color: #CECECE;
+}
+.searchBtn{
+	upIcon: Embed("assets/swf/interfaceAssets.swf#goUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#goUp");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#goOver");
+	disabled-icon:Embed("assets/swf/interfaceAssets.swf#goUp");
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#goUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#goUp");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#goUp");
+	selected-disabled-icon: Embed("assets/swf/interfaceAssets.swf#goUp");
+}
+.advSearchBtn{
+	upSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	pop-up-over-skin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	pop-up-down-skin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#advSearchCorner");
+}
+.prevPageBtn{
+	upIcon: Embed("assets/swf/interfaceAssets.swf#prevPageUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#prevPageOver");
+	disabled-icon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+	selected-disabled-icon: Embed("assets/swf/interfaceAssets.swf#prevPageUp");
+}
+.nextPageBtn{
+	
+	upIcon: Embed("assets/swf/interfaceAssets.swf#nextPageUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#nextPageOver");
+	disabled-icon: Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+	selected-disabled-icon:  Embed("assets/swf/interfaceAssets.swf#nextPageUp");
+}
+.singalDoublePageBtn{ 
+	upIcon: Embed("assets/swf/interfaceAssets.swf#doublePage"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#doublePage");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#doublePage");
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#singlePage");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#singlePage");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#singlePage");
+}
+.tocBtn{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnOver");
+	pop-up-over-skin: Embed("assets/swf/interfaceAssets.swf#tocBtnOver");
+	pop-up-down-skin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#tocBtnUp");
+}
+.addDetails{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsUp"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsDown");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsOver");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsUp");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsDown");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#addDetailsOver");
+}
+.searchResMiniMaxBtn{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#miniBtnUp"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#miniBtnUp");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#miniBtnOver");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#maxBtnUp");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#maxBtnUp");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#maxBtnOver");
+}
+.searchResCloseBtn{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnUp"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnUp");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnOver");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnUp");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnUp");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#closeBtnOver");
+}
+.removeDetails{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsUp"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsDown");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsOver");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsUp");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsDown");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#removeDetailsOver");
+}
+.bookmarkBtn{ 
+	upIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnUp");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnOver"); 
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnUp");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#bookmarkBtnUp");
+}
+.notesBtn{ 
+	upIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnOver");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnOver"); 
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnOver");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnOver");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#notesBtnOver");
+}
+.noteSkin{
+		up-skin: Embed(source="assets/swf/interfaceAssets.swf#noteIcon");
+		down-skin : Embed(source="assets/swf/interfaceAssets.swf#noteIcon");
+		over-skin : Embed(source="assets/swf/interfaceAssets.swf#noteIcon");
+		disabled-skin: Embed(source="assets/swf/interfaceAssets.swf#noteIcon");
+}
+.zoomInBtn{ 
+	upIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonDown");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonOver"); 
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonDown");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#PlusButtonOver");
+}
+.zoomOutBtn{ 
+	upIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonUp"); 
+	downIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonDown");
+	overIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonOver"); 
+	
+	selectedUpIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonUp");
+	selectedDownIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonDown");
+	selectedOverIcon: Embed("assets/swf/interfaceAssets.swf#MinusButtonOver");
+}
+.zoomBtn{ 
+	upSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg"); 
+	downSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	overSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	pop-up-down-skin:  Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	pop-up-over-skin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	
+	selectedUpSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	selectedDownSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+	selectedOverSkin: Embed("assets/swf/interfaceAssets.swf#zoomImg");
+}
+PopUpButton{
+	text-align: "left";
+	font-weight:normal;
+	corner-radius: 0;
+	fillAlphas: 1, 1, 1, 1;
+   	fillColors: #ffffff, #ffffff, #ffffff, #ffffff;
+}
+TabNavigator{
+	tab-height: 35;
+	tab-width: 120;
+	padding-bottom: 5;
+	padding-left: 5;
+	padding-right: 5;
+	padding-top: 5;
+	background-color: #F2F8FB;
+	background-alpha: 1.0;
+	tab-style-name:"myTabs";
+	border-color:#F2F8FB;
+	horizontal-align: "center";
+	corner-radius: 5;
+	border-style:solid;
+	font-size: 12;
+	selected-tab-text-style-name: "mySelectedTabs";
+}
+.myTabs {
+ 	color: #ffffff;
+ 	border-color:#F2F8FB;
+ 	background-alpha: 1.0;
+ 	highlightAlphas: 0.5, 0;
+    fillAlphas: 1, 1;
+    fillColors: #111111, #666666;
+ 	textRollOverColor: #cccccc;
+
+}
+.zoomSliderVBox{
+	 backgroundColor: #515151;
+	 cornerRadius: 10;
+	 borderStyle: "solid";
+	 borderColor: #515151;
+}
+.mySelectedTabs {
+   color: #000000;
+   textRollOverColor: #000000;
+}

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	 width="100%" height="100%" initialize="init()"
+	horizontalScrollPolicy="off" xmlns:local="*" layout="absolute" xmlns:view="view.*">
+	<mx:Script>
+		<![CDATA[
+			import view.stageView;
+			import view.Home;
+			 import mx.styles.StyleManager; 
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var footerLinkData:ArrayCollection = new ArrayCollection(["Home", "Showcase", "Contact", "Blog"]);
+			public var homeComp:Home; 
+			public var showComp:stageView
+			private function init():void{
+				 StyleManager.loadStyleDeclarations("assets/css/MainStyle.swf")
+
+			}
+			private function setTabMenu(event:Event):void{
+				var myArray:Array = [homeBtn, showcaseBtn, contactBtn,blogBtn];
+				for each (var Button in myArray)
+				{
+					Button.selected = false;
+					trace(Button.selected);
+				}
+				event.currentTarget.selected = true;
+				viewer.selectedIndex = myArray.indexOf(event.currentTarget)
+				if(event.currentTarget.id == "homeBtn"){
+					homeComp.pageViewer.selectedIndex = 0;	
+				}
+				 
+			}
+			private function readyComp():void{
+				homeComp = Home(mainView.child);
+				showComp = stageView(headerView.child);
+			}	
+			
+		]]>
+	</mx:Script> 
+	
+	<!--BANNER-->
+	<mx:Canvas id="headerCanvas" backgroundImage="{ImageResourceExample.headerImg}" backgroundSize="100%" width="100%" height="95">
+	
+		<mx:Canvas height="100%" width="980" horizontalCenter="0">
+			<mx:Canvas backgroundImage="{ImageResourceExample.logoBackground}" width="285" height="85">
+				<mx:Image horizontalCenter="-35" verticalCenter="0" source="{ImageResourceExample.brennusLogo}"/>
+			</mx:Canvas>
+			<mx:HBox top="5" right="10" verticalAlign="middle">
+					<mx:Image source="{ImageResourceExample.smallMap}"/>
+					<mx:Label text="DUBLIN - LONDON - PARIS - CHENNAI - PONDICHERRY - NEW YORK" styleName="locationText"/>
+			</mx:HBox>
+			<mx:HBox bottom="9" horizontalGap="2" right="10" verticalAlign="bottom" horizontalAlign="right">
+				<mx:Button styleName="MenuBtn" id="homeBtn" label="Home" toggle="true" click="setTabMenu(event)" selected="true" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="showcaseBtn" label="Showcase" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="contactBtn" label="Contact" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="blogBtn" label="Blog" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>	
+			</mx:HBox>			
+		</mx:Canvas>
+		
+	</mx:Canvas>
+	 
+	<!--BODY-->
+	
+	<mx:ViewStack id="viewer" top="{headerCanvas.height-1}" height="550"  horizontalCenter="0" 
+		  horizontalScrollPolicy="off">
+		  <mx:ModuleLoader id="mainView" ready="readyComp()" url="view/Home.swf" width="980" height="550"/>
+		   <mx:ModuleLoader id="headerView" ready="readyComp()" url="view/stageView.swf" width="980" height="550"/>
+		   <mx:ModuleLoader id="aboutView" url="view/about.swf" styleName="transparentBackground" width="980" height="550"/>
+		   <mx:ModuleLoader id="blogReaderView" url="BlogReader.swf" width="980" height="550"/>
+	</mx:ViewStack>
+	
+	<!--FOOTER-->
+	<mx:Canvas id="footerCanvas" top="{headerCanvas.height+viewer.height+10}" backgroundColor="#eeeeee"
+		 borderColor="#cfcfcf" borderStyle="solid" horizontalCenter="0" width="980" height="40">
+			<mx:Label selectable="true" text="Copyrights © 2008 Adam's Studio India Pvt Ltd" left="10" 
+				  verticalCenter="0" color="#666666"/>
+			<mx:LinkBar id="nav" itemClick="viewer.selectedIndex = nav.selectedIndex" styleName="footerLinkBar" verticalCenter="0" right="10" dataProvider="{footerLinkData}"/>
+	</mx:Canvas>
+	
+	
+</mx:Application>

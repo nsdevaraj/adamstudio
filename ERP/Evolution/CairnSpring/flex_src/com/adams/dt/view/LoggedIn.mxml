@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%" verticalAlign="middle"
+	height="100%" horizontalAlign="center"
+	backgroundAlpha="0"
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.PagingEvent;
+			import com.adams.dt.model.ModelLocator;
+		/**
+		 * ModelLocator look-up and common references
+		 */			
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			/**
+		     * Method Name testPaging.
+		     * call the paging event
+			 * dispatch pagingEvent			
+			 * return type void
+		     */			
+			private function testPaging():void{
+				var  pagingEvent :PagingEvent= new PagingEvent(PagingEvent.EVENT_GET_LIMIT_PAGE);
+				pagingEvent.startIndex = 1;
+				pagingEvent.endIndex = 10; 
+				pagingEvent.dispatch();
+			}
+
+		]]>
+	</mx:Script>
+	 <mx:Label fontSize="25" text="{model.loc.getString('loggedin')}"/>
+	 <mx:Button label="getSecuredResult" click="testPaging()"/>
+</mx:HBox>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:chartView="com.adams.dt.view.chartpeople.*"
+	       xmlns:tabs="com.adams.dt.view.components.mainProjectScreens.*"
+	       horizontalScrollPolicy="off" verticalScrollPolicy="off"
+		   styleName="contsWidth" height="100%" width="100%" 
+		   creationCompleteEffect="{ mx.effects.Fade }">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.effects.Blur;
+			import mx.effects.Glow;
+			import mx.effects.Dissolve;
+			import com.adams.dt.view.chartpeople.CommunicationTool;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.model.vo.Projects;
+			import mx.events.IndexChangedEvent;
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.effects.Fade;
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private function getImage( dataStr:int ):Class {
+    			switch( dataStr ) {
+    				case ProjectStatus.WAITING:
+    					return ImageResourceEmbedClass.WAITING;
+    				break ;
+    				case ProjectStatus.INPROGRESS:
+    					return ImageResourceEmbedClass.INPROGRESS;
+    				break;
+    				case ProjectStatus.STANDBY:
+    					return ImageResourceEmbedClass.STANDBY;
+    				break;
+    				case ProjectStatus.ARCHIVED:
+    					return ImageResourceEmbedClass.FINISHED;
+    				break;
+    				case ProjectStatus.URGENT:
+    					return ImageResourceEmbedClass.URGENT;
+    				break;
+    				
+    			}
+    			return null;
+    		}
+    		
+    		private function goToDashBoard():void {
+    			model.mainProjectState = 0;
+    		}
+    		
+    		private function saveVisibility( index:int, editValue:Boolean ):Boolean {
+				if( ( index == 1 ) || ( index == 6 ) || ( index == 4 ) ) {
+					return false;
+				}
+				else if( ( ( model.currentUserProfileCode == 'CLT' ) || ( model.currentUserProfileCode == 'TRA' ) || ( model.currentUserProfileCode == 'FAB' ) ) && editValue ) {
+					return true;
+				}
+				return false;	
+			}
+    		
+    		private function onHeaderClick():void {
+    			_divider.visible = false;
+    			var teamScreen:CommunicationTool = new CommunicationTool();
+    			teamScreen.headerClick = _divider;
+				PopUpManager.addPopUp( teamScreen, this );
+				PopUpManager.centerPopUp( teamScreen );
+			} 
+			//NEWORACLE TODOLIST CLICK ENBLED UPDATE PHASES
+			//DELEY EDITABLE VIEW
+			private function updatePhasesBooleanSet( value:Projects):void{
+				if( model.currentUserProfileCode == "TRA" || model.currentUserProfileCode == "FAB" || model.currentUserProfileCode == "CLT") {
+					if( value.projectStatusFK != ProjectStatus.STANDBY && value.projectStatusFK != ProjectStatus.ABORTED && !value.projectDateEnd ) {
+						model.updatePhase = true;
+					}
+					else {
+						model.updatePhase = false;
+					}
+				}
+				else {
+					model.updatePhase = false;
+				}
+			}
+			//NEWORACLE TODOLIST CLICK ENBLED UPDATE PHASES
+			//DELEY EDITABLE VIEW
+			private function updatePhasesSet():void{
+				updatePhasesBooleanSet( model.currentProjects );
+			}
+    		
+    	]]>
+	</mx:Script>
+	
+	<mx:Label text="{ model.loc.getString( 'MainProjectView' ) }" styleName="mainProjectHeader" id="_header"
+			  top="5" left="30"/>
+	
+	<mx:Canvas id="headerContainer" left="0" right="10" top="0" height="65">
+			<mx:Button  styleName="backToDashboard"  click="goToDashBoard()" left="0"  top="2" id="dashboardBTN"/>
+				<mx:Image left="8" bottom="10" id="image" source="{ getImage( model.currentProjects.projectStatusFK ) }" />
+				<mx:Label text="{ model.currentProjects.projectName }" styleName="prjDecText" fontSize="22" 
+				selectable="false" bottom="0" left="{image.width+13}" width="500" color="#b9b717" />
+	</mx:Canvas>
+	
+	<mx:HRule id="_hRule"  width="100%" height="1"
+		      y="{ headerContainer.y + headerContainer.height + 5 }"/>	
+	
+	<tabs:MainProjectScreen width="100%" height="100%" id="_mainProjectScreen" left="10" right="10"
+		                    y="{ _hRule.y + _hRule.height + 5 }"
+		                    onUpdatingMPV="{ model.updateMPV }" initialize="{updatePhasesSet()}"/>
+	<mx:Button id="saveProperty" label="Save" click=" _mainProjectScreen.onSave()" right="{13+_divider.width}" 
+			   y="{ _hRule.y + _hRule.height + 7 }" includeInLayout="{ saveProperty.visible }"
+			   visible="{ saveVisibility( _mainProjectScreen.tab.selectedIndex, model.editForm ) }"/>
+	<mx:Canvas id="_divider" right="10" styleName="communicationMailIconBg" y="{ _hRule.y + _hRule.height +6 }" height="27" width="40"
+		       click="onHeaderClick()" useHandCursor="true" mouseChildren="false" buttonMode="true"
+		       showEffect="{ mx.effects.Fade }" hideEffect="{ mx.effects.Fade }" 
+		       rollOverEffect="{ mx.effects.Blur }">
+		<mx:Button id="_footer"  styleName="communicationBtn" horizontalCenter="0" verticalCenter="0" 
+			toolTip="{ model.loc.getString( 'projectCommunication' ) }"
+			click="onHeaderClick()" useHandCursor="true" buttonMode="true"/>       
+	</mx:Canvas>				      		                    
+</mx:Canvas>

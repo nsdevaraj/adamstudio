@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"  xmlns:view="com.adams.dt.view.*"
+	  styleName="{model.constWidth}" bottom="0" top="0" 
+	  xmlns:cmp="com.adams.dt.view.components.*"
+	  xmlns:todo="com.adams.dt.view.components.todolistscreens.*" creationCompleteEffect = "{ mx.effects.Fade }"
+	  creationComplete="{ getView(model.workflowState)}" >
+	<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.model.vo.WorkflowTemplatePermission;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.event.TasksEvent;
+		import com.adams.dt.business.util.Utils;
+		import mx.events.CloseEvent;
+		import com.adams.dt.model.vo.TaskStatus;
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.event.OpenToDoListScreenEvent;
+		import mx.effects.Fade;
+		import mx.controls.Alert;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.FileDetailsEvent;
+		import com.adams.dt.model.vo.FileDetails;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.vo.Tasks;
+		import mx.core.UIComponent;
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		/*private function resetUploadComp():void{
+			uploadComp.listFiles.dataProvider=[];
+			uploadComp.UploadFiles = [];
+			model.currentProjectFiles = new ArrayCollection();
+		}*/
+		public function getView( workflowState : Number ) : int {
+			model.businessCard =  model.person;
+			
+			//uploadComp.type = "Basic";
+			if(model.currentTasks!=null){
+				var tsklbl:String = model.currentTasks.workflowtemplateFK.taskLabel
+				var stopLabel:Array = [];
+				if(model.currentTasks.workflowtemplateFK.optionStopLabel)
+					stopLabel = model.currentTasks.workflowtemplateFK.optionStopLabel.split(",")
+				
+			}
+		
+			if(workflowState !=0){
+				// resetUploadComp();	
+			} 
+			
+			if(model.currentProjects.projectId!=0){
+				if(model.currentProjects.projectStatusFK==ProjectStatus.STANDBY||
+						model.currentProjects.projectStatusFK==ProjectStatus.ABORTED){
+					prevTask.enabled = false;
+					nextTask.enabled = false;
+					jumpTask.enabled = false;
+					loopTask.enabled = false;
+					
+				}else{
+					prevTask.enabled = true;
+					nextTask.enabled = true;
+					jumpTask.enabled = true;
+					loopTask.enabled = true;
+				}
+			}
+			updateComment();
+			//adminMonitorSwitch(workflowState);
+			
+			var arrc:ArrayCollection = new ArrayCollection();
+			arrc.list = model.propertiespresetsCollection.list;
+			arrc.refresh();
+			model.propertiespresetsCollection.list = arrc.list;
+			model.propertiespresetsCollection.refresh();
+			
+            return workflowState;     
+        }
+       
+       	private var btn_id:String;
+		private function showAlert(event:MouseEvent):void{
+			btn_id = event.currentTarget.id;
+			
+			var title:String = model.currentProjects.projectName+" "+ Utils.dateFormat(model.currentTime);
+			Alert.yesLabel = 'Confirmation';
+			Alert.buttonWidth = 120;
+			var alertStr:String = model.loc.getString('pleaseDoYouConfirm')+" "+event.currentTarget.label+". "+model.loc.getString('thanks');
+			Alert.show(alertStr,title,Alert.YES|Alert.NO,this,confirmationHandler);
+		}
+		private function confirmationHandler(event:CloseEvent):void{
+			if (event.detail == Alert.YES) {
+				switch(btn_id){				
+					case "prevTask":
+						gotoPrevTask();
+					break;
+					case "nextTask":
+						gotoNextTask();
+					break;
+					case "loopTask":
+						gotoLoopTask();
+					break;
+					case "jumpTask":
+						jumpTo();
+					break;
+				}
+			}
+		}
+        public function gotoPrevTask():void{
+       		//ITodoList(stack.selectedChild.getChildAt(0)).gotoPrevTask();
+       		model.workflowState = 0;
+       		updateTask();
+        	//comments.text='';
+        }
+        public function gotoNextTask():void{
+        	//ITodoList(stack.selectedChild.getChildAt(0)).gotoNextTask();
+        	model.workflowState = 0;
+        	updateTask();
+        	//comments.text='';
+        }
+        public function gotoLoopTask():void{
+        	//ITodoList(stack.selectedChild.getChildAt(0)).gotoLoopTask();
+        	model.workflowState = 0;
+        	updateTask();
+        	//comments.text='';
+        }
+        public function jumpTo():void{
+        	//ITodoList(stack.selectedChild.getChildAt(0)).jumpTo();
+        	model.workflowState = 0;
+        	updateTask();
+        	//comments.text='';
+        }
+        private function setToDoName():void
+        {
+        	model.workflowState=0
+        }
+        
+        public function updateTask():void{
+        	if(model.currentTasks.taskStatusFK == TaskStatus.FINISHED)
+			{
+				for each(var item : Object in model.taskCollection)
+				{
+					for each(var taskC : Tasks in item.tasks)
+					{
+						if(taskC.taskId == model.currentTasks.taskId){
+							item.tasks.removeItemAt(item.tasks.getItemIndex(taskC));
+						}
+					}
+				}
+				for each( var myTask : Tasks in model.tasks ) {
+					if( myTask.taskId == model.currentTasks.taskId ){
+						model.tasks.removeItemAt( model.tasks.getItemIndex( myTask ) );
+					}
+				}
+				model.tasks.refresh();
+				model.taskCollection.refresh();
+			}
+        }
+        
+        
+        
+        [Bindable]
+        private var commentText:String;        
+        public function updateComment():void{
+        	//commentArea.text='';
+        	//comments.text='';
+        	if(model.currentTasks!=null){ 
+	        	if(model.currentTasks.previousTask!=null){
+	        		commentText = String(model.currentTasks.previousTask.taskComment)
+	        	}else{
+	        		commentText = String(model.currentTasks.projectObject.projectComment); 
+	        	}
+	        	
+	        }
+	       
+        }
+        [Bindable]
+        public function getPerson(tasks:Tasks):String{
+        	if(tasks!=null&&tasks.previousTask!=null){
+        		return String(tasks.previousTask.personDetails.personFirstname);
+        	}
+        	return '';
+        }
+	]]>
+</mx:Script>
+	
+	<mx:Canvas styleName="bgContainer"  backgroundAlpha="{model.bgAlpha}"   top="0" left="0" right="0" bottom="0">
+		<mx:Canvas right="5" id="buzCard" width="300" height="61" top="10" >
+			<view:bussinessCard width="100%" height="100%" />
+		</mx:Canvas>
+		<mx:Text text="{model.loc.getString('TodoList')}" id="todoLabel" visible="{Boolean(!model.workflowState)}" styleName="mainProjectHeader" left=""/>		
+		<!--<mx:Button  styleName="backTODO" click="setToDoName()" top="2" left="0"	id="backTotoDoList" visible="{Boolean(model.workflowState)}"/>-->
+		<mx:Canvas  id="todoStage" top="75" left="5" right="5" bottom="5" borderStyle="solid"   borderColor="#272727">
+			<mx:VBox width="100%" height="100%" verticalAlign="bottom" verticalGap="0" paddingBottom="0" paddingTop="0" paddingRight="0" paddingLeft="0">
+				<!--<mx:HBox id="commentsFrom" verticalAlign="middle" width="100%" height="10%">
+		            <mx:Text text="{model.loc.getString('commentsFrom')+ getPerson(model.currentTasks)}" width="110" textAlign="right"/>
+		            <mx:TextArea id="commentArea" editable="false" htmlText="{commentText}" styleName="textAreaReader" width="85%" height="80%" horizontalCenter="0"/>
+		        </mx:HBox>-->
+				<mx:ViewStack id="stack" selectedIndex="{ getView( model.workflowState ) }" width="100%" height="100%">
+					<mx:VBox verticalAlign="middle" horizontalAlign="center" width="100%" height="100%">
+						<view:ToDoList id="toDoList" width="100%" height="100%" dataProvider="{model.taskCollection}"/>
+					</mx:VBox>
+				</mx:ViewStack>	
+				<!--<mx:HBox id="commentBox" verticalAlign="middle" width="100%" height="60" horizontalGap="10">
+		        	<mx:Text text="{model.loc.getString('comments')}" width="110" textAlign="right"/>
+		            <mx:TextArea id="comments"  change="{model.currentTaskComment=comments.text}" width="85%" height="80%" horizontalCenter="0"/>
+		        </mx:HBox>-->
+           		<mx:HBox width="100%"  includeInLayout="{Boolean(model.workflowState)}" visible="{Boolean(model.workflowState)}" verticalAlign="middle">
+          			<mx:Label text="{model.loc.getString('submitOption')}"/>
+          			<mx:Button id="prevTask" styleName="previousBtn" label="{model.workflowstemplates.optionPrevLabel}" includeInLayout="{Boolean(prevTask.label.length)}" visible="{Boolean(prevTask.label.length)}" click="showAlert(event)"/>
+					<mx:Button id="nextTask" styleName="nextBtn" label="{model.workflowstemplates.optionNextLabel}" includeInLayout="{Boolean(nextTask.label.length)}" visible="{Boolean(nextTask.label.length)}" click="showAlert(event)"/>
+					<mx:Button id="loopTask" styleName="loopBtn" label="{model.workflowstemplates.optionLoopLabel}" includeInLayout="{Boolean(loopTask.label.length)}" visible="{Boolean(loopTask.label.length)}" click="showAlert(event)"/>
+					<mx:Button id="jumpTask" styleName="jumbBtn" label="{model.workflowstemplates.optionJumpLabel}" includeInLayout="{Boolean(jumpTask.label.length)}" visible="{Boolean(jumpTask.label.length)}" click="showAlert(event)"/>
+          		</mx:HBox>						
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>	
+</mx:Canvas>

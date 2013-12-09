@@ -1,0 +1,481 @@
+<project name="SwizDAOGenerator-1.0" default="main" >
+
+	<!--
+	User specific the global configuration properties.
+	-->
+	<property file="project.properties" />
+	<property file="config/SwizDAOGenerator.properties" />
+	<property file="config/log.properties" />
+	<target name="main" depends="create-view-mediator" /> 
+	 
+ 	<!-- create-SwizDAO - progress,create-mediator,create-value-object,create-view-mediator,create-signal-command,create-signal-command-variable-->
+	<target name="create-SwizDAO" depends="create-main-class-context-and-base-service,move-libraries-and-source-code,create-mediator">
+		<echo>${log.create.SwizDAO.directories.message}</echo>
+		<mkdir dir="${project.main.url}/${assets.dir}" />
+		<mkdir dir="${project.url}/${model.dir}" />
+		<mkdir dir="${project.url}/${view.dir}" />
+		<mkdir dir="${project.url}/${model.dir}/${processor.dir}" />
+		<mkdir dir="${project.url}/${model.dir}/${vo.dir}" />
+		<mkdir dir="${project.url}/service" />
+		<mkdir dir="${project.url}/${view.dir}" />
+		<mkdir dir="${project.url}/${view.dir}/${mediators.dir}" />
+		<mkdir dir="${project.url}/${view.dir}/${renderers.dir}" />
+		<copydir dest="${project.main.url}/${assets.dir}/" src="${templates.assets.dir}"></copydir>
+	</target>
+
+	<!-- move libraries and source code -->	<target name="move-libraries-and-source-code">
+		<echo>${log.create.SwizDAO.libraries.message}</echo>
+        <echo>Copy libs folder</echo>
+		<copy todir="${project.root.url}/libs">
+			<fileset dir="${templates.dir}/libs"/>
+  		</copy>
+	</target>
+
+	<!-- Generate Main class, context, css & base service class -->
+	<target name="create-main-class-context-and-base-service" >
+		<echo>${log.create.main.class.and.context}</echo>
+		
+		<convertToLowerCase property="lowerCaseProject" value="${project.name}" />
+		
+		<copy file="${SwizDAO.templates.dir}/Context.mxml"
+			  tofile="${project.main.url}/Context.mxml"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+					<token key="lowerCaseProject" value="${lowerCaseProject}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	           		<token key="view.dir" value="${view.dir}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		
+		<echo>Copy ${SwizDAO.templates.dir}/Main.mxml</echo>
+		<copy file="${SwizDAO.templates.dir}/${projectType}Swiz.mxml"
+			  tofile="${project.main.url}/${project.dir}.mxml"
+			  overwrite="true" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	           		<token key="view.dir" value="${view.dir}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<echo>Copy ${SwizDAO.templates.dir}/Utils.as</echo>
+		<copy file="${SwizDAO.templates.dir}/Utils.as"
+			  tofile="${project.url}/util/Utils.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy> 
+				
+		<echo>Copy ${SwizDAO.templates.dir}/NativeMessenger.as</echo>
+		<copy file="${SwizDAO.templates.dir}/NativeMessenger.as"
+			  tofile="${project.url}/util/NativeMessenger.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		
+		<echo>Copy ${SwizDAO.templates.dir}/MainSkinView.mxml</echo>
+				<copy file="${SwizDAO.templates.dir}/MainSkinView.mxml"
+					  tofile="${project.url}/view/MainSkinView.mxml"
+					  overwrite="${overwrite.files}" >
+			        <filterchain>
+			           <replacetokens> 
+			           		<token key="namespace" value="${namespace}" /> 
+			            </replacetokens>
+			        </filterchain>
+			    </copy>
+		
+	  <copy file="${SwizDAO.templates.dir}/MainViewMediator.as"
+		    	tofile="${project.url}/${view.dir}/mediators/MainViewMediator.as" overwrite="${true}" >
+		        <filterchain>
+		           <replacetokens>
+							<token key="author.name" value="${author.name}" />
+							<token key="author.email" value="${author.email}" />
+							<token key="company.name" value="${company.name}" />
+							<token key="project.name" value="${project.name}" />
+							<token key="namespace" value="${namespace}" />
+							<token key="year" value="${year}" />
+							<token key="gesture" value="Main" />
+	                    	<token key="view.dir" value="${view.dir}" />
+		           			<token key="upperCaseGesture" value="MAIN" />
+	        	           	<token key="lowerCaseGesture" value="main" />
+		            </replacetokens>
+		        </filterchain>
+		    </copy>
+					 
+		<copy file="${SwizDAO.templates.dir}/AlertView.mxml"
+				    	tofile="${project.url}/${view.dir}/components/AlertView.mxml" overwrite="${true}" >
+				        <filterchain>
+				           <replacetokens> 
+									<token key="namespace" value="${namespace}" /> 
+				            </replacetokens>
+				        </filterchain>
+				    </copy>
+
+		 
+		<copy file="${SwizDAO.templates.dir}/ProgressSkinView.mxml"
+	    	tofile="${project.url}/${view.dir}/ProgressSkinView.mxml" overwrite="${true}" >
+	        <filterchain>
+	           <replacetokens> 
+						<token key="namespace" value="${namespace}" /> 
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<copy file="${SwizDAO.templates.dir}/SignalsCommand.as"
+				    	tofile="${project.url}/control/SignalsCommand.as" overwrite="${overwrite.files}" >
+				        <filterchain>
+				           <replacetokens>
+									<token key="author.name" value="${author.name}" />
+									<token key="author.email" value="${author.email}" />
+									<token key="company.name" value="${company.name}" />
+									<token key="project.name" value="${project.name}" />
+									<token key="namespace" value="${namespace}" />
+									<token key="year" value="${year}" />
+									<token key="gesture" value="${gesture}" />
+			                    	<token key="view.dir" value="${view.dir}" />
+			        		        <token key="upperCaseGesture" value="${upperCaseGesture}" />
+			        	           	<token key="lowerCaseGesture" value="${lowerCaseGesture}" />
+				            </replacetokens>
+				        </filterchain>
+				    </copy>  
+		<echo>Copy ${SwizDAO.templates.dir}/AbstractDAO.as</echo>
+		<copy file="${SwizDAO.templates.dir}/AbstractDAO.as"
+			  tofile="${project.url}/${model.dir}/AbstractDAO.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<echo>Copy ${SwizDAO.templates.dir}/MapConfigVO.as</echo>
+		<copy file="${SwizDAO.templates.dir}/MapConfigVO.as"
+			  tofile="${project.url}/${model.dir}/${vo.dir}/MapConfigVO.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		
+		<echo>Copy ${SwizDAO.templates.dir}/ControlSignal.as</echo>
+		<copy file="${SwizDAO.templates.dir}/ControlSignal.as"
+			  tofile="${project.url}/signal/ControlSignal.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		
+		<echo>Copy ${SwizDAO.templates.dir}/BootStrapCommand.as</echo>
+		<copy file="${SwizDAO.templates.dir}/BootStrapCommand.as"
+			  tofile="${project.url}/BootStrapCommand.as"
+			  overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+					<token key="author.name" value="${author.name}" />
+					<token key="author.email" value="${author.email}" />
+					<token key="company.name" value="${company.name}" />
+					<token key="project.name" value="${project.name}" />
+	           		<token key="namespace" value="${namespace}" />
+					<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+
+		<echo>Copy ${SwizDAO.templates.dir}/Style.css</echo>
+		<copy file="${SwizDAO.templates.dir}/Style.css"
+			  tofile="${project.main.url}/Style.css"
+			  overwrite="${overwrite.files}" >
+	    </copy>
+
+	    <copy file="${SwizDAO.templates.dir}/ServiceResult.as"
+	    	tofile="${project.url}/service/ServiceResult.as" overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+						<token key="author.name" value="${author.name}" />
+						<token key="author.email" value="${author.email}" />
+						<token key="company.name" value="${company.name}" />
+						<token key="project.name" value="${project.name}" />
+						<token key="namespace" value="${namespace}" />
+						<token key="year" value="${year}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+
+	</target>
+ 		   
+
+	<!-- create ValueObject class -->
+	<target name="create-value-object" >
+		<echo>${log.value.object.message}</echo>
+		<convertToUpperCase property="upperCaseGesture" value="${gesture}" />
+	    <convertToLowerCase property="lowerCaseGesture" value="${gesture}" />
+	    <copy file="${SwizDAO.templates.dir}/Notes.as"
+	    	tofile="${project.url}/${model.dir}/${vo.dir}/${gesture}.as" overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+						<token key="author.name" value="${author.name}" />
+						<token key="author.email" value="${author.email}" />
+						<token key="company.name" value="${company.name}" />
+						<token key="project.name" value="${project.name}" />
+						<token key="namespace" value="${namespace}" />
+						<token key="year" value="${year}" />
+						<token key="gesture" value="${gesture}" />
+                    	<token key="vo.dir" value="${vo.dir}" />
+                    	<token key="lowerCaseGesture" value="${lowerCaseGesture}" />
+                    	<token key="model.dir" value="${model.dir}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<copy file="${SwizDAO.templates.dir}/NoteProcessor.as"
+	    	tofile="${project.url}/${model.dir}/${processor.dir}/${gesture}Processor.as" overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+						<token key="author.name" value="${author.name}" />
+						<token key="author.email" value="${author.email}" />
+						<token key="company.name" value="${company.name}" />
+						<token key="project.name" value="${project.name}" />
+						<token key="namespace" value="${namespace}" />
+						<token key="year" value="${year}" />
+						<token key="gesture" value="${gesture}" />
+                    	<token key="vo.dir" value="${vo.dir}" />
+                    	<token key="lowerCaseGesture" value="${lowerCaseGesture}" />
+                    	<token key="model.dir" value="${model.dir}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<echo>Register processor and create new DAO with context class</echo>
+		<replace file="${project.main.url}/Context.mxml"
+			     token="// Processors Begin -->"
+			     value="// Processors Begin -->${line.separator}
+							&lt;processor:${gesture}Processor id='${gesture}Processor'/&gt;"
+			     /> 
+		<replace file="${project.main.url}/Context.mxml"
+			     token="// DAO Begin -->"
+			     value="// DAO Begin -->${line.separator}
+							&lt;swiz:Prototype name='{Utils.${upperCaseGesture}DAO}' constructorArguments='{[Utils.${upperCaseGesture}KEY,${gesture},${gesture}Processor,Utils.${upperCaseGesture}DAO]}' type='{AbstractDAO}' singleton='true'/&gt;"
+			     /> 
+		<replace file="${project.url}/util/Utils.as"
+			     token="// todo: add key"
+			     value="// todo: add key${line.separator}
+						public static const ${upperCaseGesture}KEY 	:String='${lowerCaseGesture}Id';" 
+			     /> 
+		<replace file="${project.url}/util/Utils.as"
+			     token="// todo: add dao"
+			     value="// todo: add dao${line.separator}
+						public static const ${upperCaseGesture}DAO 	:String='${lowerCaseGesture}DAO'; "
+			     /> 
+	</target>
+	<target name="create-mediator" >
+
+	    <convertToUpperCase property="upperCaseGesture" value="${gesture}" />
+	    <convertToLowerCase property="lowerCaseGesture" value="${gesture}" />
+
+	    <copy file="${SwizDAO.templates.dir}/${projectType}HomeViewMediator.as"
+	    	tofile="${project.url}/${view.dir}/mediators/${gesture}ViewMediator.as" overwrite="${true}" >
+	        <filterchain>
+	           <replacetokens>
+						<token key="author.name" value="${author.name}" />
+						<token key="author.email" value="${author.email}" />
+						<token key="company.name" value="${company.name}" />
+						<token key="project.name" value="${project.name}" />
+						<token key="namespace" value="${namespace}" />
+						<token key="year" value="${year}" />
+						<token key="gesture" value="${gesture}" />
+                    	<token key="view.dir" value="${view.dir}" />
+        		        <token key="upperCaseGesture" value="${upperCaseGesture}" />
+        	           	<token key="lowerCaseGesture" value="${lowerCaseGesture}" />
+	            </replacetokens>
+	        </filterchain> 
+	    </copy>
+	</target>	
+	<!-- create view-mediator class -->
+	<target name="create-view-mediator" depends="create-mediator" >
+		<echo>${log.view.mediator.message}</echo>
+
+	    <copy file="${SwizDAO.templates.dir}/HomeSkinView.mxml"
+	    	tofile="${project.url}/${view.dir}/${gesture}SkinView.mxml" overwrite="${overwrite.files}" >
+	        <filterchain>
+	           <replacetokens>
+						<token key="author.name" value="${author.name}" />
+						<token key="author.email" value="${author.email}" />
+						<token key="company.name" value="${company.name}" />
+						<token key="project.name" value="${project.name}" />
+						<token key="namespace" value="${namespace}" />
+						<token key="year" value="${year}" />
+						<token key="gesture" value="${gesture}" />
+                    	<token key="view.dir" value="${view.dir}" />
+	            </replacetokens>
+	        </filterchain>
+	    </copy>
+		<replace file="${project.url}/util/Utils.as"
+			     token="// todo: add dao"
+			     value="// todo: add dao${line.separator}
+						public static const ${upperCaseGesture}_INDEX:String='${gesture}';"
+			     /> 
+		<replace file="${project.url}/view/MainSkinView.mxml"
+					     token="// View Begin -->"
+					     value="// View Begin -->${line.separator}
+			&lt;mediators:${gesture}ViewMediator id='${lowerCaseGesture}' skinClass='${namespace}.${view.dir}.${gesture}SkinView' homeState='{currentState}' includeIn='${gesture}' width='100%' height='100%'/&gt;"
+					     />  
+		<replace file="${project.url}/view/MainSkinView.mxml"
+							     token="// State Begin -->"
+							     value="// State Begin -->${line.separator}
+						&lt;s:State name='${gesture}'/&gt;"
+							     />  
+	</target> 
+	
+	<!-- create signal-command class -->
+		<target name="create-signal-command-variable" >
+			<echo>${log.signal.command.message}</echo>
+
+		    <convertToUpperCase property="upperCaseGesture" value="${gesture}" />
+		    <convertToLowerCase property="lowerCaseGesture" value="${gesture}" />
+			<convertToCamelCase property="camelCaseGesture" value="${gesture}" />
+			<Params property="parameters" value="${variables}" />
+			
+			<replace file="${project.url}/control/SignalsCommand.as"
+				     token="// todo: add listener"
+				     value="// todo: add listener${line.separator}
+							/**${line.separator}
+							 * Whenever an ${gesture}Signal is dispatched.${line.separator}
+							 * MediateSignal initates this ${lowerCaseGesture}Action to perform control Actions${line.separator}
+							 * The invoke functions to perform control functions${line.separator}
+							 */${line.separator}
+							[ControlSignal(type='${camelCaseGesture}Signal')]${line.separator}
+							public function ${lowerCaseGesture}Action(obj:IViewMediator,${variables}):void {${line.separator}
+								${line.separator}
+							}${line.separator}"
+				     /> 
+			<replace file="${project.url}/signal/ControlSignal.as"
+						     token="// add Signal "
+						     value="// add Signal ${line.separator}
+							public var ${camelCaseGesture}Signal:Signal= new Signal(IViewMediator,${parameters});"
+						     />   
+		</target> 
+	<target name="create-signal-command" >
+				<echo>${log.signal.command.message}</echo>
+
+			    <convertToUpperCase property="upperCaseGesture" value="${gesture}" />
+			    <convertToLowerCase property="lowerCaseGesture" value="${gesture}" />
+				<convertToCamelCase property="camelCaseGesture" value="${gesture}" />
+				
+				<replace file="${project.url}/control/SignalsCommand.as"
+					     token="// todo: add listener"
+					     value="// todo: add listener${line.separator}
+								/**${line.separator}
+								 * Whenever an ${gesture}Signal is dispatched.${line.separator}
+								 * MediateSignal initates this ${lowerCaseGesture}Action to perform control Actions${line.separator}
+								 * The invoke functions to perform control functions${line.separator}
+								 */${line.separator}
+								[ControlSignal(type='${camelCaseGesture}Signal')]${line.separator}
+								public function ${lowerCaseGesture}Action(obj:IViewMediator):void {${line.separator}
+									${line.separator}
+								}${line.separator}"
+					     /> 
+				<replace file="${project.url}/signal/ControlSignal.as"
+							     token="// add Signal "
+							     value="// add Signal ${line.separator}
+								public var ${camelCaseGesture}Signal:Signal= new Signal(IViewMediator);"
+							     />   
+			</target>
+	
+    <!-- private -->
+	<scriptdef name="convertToUpperCase" language="javascript" >
+		<attribute name="property" />
+		<attribute name="value"    />
+		project.setNewProperty( attributes.get("property"), attributes.get("value").toUpperCase() );
+	</scriptdef>
+
+	<scriptdef name="convertToLowerCase" language="javascript" >
+		<attribute name="property" />
+		<attribute name="value"    />
+		project.setNewProperty( attributes.get("property"), attributes.get("value").toLowerCase() );
+	</scriptdef>
+
+	<scriptdef name="convertToPascalCase" language="javascript">
+		<attribute name="property" />
+		<attribute name="value" />
+		val = attributes.get("value");
+		val = val.substr(0,1).toUpperCase() + val.substr(1);
+		project.setNewProperty( attributes.get("property"), val);
+	</scriptdef>
+
+	<scriptdef name="convertToCamelCase" language="javascript">
+		<attribute name="property" />
+		<attribute name="value" />
+		val = attributes.get("value");
+		val = val.substr(0,1).toLowerCase() + val.substr(1);
+		project.setNewProperty( attributes.get("property"), val);
+	</scriptdef>
+
+	<scriptdef name="setTabValue" language="javascript">
+		<attribute name="property" />
+		project.setNewProperty( attributes.get("property"), "\t");
+	</scriptdef>
+	<scriptdef name="Params" language="javascript">
+	 	<attribute name="property" />
+	 	<attribute name="value"    />
+	    <![CDATA[
+ 		val = attributes.get("value");
+ 		var tempArray = val.split(',');
+ 		var resArray =[]
+	 	for (var i = 0; i < tempArray.length; i++) { 
+ 			var tempArray2 = tempArray[i].split(':');
+ 			for (var j = 0; j < tempArray2.length; j++) {
+ 				resArray.push(tempArray2[1])
+ 				j++
+ 			}
+ 		}
+ 		self.log(resArray.join(','))
+ 		project.setNewProperty( attributes.get("property"), resArray.join(','));
+	    ]]>
+	</scriptdef>
+</project>

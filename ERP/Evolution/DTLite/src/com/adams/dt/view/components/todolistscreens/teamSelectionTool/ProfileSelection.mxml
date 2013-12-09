@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+	creationComplete="createTeamLine()">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.Sort;
+			import mx.utils.ObjectUtil;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.Teamlines;
+			import mx.collections.SortField;
+			import mx.collections.IViewCursor;
+			import com.adams.dt.model.ModelLocator;
+			
+			
+			[Bindable]
+			private var _comboTeam:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var _teamDetails:ArrayCollection ;
+			
+			
+			[Bindable]
+			private var _oldTeamProfile:ArrayCollection;
+			
+			[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	private var tempObj:Object = {};
+		 	/**
+		 	 * 
+		 	 **/
+			public function createTeamLine() :void
+			{
+				//convertPersonToProfile();
+				_teamDetails = new ArrayCollection( ObjectUtil.copy( model.teamlLineCollection.source ) as Array );
+				_teamDetails.filterFunction = teamData;
+				_teamDetails.refresh();
+				getProfileDatas();
+				getTeamDatas()
+			}
+			/**
+		 	 * Remove the Duplicate items , to the Show the profile
+		 	 * in the Combo Box...
+		 	 **/
+			private function teamData(item:Object):Boolean 
+			{
+				var retVal:Boolean = false;
+				if (!tempObj.hasOwnProperty(item.profileID) && !removedUnwantedProfile(item.profileID)) {
+					tempObj[item.profileID] = item;
+					_comboTeam.addItem(item);
+					retVal = true;
+				}
+			return retVal;
+			}
+			/**
+		 	 * To Show the Selected Profile in the Team Selection Tool
+		 	 **/
+			private function removedUnwantedProfile( defaultProfile:int ):Boolean
+			{
+				var retVal:Boolean;
+				var removedProfiles:ArrayCollection = new ArrayCollection([{defaultProfile:String(Utils.getProfileId("ADM") )},
+	 		    {defaultProfile:String( Utils.getProfileId("EPR")) },
+	 		    {defaultProfile:String( Utils.getProfileId("AGN")) },
+	 		    {defaultProfile:String( Utils.getProfileId("COM")) },
+	 		    {defaultProfile:String( Utils.getProfileId("CHP")) },
+	 		    {defaultProfile:String( Utils.getProfileId("CPP")) },
+	 		    {defaultProfile:String( Utils.getProfileId("IND")) }]);
+	 		    for ( var i:int = 0;i<removedProfiles.length;i++)
+	 		    {
+	 		    	if(removedProfiles[i].defaultProfile == defaultProfile )
+	 		    	{
+	 		    		retVal = true;
+	 		    		break;
+	 		    	}
+	 		    }
+	 		    return retVal;
+			}
+			/**
+		 	 * set the Data for the profile Holder 
+		 	 **/
+			private function getProfileDatas():void
+			{
+				_teamDetails.filterFunction  = null;
+				_teamDetails.refresh() ;
+				var finalColl:ArrayCollection = new ArrayCollection();
+				for (var i:int = 0; i<_comboTeam.length; i++ )
+				{
+					var teamObj:Teamlines = _comboTeam.getItemAt(i) as Teamlines;
+					teamObj.projectID = 1;
+					teamObj.profileData = checkSameItems(teamObj);
+					finalColl.addItem(teamObj); 
+				}
+				teamProfileHolder.dataProvider = finalColl;
+			}
+			/**
+		 	 * Find the person for the Particular Profile and place it 
+		 	 * in Teamline.Profile Data ArraCollection... 
+		 	 **/
+			private var cursor :IViewCursor
+			private function  checkSameItems ( items : Object ) :ArrayCollection 
+			{
+				var _profileColl:ArrayCollection = new ArrayCollection();
+				var sort:Sort = new Sort();
+				sort.fields = [new SortField("profileID")];
+				_teamDetails.sort = sort ;
+				_teamDetails.refresh();
+				var cursor:IViewCursor=_teamDetails.createCursor();
+				while( !cursor.afterLast )
+				{
+				  if(cursor.current.profileID == items.profileID)
+				  {
+				  	_profileColl.addItem(cursor.current);
+				  }
+				  cursor.moveNext();
+				}
+				return _profileColl
+			} 
+			/**
+		 	 * Set the Label Field Function for the 
+		 	 * comboBox.
+		 	 **/
+			private function profileCombo_labelFunc(item:Object):String {
+                return GetVOUtil.getProfileObject(item.profileID).profileLabel
+            }
+			/**
+		 	 * Set the Filter Function While Change the 
+		 	 * profile in the Combo Box...
+		 	 **/
+			protected function getTeamDatas(event:Event=null):void
+			{
+				 model.teamLinePersonColl.filterFunction = teamFilterFunction;
+				 model.teamLinePersonColl.refresh(); 
+			}
+			 private function teamFilterFunction(obj:Object):Boolean {
+				return (obj.profile.profileId == Teamlines(profileCombo.selectedItem).profileID);
+			}
+			
+			/**
+		 	 * Convert the person collection to Profile and Person 
+		 	 * to show the details in the teamPerson List ...
+		 	 **/
+		 	 /* private function convertPersonToProfile():void
+		 	 {
+		 	 	for each( var person:Persons in model.personsArrCollection)
+		 	 	{
+		 	 		var profileObj:Object = new Object();
+		 	 		var profile:Profiles =  GetVOUtil.getProfileObject(person.defaultProfile);
+		 	 		profileObj.profile = profile;
+		 	 		profileObj.person = person;
+		 	 		profileObj.personId = person.personId;
+		 	 		 if(!findDuplicatePerson(person.personId))
+		 	 		{ 
+		 	 			model.teamLinePersonColl.addItem(profileObj);
+		 	 		} 
+		 	 	}
+		 	 	trace("CONVERTED PERSON TO PROFILE ************************ ")
+		 	 } */
+		 	 /**
+		 	 * remove the Duplicate Item ,by comparing the Person Collection 
+		 	 *  to the Team Profile Holder...
+		 	 **/  
+			/* private function findDuplicatePerson(perId:int):Boolean
+			{
+				var retVal:Boolean
+				for (var i:int = 0;i<model.teamlLineCollection.length;i++)
+				{
+					if(Teamlines(model.teamlLineCollection[i]).personID == perId)
+					{
+						retVal = true;
+						break
+					}
+				}
+				return retVal;
+			} */
+			 /**
+		 	 * Function will trigger when user click the Modify Team 
+		 	 * Buttton....
+		 	 **/ 
+		 	 protected function modifyTeam( evt:Event ) :void
+		 	 {
+		 	 	
+		 	 	checkAddedItem();
+		 	 	checkDeleteItem();
+		 	 	var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE );
+		 		teamTempEvt.projectId = model.currentProjects.projectId; 
+		 		teamTempEvt.dispatch();
+		 		model.addedTeamLineColl.removeAll();
+		 		model.deleteTeamLineColl.removeAll();
+		 	 }
+		 	 
+		 	 private function checkAddedItem():void
+		 	 {
+		 	 	for each( var addTeam:Teamlines in model.addedTeamLineColl )
+		 	 	{
+		 	 		//trace( GetVOUtil.getPersonObject( addTeam.personID ).personFirstname+"*********ADD******")
+		 	 		findDuplicateTeamLine(addTeam)
+		 	 	} 
+		 	 }
+		 	 private function checkDeleteItem():void
+		 	 {
+		 	 	for each( var deleteTeam:Teamlines in model.deleteTeamLineColl )
+		 	 	{
+		 	 		//trace( GetVOUtil.getPersonObject( deleteTeam.personID ).personFirstname+"**********DELETE*****")
+		 	 		var deleteTeamLineEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_DELETE_TEAMLINE_SELECTION );
+					deleteTeamLineEvt.teamline = deleteTeam;
+					deleteTeamLineEvt.dispatch();
+					
+		 	 	} 
+		 	 }
+		 	 private function findDuplicateTeamLine(item: Teamlines):void
+			 {
+				var sort:Sort = new Sort();
+				sort.fields = [ new SortField( 'personID' ) ];
+				model.teamlLineCollection.sort = sort;
+				model.teamlLineCollection.refresh();
+				var cursor:IViewCursor = model.teamlLineCollection.createCursor();
+				var found:Boolean = cursor.findAny( item );
+				if( !found ) {
+					//trace(" To addd")
+					var createNewTeamLineEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_CREATE_TEAMLINE_SELECTION );
+					createNewTeamLineEvt.teamline = item;
+					createNewTeamLineEvt.dispatch();
+				}
+			 }
+		 	
+		 	private function resetTeam( event:Event ):void
+		 	{
+		 		model.addedTeamLineColl.removeAll();
+		 		model.deleteTeamLineColl.removeAll();
+		 		model.teamLinePersonColl.removeAll();
+		 		createTeamLine();
+		 		
+		 	}
+			
+			
+		]]>
+	</mx:Script>
+	<mx:Label left="5" text="PROFILE" id="profileHeader" top="10" styleName="subHeader"/>
+	<mx:HRule left="5" right="{teamPersonList.width+10}" top="40"/>
+	<mx:TileList top="45" left="5" right="{teamPersonList.width+10}" bottom="{footerBox.height}" columnWidth="300"  
+		id="teamProfileHolder" focusAlpha="0" selectionDuration="5000" cornerRadius="0" borderStyle="none"
+			backgroundAlpha="0" itemClick="{teamProfileHolder.selectedIndex=-1}"
+			itemRenderer="com.adams.dt.view.components.todolistscreens.teamSelectionTool.TeamList" 
+			useRollOver="false"  />
+
+	<mx:Label text="PERSON" id="personHeader" top="10" right="{profileCombo.width+5}" styleName="subHeader"/>	
+	<mx:ComboBox id="profileCombo" change="getTeamDatas(event)"
+	  		labelFunction="profileCombo_labelFunc"
+	    	dataProvider="{_comboTeam}"
+	    	labelField="Id" right="5" top="10"/>
+	    	
+	<mx:List id="teamPersonList"  dataProvider="{model.teamLinePersonColl}"  
+			paddingLeft="5" paddingBottom="5" paddingTop="5" paddingRight="5"
+			styleName="teamFooter"
+			itemRenderer="com.adams.dt.view.components.todolistscreens.teamSelectionTool.TeamPersonHolder" 
+			width="300" right="5" top="40" bottom="40" 
+			dragMoveEnabled="true"
+			dragEnabled="true"/>
+
+<mx:Canvas bottom="0" height="35" id="footerBox"
+	     width="100%" styleName="statusHeader" 
+	     visible="{model.currentUserProfileCode=='TRA'||model.currentUserProfileCode=='FAB'?true:false}">
+	<mx:Button label="Modify Team" id="modify" right="5" click="modifyTeam(event)" verticalCenter="0"/>
+	<mx:Button label="Reset" right="{modify.width+10}" click="resetTeam(event)" verticalCenter="0"/>
+</mx:Canvas>
+</mx:Canvas>

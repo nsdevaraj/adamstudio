@@ -1,0 +1,45 @@
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx"; 
+
+@font-face
+{
+	fontFamily: Calibri;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: true;
+}  
+@font-face
+{
+	fontFamily: CalibriMx;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: false;
+} 
+s|Application{
+	chrome-color:#2d3239;
+	content-background-color:#313235;
+	color:#bdbdbd;
+	fontFamily: Calibri;
+	background-color:#2d3540;
+	symbol-color:#ffff00;
+	focus-color:#efefef;
+} 
+s|TextArea{
+	fontFamily: CalibriMx;
+}
+s|DataGrid{
+	skin-class:ClassReference('assets.skins.DataGridSkin');
+	selection-color:#3f646b;
+}   
+s|FormItem{
+	skinClass : ClassReference("assets.skins.form.StackedFormItemViewSkin");
+}
+s|Label.header{
+	font-size:22;
+	color:#959595;
+	font-weight:normal;
+}
+s|ButtonBar{
+	skin-class:ClassReference('assets.skins.ButtonBar.ButtonBarSkin');
+} 
+s|TitleWindow{
+	skin-class:ClassReference('assets.skins.resize.ResizableDraggableTitleWindowSkin');
+}

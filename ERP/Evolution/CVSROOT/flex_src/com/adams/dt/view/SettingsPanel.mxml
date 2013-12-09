@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" styleName="bgBorderContainer" 
+	horizontalAlign="center" dropShadowEnabled="true" filters="{[new DropShadowFilter(0,90,0x000000,.3,1,1)]}"
+	 width="100%" height="100%" paddingBottom="6" paddingLeft="6" paddingRight="6" paddingTop="30" initialize="initSettings()">
+	 <mx:Script>
+	 	<![CDATA[
+	 		import com.adams.dt.event.FileDetailsEvent;
+	 		import com.adams.dt.business.util.Register;
+	 		import com.adams.dt.model.managers.SharedObjectManager;
+	 		import mx.events.FileEvent;
+		 	import com.adams.dt.model.ModelLocator;
+		 	[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private var lang:String;
+			private var soundSet:Boolean;
+			private var alertTime:int;
+			private var autoStart:Boolean;
+			private var uname:String;
+			private var pWord:String;
+			private var register :Register = new Register();
+			[Bindable]
+			private var prefsXML:XML;
+	 /* 	private function saveSettings():void{
+			enCheck.selected==true?model.loc.language = "En":model.loc.language = "Fr";
+			soundEnabled.selected == true?model.enableAlertSound = true:model.enableAlertSound = false;
+			model.alertDisplayTime = alertTiming.value;
+			saveToFile();
+			 NativeApplication.nativeApplication.startAtLogin = true 
+		} */
+		private function initSettings():void{
+			 
+			model.loc.language=="Fr"?frCheck.selected = true:enCheck.selected = true;
+			soundEnabled.selected = model.enableAlertSound;
+			startUpCheck.selected = model.launchOnStartUp; 
+			alertTiming.value = model.alertDisplayTime;
+			/* var file:File = File.userDirectory;
+			file = file.resolvePath("apSettings.xml");
+			var fileStream:FileStream = new FileStream(); 
+			fileStream.openAsync(file, FileMode.READ);
+			fileStream.addEventListener(IOErrorEvent.IO_ERROR, errorHandler, false, 0,true);  
+			fileStream.addEventListener(Event.COMPLETE, processXMLData, false, 0,true);  */
+		}
+		/* private function processXMLData(event:IOErrorEvent):void{
+			var xml:XML = XML(event.currentTarget.readUTFBytes(event.currentTarget.bytesAvailable));
+			event.currentTarget.close();
+			if(String(prefsXML.userID).length > 0) {
+				model.loc.lan= prefsXML.userID
+				passwordStr = prefsXML.passWord
+			}
+		} */
+		private function errorHandler(event:Event):void{
+			
+		}
+		private var SoM:SharedObjectManager = SharedObjectManager.instance;
+		private function unRegister():void{
+			SoM.data.productId = "";		
+		} 
+		 public function saveSettings():void { 
+		 	model.loc.language = enCheck.selected?"En":"Fr";
+		 	model.alertDisplayTime = alertTiming.value;
+		 	model.launchOnStartUp = startUpCheck.selected;
+		 	model.enableAlertSound = soundEnabled.selected;
+			var file:File = File.userDirectory;
+			file = file.resolvePath("apSettings.xml");
+			var fileStream:FileStream = new FileStream(); 
+			fileStream.openAsync(file, FileMode.WRITE);
+			var fileText:String = '<root><userID>'+model.userNameTxt+'</userID><passWord>'+model.passwordTxt+'</passWord><language>'+model.loc.language+'</language><sound>'
+			+model.enableAlertSound+'</sound><alert>'+model.alertDisplayTime+'</alert><AutoStart>'+model.launchOnStartUp+'</AutoStart></root>'; 
+			fileStream.writeUTFBytes(fileText);
+			fileStream.close(); 
+		}
+	 	]]>
+	 </mx:Script>
+	  
+	 
+	 <mx:Button id="logoBtn" styleName="innerCompanyLogo"/>
+	 
+	 <mx:Form   verticalGap="1" width="100%" paddingLeft="0" paddingRight="0" paddingBottom="0" paddingTop="0">
+	 	<mx:FormItem label="{model.loc.getString('registrationStatus')}" styleName="itemStyle" width="100%" height="30" >
+	 		<mx:Label text="{model.registeredUser!=''?' '+model.loc.getString('registeredTo')+' '+model.registeredUser:' '+model.loc.getString('notRegistered')}" maxWidth="140"/>
+	 	</mx:FormItem>
+	 	
+	 	<mx:FormItem label="{model.loc.getString('enableNotificationSound')}" styleName="itemStyle" width="100%" height="30" >
+	 		<mx:CheckBox id="soundEnabled" selected="true" />	 		
+	 	</mx:FormItem>
+	 	
+	 	<mx:FormItem label="{model.loc.getString('selectLanguage')}" direction="horizontal" horizontalGap="2"
+	 		 styleName="itemStyle" width="100%" >
+	 			<mx:RadioButton id="enCheck" click="saveSettings()"/>
+	 			<mx:Button styleName="enBTN" id="enBtn" paddingTop="10"/>
+					<mx:Spacer width="15"/>
+				<mx:RadioButton selected="true" id="frCheck" click="saveSettings()" />
+	 			<mx:Button styleName="frBTN" id="frBtn" />
+	 	</mx:FormItem >
+	 	
+	 	<mx:FormItem label="{model.loc.getString('launchiBriefStartup')}" styleName="itemStyle" width="100%" height="30">
+	 		<mx:CheckBox id="startUpCheck"/>	 		
+	 	</mx:FormItem>
+	 	
+	 	<mx:FormItem label="{model.loc.getString('displayTimeAlert')}" direction="horizontal" styleName="itemStyle" width="100%" height="30">
+			<mx:NumericStepper id="alertTiming" minimum="1" maximum="10"/>
+	 		<mx:Label text="Seconds" />	 		
+	 	</mx:FormItem> 
+	 </mx:Form>
+	 
+	<mx:HBox width="100%" horizontalAlign="center" height="100%" verticalAlign="middle">
+		<mx:Button id="registerBtn" visible="{!model.licensedVersion}" includeInLayout="{!model.licensedVersion}" label="Register" click="register.showWindow()"/>	 		
+		<mx:Button id="unregisterBtn" label="unRegister" click="unRegister()" visible="false" includeInLayout="{unregisterBtn.visible}" />
+		<mx:Button label="{model.loc.getString('ok')}" click="saveSettings(),model.settingsPanelVisible = false" />
+		<mx:Button label="{model.loc.getString('cancel')}" click="model.settingsPanelVisible = false,initSettings()" />
+	</mx:HBox>
+	
+</mx:VBox>

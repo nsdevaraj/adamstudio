@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="com.adams.dt.view.*" implements="mx.rpc.IResponder"
+		   height="100%" creationComplete="loggedIn()" >
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.event.PagingEvent;
+		import com.adams.dt.event.ColumnsEvent;
+		import com.adams.dt.event.ReportEvent;
+		import mx.states.SetStyle;
+		import com.adams.dt.event.CompaniesEvent;
+		import com.adams.dt.event.PresetTemplateEvent;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.model.vo.Reports;
+		import com.adams.dt.event.ImpremiurEvent;
+		import com.adams.dt.event.EventsEvent;
+		import com.adams.dt.view.mainView.History;
+		import mx.collections.IViewCursor;
+		import com.adams.dt.view.mainView.*;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.model.vo.Modules;
+		import mx.modules.Module;
+		import com.adams.dt.event.PersonsEvent;
+		import mx.events.ResizeEvent;
+		import com.adams.dt.event.mainView.InitialCallEvent;
+		import com.adams.dt.event.PropertiespresetsEvent;
+		import com.adams.dt.event.generator.SequenceGenerator;
+		import mx.rpc.IResponder;
+		import com.adams.dt.event.ProjectsEvent;
+		import mx.binding.utils.BindingUtils;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.TasksEvent;
+		import mx.controls.Alert;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.event.mainView.AlternateEvent;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.mainView.ViewFactory;
+		import mx.controls.Button;
+		import mx.events.FlexEvent;
+		import mx.binding.utils.BindingUtils;
+		
+		import flash.events.MouseEvent;
+		
+		[Bindable]
+		private var viewFactory:ViewFactory = ViewFactory.getInstance(); 
+		
+		private static const LOGIN_COUNT:int = 4; 
+		[Bindable]
+		private var bgImgHeight:int;
+		private var tempId:String;
+		import com.adams.dt.event.StatusEvents
+		import mx.rpc.IResponder;
+		import mx.controls.Alert;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.Responder;
+		import com.universalmind.cairngorm.events.*;
+
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		[Bindable]
+		public var menuTextBind:String;
+		public var menuText:String;
+		public var localHistory:String=null;
+		private var startConsumer:Boolean;
+		public function loggedIn():void	{ 
+			stage.addEventListener(Event.CLOSING,appHeader.closingApplication, false, 0,true);
+			var profile:ArrayCollection = model.profilesCollection;
+			var sort:Sort = new Sort(); 
+            sort.fields = [ new SortField('moduleId') ];
+            model.getAllModules.sort = sort;
+            model.getAllModules.refresh();  
+            trace("model.getAllModules :"+model.getAllModules.length);
+			initScreen(filterCollection(model.getAllModules));
+			var taskevent:TasksEvent = new TasksEvent( TasksEvent.EVENT_GET_TASKS);
+			var projectEvent : PagingEvent = new PagingEvent(PagingEvent.EVENT_GET_PROJECT_COUNT);
+				//var projectEvent : ProjectsEvent = new ProjectsEvent(ProjectsEvent.EVENT_GET_PROJECTS); //old
+			var proppevent : PropertiespresetsEvent = new PropertiespresetsEvent(PropertiespresetsEvent.EVENT_GET_ALLPROPERTY);
+			var getAllpresetTemp:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_GETALL_PRESETTEMPLATE,handler);
+			var currentTaskEvent:TasksEvent = new TasksEvent( TasksEvent.CREATE_MAX_TASKSID);
+			var columnsEv:ColumnsEvent= new ColumnsEvent(ColumnsEvent.EVENT_GET_ALL_COLUMNS);
+			var reportEv:ReportEvent = new ReportEvent(ReportEvent.EVENT_GET_PROFILE_REPORTS);
+			reportEv.profileFk = model.person.defaultProfile;
+			var eventsArr:Array = [proppevent,getAllpresetTemp, projectEvent,taskevent,currentTaskEvent,reportEv,columnsEv]; 
+ 			var handler:IResponder = null;
+ 			 var loginSeq:SequenceGenerator = new SequenceGenerator(eventsArr,handler)
+  			loginSeq.dispatch();        
+  			
+  		 	/*  var proppLogevent : PropertiespresetsEvent = new PropertiespresetsEvent(PropertiespresetsEvent.EVENT_GET_CONTAINERLOGIN);
+  			proppLogevent.dispatch();  */  
+		}  
+		
+		private function filterCollection(ac:ArrayCollection):ArrayCollection{
+			ac.filterFunction = deDupe;
+			ac.refresh();
+			return ac;
+		}
+		
+		private var tempObj:Object = {};
+		private function deDupe(item:Object):Boolean {
+			var retVal:Boolean = false;
+			if (!tempObj.hasOwnProperty(item.moduleId)) {
+				tempObj[item.moduleId] = item;
+				retVal = true;
+			}
+			return retVal;
+		}
+		public function initScreen( modules:ArrayCollection ):void {
+			var compiledClasses:Array = [TodoList, NewProject, AdminView, Dashboard, History ];
+			var viewLength:int = modules.length;
+			bgImgHeight=(viewLength*48)+indicatorPanel.height+appHeader.height-54;
+			model.currentProfileIdPush = new String(model.person.defaultProfile);
+			model.clientCode = GetVOUtil.getProfileObject( model.person.defaultProfile ).profileCode;
+			model.currentUserProfileCode =  GetVOUtil.getProfileObject( model.person.defaultProfile ).profileCode;
+			startConsumer = false;
+			 trace("initScreen :"+modules.length);
+			for each(var mod:Modules in modules){
+				mod.moduleName == 'AdminView'? adminConsumerStart() : consumerStart();
+				viewFactory.addViewClass( mod.moduleName , mod.moduleClass);
+				var myContainer:DFMyContainer = new DFMyContainer();
+				myContainer.y = height;
+				myContainer.x = 0; 
+				myContainer.percentWidth = 100//mainCon.width//mod.moduleWidth;
+				myContainer.percentHeight = 100//mainCon.height;
+				myContainer.verticalScrollPolicy = 'off';
+				myContainer.horizontalScrollPolicy = 'off';
+				myContainer.name = mod.moduleName;
+				myContainer.addEventListener( FlexEvent.CREATION_COMPLETE, onCreationComplete );
+				myContainer.addEventListener( AlternateEvent.DO_ALTERNATE, onAlternateClick );
+				myContainer.addEventListener( InitialCallEvent.INITIAL_CALL, onInitialCall );
+				mainCon.addChild( myContainer );
+				var but:Button = new Button();
+				//but.width = 50;
+				but.height = 21;
+				but.setStyle( 'top', 3 );
+				but.setStyle( 'left', (modules.getItemIndex(mod)*38)+140 );
+				
+				but.name = mod.moduleName;
+				but.styleName = mod.moduleName;
+				but.toolTip = mod.moduleName;
+				but.addEventListener(MouseEvent.CLICK, onButtonClick );
+				buttonCon.addChild( but );
+				viewFactory.buttonObjects[ but.name ] = buttonCon.getChildAt( buttonCon.getChildIndex( but ) );
+			} 
+			trace("initScreen :"+Modules( modules.getItemAt( 0 ) ).moduleName);
+			Button( buttonCon.getChildByName( Modules( modules.getItemAt( 0 ) ).moduleName) ).dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+			if(model.currentUserProfileCode=="TRA" || model.currentUserProfileCode=="FAB" || model.currentUserProfileCode == "CLT"){
+				model.editForm = true;
+			}else{
+				model.editForm = false;
+			}
+		} 
+		
+		private function onCreationComplete( event:FlexEvent ):void {
+			
+		}
+		
+		private function onAlternateClick( event:AlternateEvent ):void {
+			 var index:int = mainCon.getChildIndex( DFMyContainer( event.currentTarget ) );
+			for( var i:int = 0; i < mainCon.numChildren; i++) {
+     			if( i != index ) {
+     				if( !DFMyContainer( mainCon.getChildAt( i ) ).showing ) {
+     					Button(buttonCon.getChildAt(i)).enabled = true;
+     					DFMyContainer( mainCon.getChildAt( i ) ).onClick();
+     					break;
+     				}
+     			}
+     		} 
+		}
+		
+		private function onButtonClick( event:MouseEvent ):void {
+			Button( event.currentTarget ).enabled = false;
+			var index:int = buttonCon.getChildIndex( Button( event.currentTarget ) );
+			DFMyContainer( mainCon.getChildAt( index ) ).onClick();
+			//MyContainer( mainCon.getChildAt( index ) ).headerButton.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+		}
+		
+		private function onInitialCall( event:InitialCallEvent ):void {
+			
+			/* Canvas(viewFactory.objClasses[ DFMyContainer(event.currentTarget).name ].buzCard).setStyle('right', buttonCon.numChildren*51+120); */
+			model.modelMainProjectView = "";
+			var propertyName:String = event.propertyName;
+			switch( propertyName ){
+				case "TodoList":
+				  onToDoClick( event.currentTarget.name );				 
+				break;	
+				case "MainProjectView":
+				  onMainProjectClick( event.currentTarget.name );				 
+				break;
+				case "NewProject":
+				 onNewProjectClick( event.currentTarget.name );				
+				break;
+				case "PendingProjectView":
+				  onPendingProjectClick( event.currentTarget.name );				 
+				break;
+				case "Archive":
+				   onArchiveClick( event.currentTarget.name );				  
+				break;
+				case "Search":
+					onSearchCheck( event.currentTarget.name );
+				break;
+				case "Report":		
+					onReportClick( event.currentTarget.name );	
+				break;
+				case "AdminView":
+					BindingUtils.bindProperty(viewFactory.objClasses['AdminView'],'adminMonitor',model,'modelAdminMonitorArrColl')
+				break;
+				case "Dashboard":		
+					onDashboardClick( event.currentTarget.name );	
+				break;
+				case "History":		
+					onHistoryClick( event.currentTarget.name );	
+				break;
+				default:
+				break;
+			}  
+			if(model.currentUserProfileCode!='ADM')
+				  adminMonitorName(event.currentTarget.name);
+		}
+		
+		// Methods required by the IResponder interface		
+	    public function result(data:Object):void {
+	      	var arrc : ArrayCollection = data.result as ArrayCollection;
+			model.modelAdminHistoryColl.list = arrc.list;
+			if(localHistory!=null)
+				viewFactory.objClasses[ localHistory ].setProvider( model.modelAdminHistoryColl );		
+	    }
+	    
+	    public function fault(data:Object):void {
+	    }
+		
+		private function onHistoryClick( id:String ):void {
+			localHistory = id; 		
+	 		var handler:IResponder = new Callbacks(result,fault);
+            //var eEvent:EventsEvent = new EventsEvent(EventsEvent.EVENT_GET_EVENTS,handler);
+            var eEvent:EventsEvent = new EventsEvent(EventsEvent.EVENT_GET_ALL_EVENTSS,handler);            	          
+		 	eEvent.dispatch(); 		
+	 		
+	 		if( viewFactory.objClasses[ id ].dpTask == null ) {
+				viewFactory.objClasses[ id ].setProvider( model.modelAdminHistoryColl );		
+			}
+			else{
+				viewFactory.objClasses[ id ].setProvider( model.modelAdminHistoryColl );		
+			}			
+			viewFactory.objClasses[ id ].viewstackHistory.selectedIndex = 0;
+		}
+		
+		private function onToDoClick( id:String ):void {
+			
+		}
+		 
+		private function onNewProjectClick( id:String ):void {
+			if( model.currentProjectFiles.length > 0 ) {
+        		model.currentProjectFiles = new ArrayCollection();
+        	}
+		}
+		
+		private function onPendingProjectClick( id:String ):void {
+			if( viewFactory.objClasses[ id ].domainProvider == null ) {
+				viewFactory.objClasses[ id ].globalSet( model.domainCollection1 );
+			}
+		}
+		
+		private function onMainProjectClick( id:String ):void {
+			model.showFileContainer = false;
+			viewFactory.objClasses[ id ].setSelectedIndex( model.currentProjects, 0 );
+			model.propertiespresetsCollection.refresh();
+		}
+		
+		private function onArchiveClick( id:String ):void {
+			if( viewFactory.objClasses[ id ].domainProvider == null ) {
+				viewFactory.objClasses[ id ].getDomains( model.domainCollection1 );
+			}
+		}
+		
+		private function onSearchCheck( id:String ) :void { 
+			if( viewFactory.objClasses[ id ].searchTool._grid.dataProvider.length == 0 ) {
+				viewFactory.objClasses[ id ].searchTool.isChartVisible = false;
+				var report:Reports = model.tabsCollection.getItemAt( 0 ) as Reports;
+				viewFactory.objClasses[ id ].searchTool.label = report.reportName;
+				viewFactory.objClasses[ id ].searchTool.property = report.fieldArray;
+				viewFactory.objClasses[ id ].searchTool.header = report.booleanArray;
+				viewFactory.objClasses[ id ].searchTool.gridColumns = report.headerArray;
+				viewFactory.objClasses[ id ].searchTool.projectStatus = report.projectStatus;
+				viewFactory.objClasses[ id ].searchTool.maketableProvider( model.projectsCollection );
+			} 
+		}
+		
+		private function onReportClick( id:String ):void {
+			if( !viewFactory.objClasses[ id ].initLoad )
+				viewFactory.objClasses[ id ].getConfig(); 
+		}
+		
+		private function onDashboardClick( id:String ):void {
+			
+		}
+		
+		private function onResize( event:ResizeEvent ):void {
+			/* for( var i:int = 0; i < mainCon.numChildren; i ++ ) {
+				if( mainCon.getChildAt( i ) is MyContainer ) {
+					if( MyContainer( mainCon.getChildAt( i ) ).showing ) {
+						mainCon.getChildAt( i ).x = mainCon.width - 0;
+						mainCon.getChildAt( i ).width = mainCon.width; 
+					}
+				}
+			} */
+		}
+		private function consumerStart():void {					
+			if(!startConsumer){
+				var consumer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_CHAT_CONSUMER );				
+				consumer.dispatch();
+				startConsumer = true;
+			}			
+		}	
+		private function adminConsumerStart():void {
+			var eventconsumer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_CONSU_ADMIN);				
+			CairngormEventDispatcher.getInstance().dispatchEvent( eventconsumer );	 
+		}
+		
+		private function adminMonitorName( id:String ):void 	{			
+			model.modelMainProjectView = id;
+			var eventproducer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_PRODU_ADMIN);				
+			eventproducer.adminmonitorscreen = id;
+			CairngormEventDispatcher.getInstance().dispatchEvent( eventproducer );	
+		}
+		
+		private function doDrag(e:MouseEvent):void {
+				stage.nativeWindow.startMove();
+		}
+		
+		public function onResizeCommand(event:MouseEvent):void{
+    		stage.nativeWindow.startResize(NativeWindowResize.BOTTOM_RIGHT);
+    	}
+	]]>
+</mx:Script>
+		<!--Background Color and shadow-->
+		<mx:Canvas id="bgImg"   dropShadowEnabled="true" filters="{[new DropShadowFilter(0,90,0x000000,.3,1,1)]}"
+					styleName="bgMain"
+					 borderStyle="solid"  borderColor="#555555"
+					top="0" left="0" right="0" bottom="2"			
+					verticalScrollPolicy="off"
+					horizontalScrollPolicy="off" />
+		
+		<!--File download Indicator Display-->
+		<mx:VBox bottom="3" id="indicatorPanel" right="40" top="15" >
+			<mx:HBox visible="{model.downloadFileNumbers||model.uploadFileNumbers}"
+				includeInLayout="{model.downloadFileNumbers||model.uploadFileNumbers}"
+				 id="indicatPanel" verticalScrollPolicy="off" horizontalScrollPolicy="off"
+				  width="47" height="48" paddingTop="0" backgroundColor="#2f5955" horizontalAlign="center" verticalAlign="middle">
+				<mx:VBox  visible="{model.downloadFileNumbers}"
+				includeInLayout="{model.downloadFileNumbers}"
+				 id="downPanel" height="100%" >
+					<mx:Button styleName="downloadIcon"/>
+					<mx:Label id="downloadTxt" textAlign="center" text="{model.downloadFileNumbers}"/>	
+				</mx:VBox>
+				<mx:VBox visible="{model.uploadFileNumbers}"
+				includeInLayout="{model.uploadFileNumbers}" 
+					id="upPanel"  height="100%">
+					<mx:Button styleName="uploadIcon"/>
+					<mx:Label id="uploadTxt" textAlign="center" text="{model.uploadFileNumbers}"/>	
+				</mx:VBox>
+			</mx:HBox> 
+		</mx:VBox>	
+		
+		<!--MAIN Container to load all the modules-->
+		<mx:Canvas id="mainCon"   top="42" left="0" bottom="10" right="0" 
+			 verticalScrollPolicy="off" width="100%" height="100%" horizontalScrollPolicy="off" resize="onResize( event )" />
+			 
+		<!--Draging  Header Panel-->
+		<mx:Canvas mouseDown="doDrag(event)" left="1" right="1" width="100%" height="40" styleName="appHeaderBg" >	
+			<mx:VRule styleName="grayVrule"  height="28" verticalCenter="0" left="125"/>	
+			<!--MENU BUTTONS-->
+			<mx:Canvas id="buttonCon" width="100%" verticalCenter="0" horizontalScrollPolicy="off" />
+			
+			<!--SETTINGS Button-->
+			<mx:Button verticalCenter="0"
+			styleName="settingsBTN"
+			id="localeBTN"
+			click="model.settingsPanelVisible=true"
+			top="5" right="55"/>
+			
+			<mx:VRule styleName="grayVrule"  height="28" verticalCenter="0" right="45"/>
+			
+			<!--Application Controls-->	
+			<view:AppHeader id="appHeader"  right="0" top="0" width="100%" verticalCenter="0" />
+		</mx:Canvas>	
+		
+		<!--Settings Panel-->
+		<view:SettingsPanel id="settingsCon" includeInLayout="{model.settingsPanelVisible}" width="380" height="300" 
+			visible="{model.settingsPanelVisible}" top="{localeBTN.y+localeBTN.height}" right="55" />
+			
+		<!--Resize Button -->	
+		<mx:Button  styleName="resizeBtn" mouseDown="onResizeCommand(event)" bottom="3" right="1"/>	
+</mx:Canvas>

@@ -1,0 +1,33 @@
+<data>
+  <num>5</num>
+  <row>
+    <pk_task>5</pk_task>
+    <imagename>image1</imagename>
+    <imagesize>500Mb</imagesize>
+    <status>1</status>
+  </row>
+  <row>
+    <pk_task>5</pk_task>
+    <imagename>image2</imagename>
+    <imagesize>500Mb</imagesize>
+    <status>1</status>
+  </row>
+  <row>
+    <pk_task>5</pk_task>
+    <imagename>image3</imagename>
+    <imagesize>500Mb</imagesize>
+    <status>2</status>
+  </row>
+  <row>
+    <pk_task>5</pk_task>
+    <imagename>image4</imagename>
+    <imagesize>500Mb</imagesize>
+    <status>2</status>
+  </row>
+  <row>
+    <pk_task>5</pk_task>
+    <imagename>image5</imagename>
+    <imagesize>500Mb</imagesize>
+    <status>2</status>
+  </row>
+</data>

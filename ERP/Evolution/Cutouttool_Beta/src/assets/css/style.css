@@ -1,0 +1,72 @@
+/* CSS file */
+.dgstyle {
+   backgroundAlpha: 0;
+   alternatingItemColors: #CCCCCC, #FFFFFF;
+   headerColors: #7D6746, #7D6746;
+   horizontalGridLines: true;
+   letterSpacing: 1;
+   horizontalGridLineColor: #999999;
+   verticalGridLines: false;
+   borderThickness: 0;
+   dropShadowEnabled: false;
+	headerStyleName: dataGridHeader;
+	selectionColor: #BDB7AC;
+	rollOverColor: #969188;
+	verticalScrollBarStyleName: dataGridVerticalScrollBar;
+	theme-color: #EAE596;
+	fontFamily: Verdana;
+	fontSize: 11;
+	fontWeight: bold;
+	color: #233032;
+	textRollOverColor: #2A3031;
+	disabledColor: #263030;
+	textSelectedColor: #293132;
+}
+.dataGridHeader
+{
+	fontWeight: bold;
+}
+.dataGridVerticalScrollBar
+{
+	trackColors: #EAE596, #EAE596;
+	fillAlphas: 1.0, 1.0;
+	fillColors: #FFFFFF, #ECF375;
+	upArrowSkin: Embed(source='assets/Box.swf', symbol='UpArrow');
+	downArrowSkin: Embed(source='assets/Box.swf', symbol='DownArrow');
+	trackSkin: Embed(source='assets/Box.swf', symbol='ThumbBar');
+	thumbSkin: Embed(source='assets/Box.swf', symbol='Thumb');
+}
+
+.removeBtn
+{
+	disabledSkin: Embed(source='assets/Box.swf#removeBtnUp'); 
+	overSkin: Embed(source='assets/Box.swf#removeBtnDown');
+	upSkin: Embed(source='assets/Box.swf#removeBtnUp');
+	downSkin: Embed(source='assets/Box.swf#removeBtnUp');
+}
+.addBtn
+{
+	disabledSkin: Embed(source='assets/Box.swf#addBtnUp');
+	overSkin: Embed(source='assets/Box.swf#addBtnDown');
+	upSkin: Embed(source='assets/Box.swf#addBtnUp');
+	downSkin: Embed(source='assets/Box.swf#addBtnUp');
+}
+.uploadBtn
+{
+	disabledSkin: Embed(source='assets/Box.swf#uploadBtnDisable');
+	overSkin: Embed(source='assets/Box.swf#uploadBtnOver');
+	upSkin: Embed(source='assets/Box.swf#uploadBtnUp');
+	downSkin: Embed(source='assets/Box.swf#uploadBtnDown');
+}
+.cancelBtn
+{
+	disabledSkin: Embed(source='assets/Box.swf#cancelBtnDisable');
+	overSkin: Embed(source='assets/Box.swf#cancelBtnOver');
+	upSkin: Embed(source='assets/Box.swf#cancelBtnUp');
+	downSkin: Embed(source='assets/Box.swf#cancelBtnUp');
+}
+.preloaderBtn
+{
+	disabledSkin: Embed(source='assets/Box.swf#preloaderDisable');
+	selectedDisabledSkin: Embed(source='assets/Box.swf#preloaderDisableSelected');
+}

@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	       creationComplete="updateProperties()" creationCompleteEffect="{ mx.effects.Fade }" horizontalScrollPolicy="off"
+	       width="98%" height="100%" xmlns:components="com.adams.dt.view.components.*" verticalGap="0">
+	<mx:Metadata>
+		[Event(name="mapDeparture", type="com.adams.dt.event.departure.DepartureMapEvent")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+			import mx.events.CloseEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.adams.dt.event.PropertiespjEvent;
+			import mx.events.ListEvent;
+			import mx.utils.StringUtil;
+			import mx.effects.Fade;
+			import com.adams.dt.event.departure.DepartureMapEvent;
+			import com.adams.dt.view.components.InformationTool;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.view.components.NewPersonTemplate;
+			import mx.controls.Alert;
+			import mx.controls.RadioButton;
+			import com.adams.dt.model.vo.Companies;
+			import com.adams.dt.model.vo.Projects;
+			import mx.rpc.events.FaultEvent;
+			import com.adams.dt.model.vo.Teamlines;
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.Persons;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Propertiespj;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.ValidationResultEvent;
+			
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private var TNT_urlStr:String = "http://www.tnt.fr/public/suivi_colis/recherche/visubontransport.do?radiochoixrecherche=BT&bonTransport=";
+		private var DHL_urlStr1:String = "http://www.dhl.fr/publish/fr/fr/eshipping/track.high.html?pageToInclude=RESULTS&AWB=";
+		private var DHL_urlStr2:String = "&type=fasttrack"; 
+		private	var url_bordereau:String = new String();
+
+		
+		private var _projectProperty:ArrayCollection;
+        [Bindable]
+        public function get projectProperty ():ArrayCollection {
+			return _projectProperty;
+		}
+		public function set projectProperty ( value:ArrayCollection ):void {
+			_projectProperty = value;
+		}		
+		/**
+	 	* DIADEM db purpose operator edit
+	 	 * Only LancementLivration (Bon a graver) state visible in OPE
+	 	*/	
+		private var _visibleOperator:Boolean;
+        [Bindable]
+        public function get visibleOperator ():Boolean {
+			return _visibleOperator;
+		}
+		public function set visibleOperator ( value:Boolean ):void {
+			_visibleOperator = value;
+		}
+		
+		/**
+		 * create the propertypj values based on the filed present in the screen 
+		 */
+		public function getPropertiespjSet():ArrayCollection{
+			var arrC:ArrayCollection = new ArrayCollection();
+			for (var i:int=0; i<projectProperty.length;i++){				
+				var item:Propertiespresets = Propertiespresets(projectProperty.getItemAt(i));
+				var propertySets:Propertiespj = new Propertiespj();
+				if(hasOwnProperty("text_"+item.fieldName)){						
+					propertySets = checkItemExist(item);
+					propertySets.projectFk = model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["text_"+item.fieldName].text;	
+					arrC.addItem(propertySets);	
+				}
+				if(hasOwnProperty("date_"+item.fieldName)){						
+					propertySets = checkItemExist(item);
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					if(validate(this["date_"+item.fieldName])){
+					propertySets.fieldValue = this["date_"+item.fieldName].text;
+					}else{
+						this["date_"+item.fieldName].text ='';
+					}
+					arrC.addItem(propertySets);	
+				}
+				if(this.hasOwnProperty("popup_"+item.fieldName)){				
+					propertySets = checkItemExist(item); 
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["popup_"+item.fieldName].selectedIndex;
+					arrC.addItem(propertySets);	
+				} 				
+				if ( this.hasOwnProperty( "delivery_"+item.fieldName ) ){ 
+					propertySets = checkItemExist( item );
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this["delivery_"+item.fieldName].selectedIndices.toString();
+					arrC.addItem( propertySets ); 
+				}
+				if( this.hasOwnProperty( "checkbox_" + item.fieldName ) ) {
+					propertySets = checkItemExist( item );
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this[ "checkbox_" + item.fieldName ].selected;
+					arrC.addItem( propertySets );	
+				}  
+			}
+			return arrC;			
+		} 
+		/**
+		 * Check the property existence on propertiespj
+		 * IF EXIST return the corresponding object
+		 * ELSE create new propertiesPj object
+		 */
+		public function checkItemExist(item:Propertiespresets):Propertiespj{
+			for (var i:int=0; i<model.currentProjects.propertiespjSet.length;i++){
+				var chekProperty:Propertiespj = model.currentProjects.propertiespjSet.getItemAt(i) as Propertiespj;
+					if(chekProperty.propertyPreset.propertyPresetId == item.propertyPresetId ){
+							return chekProperty;
+					}
+			}
+			return new Propertiespj();
+		}
+		/**
+		 * update the project property value
+		 * set the component visibilty based on propertypresetTemplate values
+		 * set the edit rights based on the profile
+		 */
+		public function updateProperties():void { 					
+			if( visibleOperator ) {
+				if( model.currentUserProfileCode == "OPE" && model.currentProjects.projectStatusFK != ProjectStatus.STANDBY 
+					&& model.currentProjects.projectStatusFK != ProjectStatus.ABORTED 
+					&& !model.currentProjects.projectDateEnd ) {
+					model.editForm = true;
+				}	
+			}	
+				
+			model.updatedPresetId = [];
+			model.deportChange = false;
+			for (var i:int=0; i<projectProperty.length;i++){				
+					var item:Propertiespresets = Propertiespresets(projectProperty.getItemAt(i));
+					var visible:Proppresetstemplates = checkTemplate(item);
+					if(this.hasOwnProperty("label_"+item.fieldName)&&this["label_"+item.fieldName]!=null){
+						if(visible!=null){
+							if(this["label_"+item.fieldName] is Label){
+								this["label_"+item.fieldName].text = visible.fieldLabel;;
+							}else{					
+								this["label_"+item.fieldName].label = visible.fieldLabel;
+							}
+							this["label_"+item.fieldName].visible = true;
+						}else{
+							this["label_"+item.fieldName].visible = false;
+						}
+					} 
+					if( this.hasOwnProperty( "checkbox_" + item.fieldName ) && ( this[ "checkbox_" + item.fieldName ] ) ) {
+						if(visible!=null){
+							var selectedValue:String = getPropertyValue( item.propertyPresetId );
+							this[ "checkbox_" + item.fieldName ].visible = true;
+							this[ "checkbox_" + item.fieldName ].label = visible.fieldOptionsValue;
+							if( selectedValue == 'true' ) {
+								this[ "checkbox_" + item.fieldName ].selected = true;
+							}		
+							else {
+								this[ "checkbox_" + item.fieldName ].selected = false;
+							}	
+							if( !model.editForm ) {
+									if( this[ "checkbox_" + item.fieldName ] is CheckBox ) {
+										this[ "checkbox_" + item.fieldName ].enabled = false;
+									}
+									else {
+										this[ "checkbox_" + item.fieldName ].enabled = true;									
+									}
+							}  
+						}
+						else {
+							this[ "checkbox_" + item.fieldName ].visible = false;
+						}
+					}
+					if(this.hasOwnProperty("popup_"+item.fieldName)&&this["popup_"+item.fieldName]!=null){
+						if(visible!=null){
+							var popStr:String = String(visible.fieldOptionsValue);
+							var popArr:Array = popStr.split(",");
+							var value:String = getPropertyValue(item.propertyPresetId);
+							this["popup_"+item.fieldName].name = item.propertyPresetId;
+							this["popup_"+item.fieldName].dataProvider = popArr;
+							this["popup_"+item.fieldName].visible = true;			
+							if(value==''||value==null){
+								this["popup_"+item.fieldName].selectedIndex = (item.fieldDefaultValue!=null)?item.fieldDefaultValue:0;
+								if(this["popup_"+item.fieldName] is RadioGropus){
+									this["popup_"+item.fieldName].selectedIndex = -1;
+								}
+								else {
+		                            ComboBox(this["popup_"+item.fieldName]).selectedIndex = Number(value);
+								}
+							}
+							else{
+								this[ "popup_" + item.fieldName ].selectedIndex = Number( value );
+							}
+							if( !model.editForm ) {
+								if( this[ "popup_" + item.fieldName ] is RadioGropus ) {
+								}
+								else {
+									this[ "popup_" + item.fieldName ].enabled  = false;
+								}
+							}
+							else {
+								if( this[ "popup_" + item.fieldName ] is RadioGropus ) {
+								}
+								else {
+									this[ "popup_" + item.fieldName ].enabled = true;
+								}
+							}
+							this[ "popup_" + item.fieldName ].visible = true;
+						}
+						else {
+							this[ "popup_" + item.fieldName ].visible = false;
+						}
+						this[ "popup_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+						this[ "popup_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true);
+					} 
+					if( hasOwnProperty( "text_"+item.fieldName ) && this[ "text_" + item.fieldName ] != null ) {	
+						if( visible != null ) {
+							var propvalue:String = getPropertyValue(item.propertyPresetId);	
+							this[ "text_"+item.fieldName ].name = item.propertyPresetId;			
+							if( propvalue == '' ) {
+								this["text_"+item.fieldName].text =(item.fieldDefaultValue!=null)?item.fieldDefaultValue:'';
+							}
+							else {		
+								this["text_"+item.fieldName].text = propvalue;
+							}
+							if( !model.editForm ) {
+								this["text_"+item.fieldName].styleName = 'disabledText';
+								this["text_"+item.fieldName].enabled = false;
+							}
+							else {
+								/* if( alternateBoolean ) { */
+									this[ "text_"+item.fieldName ].styleName = 'TextArea';
+									this[ "text_"+item.fieldName ].enabled = true;
+								/* }
+								else {
+									this[ "text_"+item.fieldName ].styleName = 'disabledText';
+									this[ "text_"+item.fieldName ].enabled = false;
+								} */
+							}
+							this[ "text_"+item.fieldName ].visible = true;
+						}
+						else {
+							this[ "text_"+item.fieldName ].visible = false;
+						}
+						this[ "text_"+item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+						this[ "text_"+item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true );
+					}
+					if( hasOwnProperty( "date_"+item.fieldName ) && this[ "date_"+item.fieldName ] != null ) {	
+						this[ "date_"+item.fieldName ].name = item.propertyPresetId;		
+						if( visible != null ) {
+							var propvalue:String = getPropertyValue(item.propertyPresetId);
+							if(propvalue=='' || propvalue==null){			
+								DateField(this["date_"+item.fieldName]).text='';
+							}else{
+								var date:Date = getDate(propvalue);	
+								DateField(this["date_"+item.fieldName]).data = date;
+							}
+							if( !model.editForm ) {									
+								DateField( this[ "date_" + item.fieldName ] ).enabled = false;
+								DateField( this[ "date_" + item.fieldName ] ).styleName = "disabledDateField"; 
+							}
+							else {
+								DateField( this[ "date_" + item.fieldName ] ).enabled = true;
+								DateField( this[ "date_" + item.fieldName ] ).editable = true;
+								DateField( this[ "date_" + item.fieldName ] ).styleName = "DateField"; 
+							}
+							DateField( this[ "date_" + item.fieldName ] ).visible = true;
+						}
+						else {
+							DateField( this[ "date_" + item.fieldName ] ).visible = false;
+						}
+						this[ "date_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+						this[ "date_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true);
+					}
+					if( this.hasOwnProperty("delivery_"+item.fieldName) && this["delivery_"+item.fieldName] != null ) {
+						if( visible != null ){
+							var str:String = getPropertyValue( item.propertyPresetId );
+							if( str != '' )
+								this["delivery_"+item.fieldName].selectedIndices = str.split(",");
+							else	
+								this["delivery_"+item.fieldName].selectedIndices = [];
+							if( !model.editForm ) 
+								this["delivery_"+item.fieldName].isItEditing = false;
+							else
+								this["delivery_"+item.fieldName].isItEditing = true;		
+						}
+					}	
+				}
+			}
+			/**
+			 * check the property existence in Proppresetstemplates
+			 */
+			public function checkTemplate(preset:Propertiespresets):Proppresetstemplates{
+				if(preset!=null){
+					for each(var item:Proppresetstemplates in model.currentProjects.presetTemplateFK.propertiesPresetSet){
+						if(preset.propertyPresetId == item.propertypresetFK){
+							return item
+						} 
+					}
+				}
+				return null;
+			}
+			/**
+			 * create the date object from date string
+			 */ 		
+			public function getDate(str:String):Date{
+				var arr:Array = str.split("/");
+				var date:Date = new Date(arr[2],Number(arr[1])-1,arr[0]);
+				return date;						
+			}
+			/**
+			 * get the property value from projects
+			 */ 
+			public function getPropertyValue(id:int):String{
+				for each(var item:Propertiespj in model.currentProjects.propertiespjSet){
+					if(item.propertyPreset.propertyPresetId == id){
+						return item.fieldValue;
+					}
+					
+				}
+				return '';
+			}
+			/**
+			 * get the changed field name and property to update events
+			 * IF changes made by client send message with updated property to traffic
+			 * refer propertypjcommand for sending message
+			 */ 
+			private function onFieldChange(event:FocusEvent):void{
+				model.deportChange = true;
+				if(model.updatedPresetId.indexOf(event.currentTarget.name)==-1){
+					model.updatedPresetId.push(event.currentTarget.name);
+					getChangedFields(event.currentTarget.name)
+				}
+			}
+			/**
+			 * @param id:String, input propertyPj id
+			 * get changed field name and property
+			 */
+			private function getChangedFields(id:String):void{
+				var object:Object = new Object();
+				var propertiesPj:Propertiespj = Utils.getPropertyPj(Number(id),model.currentProjects.propertiespjSet)
+				var propertyPresetTemplate:Proppresetstemplates = Utils.getPropertyPresetTemp(Number(id),model.currentProjects.presetTemplateFK.propertiesPresetSet)
+				if(propertiesPj!=null&&propertyPresetTemplate!=null){
+					object["propertiesPj"]=propertiesPj;
+					object["propertyPresetTemplate"]=propertyPresetTemplate;
+					model.updatedFieldCollection.addItem(object);
+				}
+			}
+			
+          	private function resetForm():void{ 
+          	}
+          	
+          	private function openPeopleSelection( str:String ):void {
+          		model.personSelectionVersion = str;
+				var perWindow:NewPersonTemplate = new NewPersonTemplate();
+				PopUpManager.addPopUp( perWindow, this );
+			    PopUpManager.centerPopUp( perWindow );
+          	} 
+			
+			private function openInfoSelection( str:String ):void {
+				var infoWindow:InformationTool = new InformationTool();
+				infoWindow.selectedProfile = str;
+				PopUpManager.addPopUp( infoWindow, this );
+			    PopUpManager.centerPopUp( infoWindow );
+			}
+			
+			private function getinfoVisible( editFormValue:Boolean, id:int ):Boolean {
+				var returnValue:Boolean;
+				if( ( editFormValue ) && ( id != 0 ) ) {
+					returnValue = true;
+				}
+				return returnValue;
+			}
+			
+			private function getUnselectVisible( id:int, editValue:Boolean ):Boolean {
+				var returnValue:Boolean;
+				if( id != 0 && editValue ) {
+					returnValue = true;
+				}
+				return returnValue;
+			}
+			
+			private var vResult:ValidationResultEvent;
+			private function validate(obj:Object):Boolean{
+				dateVal.source =obj;
+		 		vResult = dateVal.validate();
+                if (vResult.type==ValidationResultEvent.VALID) {
+                	return true;
+                }
+                return false;
+   			}
+   			
+   			private function onDepartFieldsChange( event:Event ):void {
+				var mapEvent:DepartureMapEvent = new DepartureMapEvent( DepartureMapEvent.MAP_DEPARTURE );
+				mapEvent.changedField = event.currentTarget.id;
+				dispatchEvent( mapEvent );
+			}
+			
+			private function changeInputText( item:Persons ):String {
+		    	var curPersonName:String;
+		    	if( item.personId != 0 )
+		    		curPersonName = GetVOUtil.getCompanyObject( item.companyFk ).companyname + '-' + item.personLastname + ', '+ item.personFirstname;
+		    	else
+		    		curPersonName = '';	
+		    	return curPersonName;	
+		    }
+ 			private function BordereauTextChange(evt:Event):void{
+ 	 	   		BordereauStatusChange();		
+ 			}
+ 			private function departureSupplierChange(evt:ListEvent):void{
+ 				BordereauStatusChange();	
+ 			} 			
+ 			
+		    private function BordereauStatusChange():void {
+	 	    	if( popup_departure_supplier.selectedItem == "TNT" && StringUtil.trim(text_departure_receipt.text)!='' ) {
+					Bordereau_bt.visible=true;
+					url_bordereau = TNT_urlStr + replaceHexadegit( text_departure_receipt.text );
+				}
+				else if( popup_departure_supplier.selectedItem == " DHL" && StringUtil.trim(text_departure_receipt.text)!=''  ) {
+					Bordereau_bt.visible=true;
+					url_bordereau = DHL_urlStr1 + StringUtil.trim( text_departure_receipt.text ) + DHL_urlStr2;
+				}
+				else {
+					Bordereau_bt.visible=false;
+				} 
+		    }
+		    //	Bordereau Button clicked
+	   		private function onBordereau_Click():void {
+				
+			 	var urlRequest:URLRequest = new URLRequest( url_bordereau );
+		        navigateToURL( urlRequest, "_blank" ); 
+			}
+			
+			private function replaceHexadegit( str:String ):String {
+				str=StringUtil.trim( str );
+				var hexaLength:Number = new Number();
+				var hexStr:String = new String();
+				if( str != "" ) {
+					hexaLength=16-str.length;
+				}
+				else {
+					hexaLength = 16;
+				}
+				for( var i:Number = 0; i < hexaLength; i++ ) {
+					hexStr += '0';
+				}
+				hexStr.concat( str );
+				return hexStr.concat( str );
+			}
+   			
+   			private var unselectPersonID:int;
+		private var unselectPersonProfileID:int;
+		private var unselectPropertyPj:String;
+		private function unSelectPerson( person:Persons, profile:String, propString:String ):void {
+			unselectPersonID = person.personId;
+			unselectPersonProfileID = Utils.getProfileId( profile );
+			unselectPropertyPj = propString;
+			Alert.show( 'Do you want to unselect this person?', 'Confirmation', Alert.YES|Alert.NO, this, onConfirmation );
+		}
+		
+		private function onConfirmation( event:CloseEvent ):void {
+			if( event.detail == Alert.YES ) {
+				var eventsArray:Array = [];
+				
+				var deleteTeamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_DELETE_TEAMLINE_UNSELECTPERSON );
+				deleteTeamlineEvent.teamline = Utils.getTeamlineOnPersonFK( unselectPersonID, unselectPersonProfileID );
+				eventsArray.push( deleteTeamlineEvent );
+				
+				var handler:IResponder = new Callbacks( getTeamLineProjectResult );
+				var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE, handler );
+				teamTempEvt.projectId = model.currentProjects.projectId; 
+				eventsArray.push( teamTempEvt );
+				
+				var sequence:SequenceGenerator = new SequenceGenerator( eventsArray );
+		        sequence.dispatch();
+			}
+		}
+		
+		private function getTeamLineProjectResult( rpcEvent:Object ):void {
+			var propPj:Propertiespj = Utils.propertyPjForFieldName( unselectPropertyPj, model.currentProjects.propertiespjSet );
+			propPj.fieldValue = '';
+			var updatePropertyPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ );
+			updatePropertyPjEvent.propertiespj = propPj;
+			updatePropertyPjEvent.dispatch();
+		}
+   			
+        ]]>
+	</mx:Script>
+	<mx:DateValidator id="dateVal" property="text" inputFormat="dd/mm/yyyy" />
+	<mx:HBox width="100%">
+	<mx:Form id="detailForm">
+		<mx:FormHeading label="Detail" styleName="subHeader" fontWeight="normal"/>
+		<mx:FormItem label="Date of Departure" id="label_departure_date_start">
+			<mx:DateField id="date_departure_date_start" restrict="0-9//" monthNames="{ model.monthNames }" formatString="DD/MM/YYYY"/>
+		</mx:FormItem>
+		<mx:FormItem label="Via">
+			<mx:ComboBox id="popup_departure_supplier" change="departureSupplierChange(event)" />
+		</mx:FormItem>
+		<mx:FormItem label="Date of Arrival" id="label_departure_date_end">
+			<mx:DateField id="date_departure_date_end"  restrict="0-9//" monthNames="{ model.monthNames }" formatString="DD/MM/YYYY"/>
+		</mx:FormItem>
+		
+		<mx:FormItem id="label_departure_manager" label="Responsable">
+			<view:RadioGropus id="popup_departure_manager"
+										groupName="Sens d'impression"
+										numOfColumns="2"/>
+		</mx:FormItem>
+		<mx:FormItem id="label_departure_receipt">
+			<mx:TextInput id="text_departure_receipt" change="BordereauTextChange(event)" maxChars="16"/>
+			<mx:Button id="Bordereau_bt" width="20" height="20" visible="false" includeInLayout="{Bordereau_bt.visible}" styleName="courierStatusCheckIcon" click="onBordereau_Click()"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Delivery Address" id="label_deliverygroup" direction="vertical">
+			<!--<view:RadioGropus id="popup_deliverygroup" numOfColumns="1" />-->
+			<view:DeliveryGroup id="delivery_deliverygroup"/>
+			<mx:TextArea id="text_delivery_address" maxChars="250" />
+		</mx:FormItem>
+		
+	</mx:Form>
+	
+	
+    <mx:Form >
+    	<mx:FormHeading label="BAT" styleName="subHeader" fontWeight="normal" />
+		<mx:FormItem  id="label_bat_technician" label="Technician" >
+			<mx:Canvas id="formCon">
+				<mx:TextInput id="text_bat_technician" width="165" maxChars="250" editable="false"
+					          text="{ changeInputText( model.techPerson ) }"/>
+				<mx:Button styleName="closeButton" visible="{ getUnselectVisible( model.techPerson.personId, model.editForm ) }"	
+						  x="{ text_bat_technician.x + text_bat_technician.width - 15 }" y="{ text_bat_technician.y + 6 }" 
+						  buttonMode="true" useHandCursor="true" click="unSelectPerson( model.techPerson, 'BAT', 'bat_technician' )" 
+						  toolTip="unselect the person"/>
+				<mx:HBox x="{ text_bat_technician.x + text_bat_technician.width + 5 }">															          
+					<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" includeInLayout="{getinfoVisible( model.editForm, model.techPerson.personId)}" 
+							  	click="openInfoSelection('BAT')" mouseChildren="false" text="info" visible="{getinfoVisible( model.editForm, model.techPerson.personId)}" />	          
+					<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+							  	click="openPeopleSelection('BAT')" mouseChildren="false" text="select" visible="{model.editForm}" />
+				</mx:HBox>
+		</mx:Canvas>	
+		</mx:FormItem>
+		<mx:FormItem  id="label_bat_date" label="Date Bat">
+			<mx:DateField id="date_bat_date" restrict="0-9//"  monthNames="{ model.monthNames }" formatString="DD/MM/YYYY"/>
+		</mx:FormItem>
+	</mx:Form>
+	</mx:HBox>
+	<components:WindowShade label="Other detail" enableHeader="false" layout="horizontal" width="100%">
+		<mx:Form>
+			<mx:FormHeading label="Epreuve" styleName="subHeader" fontWeight="normal"/>
+			<mx:FormItem  id="label_approval" label="Approval">
+				<view:TextNumericStepper id="text_approval"
+						minimum="0"
+						maximum="40"
+						stepSize="1" 
+						width="65" change="onDepartFieldsChange( event )"/>
+			</mx:FormItem>						
+			<mx:FormItem id="label_support_speciaux" label="Support speciaux">
+				<mx:TextArea id="text_support_speciaux"  text="0" maxChars="250" change="onDepartFieldsChange( event )"/>									
+			</mx:FormItem>						
+			<mx:FormItem  id="label_epson" label="Epson">
+				<view:TextNumericStepper id="text_epson"
+				minimum="0"
+				maximum="40"
+				stepSize="1" 
+				width="65" change="onDepartFieldsChange( event )"/>
+			</mx:FormItem>						
+			<mx:FormItem  id="label_jeuxsepa_laser" label="Jeux Sépa. Laser">
+				<view:TextNumericStepper id="text_jeuxsepa_laser"
+				minimum="0"
+				maximum="40"
+				stepSize="1" 
+				width="65" change="onDepartFieldsChange( event )"/>
+			</mx:FormItem>						
+			<mx:FormItem  id="label_traceurhp" label="Traceur HP">
+				<view:TextNumericStepper id="text_traceurhp" 
+					minimum="0"
+					maximum="40"
+					stepSize="1"
+					width="65" change="onDepartFieldsChange( event )"/>
+			</mx:FormItem>						
+			<mx:FormItem  id="label_laser" label="Laser">
+				<view:TextNumericStepper id="text_laser"
+				minimum="0"
+				maximum="40"
+				stepSize="1" 
+				width="65" change="onDepartFieldsChange( event )"/>
+			</mx:FormItem>	
+			<mx:FormItem id="label_support" label="Support">
+				<mx:ComboBox id="popup_support" width="150"/>
+			</mx:FormItem>		
+		</mx:Form>					
+		<mx:Form>
+				<mx:FormHeading label="CD / DVD" styleName="subHeader" fontWeight="normal"/>
+				<mx:FormItem id="label_artpro">
+					<mx:CheckBox id="checkbox_artpro" change="onDepartFieldsChange( event )"/>
+				</mx:FormItem>
+				<mx:FormItem id="label_artpro_version" label="ArtPro version">
+				 	<mx:TextInput id="text_artpro_version" maxChars="250" width="56" change="onDepartFieldsChange( event )"/>
+				</mx:FormItem> 
+				<mx:FormItem id="label_illustrator">
+					<mx:CheckBox id="checkbox_illustrator" change="onDepartFieldsChange( event )"/>
+				</mx:FormItem>							
+				<mx:FormItem id="label_illustrator_version" label="Illustrator version">
+				 	<mx:TextInput id="text_illustrator_version" maxChars="250" width="56" change="onDepartFieldsChange( event )"/>
+				</mx:FormItem> 
+				<mx:FormItem id="label_pdf_hd">
+					<mx:CheckBox id="checkbox_pdf_hd" change="onDepartFieldsChange( event )"/>
+				</mx:FormItem>							
+			</mx:Form>
+	</components:WindowShade>	
+	<!-- Dec 23 sprint changes  -->
+				<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  -->
+			<!--<mx:HBox   styleName="innerBorder">
+				<mx:VBox horizontalAlign="center" paddingTop="10" verticalGap="0">
+					<mx:Label text="Epreuve" fontWeight="bold" fontSize="12"/>
+						<mx:Form>
+							<mx:FormItem  id="label_traceurhp" label="Traceur HP">
+								<view:TextNumericStepper id="text_traceurhp" 
+									minimum="0"
+									maximum="40"
+									stepSize="1"
+									width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_laser" label="Laser">
+								<view:TextNumericStepper id="text_laser"
+								minimum="0"
+								maximum="40"
+								stepSize="1" 
+								width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_jeuxsepa_laser" label="Jeux Sépa. Laser">
+								<view:TextNumericStepper id="text_jeuxsepa_laser"
+								minimum="0"
+								maximum="40"
+								stepSize="1" 
+								width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_epson" label="Epson">
+								<view:TextNumericStepper id="text_epson"
+								minimum="0"
+								maximum="40"
+								stepSize="1" 
+								width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_gmg" label="GMG">
+							<view:TextNumericStepper id="text_gmg" 
+								minimum="0"
+								maximum="40"
+								stepSize="1"
+								width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem  id="label_approval_support" label="Support(s)">
+								<view:TextNumericStepper id="text_approval_support"
+										minimum="0"
+										maximum="40"
+										stepSize="1" 
+										width="65" change="onDepartFieldsChange( event )"/>
+							</mx:FormItem>
+							<mx:FormItem>
+								<mx:TextInput id="text_approval_type" maxChars="250" change="onDepartFieldsChange( event )"/>									
+							</mx:FormItem>
+						</mx:Form>					
+					</mx:VBox>-->
+					
+					<!--<mx:VBox horizontalAlign="center" paddingTop="10" verticalGap="0">
+						<mx:Label text="CD / DVD" fontWeight="bold" fontSize="12"/>		
+							<mx:Form>
+								<mx:FormItem  id="label_artpro" label="Laser">
+									<view:TextNumericStepper id="text_artpro"
+									minimum="0"
+									maximum="40"
+									stepSize="1" 
+									width="65" change="onDepartFieldsChange( event )"/>
+								</mx:FormItem>
+								<mx:FormItem  id="label_artpro_version" label="Version">
+									<mx:ComboBox id="popup_artpro_version" 
+									width="67" change="onDepartFieldsChange( event )"/>
+								</mx:FormItem>
+								<mx:FormItem  id="label_illustrator" label="ILLUSTRATOR">
+									<view:TextNumericStepper id="text_illustrator"
+									minimum="0"
+									maximum="40"
+									stepSize="1" 
+									width="65" change="onDepartFieldsChange( event )"/>
+								</mx:FormItem>
+								<mx:FormItem  id="label_illustrator_version" label="VERSION">
+									<mx:ComboBox id="popup_illustrator_version" 
+										width="67" change="onDepartFieldsChange( event )"/>
+								</mx:FormItem>
+								<mx:FormItem  id="label_pdf_hd" label="PDF HD">
+									<view:TextNumericStepper id="text_pdf_hd"
+									minimum="0"
+									maximum="40"
+									stepSize="1" 
+									width="65" change="onDepartFieldsChange( event )"/>
+								</mx:FormItem>
+							</mx:Form>
+						</mx:VBox>
+					</mx:HBox>-->
+</mx:VBox>

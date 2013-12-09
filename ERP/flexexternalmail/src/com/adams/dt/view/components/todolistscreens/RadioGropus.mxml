@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%">
+	<mx:Metadata>
+		[Event(name="change", type="flash.events.Event")]
+	</mx:Metadata> 
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.ModelLocator;
+			import mx.events.FlexEvent;
+			import mx.controls.RadioButton;
+			private var _dataProvider:Array;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			/**
+			 * @param value:Array
+			 * set data provider to create radio buttons
+			 */
+			public function set dataProvider(value:Array):void{
+				_dataProvider = value;
+				createRadioGroup()
+			}
+			/**
+			 * get dataprovider
+			 */
+			public function get dataProvider():Array{
+				return _dataProvider;
+			}	
+			private var _groupName:String = "Radio Group";
+			/**
+			 * set groupname
+			 */
+			public function set groupName (value:String):void
+			{
+				_groupName = value;
+			}
+			/**
+			 * get groupname
+			 */
+			public function get groupName ():String
+			{
+				return _groupName;
+			}
+	
+			private var _numOfColumns:Number = 1;
+			/**
+			 * set number of columns
+			 * based on the columns it will arrange radio groups
+			 */
+			public function set numOfColumns (value:Number):void
+			{
+				_numOfColumns = value;
+			}
+			/**
+			 * get number of columns
+			 */
+			public function get numOfColumns ():Number
+			{
+				return _numOfColumns;
+			}
+	
+			private var _hGap:Number = 25;
+			/**
+			 * set the horizantal gap
+			 */
+			public function set hGap (value:Number):void
+			{
+				_hGap = value;
+			}
+			/**
+			 * get the horizantal gap
+			 */
+			public function get hGap ():Number
+			{
+				return _hGap;
+			}
+	
+			private var _vGap:Number = 50 ;
+			/**
+			 * set the vertical gap
+			 */
+			public function set vGap (value:Number):void
+			{
+				_vGap = value;
+			}
+			/**
+			 * get the vertical gap
+			 */
+			public function get vGap ():Number
+			{
+				return _vGap;
+			}
+			
+			
+			private var _selectedLabel:String;
+			/**
+			 * set the selected label
+			 */
+			public function set selectedLabel (value:String):void
+			{
+				_selectedLabel = value;
+			}
+			/**
+			 * get the selected label
+			 */
+			public function get selectedLabel ():String 
+			{
+				return _selectedLabel;
+			}
+			private var _prevRadio:DisplayObject;
+			private var imp:Boolean;
+			/**
+			 * create the radio groups using the dataprovider
+			 */
+			private function createRadioGroup():void{
+				this.removeAllChildren();
+				if(model.currentTasks!=null){				
+					/* if(model.currentTasks.workflowtemplateFK.profileObject.profileCode == "EPR"){
+						imp=true;
+					}else{
+						imp=false;
+					} */
+					imp=true;
+				}
+				var dataProvider_Len:int=dataProvider.length;
+				for(var i:Number=0;i<dataProvider_Len;i++){
+					var Radio:RadioButton=new RadioButton();
+					Radio.id = "radio_"+i;
+					Radio.name = "radio_"+i;
+					_children.push(Radio);
+					if(_prevRadio==null)_prevRadio = this; 
+					Radio.label=dataProvider[i];
+					Radio.groupName=groupName;
+					if(!model.editForm&&!imp){
+						Radio.enabled = false;
+					}else{
+						Radio.enabled = true;
+					}
+					Radio.setStyle("color","#B6B6B6");
+					Radio.addEventListener(MouseEvent.CLICK,updateSelectedItem,false,0,true);
+					Radio.addEventListener(FlexEvent.CREATION_COMPLETE,created,false,0,true);
+					Radio.x = (i % numOfColumns) * (_prevRadio.width + vGap);
+					Radio.y = Math.floor(i / numOfColumns) * (_prevRadio.height + hGap);
+					_prevRadio = addChild(Radio);
+					
+				}
+			}
+			private var _children:Array = [];
+			/**
+			 * deselect all radio component in this radio group
+			 */
+			public function unSelectAll():void{
+				for(var i:int=0;i<_children.length;i++){
+					_children[i].selected  = false;
+				}
+			}
+			/**
+			 * Set the selecteIndex for created radio button
+			 */
+			private function created(event:FlexEvent):void{
+				if(Number(RadioButton(event.currentTarget).id.split("_")[1]) == selectedIndex){
+					RadioButton(event.currentTarget).selected = true;
+				}
+			}
+			private var _selectedIndex:Number = NaN;
+			/**
+			 * Set the selecteIndex
+			 */
+			public function set selectedIndex (value:Number):void
+			{
+				_selectedIndex = value;
+				
+			}
+			/**
+			 * Get the selecteIndex
+			 */
+			public function get selectedIndex ():Number
+			{
+				return _selectedIndex;
+			}
+			/**
+			 * dispatch the change on changing the selectedItem 
+			 */
+			private function updateSelectedItem(event:Event):void{
+				selectedLabel = RadioButton(event.currentTarget).label;
+				if(RadioButton(event.currentTarget).selected && selectedIndex == Number(RadioButton(event.currentTarget).id.split("_")[1])){
+					RadioButton(event.currentTarget).selected =false;
+					selectedLabel ='';
+					selectedIndex = -1;
+				}else{
+					selectedIndex =  Number(RadioButton(event.currentTarget).id.split("_")[1]);
+				}
+				dispatchEvent(new Event("change"));
+			}
+			
+			
+		]]>
+	</mx:Script>
+</mx:Canvas>

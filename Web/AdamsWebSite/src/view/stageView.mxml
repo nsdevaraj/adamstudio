@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" layout="vertical"   
+	verticalCenter="0" horizontalCenter="0" styleName="transparentBackground"  
+	initialize="catalogs.send()"  xmlns:iframe="com.adams.IFrame.*">
+<mx:Script>
+	<![CDATA[
+		import flash.net.navigateToURL;
+		import mx.containers.HBox;
+		import mx.containers.Panel;
+		import mx.collections.ArrayCollection;
+		import mx.rpc.events.ResultEvent;
+		import mx.controls.Button;
+		import mx.controls.Label;
+		import mx.containers.ControlBar;
+		import mx.containers.TitleWindow;
+		import mx.controls.Image;
+		import mx.controls.Alert;
+		import mx.events.ListEvent;
+		import mx.events.ResizeEvent;
+		import mx.events.CloseEvent;
+		import mx.managers.PopUpManager;
+		import view.item; 
+		import mx.effects.easing.*;
+		[Bindable]
+		private var catalog:XML = new XML();  
+        private var img:Image;
+        private var detailPanel:TitleWindow; 
+		 
+        private function image_click(evt:CloseEvent):void {
+            PopUpManager.removePopUp(evt.currentTarget as TitleWindow);
+        } 
+        private var stg:TitleWindow = new TitleWindow();
+        private function launch_click(evt:MouseEvent):void {
+        	var navURL:String = myList.selectedItem.launch;
+        	var uReq:URLRequest = new URLRequest(navURL);
+        	navigateToURL(uReq,"_blank");
+        	 
+        }
+		 
+        private function image_resize(evt:ResizeEvent):void {
+            PopUpManager.centerPopUp(evt.currentTarget as TitleWindow);
+        } 
+        private function image_complete(evt:Event):void {
+            PopUpManager.centerPopUp(evt.currentTarget as TitleWindow);
+        }
+        private function resultHandler(evt:ResultEvent):void {
+           catalog= evt.result as XML;    
+           myList.dataProvider=catalog.product;
+        } 
+           private function prev():void {
+                var pos:int = myList.horizontalScrollPosition-1;
+                var min:int = 0;
+                var value:int = Math.max(min, pos);
+                myList.horizontalScrollPosition = value;
+            }
+
+            private function next():void {
+                var pos:int = myList.horizontalScrollPosition+1;
+                var max:int = myList.maxHorizontalScrollPosition;
+                var value:int = Math.min(pos, max);
+                myList.horizontalScrollPosition = value;
+            }
+       
+	]]>
+</mx:Script> 
+<mx:HTTPService id="catalogs" url="data.xml" resultFormat="e4x" result="resultHandler(event)"/>
+    <mx:WipeLeft id="wipeOut" duration="1000"/>
+    <mx:WipeLeft id="wipeIn" duration="1000"/>
+ 
+    <mx:Parallel id="image_removedEffect" >
+        <mx:Zoom />
+        <mx:Fade />
+    </mx:Parallel>
+    <mx:Text text="Showcase" styleName="introTitle" fontSize="24"/>
+<mx:HRule width="100%" />
+    <mx:VBox width="100%" height="100%" verticalGap="10" horizontalAlign="center" verticalAlign="middle">
+			<mx:HBox id="mBox" width="100%" height="150" horizontalAlign="center" verticalAlign="middle" >
+				<mx:Image source="{myList.selectedItem.image}" completeEffect="Fade" />
+				<mx:VBox >
+					<mx:Label text="{myList.selectedItem.name}" styleName="headerText" />
+					<mx:TextArea width="100%"   height="75" editable="false" selectable="false" 
+						htmlText="{myList.selectedItem.description}" />
+					<mx:Button styleName="launchBtn" buttonMode="true" click="launch_click(event)"/>
+				</mx:VBox>
+			</mx:HBox>
+			<mx:Canvas>
+					<mx:HBox id="myListBox" height="180" verticalAlign="middle" horizontalAlign="left" horizontalScrollPolicy="off" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"   >
+					<mx:Button buttonMode="true" styleName="prevBtn" click="prev()"/>
+						<mx:HorizontalList styleName="horizontalList" borderStyle="none" horizontalScrollPolicy="off"  
+							selectedIndex="0"  id="myList"  backgroundAlpha="0" columnCount="4" itemRenderer ="view.item" />
+      				<mx:Button buttonMode="true" styleName="nextBtn" click="next()"/> 
+					</mx:HBox>
+			</mx:Canvas>
+			<mx:Canvas width="100%" >
+				<mx:Label x="{(mBox.width/2)-(overLabel.width/2)}" id="overLabel" styleName="headerText" />	
+			</mx:Canvas>
+		</mx:VBox>	
+</mx:Module>

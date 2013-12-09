@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    ADOBE SYSTEMS INCORPORATED
+    Copyright 2008 Adobe Systems Incorporated
+    All Rights Reserved.
+
+    NOTICE: Adobe permits you to use, modify, and distribute this file
+    in accordance with the terms of the license agreement accompanying it.
+ 
+-->
+
+<!--- The default skin class for the volume bar of a Spark VideoPlayer component.  
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" alpha.disabled=".5"> 
+
+    <!-- host component -->
+    <fx:Metadata>
+        [HostComponent("com.packaging.controls.VolumeBar")]
+    </fx:Metadata>
+    
+    <fx:Script>
+        /* Define the skin elements that should not be colorized. */
+        static private const exclusions:Array = ["muteButton", "track", "thumb"];
+        override public function get colorizeExclusions():Array {return exclusions;}
+    </fx:Script>
+
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="open" />
+        <s:State name="disabled" />
+    </s:states>
+    
+    <s:PopUpAnchor id="popup" width="100%"  displayPopUp.normal="false" displayPopUp.open="true" includeIn="open"
+        left="0" right="0" top="0" bottom="0"  popUpPosition="{hostComponent.getStyle('popUpPosition')}"  itemDestructionPolicy="auto">
+        <s:Group id="dropDown" width="29"  height="64" horizontalCenter="0" symbolColor="0xffffff">
+        
+            <!-- dropshadow for the dropdown -->
+<!--            <s:Rect left="0" top="0" right="0" bottom="0">
+                <s:filters>
+                    <s:DropShadowFilter knockout="true" blurX="20" blurY="20" alpha="0.32" distance="11" angle="90" />   
+                </s:filters>    
+                <s:fill>    
+                    <s:SolidColor color="0x000000" />   
+                </s:fill>   
+            </s:Rect>-->
+            
+            <!-- background for the popup -->
+            <s:Rect left="0" right="0" top="0" bottom="0" blendMode="multiply" alpha="0.2">
+                <s:fill>
+					<s:SolidColor />
+                </s:fill>
+            </s:Rect>
+            
+            <s:Button id="track" horizontalCenter="0"  top="2" bottom="2"  
+                      skinClass="spark.skins.spark.mediaClasses.normal.VolumeBarTrackSkin" />
+            
+            <s:Button id="thumb" horizontalCenter="0" width="11" height="11"  
+                      skinClass="spark.skins.spark.mediaClasses.normal.VolumeBarThumbSkin" />
+        </s:Group>
+    </s:PopUpAnchor>
+        
+    <s:MuteButton id="muteButton" left="0" right="0" top="0" bottom="0" focusEnabled="false"
+              skinClass="assets.skins.audioSkins.MuteButtonSkin" />
+    
+</s:SparkSkin>

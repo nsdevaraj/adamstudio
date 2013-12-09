@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mediators="com.adams.pdf.view.mediators.*" 
+		xmlns:components="com.adams.pdf.view.components.*">	
+	<fx:Metadata>
+		[HostComponent("com.adams.pdf.view.mediators.MainViewMediator")]
+	</fx:Metadata>   
+	<s:states>
+		<!-- // State Begin -->
+		<s:State name='Login'/> 
+		<s:State name='Upload'/> 
+       <s:State name='PDFTool'/> 
+		<!-- State End -->  
+	</s:states> 
+	<!-- // View Begin -->
+	<mediators:LoginViewMediator id='login' skinClass='com.adams.pdf.view.LoginSkinView' homeState="{ currentState }" includeIn='Login' width='100%' height='100%'/>
+	<mediators:UploadToolViewMediator id='upload' skinClass='com.adams.pdf.view.UploadSkinView' homeState='{currentState}' includeIn='Upload' width='100%' height='100%'/>
+    <mediators:PDFToolViewMediator id='pdftool' skinClass='com.adams.pdf.view.PDFToolSkinView' homeState='{currentState}' includeIn='PDFTool' width='100%' height='100%'/>
+	<!-- View End -->  
+	<components:AlertView id="alert" visible="false" verticalCenter="0" horizontalCenter="0"/>
+	
+	<mediators:ProgressViewMediator id='progress' width="100%" height="100%" 
+									skinClass='com.adams.pdf.view.ProgressSkinView' 
+									visible="false" includeInLayout="{ progress.visible }"/>
+	
+</s:Skin>

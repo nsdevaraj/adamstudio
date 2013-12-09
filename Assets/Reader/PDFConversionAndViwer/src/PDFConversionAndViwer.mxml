@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="600" height="400" creationComplete="init();">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ListEvent;
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			import mx.controls.Alert;
+			
+			private const domainMainPath:String = new String("http://62.193.234.4/brennus/livetest/FileUpload/");
+			private const domainUploadPath:String = new String(domainMainPath + "upload/slice.php");
+			
+			private var loader:URLLoader = new URLLoader();
+			private var _refUploadFile:FileReference;
+			private var request:URLRequest;
+			
+			[Bindable]
+			private var pageArray:Array= new Array();
+			private var pageOnlinePath:String="";
+			private var listArray:Array=new Array();
+			
+			// Tile List Variable
+			[Bindable]
+			private var tileListArrayCollection:ArrayCollection =  new ArrayCollection();
+			private var tempTileListArrayCollection:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var rowCo:Number=1;
+			[Bindable]
+			private var columnCo:Number=1;
+			private var pageCount:Number=0;
+			
+			private function init():void{
+				loader.dataFormat = URLLoaderDataFormat.BINARY; 
+
+				loader.addEventListener(Event.COMPLETE, onComplete_loader);
+				loader.addEventListener(ProgressEvent.PROGRESS,onUploadProgress);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
+				loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
+				
+			}
+			private function uploadFile(path:String):void{
+				var sendVars:URLVariables = new URLVariables();
+				sendVars.action = "upload";
+				sendVars.convopts = "-f -T9 -t";
+				sendVars.combopts = "";
+				request= new URLRequest();
+				request.data = sendVars;
+				request.url = domainUploadPath;
+				request.method = URLRequestMethod.POST;
+				_refUploadFile = new FileReference();
+				_refUploadFile = new File(path);
+				_refUploadFile.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+				_refUploadFile.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
+				_refUploadFile.addEventListener(Event.COMPLETE, onComplete_upload);
+				_refUploadFile.addEventListener(IOErrorEvent.IO_ERROR, onError);
+				_refUploadFile.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+				_refUploadFile.upload(request, "Filedata", false);
+			}
+			private function saveResource():void {
+				//trace("Download File Path : "+pageOnlinePath);
+				loader.load(new URLRequest(pageOnlinePath));
+			}
+			private function saveLocally(fileName:String, data:ByteArray):void {
+
+				var file:File = new File(downloadPath.text).resolvePath(fileName);
+				if (file.exists)
+					file.deleteFile(); //delete it if exists
+				var fileStream:FileStream = new FileStream(); 
+				fileStream.open(file, FileMode.WRITE);
+				fileStream.writeBytes(data, 0, data.length);
+				fileStream.close();
+				var re:RegExp = /\\/gi;
+				var filePathTemp:String=file.nativePath.replace(re,"/");
+				if(listArray.length!=0){
+					pageCount+=1;
+					tempTileListArrayCollection.addItem({title:"Page"+pageCount,fullImage:filePathTemp,thumbnailImage:filePathTemp});
+					tempTileListArrayCollection.refresh();
+					pageOnlinePath = domainMainPath+listArray.pop(); 
+					saveResource();
+				}else{
+					pageCount+=1;
+					tempTileListArrayCollection.addItem({title:"Page"+pageCount,fullImage:file.nativePath,thumbnailImage:file.nativePath});
+					tempTileListArrayCollection.refresh();
+					Alert.show("All files copyed successfully !","File Copyed");
+					tileListArrayCollection.list=tempTileListArrayCollection.list;
+					tileListArrayCollection.refresh();
+					tileList.dataProvider=tileListArrayCollection;
+					/* var tempArr:Array=tileListArrayCollection.toArray();
+					var arrStr:String="[";
+					for(var i:Number=0;i<tempArr.length;i++){
+						arrStr+="{title:'"+tempArr[i].title+"',thumbnailImage:'"+tempArr[i].thumbnailImage+"',fullImage:'"+tempArr[i].fullImage+"'},";
+					}
+					arrStr+="]";
+					trace(arrStr); */
+					if(tileListArrayCollection.length==1){tileList.rowCount=1;tileList.columnCount=1;}
+	                if(tileListArrayCollection.length==2){tileList.rowCount=1;tileList.columnCount=2;}
+	                if(tileListArrayCollection.length>2 && tileListArrayCollection.length<=4){tileList.rowCount=2;tileList.columnCount=2;}
+	                if(tileListArrayCollection.length>4 && tileListArrayCollection.length<=6){tileList.rowCount=2;tileList.columnCount=3;}
+	                if(tileListArrayCollection.length>6 && tileListArrayCollection.length<=9){tileList.rowCount=3;tileList.columnCount=3;}
+	                if(tileListArrayCollection.length>9 && tileListArrayCollection.length<=12){tileList.rowCount=3;tileList.columnCount=4;}
+	                if(tileListArrayCollection.length>12){tileList.rowCount=3;tileList.columnCount=5;}
+				}
+			} 
+			private function tileList_itemClick(evt:ListEvent):void {
+				Alert.show(evt.itemRenderer.data.fullImage,"File Path");
+			}
+			
+			//=====================Events=====================================
+			//Loader Complete Event
+			private function onComplete_loader(event:Event):void {
+				var fileName:String = new String(pageOnlinePath).split("/").pop();
+				//trace("fileName : "+fileName);
+				saveLocally(fileName, loader.data); 
+			}
+			//Upload Complete Event
+			private function onComplete_upload(event:Event):void {
+				
+			}
+			//Upload Data Complete Event
+			private function onUploadComplete(event:DataEvent):void {
+				var listStr:String=String(event.data).substring(String(event.data).indexOf("[")+1,String(event.data).indexOf("]"));
+				listArray=String(","+listStr).split(",/var/www/brennus/livetest/FileUpload/");
+				listArray=listArray.reverse();
+				listArray.pop();
+				trace("No. of Pages : "+listArray.length);
+				pageOnlinePath = domainMainPath+listArray.pop(); 
+				saveResource();
+			}
+			
+			// Error, Security and Progress Events
+			private function onError(event:ErrorEvent):void {
+				trace("Error");
+				trace("==================");
+				trace(event.text);
+				trace("==================");
+				Alert.show(event.text, "Error");
+			}
+			private function onUploadProgress(event:ProgressEvent):void {
+				progress_lbl.text=Math.round((event.bytesLoaded / event.bytesTotal) * 100)+"%";
+			}
+			private function onUploadSecurityError(event:SecurityErrorEvent):void {
+				trace("Error");
+				trace("==================");
+				trace(event.text);
+				trace("==================");
+				Alert.show(event.text, "Security Error");
+			}
+			//=====================Events=====================================
+			
+		]]>
+	</mx:Script>
+	<mx:VBox width="100%" height="100%">
+		<!--dataProvider="{tileListArrayCollection}"-->
+	<mx:TileList id="tileList"
+			itemRenderer="CustomItemRenderer"
+			liveScrolling="true"
+			themeColor="haloSilver"
+			verticalScrollPolicy="auto"
+			bottom="0" backgroundColor="#333333" color="#FFFFFF" textRollOverColor="#000000" textSelectedColor="#000000"
+			itemClick="tileList_itemClick(event);"  selectionColor="#CCCCCC" rollOverColor="#D6D6D6"/>
+	<mx:HBox id="uploadHBox" width="100%" paddingBottom="5" paddingLeft="5" paddingRight="5">
+		<mx:Label text="Upload File"/> <mx:TextInput id="filePath" width="100%" text="C:\Documents and Settings\admin\My Documents\TempPDFFolder\test1.pdf"/>
+		<mx:Label text="->"/>
+		<mx:Label text="Download Path"/> <mx:TextInput id="downloadPath" width="100%" text="{(File.desktopDirectory.nativePath)}"/>
+		<mx:Label text="->"/>
+		<mx:Button label="Convert" enabled="{((filePath.text!='')?true:false)}" click="{uploadFile(filePath.text)}"/>
+		<mx:Label id="progress_lbl"/>
+	</mx:HBox>
+	
+	</mx:VBox>
+</mx:WindowedApplication>

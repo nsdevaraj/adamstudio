@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+		 styleName="transparentBackground" minHeight="500"	width="100%" height="100%"
+		 horizontalScrollPolicy="off" verticalGap="3">
+	<mx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+		]]>
+	</mx:Script>
+	
+	<mx:Label styleName="introTitle" text="Training centre :" fontSize="24" left="15" top="15"/>
+	
+	<mx:HRule width="100%" strokeColor="#999999" strokeWidth="1"/>
+	<mx:VBox width="100%"  height="100%">
+		<mx:Canvas backgroundColor="0x4e86b5" height="224" width="100%">
+			<mx:Image source="assets/images/Training.png" left="0" top="0"/>
+		</mx:Canvas>
+		<mx:Text 	fontSize="12"	  width="100%" styleName="contFont" height="100%" id="three" 
+					selectable="false" >
+			<mx:htmlText><![CDATA[
+<p textAlign="justify">A unique as well as an attractive aspect of the studio is the <b>training centre,</b> where we train the selected candidates and freshers. The training course comprises of a training in Basic Graphic design, pre-press techniques and software training.<br>
+<li>Illustrator</li>
+<li>Photpshop</li>
+<li>QuarkXpress</li>
+<li>In design</li>
+<li>Artpro</li>
+The course introduces the trainees to the world of visual communication and aims to broader their understanding of graphic design. It develops their skills in design lash analysis, rendering, typography, illustration, lay out design, the use of color and lots more. The highlight of the training course is It is absolutely free and in-depth. This sessions at scheduled times is designed to help the trainees to master in their training. It is really an excellent opportunity for the Job seekers and freshers.
+<br><br><b>Online Trainings :</b><br>
+Adam's Studio also conducts free technical class to the employees to enable them to enrich their knowledge in their job and clears their technical doubts. The studio as well as offers a free English class to all employees to facilitate their Communication. Skills. We can even say that the motto of Adam's Studio is "Training, Learning and Development".The Studio offers internal promotions based on their proficiency in Technical and English tests.<br><br>With technology changing so quickly these days, people need to be up-to-date with required skills and have the confidence in knowing that they can do the job. Adam's  Studio fulfills this necessity and enables them to get this confidence.</p>
+				
+				
+				
+				
+				]]></mx:htmlText>
+		</mx:Text>
+	</mx:VBox>	
+</mx:VBox>
+

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Teamlinestemplates" table="teamlines_templates">
+        <id name="teamlineTemplateId" type="integer" column="teamline_template_ID">
+            <generator class="increment" />
+        </id>
+        <property name="teamTemplateFk">
+            <column name="team_template_FK" />
+        </property>
+        <property name="profileFk">
+            <column name="profile_FK" />
+        </property>
+        <property name="personFk">
+            <column name="person_FK" />
+        </property>
+    </class>
+    <query name="Teamlinestemplates.findById">
+        select t from Teamlinestemplates t, Workflows w, TeamTemplates p 
+                        where p.workflowFk = w.workflowId and p.teamTemplateId = t.teamTemplateFk and w.workflowId =?
+    </query>
+</hibernate-mapping>

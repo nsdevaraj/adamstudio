@@ -1,0 +1,643 @@
+ORACLE PROCEDURE -16 DEC 2010
+------------------------------
+
+create or replace
+PROCEDURE P_ADJUST_SEQUENCES AS
+  CURSOR c_Sequences IS
+         SELECT DISTINCT sequence_name, table_name, column_name
+           FROM user_sequences, user_cons_columns
+          WHERE table_name || '_' || column_name || '_SEQ' LIKE sequence_name || '%';
+  v_curMax NUMBER;
+  v_curSeq NUMBER;
+  v_increment NUMBER;
+  v_newSeq NUMBER;
+BEGIN
+  FOR cRec IN c_Sequences LOOP
+    EXECUTE IMMEDIATE 'SELECT MAX(' || cRec.column_name || ') FROM '
+                      || cRec.table_name  INTO v_curMax;
+    EXECUTE IMMEDIATE 'SELECT ' || cRec.sequence_name || '.nextval FROM DUAL'
+                      INTO v_curSeq;
+    v_increment := v_curMax - v_curSeq;
+    IF v_increment > 0 THEN
+      EXECUTE IMMEDIATE 'ALTER SEQUENCE ' || cRec.sequence_name ||
+                        ' INCREMENT BY ' || TO_CHAR( v_increment );
+      EXECUTE IMMEDIATE 'SELECT ' || cRec.sequence_name || '.nextval FROM dual'
+                   INTO v_newSeq;
+      EXECUTE IMMEDIATE 'ALTER SEQUENCE ' || cRec.sequence_name ||
+                        ' INCREMENT BY 1';
+      DBMS_OUTPUT.PUT_LINE( 'Sequence ' || RPAD( cRec.sequence_name, 30 ) ||
+                        ' was moved to ' || TO_CHAR(v_newSeq) );
+    ELSIF v_increment = 0 THEN
+      EXECUTE IMMEDIATE 'SELECT ' || cRec.sequence_name || '.nextval FROM dual'
+                   INTO v_newSeq;
+      DBMS_OUTPUT.PUT_LINE( 'Sequence ' || RPAD( cRec.sequence_name, 30 ) ||
+                        ' was moved by 1' );
+    END IF;
+  END LOOP;
+END P_ADJUST_SEQUENCES;
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_BULK_TEAMLINES (
+   p_projectFkArray       IN VARCHAR2,
+   p_profileFkArray       IN VARCHAR2,
+   p_personFkArray        IN VARCHAR2, 
+   p_propprojectFkArray   IN VARCHAR2,
+   p_propPresetFkArray    IN VARCHAR2,
+   p_propfieldValueArray  IN VARCHAR2)  AS
+ cArrProject  T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrProfile  T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrPerson   T_ARR_STRINGS := T_ARR_STRINGS();
+BEGIN 
+ splitNumbers( p_projectFkArray,    cArrProject );
+ splitNumbers( p_profileFkArray,    cArrProfile );
+ splitStrings( p_personFkArray,     cArrPerson );
+ P_ADJUST_SEQUENCES();
+ IF cArrProfile.COUNT() <> cArrPerson.COUNT() THEN
+   RAISE_APPLICATION_ERROR( -20300, 'Counts of teamlines and values don t match' );
+ END IF;
+ FOR i IN 1..cArrProject.COUNT() LOOP
+   IF cArrProject(i) IS NULL THEN
+     RAISE_APPLICATION_ERROR( -20301, 'Bad calling convention: empty ProjectFK' );
+   ELSE
+     FOR j IN 1..cArrProfile.COUNT() LOOP
+       IF cArrProfile(j) IS NULL THEN
+         RAISE_APPLICATION_ERROR( -20302, 'Bad calling convention: empty ProfileFK' );
+       ELSE
+         UPDATE teamlines
+            SET person_FK = cArrPerson(j)
+          WHERE project_FK = cArrProject(i)
+            AND profile_FK = cArrProfile(j);
+         IF ( SQL%ROWCOUNT = 0 ) THEN
+           INSERT INTO teamlines ( teamline_id,
+                                       project_fk,
+                                       profile_fk,
+                                       person_fk )
+                              VALUES ( TEAMLINES_TEAMLINE_ID_SEQ.NEXTVAL,
+                                       cArrProject(i),
+                                       cArrProfile(j),
+                                       cArrPerson(j) );
+         ELSIF ( SQL%ROWCOUNT > 1 ) THEN
+           DBMS_OUTPUT.PUT_LINE( 'WARNING : Duplicate teamlines value for project ['
+                         || cArrProject(i) || '], profile id ['
+                         || cArrProfile(j) || ']' );
+         END IF;
+       END IF;       
+     END LOOP;
+   END IF;
+ END LOOP;
+ P_SET_BULK_PROPERTIES(p_propprojectFkArray,p_propPresetFkArray,p_propfieldValueArray);
+ COMMIT;
+END P_BULK_TEAMLINES;
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+create or replace
+PROCEDURE P_CREATE_BULK_TASKS (
+                   P_WORKFLOW_FK IN NUMBER,  
+                   P_NEXT_WORKFLOW_TEMPLATE_ID IN NUMBER,
+                   P_PROJECT_FK IN NUMBER,  
+                   P_PERSON_FK IN NUMBER,  
+                   P_TASK_CODE IN VARCHAR2) AS 
+  V_CURRENT_TASK_FK number := null;
+  V_PREVIOUS_TASK_FK number := null;
+  CURSOR c_workflowtemplates is 
+         select workflow_template_id, default_estimated_time
+           from workflow_templates
+          where workflow_template_id<=( select workflow_template_id
+                                          from workflow_templates
+                                         where task_code like P_TASK_CODE
+                                           and workflow_fk = P_WORKFLOW_FK )
+          start with workflow_template_id = P_NEXT_WORKFLOW_TEMPLATE_ID
+          connect by prior option_next_task_fk = workflow_template_id;
+  /* ,P_PREVIOUS_TASK_FK IN NUMBER
+  -- query for selecting the workflow_templates for the given task_code;
+  select workflow_template_id, default_estimated_time
+    from workflow_templates
+   where workflow_template_id<=( select workflow_template_id
+                                   from workflow_templates
+                                  where task_code like 'P2T01A'
+                                    and workflow_fk=1 )
+   start with workflow_template_id = 1
+   connect by prior option_next_task_fk = workflow_template_id;
+  */
+BEGIN
+  NULL;
+  for rec_workflowtemplate in c_workflowtemplates
+  loop
+    -- creating task;
+    if V_PREVIOUS_TASK_FK is null then
+      -- updating previous task's next_task_fk;
+      select tasks_task_id_seq.currval into V_CURRENT_TASK_FK from dual;
+      dbms_output.put_line('select if task V_CURRENT_TASK_FK:' || V_CURRENT_TASK_FK || '_' || V_PREVIOUS_TASK_FK);
+      update tasks
+         set next_task_fk=V_CURRENT_TASK_FK,
+             TASK_STATUS_FK = ( select status_id
+                                  from status
+                                 where lower(type) like 'task_status'
+                                   and lower(status_label) like 'finished' )
+       where task_id = V_PREVIOUS_TASK_FK;
+    end if;
+    -- setting up next task's previous_task_fk;
+    select tasks_task_id_seq.currval into V_PREVIOUS_TASK_FK from dual;
+    -- uncomment this for debug;
+    dbms_output.put_line('final select tasks V_PREVIOUS_TASK_FK:' || V_PREVIOUS_TASK_FK);
+    dbms_output.put_line('loop created_task:' || V_PREVIOUS_TASK_FK );
+    insert into tasks select null as TASK_ID, P_PROJECT_FK,
+                    rec_workflowtemplate.WORKFLOW_TEMPLATE_ID,
+                    null as TASK_COMMENT, null as TASK_FILES_PATH, 
+                    status_id as TASK_STATUS_FK,
+                    sysdate T_DATE_CREATION,
+                    null as T_DATE_INPROGRESS, null as T_DATE_END, 
+                    sysdate+(rec_workflowtemplate.default_estimated_time/1440)
+                        as T_DATE_END_ESTIMATED,
+                    null as T_DATE_DEADLINE, 0 as WAITING_TIME, 
+                    0 as ONAIR_TIME, 100 as ESTIMATED_TIME, 0 as DEADLINE_TIME,
+                    P_PERSON_FK, V_PREVIOUS_TASK_FK, null as NEXT_TASK_FK 
+               from status
+              where lower(type) like 'task_status'
+                and lower(status_label ) like 'waiting';                
+      
+  end loop;  
+  commit;
+END P_CREATE_BULK_TASKS;
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_CREATE_NAVIGATION_TASKS (
+                   P_CURRENT_TASK_ID IN NUMBER,
+                   P_WORKFLOW_FK IN NUMBER,  
+                   P_NEXT_WORKFLOW_TEMPLATE_ID IN NUMBER,
+                   P_PROJECT_FK IN NUMBER,  
+                   P_PERSON_FK IN NUMBER,  
+                   P_TASK_CODE IN VARCHAR2,
+                   P_TASKCOMMENTS in BLOB,cursor_tasks OUT SYS_REFCURSOR) AS 
+  V_CURRENT_TASK_FK number := null;
+  CURSOR c_workflowtemplates is 
+         select workflow_template_id, default_estimated_time
+           from workflow_templates
+          where workflow_template_id<=( select workflow_template_id
+                                          from workflow_templates
+                                         where task_code like P_TASK_CODE
+                                           and workflow_fk = P_WORKFLOW_FK )
+          start with workflow_template_id = P_NEXT_WORKFLOW_TEMPLATE_ID
+          connect by prior option_next_task_fk = workflow_template_id;  
+BEGIN
+  NULL;
+  for rec_workflowtemplate in c_workflowtemplates
+  loop    
+    -- uncomment this for debug;
+    dbms_output.put_line('final select tasks P_CURRENT_TASK_ID:' || P_CURRENT_TASK_ID);
+    dbms_output.put_line('loop created_task:' || P_CURRENT_TASK_ID );
+    /*insert into tasks select null as TASK_ID, P_PROJECT_FK,
+                    rec_workflowtemplate.WORKFLOW_TEMPLATE_ID,
+                    P_TASKCOMMENTS, null as TASK_FILES_PATH, 
+                    status_id as TASK_STATUS_FK,
+                    sysdate T_DATE_CREATION,
+                    null as T_DATE_INPROGRESS, null as T_DATE_END, 
+                    sysdate+(rec_workflowtemplate.default_estimated_time/1440)
+                        as T_DATE_END_ESTIMATED,
+                    null as T_DATE_DEADLINE, 0 as WAITING_TIME, 
+                    0 as ONAIR_TIME, 100 as ESTIMATED_TIME, 0 as DEADLINE_TIME,
+                    P_PERSON_FK, P_CURRENT_TASK_ID, null as NEXT_TASK_FK 
+               from status
+              where lower(type) like 'task_status'
+                and lower(status_label ) like 'waiting';*/
+        insert into tasks select null as TASK_ID, P_PROJECT_FK,
+                    rec_workflowtemplate.WORKFLOW_TEMPLATE_ID,
+                    null as TASK_COMMENT, null as TASK_FILES_PATH, 
+                    status_id as TASK_STATUS_FK,
+                    sysdate T_DATE_CREATION,
+                    null as T_DATE_INPROGRESS, null as T_DATE_END, 
+                    sysdate+(rec_workflowtemplate.default_estimated_time/1440)
+                        as T_DATE_END_ESTIMATED,
+                    null as T_DATE_DEADLINE, 0 as WAITING_TIME, 
+                    0 as ONAIR_TIME, 100 as ESTIMATED_TIME, 0 as DEADLINE_TIME,
+                    0 as PERSON_FK, P_CURRENT_TASK_ID, null as NEXT_TASK_FK 
+               from status
+              where lower(type) like 'task_status'
+                and lower(status_label ) like 'waiting';
+     -- updating previous task's next_task_fk;       
+      select tasks_task_id_seq.currval into V_CURRENT_TASK_FK from dual;
+      dbms_output.put_line('select if task V_CURRENT_TASK_FK:' || V_CURRENT_TASK_FK || '_' || P_CURRENT_TASK_ID);
+     
+      update tasks
+         set NEXT_TASK_FK = V_CURRENT_TASK_FK, TASK_COMMENT = P_TASKCOMMENTS,
+             TASK_STATUS_FK = ( select status_id
+                                  from status
+                                 where lower(type) like 'task_status'
+                                   and lower(status_label) like 'finished' ),
+                                   T_DATE_INPROGRESS = sysdate, T_DATE_END = sysdate                                  
+       where task_id = P_CURRENT_TASK_ID;       
+  end loop; 
+  OPEN cursor_tasks FOR 
+    select task_id as tasksId from tasks where task_id = V_CURRENT_TASK_FK;
+  commit;
+END P_CREATE_NAVIGATION_TASKS;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_CREATE_PROJECT_ROW (
+        p_projectName in varchar2, 
+        p_categoryId in number,   
+        p_personfk in number,
+        p_workflowfk in number,
+        p_projectComment in BLOB,
+        p_codeEan in varchar2,
+        p_codeGestionSap in varchar2,
+        p_impremiourName in varchar2,
+        p_incrementPcode in varchar2,
+        cursor_project OUT SYS_REFCURSOR) AS 
+BEGIN
+  declare
+  -- variables used;  
+  v_newCategoryId number :=0;
+  v_workflowId number :=0;
+  v_projectStatus number :=0;
+  v_tempVar number :=0;
+  v_projectId number :=0;
+  v_taskId number := 0;
+  v_next_workflow_template_id number :=0;
+  v_end_task_code varchar2(8) :='P1T02A';
+  v_projectName varchar2(255) :='';
+  v_teamlineId number := 0;
+  v_phaseId number := 0;
+  v_finaltaskId number := 0;
+  -- =============================
+  var_phase_date  DATE;
+  var_phase_date2 DATE;
+  var_inc         NUMBER;
+
+  CURSOR phase_cursor IS
+    SELECT NULL aa,
+	   v_projectid bb, 
+	   phase_template_id c,
+           concat('P', to_char(phase_template_id, 'FM000')) d,
+           phase_name e, 
+           status_id f, 
+           sysdate g,
+           sysdate h,
+           null i,
+           phase_duration_days j, 
+           0 k
+      FROM Phases_templates,status
+     WHERE workflow_fk = p_workflowfk
+       AND LOWER(type) like 'phase_status'
+       AND LOWER(status_label ) like 'waiting';
+  -- =============================  
+     begin 
+       for rec_domain_workflows in (select domain_workflow_id,domain_fk,workflow_fk from domain_workflows where workflow_fk = p_workflowfk and domain_fk = p_categoryId)
+        loop 
+          dbms_output.put_line('domain_workflows v_workflowId: '|| rec_domain_workflows.domain_workflow_id);        
+        end loop;
+      -- select workflow_fk into v_workflowId from domain_workflows 
+      --  where domain_fk = p_categoryId;
+        select status_id into v_projectStatus from status where lower(type) like 'project_status'
+          and lower(status_label) like 'waiting';
+          dbms_output.put_line('select v_projectStatus begin calling v_projectStatus:'|| v_projectStatus);
+        begin
+        select category_Id into v_newCategoryId from categories 
+         where category_fk = p_categoryid
+           and category_name = extract(year from sysdate);
+            dbms_output.put_line('select category_Id inner begin calling v_newCategoryId:'||v_newCategoryId);
+            begin 
+              select category_Id into v_tempVar from categories 
+               where category_fk = v_newCategoryId
+                 and category_name = to_char(sysdate,'Mon');
+              exception when no_data_found then
+              insert into categories 
+                 select null, to_char(sysdate,'Mon'), null, v_newCategoryId,
+                        null, null from dual;
+                  -- uncomment this for debug mode;
+                select categories_category_id_seq.currval into v_tempvar from dual;
+                dbms_output.put_line('category created v_tempvar: '|| v_tempvar);
+                v_tempvar :=0;
+            end;
+            exception when no_data_found then
+          begin
+            dbms_output.put_line('insert after categories calling :'||p_categoryid);
+            insert into categories select null, extract(year from sysdate), null,
+                                        p_categoryid, null, null from dual;
+            -- uncomment this for debug mode;
+            dbms_output.put_line('*** after select categories_category_id_seq calling');
+            select categories_category_id_seq.currval into v_tempvar from dual;
+            dbms_output.put_line('after category created v_tempvar: '|| v_tempvar);
+            v_tempvar :=0;
+            dbms_output.put_line('***after  select category_Id calling');
+            select category_Id into v_newCategoryId from categories
+              where category_fk = p_categoryid
+                and category_name = extract(year from sysdate);
+              dbms_output.put_line('***after insert categories calling v_newCategoryId :'||v_newCategoryId);
+            -- creating category for the current month;
+            insert into categories select null, to_char(sysdate,'Mon'), null,
+                                        v_newCategoryId, null, null from dual;
+            -- uncomment this for debug mode;
+            dbms_output.put_line('***after inners inner categories_category_id_seq calling');
+            select categories_category_id_seq.currval into v_tempvar from dual;
+              dbms_output.put_line('after category created: '|| v_tempvar);
+            v_tempvar :=0;
+          end;
+      end;
+      dbms_output.put_line('&&&&final select category_Id calling');
+      select b.category_Id into v_newCategoryId
+        from categories a, categories b
+      where a.category_fk = p_categoryId and a.category_id = b.category_fk
+       and b.category_name = to_char(sysdate, 'Mon');
+      dbms_output.put_line('&&&&final select v_newCategoryId calling v_newCategoryId :'||v_newCategoryId);
+      dbms_output.put_line('&&&&final insert projects calling p_projectName:'||p_projectName||'-'||p_workflowfk||'-'||v_newCategoryId||'-'||v_projectstatus);
+      insert into projects values( null, p_projectName, p_workflowfk,
+                                 v_newCategoryId, v_projectstatus, 1,
+                                 p_projectComment, sysdate, null, 1);
+       dbms_output.put_line('final Project insert ');
+       dbms_output.put_line('&&&&final select projects calling');  
+       select projects_Project_ID_SEQ.CURRVAL into v_projectId from dual;
+       dbms_output.put_line('final Project created v_projectId: '|| v_projectId);       
+       select p_incrementPcode || (1000+v_projectId) || '_' || p_projectName into v_projectName FROM dual;
+       update projects set project_name = v_projectName where project_id = v_projectId;
+       dbms_output.put_line('final Project update v_projectId: '|| v_projectId);
+       dbms_output.put_line('&&&&final insert teamlines calling v_projectId:'||v_projectId||'-'||p_workflowfk);        
+       
+      begin 
+        for rec_domain_workflows in (select b.person_fk as personfk, b.profile_fk as profilefk from team_templates a,teamlines_templates b where a.workflow_fk = p_workflowfk and b.team_template_fk = a.team_template_id)
+        loop 
+          insert into teamlines(teamline_id,project_fk,profile_fk,person_fk) values(null,v_projectId, rec_domain_workflows.profilefk, rec_domain_workflows.personfk);
+        --  dbms_output.put_line('domain_workflows v_workflowId: '|| rec_domain_workflows.personfk || '_' || rec_domain_workflows.profilefk);        
+          -- insert into teamlines values(null,v_projectId, rec_domain_workflows.profilefk, rec_domain_workflows.personfk);
+        end loop;
+      end;
+       -- select teamlines_teamline_ID_SEQ.CURRVAL into v_teamlineId from dual;
+       -- dbms_output.put_line('&&&&final select teamlines calling v_teamlineId :'||v_teamlineId);
+        dbms_output.put_line('phases created call p_workflowfk :'||p_workflowfk);
+        --===================================
+       /* insert into phases select null, v_projectid, phase_template_id,
+                              concat('P', to_char(phase_template_id, 'FM000')),
+                              phase_name, status_id, sysdate, sysdate, null,
+                              phase_duration_days, 0
+                         from Phases_templates, status
+                        where workflow_fk = p_workflowfk
+                          and lower(type) like 'phase_status'
+                          and lower(status_label ) like 'waiting'; */
+        var_inc := 1;
+        FOR ph_indx IN phase_cursor LOOP
+          IF NVL(var_inc,0) = 1 THEN
+            var_phase_date := ph_indx.h +ph_indx.j;
+            INSERT INTO phases VALUES (ph_indx.aa,ph_indx.bb,ph_indx.c,ph_indx.d,ph_indx.e,ph_indx.f,ph_indx.g,var_phase_date,
+                            ph_indx.i,ph_indx.j,ph_indx.k);
+
+            var_inc := 2 ;
+          ELSE
+            var_phase_date2 := var_phase_date+ph_indx.j;
+            INSERT INTO phases VALUES(ph_indx.aa,ph_indx.bb,ph_indx.c,ph_indx.d,ph_indx.e,ph_indx.f,var_phase_date,var_phase_date2,
+                            ph_indx.i,ph_indx.j,ph_indx.k);
+
+            var_phase_date := var_phase_date2;
+          END IF;
+        END LOOP;
+        -- ============================================
+        dbms_output.put_line('phases created...');
+        select phases_phase_ID_SEQ.CURRVAL into v_phaseId from dual;
+        dbms_output.put_line('&&&&final select phases calling v_phaseId :'||v_phaseId);
+        -- creating initial tasks;
+        insert into tasks select null as task_id, v_projectId,
+                             1 as workflow_template_fk,
+                             p_projectComment, null as task_files_path, 
+                             status_id as task_status_fk,
+                             sysdate as t_date_creation,
+                             sysdate as t_date_inprogress, 
+                             sysdate as t_date_end,
+                             null as t_date_end_estimated,
+                             sysdate as t_Date_deadline, 0 as waiting_time, 
+                             0 as onair_time, 0 as estimated_time,
+                             0 as deadline_time, p_personfk,
+                             null as previous_task_fk, null as next_task_fk 
+                        from status 
+                       where lower(type) like 'task_status'
+                         and lower(status_label ) like 'finished';
+        select tasks_task_ID_SEQ.CURRVAL into v_taskId from dual;    
+        -- uncomment this for debug mode;
+        dbms_output.put_line('initial task is created: '||v_taskId);
+        select option_next_task_fk into v_next_workflow_template_id
+          from workflow_templates where workflow_template_id = 1;
+        dbms_output.put_line('select workflow_templates v_next_workflow_template_id: '||v_next_workflow_template_id);
+        -- v_next_workflow_template_id = 3
+        P_CREATE_BULK_TASKS(p_workflowfk, v_next_workflow_template_id, v_projectId, p_personfk, v_end_task_code);
+        
+        P_CREATE_PROPERTIESSPJ(v_projectId,p_codeEan,p_codeGestionSap,p_impremiourName);
+        
+         select tasks_task_id_seq.currval into v_finaltaskId from dual;
+         dbms_output.put_line('select final taskid : '||v_finaltaskId);
+        OPEN cursor_project FOR 
+           select prj.project_id as project_id,tsk.task_id as task_id from projects prj,tasks tsk where project_id = v_projectId and tsk.task_id = v_finaltaskId;
+         -- select project_id from projects where project_id = v_projectId;
+          
+    end;
+  commit;  
+  exception when others then
+  dbms_output.put_line('error:'||sqlerrm);
+  dbms_output.put_line('commit not done.'); 
+  
+END P_CREATE_PROJECT_ROW;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_CREATE_PROPERTIESSPJ(
+      p_projectId in number,
+      p_codeEan in varchar2,
+      p_codeGestionSap in varchar2,
+      p_impremiourName in varchar2) AS 
+BEGIN
+ declare
+  v_fieldDefaultValue varchar2(255) :=' ';
+  v_fieldDefaultNumValue number := 0;
+    begin 
+        for rec_properties_presets in (select * from properties_presets where field_label in('Code EAN','Code gestion/SAP','Imprimeur','CHP VALIDATION','CPP VALIDATION','AGN VALIDATION','COMM VALIDATION','IND VALIDATION','IMP VALIDATION'))
+        loop 
+          dbms_output.put_line('rec_properties_presets property_preset_ID: '|| rec_properties_presets.property_preset_ID || '_' || rec_properties_presets.field_default_value);        
+          if ((rec_properties_presets.field_label = 'Code EAN') or (rec_properties_presets.field_label = 'Code gestion/SAP') or (rec_properties_presets.field_label = 'Imprimeur')) THEN
+            v_fieldDefaultValue := ' ';
+            if (rec_properties_presets.field_label = 'Code EAN') THEN
+              v_fieldDefaultValue := p_codeEan;
+            ELSIF (rec_properties_presets.field_label = 'Code gestion/SAP') THEN
+              v_fieldDefaultValue := p_codeGestionSap;
+            ELSIF (rec_properties_presets.field_label = 'Imprimeur') THEN
+              v_fieldDefaultValue := p_impremiourName;
+            end if;
+            dbms_output.put_line('if v_fieldDefaultValue: '|| rec_properties_presets.property_preset_ID || '_' || rec_properties_presets.field_label || '_' || rec_properties_presets.field_default_value || '_' || v_fieldDefaultValue);        
+            insert into properties_pj(property_pj_ID,project_FK,property_preset_FK,field_value) 
+                values(null,p_projectId, rec_properties_presets.property_preset_ID, v_fieldDefaultValue);
+          ELSE 
+            v_fieldDefaultNumValue := 0;
+            dbms_output.put_line('else v_fieldDefaultNumValue: '|| rec_properties_presets.property_preset_ID || '_' || rec_properties_presets.field_label || '_' || rec_properties_presets.field_default_value || '_' || v_fieldDefaultNumValue);        
+             insert into properties_pj(property_pj_ID,project_FK,property_preset_FK,field_value) 
+                values(null,p_projectId, rec_properties_presets.property_preset_ID, v_fieldDefaultNumValue);
+          end if;
+        end loop;
+    end;
+    commit;
+    exception when others then
+    dbms_output.put_line('P_CREATE_PROPERTIESSPJ error:'||sqlerrm);
+    dbms_output.put_line('P_CREATE_PROPERTIESSPJ commit not done.'); 
+END P_CREATE_PROPERTIESSPJ;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_SET_BULK_DEFAULTTEMPVALUE (
+   p_default_template_label IN VARCHAR2,
+   p_default_company_fk  IN NUMBER,
+   p_deftemplateFkArray     IN VARCHAR2,
+   p_propPresetFkArray      IN VARCHAR2,
+   p_deftemplateValueArray  IN VARCHAR2 )  AS
+ cArrDefTempFk T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrProperty  T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrTempValue T_ARR_STRINGS := T_ARR_STRINGS();
+BEGIN
+ splitNumbers( p_deftemplateFkArray,   cArrDefTempFk );
+ splitNumbers( p_propPresetFkArray,    cArrProperty );
+ splitStrings( p_deftemplateValueArray,cArrTempValue );
+ P_ADJUST_SEQUENCES();
+ IF cArrProperty.COUNT() <> cArrTempValue.COUNT() THEN
+   RAISE_APPLICATION_ERROR( -20300, 'Counts of properties and values don t match' );
+ END IF;
+ FOR i IN 1..cArrDefTempFk.COUNT() LOOP
+   IF cArrDefTempFk(i) IS NULL THEN
+     RAISE_APPLICATION_ERROR( -20301, 'Bad calling convention: empty default_template_fk' );
+   ELSE
+     FOR j IN 1..cArrProperty.COUNT() LOOP
+       IF cArrProperty(j) IS NULL THEN
+         RAISE_APPLICATION_ERROR( -20302, 'Bad calling convention: empty property_preset_fk' );
+       ELSE
+         UPDATE default_template_value
+            SET default_template_value = cArrTempValue(j)
+          WHERE default_template_fk = cArrDefTempFk(i)
+            AND property_preset_fk = cArrProperty(j);
+         IF ( SQL%ROWCOUNT = 0 ) THEN
+           INSERT INTO default_template_value ( default_template_value_id,
+                                       default_template_value,
+                                       property_preset_fk,
+                                       default_template_fk )
+                              VALUES ( PROPERTIES_PJ_PROPERTY_PJ_ID_S.NEXTVAL,
+                              	       cArrTempValue(j),
+                              	       cArrProperty(j),
+                                       cArrDefTempFk(i));
+         ELSIF ( SQL%ROWCOUNT > 1 ) THEN
+           DBMS_OUTPUT.PUT_LINE( 'WARNING : Duplicate property value for default_template_fk ['
+                         || cArrDefTempFk(i) || '], propertypreset_fk ['
+                         || cArrProperty(j) || ']' );
+         END IF;
+       END IF;
+     END LOOP;
+   END IF;
+ END LOOP;
+ COMMIT;
+END P_SET_BULK_DEFAULTTEMPVALUE;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE P_SET_BULK_PROPERTIES (
+   p_projectFkArray       IN VARCHAR2,
+   p_propPresetFkArray    IN VARCHAR2,
+   p_fieldValueArray      IN VARCHAR2 )  AS
+ cArrProject  T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrProperty T_ARR_NUMBERS := T_ARR_NUMBERS();
+ cArrValue    T_ARR_STRINGS := T_ARR_STRINGS();
+BEGIN
+ splitNumbers( p_projectFkArray,    cArrProject );
+ splitNumbers( p_propPresetFkArray, cArrProperty );
+ splitStrings( p_fieldValueArray,   cArrValue );
+ P_ADJUST_SEQUENCES();
+ IF cArrProperty.COUNT() <> cArrValue.COUNT() THEN
+   RAISE_APPLICATION_ERROR( -20300, 'Counts of properties and values don t match' );
+ END IF;
+ FOR i IN 1..cArrProject.COUNT() LOOP
+   IF cArrProject(i) IS NULL THEN
+     RAISE_APPLICATION_ERROR( -20301, 'Bad calling convention: empty ProjectFK' );
+   ELSE
+     FOR j IN 1..cArrProperty.COUNT() LOOP
+       IF cArrProperty(j) IS NULL THEN
+         RAISE_APPLICATION_ERROR( -20302, 'Bad calling convention: empty PropPresetFK' );
+       ELSE
+         UPDATE properties_pj
+            SET field_value = cArrValue(j)
+          WHERE project_fk = cArrProject(i)
+            AND property_preset_fk = cArrProperty(j);
+         IF ( SQL%ROWCOUNT = 0 ) THEN
+           INSERT INTO properties_pj ( property_pj_id,
+                                       project_fk,
+                                       property_preset_fk,
+                                       field_value )
+                              VALUES ( PROPERTIES_PJ_PROPERTY_PJ_ID_S.NEXTVAL,
+                                       cArrProject(i),
+                                       cArrProperty(j),
+                                       cArrValue(j) );
+         ELSIF ( SQL%ROWCOUNT > 1 ) THEN
+           DBMS_OUTPUT.PUT_LINE( 'WARNING : Duplicate property value for project ['
+                         || cArrProject(i) || '], propertyPreset ['
+                         || cArrProperty(j) || ']' );
+         END IF;
+       END IF;
+     END LOOP;
+   END IF;
+ END LOOP;
+ COMMIT;
+END P_SET_BULK_PROPERTIES;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE splitNumbers( pString IN VARCHAR2, pArray IN OUT T_ARR_NUMBERS ) AS
+   cLength   SMALLINT;
+   cPosEnd   SMALLINT;
+   cCurrChar CHAR(1);
+   cField    VARCHAR2(4000);
+ BEGIN
+   cLength   := LENGTH(pString);
+   cPosEnd   := 1;
+   cField    := '';
+   LOOP
+     cCurrChar := SUBSTR( pString, cPosEnd, 1 );
+     IF cPosEnd > cLength THEN
+       pArray.EXTEND;
+       pArray(pArray.COUNT()) := TO_NUMBER(cField);
+     ELSIF cCurrChar = ';' THEN
+       pArray.EXTEND;
+       pArray(pArray.COUNT()) := TO_NUMBER(cField);
+       cField := '';
+     ELSE
+       cField := cField || cCurrChar;
+     END IF;
+     EXIT WHEN cPosEnd > cLength;
+     cPosEnd := cPosEnd + 1;
+   END LOOP;
+ END splitNumbers;
+
+----------------------------------------------------------------------------------------------------------------------------------
+create or replace
+PROCEDURE splitStrings( pString IN VARCHAR2, pArray IN OUT T_ARR_STRINGS ) AS
+   cLength   SMALLINT;
+   cEscaped  BOOLEAN;
+   cPosEnd   SMALLINT;
+   cCurrChar CHAR(1);
+   cField    VARCHAR2(4000);
+ BEGIN
+   cLength   := LENGTH(pString);
+   cEscaped  := FALSE;
+   cPosEnd   := 1;
+   cField    := '';
+   LOOP
+     cCurrChar := SUBSTR( pString, cPosEnd, 1 );
+     IF cPosEnd > cLength THEN
+       pArray.EXTEND;
+       pArray(pArray.COUNT()) := cField;
+     ELSIF NOT cEscaped AND cCurrChar = '\' THEN
+       cEscaped := TRUE;
+     ELSIF NOT cEscaped AND cCurrChar = ';' THEN
+       pArray.EXTEND;
+       pArray(pArray.COUNT()) := cField;
+       cField := '';
+     ELSE
+       cField := cField || cCurrChar;
+       cEscaped := FALSE;
+     END IF;
+     EXIT WHEN cPosEnd > cLength;
+     cPosEnd := cPosEnd + 1;
+   END LOOP;
+ END splitStrings;
+ 
+ ----------------------------------------------------------------------------------------------------------------------------------

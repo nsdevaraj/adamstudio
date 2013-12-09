@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*" 
+		xmlns:autocomplete="com.adams.dt.view.components.autocomplete.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components1="com.adams.dt.view.components.*">	
+	<fx:Script>
+		<![CDATA[
+			/*
+			
+			Copyright (c) 2011 Adams Studio India, All Rights Reserved 
+			
+			@author   NS Devaraj
+			@contact  nsdevaraj@gmail.com
+			@project  Limoges
+			
+			@internal 			
+			*/			
+			
+			import com.adams.dt.model.vo.Reports;
+			
+			import mx.collections.ArrayList;
+		]]>
+	</fx:Script> 
+	<s:states>
+		<s:State name='normal' />
+		<s:State name='reportView'/>
+	</s:states>
+	<mx:TabNavigator horizontalCenter="0" y="15" width="100%" height="100%"> 
+		<s:NavigatorContent label="Properties">
+			<s:VGroup>
+				<s:Form id="newProjectForm" width="100%" height="100%"> 
+					<s:FormItem label="Client :">
+						<autocomplete:AutoCompleteView id="brand" width="180" labelField="fieldOptionsValue" 
+													   nameProperty="{ new ArrayList( [ 'fieldOptionsValue' ] ) }"
+													   comboVisible="true"/>
+						
+						<s:Button toolTip="Delete Client" right="0"
+								  styleName="deleteBtn" id="deleteClient"/>
+					</s:FormItem> 
+					<s:FormItem label="Task :">
+						<autocomplete:AutoCompleteView id="department" width="180" labelField="fieldOptionsValue" 
+													   nameProperty="{ new ArrayList( [ 'fieldOptionsValue' ] ) }"
+													   comboVisible="true"/>
+						<s:Button toolTip="Delete Task" right="0"
+								  styleName="deleteBtn" id="deleteTask"/>
+					</s:FormItem>
+					<components:NativeButton id="closeBtn" label="Close"/>
+				</s:Form>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="Workflow Viewer">
+			<s:VGroup>
+				
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="Report Management" creationPolicy="all">
+			<s:Group width="100%" height="100%">
+				<components1:ReportGrid id="reportGrid" width="100%" top="0" bottom="30">
+					<components1:columns>  
+						<s:ArrayList>  
+							<s:GridColumn dataField="reportName" headerText="ReportName"/>  
+							<s:GridColumn dataField="stackBarName" headerText="StackBarName"/>
+							<s:GridColumn dataField="pieChartName" headerText="PieChartName"/>  
+							<s:GridColumn dataField="profileFk" headerText="ProfileFk"/>
+							<s:GridColumn dataField="projectStatus" headerText="ProjectStatus" itemRenderer="com.adams.dt.view.renderers.DataGridReportRenderer"/> 										
+						</s:ArrayList>  
+					</components1:columns> 
+				</components1:ReportGrid>	
+				<s:HGroup horizontalCenter="0" bottom="0" height="30" verticalAlign="middle">
+					<s:Button id="addReport" label="Add" />
+					<s:Button id="modifyReport" label="Modify" />	
+				</s:HGroup>
+				
+				<s:TitleWindow visible.reportView="true" height="500" visible="false" id="reprotForm" horizontalCenter="0" verticalCenter="0">
+					<s:Scroller width="100%" bottom="40" top="0">
+						<s:Group>
+							<s:Form>
+								<s:FormItem label="Report Name" required="true">
+									<s:TextInput id="reportName" maxChars="30" width="200"/>
+								</s:FormItem>
+								<s:FormItem label="Profile List">
+									<s:DropDownList id="profileList" width="200" labelField="profileLabel"    />
+								</s:FormItem>
+								<s:FormItem label="Pie Chart">
+									<s:DropDownList id="columnChart" width="200" labelField="columnName" />
+								</s:FormItem>
+								<s:FormItem label="Bar Chart">
+									<s:DropDownList id="barChart" width="200" labelField="columnName"/>
+								</s:FormItem>
+								<s:FormItem label="Report Status">
+									<s:DropDownList id="reportStatus" width="200"/>
+								</s:FormItem>
+								<s:FormItem label="Pie Chart Name" required="true">
+									<s:TextInput id="columnChartName"  width="200"/>
+								</s:FormItem>
+								<s:FormItem label="Bar Chart Name" required="true">
+									<s:TextInput id="barChartName"  width="200"/>
+								</s:FormItem>
+								<s:FormItem label="Columns List">
+									<s:layout><s:HorizontalLayout /></s:layout>
+									<s:List id="reportColList" width="200" height="200"
+											allowMultipleSelection="true"
+											labelField="columnName"
+											toolTip="Ctrl+click to select more than one " />
+									<s:HGroup id="reportColOrder"  visible="false" includeInLayout="false" verticalAlign="top">
+										<s:Label text="Columns Order" />
+										<s:List id="reportColOrderList" width="200" height="200" 
+												dataProvider="{(reportGrid.selectedItem as Reports).columnSet}" 
+												dragEnabled="true" dragMoveEnabled="true" dropEnabled="true" 
+												labelField="columnName"/>  
+									</s:HGroup>	 
+								</s:FormItem> 						
+							</s:Form >
+						</s:Group>
+					</s:Scroller>
+					<s:BorderContainer styleName="projectHeaderBC" height="40" borderVisible="false" width="100%" bottom="0" >
+						<s:layout><s:HorizontalLayout  verticalAlign="middle"  horizontalAlign="center"/>
+						</s:layout>
+						<s:Button label="Create Report" id="createReportId"/>
+						<s:Button label="Reset" id="cancelReportId"/>
+						<s:Button label="Modify Report" id="modifyReportId"/>
+						<s:Button label="Duplicate Report" id="duplicateReportId"/>
+						<s:Button label="ReOrder Report" id="reorderReportId"/>
+					</s:BorderContainer>
+				</s:TitleWindow>
+			</s:Group>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+</s:Skin>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" addedToStage="onAddedToStage()" 
+	       width="100%" height="100%">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.PropertyChangeEvent;
+			import com.adams.dt.controls.DAOCommand;
+			import com.adams.dt.controls.LoginControl;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.dao.DAOObject;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.AsyncToken;
+			import mx.messaging.ChannelSet;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import com.adams.dt.model.collections.ICollection;
+			import flash.events.MouseEvent;
+			
+			[Bindable]
+			[Inject(id="personCollection")]
+			public var model:ICollection;
+			
+			[Bindable]
+			[Inject(id="auth")]
+			public var auth:ChannelSet; 
+			
+			[Bindable]
+			[Inject(id="login")]
+			public var loginSequence:LoginControl;
+			   
+			[Bindable]
+			private var _dp:ArrayCollection;
+			 
+			private function onAddedToStage():void{
+				dispatchEvent( new Event( 'configureIOC', true ) )
+				auth.login('ovalmy','acv');
+				auth.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE , checkLogin); 
+ 			} 
+			private function checkLogin(ev : PropertyChangeEvent):void{
+				if(ev.currentTarget.authenticated)
+				{
+					loginSequence.start();	
+				}
+			}
+			private function resultHandler( rpcevt:ResultEvent, token:Object =null ):void {
+					_dp = rpcevt.result as ArrayCollection;
+					trace('result view')
+			}
+			
+			private function faultHandler( event:FaultEvent,token:Object = null ):void{
+					
+			}
+			
+			private function clickHandler( event:MouseEvent ):void {
+				switch( event.currentTarget.label ) {
+					case 'Add':
+					
+					break;
+					case 'Get':
+					
+					break;
+					case 'Update':
+					
+					break;
+					case 'Delete':
+					
+					break;
+					case 'BulkUpdate':
+					
+					break;
+					case 'DeleteAll':
+					
+					break;
+					default:
+					break;
+				}
+				
+			}
+		]]>
+	</mx:Script>       
+	<mx:VBox>
+		<mx:DataGrid id="myProvider" dataProvider="{ model.items }" width="800" height="100%"
+			          horizontalScrollPolicy="on" verticalScrollPolicy="on"/>
+		<mx:HBox>
+			<mx:Button label="Add" click="clickHandler( event )"/>
+			<mx:Button label="Get" click="clickHandler( event )"/>
+			<mx:Button label="Update" click="clickHandler( event )"/>
+			<mx:Button label="Delete" click="clickHandler( event )"/>
+			<mx:Button label="BulkUpdate" click="clickHandler( event )"/>
+			<mx:Button label="DeleteAll" click="clickHandler( event )"/>
+		</mx:HBox>
+	</mx:VBox>
+</mx:Canvas>

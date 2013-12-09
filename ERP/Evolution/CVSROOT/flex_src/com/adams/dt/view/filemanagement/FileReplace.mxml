@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow 	xmlns:mx="http://www.adobe.com/2006/mxml" 
+				            showCloseButton="true" title="Replace File" close="onClose()" 
+				            layout="absolute" headerHeight="30" width="500" horizontalScrollPolicy="off"
+				            styleName="bgContainer"  verticalScrollPolicy="off" 
+				            mouseDownOutside="onClose()" creationComplete="onCreationComplete()">
+	<mx:Metadata>
+		[Event(name='startReplacing', 'flash.events.Event')]
+	</mx:Metadata>			            
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.scheduler.util.DateUtil;
+			import com.adams.dt.business.util.StringUtils;
+			import com.adams.dt.business.util.FileNameSplitter;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.FileCategory;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private var _uploadFiles:Array = [];
+			
+			public var replaceableFile:FileDetails;
+			
+			private function onClose():void {
+				PopUpManager.removePopUp( this );
+			}
+			
+			private function onCreationComplete():void {
+				addEventListener( NativeDragEvent.NATIVE_DRAG_ENTER, onDragIn, false, 0, true );
+				addEventListener( NativeDragEvent.NATIVE_DRAG_DROP, onDragDrop, false, 0, true );
+			}
+			
+			private function onDragIn( event:NativeDragEvent ):void {
+				if( event.clipboard.hasFormat( ClipboardFormats.FILE_LIST_FORMAT ) ) {
+					var files:Array = event.clipboard.getData( ClipboardFormats.FILE_LIST_FORMAT ) as Array;
+					NativeDragManager.acceptDragDrop( this );
+				}
+			}
+			
+			private function onDragDrop( event:Event ):void {
+				var arr:Array;
+				if( event.type == NativeDragEvent.NATIVE_DRAG_DROP ) {
+					arr = NativeDragEvent( event ).clipboard.getData( ClipboardFormats.FILE_LIST_FORMAT ) as Array;
+				}
+				else if( event.type == FileListEvent.SELECT_MULTIPLE ) {
+					arr = FileListEvent( event ).files;
+				}
+				var arr_Len:int = arr.length;
+				if( ( arr_Len > 1 ) || ( _uploadFiles.length == 1 ) ) {
+					Alert.show( 'Only One File can be dropped ' );
+				}
+				else if( File( arr[ 0 ] ).extension != 'pdf' ) {
+					Alert.show( 'Please drop a PDF file only ' );
+				}
+				else {
+					var incomingItems:Array = [];
+					var incomingCollection:ArrayCollection = new ArrayCollection();
+					
+					for( var k:int = 0; k < _uploadFiles.length; k++ ) {
+						incomingCollection.addItem( _uploadFiles[ k ] );
+					}
+					for( var j:int = 0; j < arr_Len; j++ ) {
+						if( checkDuplicateItem( arr[ j ], incomingCollection ) ) {
+							arr[ j ] = undefined;
+						}
+					}
+					for( var l:int = 0; l <  arr_Len; l++ ) {
+						if( arr[ l ] != undefined ) {
+							incomingItems.push( arr[ l ] );
+						}
+					}
+					for( var i:int = 0; i < incomingItems.length; i++ ) {
+						var dropedFileObject:File = incomingItems[ i ];					
+						
+						_uploadFiles.push( { name:dropedFileObject.name, size:formatFileSize( dropedFileObject.size ), status:"initial", fileObj:dropedFileObject } );
+						
+						var fileObj:FileDetails = new FileDetails();
+						fileObj.fileName = dropedFileObject.name;
+						fileObj.downloadPath = dropedFileObject.nativePath;
+						fileObj.destinationpath = model.parentFolderName + model.currentProjects.categories.categoryFK.categoryFK.categoryName + "/"+ model.currentProjects.categories.categoryFK.categoryName+"/"+model.currentProjects.categories.categoryName+"/"+StringUtils.compatibleTrim( model.currentProjects.projectName );
+						fileObj.type = replaceableFile.type;      
+						fileObj.taskId = replaceableFile.taskId;
+						fileObj.releaseStatus = replaceableFile.releaseStatus;
+						model.currentProjectFiles.addItem( fileObj );
+						model.pdfConversion = true;
+					}
+					
+					listFiles.dataProvider  = _uploadFiles;  
+					
+					if( !uploadButton.visible ) {
+						uploadButton.visible = true;
+						btn.visible = false;
+					}
+				}	
+			}
+			
+			private var file:File;
+			private function addFile():void {
+				file = new File();
+				file.browseForOpenMultiple( "Upload" );
+				file.addEventListener( FileListEvent.SELECT_MULTIPLE, onDragDrop, false, 0, true );
+			}
+			
+			private function removeFile():void {
+				if( !listFiles.selectedItem ) {
+					Alert.show( model.loc.getString( 'pleaseSelectAtleastOneItem' ) );
+				}
+				else {
+					var selectedArray:Array = listFiles.selectedIndices;
+					for( var i:int = 0; i < selectedArray.length; i++ ) {
+						checkDuplicateItem( _uploadFiles[ i ], model.currentProjectFiles, true );							
+						_uploadFiles[ i ] = undefined;
+					}
+					var newItems:Array = [];
+					for( var j:int = 0; j <  _uploadFiles.length; j++ ) {
+						if( _uploadFiles[ j ] != undefined ) {
+							newItems.push( _uploadFiles[ j ] );
+						}
+					}
+					_uploadFiles = newItems;
+					listFiles.dataProvider  = _uploadFiles;
+					if( !btn.visible ) {
+						btn.visible = true;
+						uploadButton.visible = false;
+					}
+				}
+			}
+			
+			private function formatFileSize( numSize:Number ):String {
+				var strReturn:String;
+				numSize = Number( numSize / 1000 );
+				strReturn = String( numSize.toFixed( 1 ) + " KB" );
+				if ( numSize > 1000 ) {
+					numSize = numSize / 1000;
+					strReturn = String( numSize.toFixed( 1 ) + " MB" );
+					if ( numSize > 1000 ) {
+						numSize = numSize / 1000;
+						strReturn = String( numSize.toFixed( 1 ) + " GB" );
+					}
+				}				
+				return strReturn;
+			}
+			
+			private function checkDuplicateItem( item:Object, dp:ArrayCollection, projectfile:Boolean = false ):Boolean {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [ new SortField( "name" ) ];
+	            dp.sort = sort;
+	            dp.refresh(); 
+				var cursor:IViewCursor =  dp.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if(	found &&	projectfile ) {
+					dp.removeItemAt( dp.getItemIndex( cursor.current ) );
+				}	
+				return found;
+	       } 
+	       
+	       private function onReplace():void {
+	       		for each( var item:FileDetails in model.currentProjectFiles ) {
+					var filename:String = item.fileName; 
+					var splitObject:Object = FileNameSplitter.splitFileName( item.fileName );
+					
+					if( item.taskId != 0 ) {
+						filename = splitObject.filename + item.taskId;
+		   			}
+		   			
+		   			item.storedFileName = filename + DateUtil.getFileIdGenerator() + "." + splitObject.extension;
+					item.projectFK = model.currentProjects.projectId;
+					item.downloadPath = onUpload( item );
+					item.releaseStatus = replaceableFile.releaseStatus;
+					model.filesToUpload.addItem( item );
+				}
+				
+				if( model.filesToUpload.length > 0 ) {
+					model.bgUploadFile.idle = true;
+					model.bgUploadFile.fileToUpload = model.filesToUpload;
+				}	
+				
+				dispatchEvent( new Event( 'startReplacing' ) );
+				onClose();
+	       }
+	       
+	       private function onUpload( fileObj:Object ):String {
+	        	var uploadfile:File = new File( fileObj.downloadPath );
+	        	var fullPath:String = "DTFlex"+ File.separator + String( fileObj.destinationpath + File.separator + fileObj.type ).split( model.parentFolderName )[ 1 ] + "/" + fileObj.storedFileName;
+	        	var copyToLocation:File = File.userDirectory.resolvePath( fullPath ); 
+	        	if( uploadfile.exists  &&  !copyToLocation.exists ) {
+	        		uploadfile.copyTo( copyToLocation, true ); 
+	        	}	
+	        	return copyToLocation.nativePath;
+	  	 	}
+			
+		]]>
+	</mx:Script>
+	<mx:DataGrid id="listFiles"	 left="10" right="10" top="10" height="80">
+			<mx:columns >
+				<mx:DataGridColumn width="220" headerText="{ model.loc.getString( 'files' ) }"  dataField="name" wordWrap="true" textAlign="center"/>
+				<mx:DataGridColumn width="50" headerText="{ model.loc.getString( 'size' ) }"  dataField="size" textAlign="center"/>
+			</mx:columns >
+	</mx:DataGrid>
+	<mx:HBox right="10" y="{ listFiles.y + listFiles.height + 10 }" horizontalAlign="center" verticalAlign="middle">
+			<mx:LinkButton id="btn" toolTip="Add file" styleName="attachBtn" click="addFile()" label="Select" includeInLayout="{ btn.visible }"/>
+			<mx:Button id="uploadButton" click="onReplace()" label="Replace" includeInLayout="{ uploadButton.visible }" visible="false"/>
+			<mx:Button id="removeButton" styleName="deleteIcon" toolTip="RemoveFile" 
+				              buttonMode="true" click="removeFile()"/>						
+	</mx:HBox>
+</mx:TitleWindow>

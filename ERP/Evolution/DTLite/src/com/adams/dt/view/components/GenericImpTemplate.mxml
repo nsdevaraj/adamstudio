@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" creationComplete="onCreationComplete()">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.DefaultTemplate;
+		import mx.controls.Alert;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.event.DefaultTemplateEvent;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();
+		
+		private function onCreationComplete():void{
+			var ev:DefaultTemplateEvent = new DefaultTemplateEvent(DefaultTemplateEvent.EVENT_GET_ALL_DEFAULT_TEMPLATE);
+			ev.dispatch();
+			addEventListener('valueChanged',checkBoxSelected,false,0,true);
+		}
+		private function checkBoxSelected(ev:Event):void{
+			defTemps.selectedItem.companyFK = model.clientCompanyId; 
+			var evUp:DefaultTemplateEvent = new DefaultTemplateEvent(DefaultTemplateEvent.UPDATE_DEFAULT_TEMPLATE);
+			evUp.defaultTemplates = defTemps.selectedItem as DefaultTemplate;
+			evUp.dispatch();
+		}		
+		
+	]]>
+</mx:Script>
+<mx:DataGrid id="defTemps" dataProvider="{model.getAllDefaultTemplateCollect}"  width="100%" height="100%" >
+	<mx:columns>
+		<mx:DataGridColumn headerText="IMP Template Name" dataField="defaultTemplateLabel"/>
+		<mx:DataGridColumn headerText="Convert into Generic Template" dataField="companyFK" itemRenderer="com.adams.dt.view.components.CheckBoxRenderer"/>
+	</mx:columns>
+</mx:DataGrid>
+</mx:Canvas>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- http://blog.flexexamples.com/2009/06/19/setting-the-viewport-inset-on-a-spark-scroller-control-in-flex-4/ -->
+<s:Application name="Spark_Scroller_minViewportInset_test"
+			   xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<mx:ApplicationControlBar width="100%" cornerRadius="0">
+		<mx:Form styleName="plain">
+			<mx:FormItem label="minViewportInset:">
+				<s:HSlider id="slider1"
+						   maximum="50"
+						   liveDragging="true" />
+			</mx:FormItem>
+			<mx:FormItem label="width:">
+				<s:HSlider id="slider2"
+						   minimum="100"
+						   maximum="550"
+						   value="300"
+						   liveDragging="true" />
+			</mx:FormItem>
+			<mx:FormItem label="height:">
+				<s:HSlider id="slider3"
+						   minimum="100"
+						   maximum="550"
+						   value="200"
+						   liveDragging="true" />
+			</mx:FormItem>
+		</mx:Form>
+	</mx:ApplicationControlBar>
+	
+	<s:Panel horizontalCenter="0" verticalCenter="0">
+		
+		<s:Scroller id="scroller"
+					minViewportInset="{slider1.value}"
+					width="300" height="200">
+			<s:Group>
+				<s:Panel width="{slider2.value}"
+						 height="{slider3.value}">
+					
+				</s:Panel>
+				
+				<s:Rect id="rect" width="100%" height="50">
+					<s:fill>
+						 <s:SolidColor color="red" />
+					</s:fill>
+				</s:Rect>
+			</s:Group>
+		</s:Scroller>
+	</s:Panel>
+	
+</s:Application>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" 
+		xmlns:components="com.adams.scrum.views.components.*" 
+		xmlns:renderers="com.adams.scrum.views.renderers.*" 
+		xmlns:views="com.adams.scrum.views.*"
+		xmlns:mediators="com.adams.scrum.views.mediators.*">	
+	 <s:states>
+		 <s:State name="BasicState"/>
+		 <s:State name="NewStory"/>
+		 <s:State name="EditStory"/>
+		 <s:State name="BurnDown"/>
+	 </s:states> 
+	<fx:Metadata>
+		[HostComponent("com.adams.scrum.views.mediators.ProductOpenViewMediator")]
+	</fx:Metadata>  	
+	<components:NativePanel id="splPanel" width="100%" height="100%" 
+							horizontalCenter="0" verticalCenter="0"
+			 skinClass="assets.skins.ClosePanelSkin" title="Product Backlog"  >
+		<s:Scroller top="4" bottom="4" left="4" right="4">
+		<s:Group  clipAndEnableScrolling="true" width="100%" height="100%" >
+			<components:NativeDatagrid id="pBlog" width="100%" height="100%" top="{ bodyPanel.height }" 
+									                    rowCount="{ pBlog.dataProvider.length }" 
+														selectedSprint="{ sprintList.selectedItem }"
+														textAlign="right">
+				<components:columns >
+					<mx:DataGridColumn id="storyIdColumn" dataField="storyId" headerText="StoryId" sortable="false" />
+					<mx:DataGridColumn id="editColumn" dataField="edit" headerText="Modify" sortable="false" />
+					<mx:DataGridColumn id="asColumn" dataField="asLabel" headerText="As"/>
+					<mx:DataGridColumn id="IWantToColumn" dataField="IWantToLabel" headerText="I want to"/>
+					<mx:DataGridColumn id="soThatICanColumn" dataField="soThatICanLabel" headerText="So that I Can"/>
+					<mx:DataGridColumn id="versionColumn" dataField="version" headerText="Version" sortable="false"/>
+					<mx:DataGridColumn id="pointsColumn" dataField="storypoints" headerText="Points"/>
+					<mx:DataGridColumn id="priorityColumn" dataField="priority" headerText="Priority"/>
+					<mx:DataGridColumn id="statusColumn" dataField="status" headerText="Status" sortable="false"/>
+					<mx:DataGridColumn id="istaskReadyColumn" dataField="istaskReady" headerText="Task Ready" sortable="false"/>
+					<mx:DataGridColumn id="letSprintAddColumn" dataField="letSprintAdd" headerText="Add to Sprint" sortable="false"/>
+					<mx:DataGridColumn id="deleteColumn" dataField="delete" headerText="Delete" sortable="false"/>
+				</components:columns>
+			</components:NativeDatagrid>
+			<s:Group width="100%" id="bodyPanel" >
+				<s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#b1b1b1" /></s:fill></s:Rect>
+				<s:VGroup width="100%" horizontalAlign="left" id="headerBgPanel" 
+						  paddingTop="10" paddingRight="5" paddingLeft="5" paddingBottom="5">
+					<s:HGroup verticalAlign="middle" width="100%"> 
+					
+						<s:Label id="productName" styleName="headerStyle"/>
+						<components:NativeButton id="pConfigBtn" styleName="ConfigIcon" label="Config" />
+						<mx:Spacer width="100%"/>
+						<components:NativeButton label="Burn Down" id="burnDownChart"/>
+						<s:Label text="Theme Filter"/>
+						<s:DropDownList id="themeList" labelField="themeLbl" selectedIndex="0" />
+						<s:Label text="Stories Filter"/>
+						<s:DropDownList id="storyList" selectedIndex="0"/>
+					</s:HGroup>
+					<s:VGroup>
+						<s:Label id="productComments"/>
+					</s:VGroup>
+					<s:HGroup width="100%">
+						<components:NativeButton id="showStoryBtn" label.BasicState="Story" styleName.BasicState="NewIcon" styleName.NewStory="CancelIcon"  styleName.EditStory="CancelIcon" label.EditStory="Close" label.NewStory="Close"/>
+						<mx:Spacer width="100%" />
+						<components:NativeButton id="sprintOpenBtn" label="Goto" enabled="{ ( sprintList.dataProvider.length > 0 ) }"/>
+						<s:DropDownList id="sprintList" labelField="sprintLabel" selectedIndex="0"/>
+					</s:HGroup>
+					
+					<s:Group width="100%" id="storyviewId">
+						<s:Rect width="100%" height="100%">
+							<s:fill>
+								<s:SolidColor color="#cfcfcf"/>
+							</s:fill>
+						</s:Rect>
+						<s:HGroup width="100%" verticalAlign="middle" >
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="As" />
+								<s:DropDownList id="userRoleArr"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="I Want to" />
+								<s:TextInput id="iwant"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="Version" />
+								<s:DropDownList id="versionArr" labelField="versionLbl" selectedIndex="0"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="Rating" />
+								<components:RatingComponent id="storypoints" styleName="Star" vpoints="40" skinClass="com.adams.scrum.views.components.RatingComponentSkin"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="Themes" />
+								<components:ThemeSelector height="55" id="themeSelector"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="So that I can" /> 
+								<s:TextArea id="sotht" height="50" />
+							</s:VGroup>	
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="Story comments" /> 
+								<s:TextArea id="storyComments" height="50" />
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<s:Label text="File Upload" /> 
+								<components:NativeTileList id="fileList" height="50"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory,EditStory">
+								<components:NativeButton id="browserFileBtn" styleName="NewIcon"  label="Browse"/>
+							</s:VGroup>
+							<s:VGroup includeIn="NewStory">
+								<components:NativeButton id="addNewStoryBtn" styleName="NewIcon"  label="Story"/>
+							</s:VGroup>
+							<s:VGroup includeIn="EditStory">
+								<components:NativeButton id="edit" label="Update"/>
+							</s:VGroup>
+							<s:VGroup includeIn="EditStory">
+								<components:NativeButton id="storycancel" label="Cancel"/>
+							</s:VGroup>
+						</s:HGroup>
+					</s:Group>	
+				</s:VGroup>	
+			</s:Group>	
+		</s:Group> 
+		</s:Scroller>
+	</components:NativePanel>
+	<mediators:BurnDownMediator skinClass="com.adams.scrum.views.BurnDownSkinView" id="burnDownMediator" width="100%" height="100%" includeIn="BurnDown"/>
+</s:Skin>

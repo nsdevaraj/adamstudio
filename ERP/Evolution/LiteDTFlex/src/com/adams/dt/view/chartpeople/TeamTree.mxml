@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:container="com.adams.dt.view.Message.*"
+		 width="100%" height="100%"  
+	     creationComplete="onCreationComplete()" horizontalGap="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	     
+	<mx:Binding source="model.teamlLineCollection" destination="this.treeProvider"/>	
+	<mx:Script>
+		<![CDATA[
+			import mx.events.EffectEvent;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.event.chartpeople.ShowMessageEvent;
+			import mx.events.AdvancedDataGridEvent;
+			import mx.events.ListEvent;
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.HierarchicalCollectionView;
+			import mx.collections.IHierarchicalCollectionViewCursor;
+			import mx.collections.IHierarchicalCollectionView;
+			import mx.controls.Alert;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.vo.Teamlines;
+			import mx.collections.ArrayCollection;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+			private var personObj:Persons;
+			
+			private var _treeProvider:ArrayCollection;
+			[Bindable]
+			public function get treeProvider():ArrayCollection {
+				return _treeProvider;
+			}
+			public function set treeProvider( value:ArrayCollection ):void {
+				if( value ) {
+					 _treeProvider = makeDataProvider( value );
+				}
+			}			
+			private function makeDataProvider( arrC:ArrayCollection ):ArrayCollection {
+				var tempCollection:ArrayCollection = new ArrayCollection();
+				for each( var item:Teamlines in  arrC ) {
+		    		var obj:Object = itemCheck( item, tempCollection );
+			    	if( obj ) {
+		    			getChildObjects( item, obj.children );
+		    		}
+			    	else {
+			    		var profileObject:Object =	getHeaderObject( item );
+			    		getChildObjects( item, profileObject.children ); 
+			    		tempCollection.addItem( profileObject );
+			    	}
+		    	}
+		    	return tempCollection;
+		    }		    
+		    private function itemCheck( item:Teamlines, arrC:ArrayCollection ):Object {
+		    	for each( var obj:Object in  arrC ) {
+		    		if( obj.profileID == item.profileID ) {
+		    			return obj;
+		    		}
+		    	}
+		    	return null;
+		    }		    
+		    private function getHeaderObject( item:Teamlines ):Object {
+		    	var obj:Object = {};
+	    		obj.headerLabel = Profiles( checkProfile( item.profileID ) ).profileLabel; 
+	    		obj.headerColor = Profiles( checkProfile( item.profileID ) ).profileColor; 
+	    		obj.profileID = Profiles( checkProfile( item.profileID ) ).profileId;
+	    		obj.children = new ArrayCollection();
+	    		return obj;
+		    }		    
+		    private function getChildObjects( team:Object, resutlCollection:ArrayCollection ):void {
+		    	var obj:Object = {};
+		    	obj.personName = Persons( getPerson( team.personID ) ).personFirstname;
+		    	obj.personPict = Persons( getPerson( team.personID ) ).personPict;
+		    	obj.personEmail = Persons( getPerson( team.personID ) ).personEmail;
+		    	obj.personID = Persons( getPerson( team.personID ) ).personId;
+		    	var profileObj:Profiles = Profiles( checkProfile( team.profileID ) ); 
+		    	obj.profileColor = profileObj.profileColor; 
+		    	if( Persons( getPerson( team.personID ) ).defaultProfile == 1 ) {
+					obj.showMessage = false;
+				}
+				else {
+					obj.showMessage = true;
+				}
+				if( ( profileObj.profileCode != 'ADM' ) 
+				    && ( profileObj.profileCode != 'CLT' ) 
+				    && ( profileObj.profileCode != 'FAB' ) 
+				    && ( profileObj.profileCode != 'TRA' ) 
+				    && ( profileObj.profileCode != 'OPE' )  ) 	{
+					obj.showChat = false;
+				}
+				else {
+					obj.showChat = true;
+				}
+		    	resutlCollection.addItem( obj );
+		    }		    
+		    private function checkProfile( id:int ):Profiles {
+				for each( var item:Profiles in model.teamProfileCollection	) {
+	        		if( item.profileId == id ) {
+	        			return item; 
+	        		}
+	    		}
+	    		return null;
+			}
+		    private function getPerson( id:int ):Persons {
+				for each( var item:Persons in model.personsArrCollection ) {
+					if( item.personId == id ) {
+						return item;
+					}
+				}
+				return null;
+			}			
+			private function onCreationComplete():void {
+				teamGrid.addEventListener( ShowMessageEvent.SHOW_MESSAGE, onShowMessage, false, 0, true );
+			}
+			
+			private function resizeDatagrid():void {
+				teamGrid.verticalScrollPosition = teamGrid.maxVerticalScrollPosition;
+			}
+			
+			private function onItemClick( event:ListEvent ):void {
+				var selectedObj:Object = AdvancedDataGrid( event.currentTarget ).selectedItem;
+				if( selectedObj.hasOwnProperty( 'profileID' ) ) {
+					teamGrid.expandItem( selectedObj, !teamGrid.isItemOpen( selectedObj ), true );
+				}	
+			}			
+			private function calcRowColor( data:Object, col:AdvancedDataGridColumn ):Object {
+				if( data.hasOwnProperty( 'profileID' ) && col.dataField == "headerLabel" ) {
+					var profile:Profiles = checkProfile( data.profileID );
+					return { rowColor:0x222222, fontWeight:"bold" };
+				}
+				return { rowColor:0x363636 };
+			}			
+			[Bindable]
+			private var mesgVisible:Boolean;
+			private function onShowMessage( event:ShowMessageEvent ):void {
+				personObj = GetVOUtil.getPersonObject( event.messagePersonId );
+				messageComp.personData( personObj );
+				if( !mesgVisible ) {
+					mesgPanel.includeInLayout = true;
+					animatePanel.fromValue = this.width;
+					animatePanel.toValue = this.width + mesgPanel.width;
+					animatePanel.play();	
+					mesgVisible = true;
+				} 
+			}			
+			private function messageStateClose():void {
+				animatePanel.fromValue = this.width;
+				animatePanel.toValue = this.width - mesgPanel.width;
+				animatePanel.play();
+				
+				animatePanel.addEventListener( EffectEvent.EFFECT_END, setMesgPanelVisible, false, 0, true );
+				if( messageComp ) {
+					messageComp.resetMessage();
+				}
+			}			
+			private function setMesgPanelVisible( eve:EffectEvent ):void {
+				animatePanel.removeEventListener( EffectEvent.EFFECT_END,setMesgPanelVisible );
+				mesgVisible = false;
+			}			
+		]]>
+	</mx:Script>
+	<mx:states>
+		<mx:State name="mesgPanelState">
+			<mx:SetStyle name="right" target="{mesgPanel}" value="0" />
+			<mx:SetStyle name="right" target="{teamGrid}" value="{mesgPanel.width}"/>
+		</mx:State>
+	</mx:states>
+	 
+	<mx:AnimateProperty id="animatePanel" property="width" target="{ this }"/>
+	<mx:AdvancedDataGrid id="teamGrid" height="100%" headerHeight="0" width="200" resizeEffect="Resize"
+						 folderClosedIcon="{ null }" folderOpenIcon="{ null }"  styleName="advGridStyle"
+	                     defaultLeafIcon="{ null }" styleFunction="calcRowColor" 
+	                     variableRowHeight="true" sortableColumns="false"  
+	                     draggableColumns="false" headerStyleName="dgTextStyle"
+	                     resizableColumns="false" dragEnabled="true"
+	                     itemClick="onItemClick( event )" 
+	                     itemRenderer="com.adams.dt.view.chartpeople.renderers.RowRenderer">
+        <mx:dataProvider>
+            <mx:HierarchicalData id="teamGridProvider" source="{ treeProvider }"/>
+        </mx:dataProvider>
+        <mx:columns>
+        	<mx:AdvancedDataGridColumn dataField="headerLabel" headerText="Profiles"  
+				                       id="profileColumn"/>
+        </mx:columns>
+        <mx:rendererProviders>
+            <mx:AdvancedDataGridRendererProvider column="{ profileColumn }"
+                								 depth="2" 
+                								 renderer="com.adams.dt.view.chartpeople.renderers.CommunicationRenderer"/>
+        </mx:rendererProviders>
+    </mx:AdvancedDataGrid>
+    
+    <mx:HBox horizontalGap="0" paddingTop="0" paddingLeft="0" paddingRight="0" paddingBottom="0" 
+    	 id="mesgPanel" includeInLayout="{mesgVisible}" visible="{mesgVisible}" right="0" width="430" height="100%" verticalAlign="middle" >
+    	
+    	<mx:Button styleName="sideTabBar" width="6" height="100%" id="sideBarBtn"  verticalCenter="0" />
+    	<container:MessageComponent id="messageComp" width="100%"  height="100%" msgCancel="messageStateClose()" msgClose="messageStateClose()" />	
+    </mx:HBox>
+    
+</mx:HBox>

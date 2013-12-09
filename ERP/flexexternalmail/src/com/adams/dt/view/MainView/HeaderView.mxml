@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ApplicationControlBar xmlns:mx="http://www.adobe.com/2006/mxml"  
+	cornerRadius="0" paddingRight="5">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();	
+		
+		public function saveSettings():void { 
+	 		model.loc.language = enCheck.selected?"En":"Fr";
+	 	} 
+	 	
+	 	private var _langPanelVisible:Boolean = true;
+	 	public function set langPanelVisible(val:Boolean):void{
+	 		_langPanelVisible = val;
+	 	}
+	 	public function get langPanelVisible():Boolean{
+	 		return _langPanelVisible;
+	 	}
+	 	private function fsScreen():void{
+				//this.stage.displayState = StageDisplayState.FULL_SCREEN;
+				try{
+					switch (this.stage.displayState){
+						case StageDisplayState.FULL_SCREEN : 
+							this.stage.displayState = StageDisplayState.NORMAL;							
+						break;
+						case StageDisplayState.NORMAL :
+							this.stage.displayState = StageDisplayState.FULL_SCREEN;
+						break;
+					} 				
+				} 
+				catch (e : SecurityError){ 
+					// Catches any errors
+				}
+			}
+	]]>
+</mx:Script>
+			<mx:Spacer width="20%"/>
+			<!--<mx:Text text="Mail Imprimeur" styleName="menuText" width="100%"/>-->
+			<mx:Text text="{model.HeaderDetails}" styleName="menuText" width="100%"/>
+			<mx:Spacer width="100%"/>
+			<mx:HBox width="100%" id="languagePanel" visible="{langPanelVisible}">
+				<mx:FormItem label="{model.loc.getString('selectLanguage')}" width="100%" >
+			 		<mx:HBox height="100%">
+			 			<mx:RadioButton id="enCheck" click="saveSettings()" />
+			 			<mx:Button styleName="enBTN" id="enBtn"/>
+						<mx:RadioButton selected="true" id="frCheck" click="saveSettings()" />
+			 			<mx:Button styleName="frBTN" id="frBtn"/>
+			 		</mx:HBox>	 			 		
+			 	</mx:FormItem >
+			 </mx:HBox>	 	
+			 <mx:Button click="fsScreen()" styleName="fullScreenBtnSkin"/>
+			 <mx:Spacer width="10%"/>
+</mx:ApplicationControlBar>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Domainworkflows" table="domain_workflows">
+        <id name="domainWorkflowId" type="integer" column="domain_workflow_ID">
+            <generator class="increment" />
+        </id>
+        <property name="domainFk">
+            <column name="domain_FK" />
+        </property>
+        <property name="workflowFk">
+            <column name="workflow_FK" />
+        </property>
+    </class>
+    <query name="Domainworkflows.findByDomainWorkFlow">
+        select u from Domainworkflows u where u.domainFk=?
+    </query> 
+</hibernate-mapping>

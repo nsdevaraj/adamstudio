@@ -1,0 +1,1 @@
+"D:\Program Files\Adobe\Flex Builder 3\sdks\3.3.0\bin\adt" -package -storetype pkcs12 -keystore "adams.p12" DTFlex.air DTFlex-app.xml DTFlex.swf assets server.xml updateConfig.xml

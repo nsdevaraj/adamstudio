@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="120" height="50"
+		 clipAndEnableScrolling="true"
+		 showEffect="{showHideEffect}"
+		 hideEffect="{showHideEffect}"
+		 creationComplete="audioPlayerCreationCompleteHandler(event)"
+		 hide="audioPlayerHideHandler(event)">
+	<fx:Declarations>
+		<mx:Fade id="showHideEffect" duration="200" />
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import skin.CloseBtnSkin;
+			import skin.PlayBtnSkin;
+			import skin.StopBtnSkin;
+			
+			
+			private var snd:Sound = new Sound();
+			private var sndTransform:SoundTransform = new SoundTransform();
+			private var soundChannel:SoundChannel = new SoundChannel();
+			
+			private var isPlayed:Boolean = false;
+			private var isMute:Boolean = false;
+			
+			private var pausePosition:int = 0;
+
+			
+			public function playSound(url:String):void
+			{
+				snd = new Sound();
+				snd.load(new URLRequest(url));
+				this.visible = true;
+				playAndPauseBtn.setStyle("skinClass",skin.PlayBtnSkin);
+				playAndPauseBtn.toolTip = "Play";
+				muteAndUnmuteBtn.setStyle("skinClass",skin.MuteBtnSkin);
+				muteAndUnmuteBtn.toolTip = "Mute";
+				sndTransform.volume = 1;
+				soundChannel.soundTransform = sndTransform;
+				playAndPauseBtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+			}
+		
+			protected function playAndPauseBtn_clickHandler(event:MouseEvent):void
+			{
+				if(isPlayed)
+				{
+					isPlayed = false;
+					playAndPauseBtn.setStyle("skinClass",skin.PlayBtnSkin);
+					playAndPauseBtn.toolTip = "Play";
+					pausePosition = soundChannel.position;
+					soundChannel.stop();
+				}
+				else
+				{
+					isPlayed = true;
+					playAndPauseBtn.setStyle("skinClass",skin.PauseBtnSkin);
+					playAndPauseBtn.toolTip = "Pause";
+					soundChannel =  snd.play(pausePosition);
+					isMute = false;
+					muteAndUnmuteBtn.setStyle("skinClass",skin.MuteBtnSkin);
+					muteAndUnmuteBtn.toolTip = "Mute";
+					sndTransform.volume = 1;
+					soundChannel.soundTransform = sndTransform;
+				}
+			}
+			
+			protected function muteAndUnmuteBtn_clickHandler(event:MouseEvent):void
+			{
+				if(isMute)
+				{
+					isMute = false;
+					muteAndUnmuteBtn.setStyle("skinClass",skin.MuteBtnSkin);
+					muteAndUnmuteBtn.toolTip = "Mute";
+					sndTransform.volume = 1;
+					soundChannel.soundTransform = sndTransform;
+				}
+				else
+				{
+					isMute = true;
+					muteAndUnmuteBtn.setStyle("skinClass",skin.UnmuteBtnSkin);
+					muteAndUnmuteBtn.toolTip = "Unmute";
+					sndTransform.volume = 0;
+					soundChannel.soundTransform = sndTransform;
+				}
+			}
+
+
+			protected function audioPlayerCreationCompleteHandler(event:FlexEvent):void
+			{
+				playAndPauseBtn.setStyle("skinClass",skin.PlayBtnSkin);
+				playAndPauseBtn.toolTip = "Play";
+				muteAndUnmuteBtn.setStyle("skinClass",skin.MuteBtnSkin);
+				muteAndUnmuteBtn.toolTip = "Mute";
+			}
+			
+			protected function audioPlayerHideHandler(event:FlexEvent):void
+			{
+				soundChannel.stop();
+				isMute = false;
+				isPlayed = false;
+				pausePosition = 0;
+				snd = null;
+			}
+
+		]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#FFFFFF" alpha="0.5"/>
+		</s:fill>
+	</s:Rect>
+	<s:HGroup height="100%" verticalAlign="middle" left="10">
+		<s:Button id="playAndPauseBtn" skinClass="skin.PlayBtnSkin" 
+				  useHandCursor="true" buttonMode="true"
+				  width="30" height="30"
+				  click="playAndPauseBtn_clickHandler(event)"/>
+		<s:Button id="muteAndUnmuteBtn" skinClass="skin.UnmuteBtnSkin"
+				  useHandCursor="true" buttonMode="true"
+				  width="30" height="30"
+				  click="muteAndUnmuteBtn_clickHandler(event)"/>
+	</s:HGroup>
+	<s:Button right="10" skinClass="skin.CloseBtnSkin" 
+			  useHandCursor="true" buttonMode="true"
+			  width="25" height="25" 
+			  verticalCenter="0"
+			  click="this.visible = false;"/>
+	<s:filters>
+		<s:DropShadowFilter angle="0.5" quality="10" distance="5"/>
+	</s:filters>
+</s:Group>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" width="220" height="60"
+				rollOver="rollOverHandler(event)"
+				rollOut="rollOutHandler(event)"
+				depth="0" depth.hovered="1" depth.selected="2"
+				transformX="80" transformY="60">
+	<fx:Script> 
+		<![CDATA[
+			import com.adams.dam.model.ModelLocator;
+			import com.adams.dam.model.vo.FileDetails;
+			import com.adams.dam.model.vo.Projects;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			override public function set data(value:Object):void{
+				super.data = value;  
+				//var filePath:String = data.filePath;
+				getExtension(data.filePath)
+				projectNameTxt.text = getProjectName(data as FileDetails);
+			}
+			private function getExtension(str:String):void{
+				var arr:Array = str.split('.');
+				var filePath:String = arr[1];
+				trace(filePath+"filePath");
+				switch(filePath)
+				{
+					case 'pdf':{
+						img.source = 'assets/images/pdf.png';
+						break;
+					}
+					case 'ai':{
+						img.source = 'assets/images/ai.png';
+						break;
+					}
+					case 'xls':{
+						img.source = 'assets/images/xl.png';
+						break;
+					}
+					case 'psd':{
+						img.source = 'assets/images/psd.png';
+						break;
+					}
+					default:{
+						img.source = 'assets/images/note.png';
+						break;
+					}
+				}
+			}
+			private function rollOverHandler(event:MouseEvent):void{
+				expBtn.visible = true;
+			}
+			private function rollOutHandler(event:MouseEvent):void{
+				expBtn.visible = false;
+			}
+			
+			protected function download_clickHandler(event:MouseEvent):void{
+				/* var downloadEvent:DownloadEvent = new DownloadEvent( DownloadEvent.DOWNLOAD_FILE, true, true );
+				downloadEvent.file = data as FileDetails;
+				dispatchEvent( downloadEvent ); */
+			}
+			protected function getProjectName(  obj:FileDetails ):String {
+				return getProject( obj.projectFK ).projectName;
+			}
+			protected function getProject( id:int ):Projects {
+				for each( var prj:Projects in model.totalProjectsCollection ) {
+					if( prj.projectId == id ) {
+						return prj;
+					}
+				}
+				return null;
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<!--       The Zoom effect      -->
+	<s:postLayoutTransformOffsets>
+		<s:TransformOffsets id="tOffsets" 
+							scaleX="1" scaleY="1"
+							scaleX.hovered="1.03" scaleY.hovered="1.03" 
+							scaleX.selected="0.95" scaleY.selected="0.95" />
+	</s:postLayoutTransformOffsets>
+	
+	<!--       Transitions          -->
+	<s:transitions>
+		<s:Transition toState="hovered" autoReverse="true">
+			<s:Animate target="{tOffsets}" duration="200">
+				<s:SimpleMotionPath property="scaleX" />
+				<s:SimpleMotionPath property="scaleY" />
+			</s:Animate>
+		</s:Transition>
+		<s:Transition fromState="hovered" autoReverse="true">
+			<s:Animate target="{tOffsets}" duration="200">
+				<s:SimpleMotionPath property="scaleX" />
+				<s:SimpleMotionPath property="scaleY" />
+			</s:Animate>
+		</s:Transition>
+	</s:transitions>
+	
+	<s:Rect left="19" right="0" top="0" bottom="0" radiusX="10" radiusY="10">
+		 <s:fill><s:SolidColor color="#2d3f4a"/></s:fill>
+	</s:Rect>
+	
+	<s:Image id="img"   
+			 width="37" height="38" left="0" verticalCenter="0"/>
+	<s:VGroup right="1" left="45" top="5" bottom="5" gap="2">
+		<s:Label id="projectNameTxt"   width="100%" fontSize="16"
+				 showTruncationTip="true" maxDisplayedLines="1"/>
+		<s:Label text="{data.fileName}"   width="100%"
+				 showTruncationTip="true" maxDisplayedLines="1"/>
+		<s:Label text="{data.taskId}"  width="100%" 
+				 showTruncationTip="true" maxDisplayedLines="1" fontSize="18"/>
+	</s:VGroup>	
+	
+	<s:Button id="expBtn" visible="false" styleName="downloadIcon" click="download_clickHandler(event)" top="0" right="0"/>
+</s:ItemRenderer>

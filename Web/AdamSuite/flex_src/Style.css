@@ -1,0 +1,213 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@namespace view "com.adams.scrum.views.components.*";
+
+@font-face {
+	font-family: "scFont";
+	src: url("assets/fonts/mriam.ttf");
+	embedAsCff: true;
+}
+.headerStyle{
+	font-size:20;
+}
+.optionText{
+	font-size:14;
+}
+mx|Alert, mx|Button, mx|Form,mx|FormItem, mx|FormItemLabel{
+	font-family: scFont;
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+}
+mx|DateField {
+	font-family: Tahoma;
+	textInputClass: ClassReference("mx.controls.MXFTETextInput");
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+} 
+mx|Label { 
+	color:#b6b6b6;
+	font-size:13;
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+} 
+s|Label{
+	font-family:scFont;
+	color:#b6b6b6;
+	font-size:13;
+} 
+s|WindowedApplication{
+	content-background-color:#212223;
+}
+mx|Alert{
+	button-style-name:alertButton;
+	chrome-color:#333333;
+	background-color:#3a3c3d;
+	content-background-color:#3a3c3d;
+	color:#b6b6b6;
+	title-style-name:headerStyle;
+	
+}
+.alertButton{
+	color:#b6b6b6;
+	textRollOverColor:#ffffff;
+	textSelectedColor:#b6b6b6;
+	
+}
+ 
+s|CheckBox{
+	skinClass: ClassReference('assets.skins.CheckBoxSkin');
+}
+s|RadioButton{
+	skinClass: ClassReference('assets.skins.RadioButtonSkin');
+}
+s|Panel s|Button{
+	skinClass: ClassReference('assets.skins.ButtonIcon');
+}
+s|Button {
+	font-family:scFont;
+	skinClass: ClassReference('assets.skins.ButtonIcon');
+}  
+s|ButtonBar{
+	skinClass: ClassReference('assets.skins.ButtonBarSkin');
+}
+s|TabBar{
+	skinClass: ClassReference('assets.skins.TabBarSkin');
+}
+s|CheckBox{
+	skinClass: ClassReference('assets.skins.CheckBoxSkin');
+}
+s|RadioButton{
+	skinClass: ClassReference('assets.skins.RadioButtonSkin');
+}
+s|VScrollBar{
+	skinClass: ClassReference('assets.skins.scrollbar.VScrollBarSkin');
+}
+s|TextInput{
+	focus-alpha:0.2;
+	color:#f0f0f0;
+	border-color:#000000;
+	content-background-color:#474748;
+	skinClass: ClassReference('assets.skins.Components.DTTextInput');
+}
+s|TextArea{
+	focus-alpha:0.2;
+	color:#f0f0f0;
+	border-color:#000000;
+	content-background-color:#474748;
+	skinClass: ClassReference('assets.skins.Components.DTTextInput');
+}
+mx|ScrollBar{
+	trackSkin: Embed(source='assets/images/scrollTrack.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbUpSkin:Embed(source='assets/images/scroll_thumb.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbOverSkin:Embed(source='assets/images/scroll_thumb.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+	thumbDownSkin:Embed(source='assets/images/scroll_thumb.png',scaleGridLeft=1, scaleGridRight=2, scaleGridTop=3,scaleGridBottom=5);
+/*	thumb-icon:Embed(source='assets/swf/GraySkin.swf#ScrollBar_thumbIcon');*/
+	upArrowUpSkin:Embed(source='assets/images/scroll_top.png');
+	upArrowDownSkin:Embed(source='assets/images/scroll_top.png');
+	upArrowOverSkin:Embed(source='assets/images/scroll_top.png');
+	up-arrow-disabled-skin:Embed(source='assets/images/scroll_top.png');
+	downArrowUpSkin:Embed(source='assets/images/scroll_bottom.png');
+	downArrowDownSkin:Embed(source='assets/images/scroll_bottom.png');
+	downArrowOverSkin:Embed(source='assets/images/scroll_bottom.png');
+	down-arrow-disabled-skin:Embed(source='assets/images/scroll_bottom.png');
+	
+}
+.FinishIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/stop.png");
+	overSkin: Embed(source="assets/images/stop.png");
+	downSkin: Embed(source="assets/images/stop.png");
+	disabled: Embed(source="assets/images/stop.png");
+}
+
+.FeedBackIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/feedback.png");
+	overSkin: Embed(source="assets/images/feedback.png");
+	downSkin: Embed(source="assets/images/feedback.png");
+	disabled: Embed(source="assets/images/feedback.png");
+}
+
+.NextIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/next.png");
+	overSkin: Embed(source="assets/images/next.png");
+	downSkin: Embed(source="assets/images/next.png");
+	disabled: Embed(source="assets/images/next.png");
+}
+
+.BackIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/pre.png");
+	overSkin: Embed(source="assets/images/pre.png");
+	downSkin: Embed(source="assets/images/pre.png");
+	disabled: Embed(source="assets/images/pre.png");
+}
+
+
+.LastIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/next_last.png");
+	overSkin: Embed(source="assets/images/next_last.png");
+	downSkin: Embed(source="assets/images/next_last.png");
+	disabled: Embed(source="assets/images/next_last.png");
+}
+
+.FirstIcon{
+	skin-class: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/images/pre_last.png");
+	overSkin: Embed(source="assets/images/pre_last.png");
+	downSkin: Embed(source="assets/images/pre_last.png");
+	disabled: Embed(source="assets/images/pre_last.png");
+}
+s|DropDownList{
+	symbol-color:#676768;
+	skin-class: ClassReference("assets.skins.DropDownListSkin");
+	content-background-color:#333333;
+	selection-color : #282828;
+	roll-over-color: #3b3b3b;
+	color:#000000;
+}
+.dropDownListButton{
+	skin-class: ClassReference("assets.skins.ScaleButtonSkin");
+	upSkin: Embed(source="assets/images/dropdownlistSkin.png");
+	overSkin: Embed(source="assets/images/dropdownlistSkin.png");
+	downSkin: Embed(source="assets/images/dropdownlistSkin.png");
+	disabled: Embed(source="assets/images/dropdownlistSkin.png");
+}
+ 
+#flagreviewBtn{
+	skin-class: ClassReference("assets.skins.ToggleButtonSkin");
+	upSkin: Embed(source="assets/images/flag.png");
+	overSkin: Embed(source="assets/images/flag.png");
+	downSkin: Embed(source="assets/images/flag.png");
+	disabledSkin: Embed(source="assets/images/flag.png");
+	
+	
+	upAndSelectedSkin: Embed(source="assets/images/flag_selected.png");
+	overAndSelectedSkin: Embed(source="assets/images/flag_selected.png");
+	downAndSelectedSkin: Embed(source="assets/images/flag_selected.png");
+	disabledAndSelectedSkin: Embed(source="assets/images/flag_selected.png");
+}
+
+/*#LearnTestToggle{
+skin-class: ClassReference("assets.skins.ToggleButtonSkin");
+upSkin: Embed(source="assets/swf/AttestIcons2.swf#TestmodeBtnSkin");
+overSkin: Embed(source="assets/swf/AttestIcons2.swf#TestmodeOverBtnSkin");
+downSkin: Embed(source="assets/swf/AttestIcons2.swf#TestmodeBtnSkin");
+disabledSkin: Embed(source="assets/swf/AttestIcons2.swf#TestmodeBtnSkin");
+
+upAndSelectedSkin: Embed(source="assets/swf/AttestIcons2.swf#LearnmodeBtnSkin");
+overAndSelectedSkin: Embed(source="assets/swf/AttestIcons2.swf#LearnmodeOverBtnSkin");
+downAndSelectedSkin: Embed(source="assets/swf/AttestIcons2.swf#LearnmodeBtnSkin");
+disabledAndSelectedSkin: Embed(source="assets/swf/AttestIcons2.swf#LearnmodeBtnSkin");
+}*/
+
+/*.ResetIcon{
+	skinClass: ClassReference("assets.skins.ButtonSkin");
+	upSkin: Embed(source="assets/swf/AttestIcons2.swf#ResetBtnSkin");
+	overSkin: Embed(source="assets/swf/AttestIcons2.swf#ResetOverBtnSkin");
+	downSkin: Embed(source="assets/swf/AttestIcons2.swf#ResetBtnSkin");
+}*/
+
+ 
+ 
+ 

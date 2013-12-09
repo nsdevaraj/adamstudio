@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" verticalGap="0" width="100%" height="100%" xmlns:cmp="components.*" creationComplete="init();">
+
+<mx:Style source="assets/css/style3CSS.css"/>
+<mx:Style source="assets/css/CutOutStyles.css" />
+<mx:Script>
+	<![CDATA[
+		import components.IFrame;
+		import mx.containers.Canvas;
+		import components.AppPanel;
+		import components.mainMenu;
+		import components.LoginPage;
+		import controller.SessionManager;
+		import events.FileDropEvent;
+		import mx.events.FlexEvent;
+		import events.HistoryEvents;
+		import business.HistoryManager;
+		import mx.events.BrowserChangeEvent;
+		import mx.managers.BrowserManager;
+		import mx.managers.IBrowserManager; 
+		import mx.utils.URLUtil;
+		import data.Users;
+		import business.LoadDemoXml;
+		import events.DemoEvents;
+		import controller.Controller;
+		import data.UploadDeatils;
+		import data.Tasks;
+		import business.XmlParser;
+		import mx.collections.ArrayCollection;
+		import mx.controls.Alert;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import events.LoginEvents;		
+		[Bindable]
+		private var query:String;
+		[Bindable]
+		public var taskObjects:ArrayCollection = new ArrayCollection();
+		[Bindable]
+		public var _serverPath:String = '';
+		public var browserManager:IBrowserManager;
+		public var demoView:Boolean = false;
+		public var docRoot:String;
+		public var rootFolder:String;
+		public function init():void{	
+			//hideApplet();			
+			var url:String = ExternalInterface.call("getUrl");
+          	rootFolder = url.split("CutOutTool.html")[0];
+           	docRoot =url.split("Cutouttool_Beta-debug")[0];
+           	Security.allowDomain(docRoot+"/upload.php");
+           	serverPath = docRoot + 'amfphp/gateway.php'; 
+			flash.system.Security.allowDomain(rootFolder+"/CutOutTool.swf")
+			//ExternalInterface.call("Show",10,10,400,200)
+			SessionManager.getInstance().addEventListener("sessionExpired",logOut);	
+			if (ExternalInterface.available){
+		      ExternalInterface.addCallback("addFileNameDetails", addFileNameDetails);
+		 	}
+			     
+		       ExternalInterface.addCallback("addUploadConfirmation", addUploadConfirmation);
+		       ExternalInterface.addCallback("inProgressError", inProgressError);
+		
+		 			        			
+			var history:HistoryManager = new HistoryManager()
+			history.addEventListener(HistoryEvents.QUERYGENERATED,updateHistoryTable);
+			createUI()
+			
+		}
+		private function inProgressError(str:String):void{
+			Alert.show(" File Upload Progressing Please Wait");
+		}
+		public var login:LoginPage;
+		public var main:mainMenu;
+		public var appPan:AppPanel;
+		private function createUI():void{
+			if(login==null){
+				login = new LoginPage();
+				login.id ="login";
+				loginView.addChild(login);
+				login.init();          	
+				login.addEventListener(LoginEvents.LOGINSUCCESS,loginSuccess);
+				login.addEventListener(DemoEvents.DEMO,activateDemo);
+				viewStack.selectedChild = loginView;
+			}				
+		}
+		public function setTimeStamp():void{
+			var curDate:Date = new Date();
+			SessionManager.getInstance().timeStamp = curDate.time;
+		}
+		public function moveEvent(dragAreaComp:IFrame):void{
+				dragAreaComp.moveIFrame();
+		}
+		public function showApplet():void{
+
+            ExternalInterface.call("showIFrame");
+		}
+		public function hideApplet():void{
+
+            ExternalInterface.call("hideIFrame");
+		}
+        public function addFileNameDetails(returnString:String):void 
+        {	
+			dispatchEvent(new FileDropEvent(returnString,FileDropEvent.FILEDROPED));
+        }
+        public function addUploadConfirmation(returnString:String):void  
+        {
+			dispatchEvent(new FileDropEvent(returnString,FileDropEvent.FILEUPLOADED));
+        }
+        
+		[Bindable]
+		private var histQuery:String='';
+		public function updateHistoryTable(event:HistoryEvents):void{
+			histQuery = event.currentTarget.sqlQuery;
+			connect.removeEventListener(ResultEvent.RESULT,uploadResultHandler);
+			connect.removeEventListener(ResultEvent.RESULT,resultHandler);
+			connect.addEventListener(ResultEvent.RESULT,historyResultHandler);
+			connect.getOperation('updateTable').send(); 
+		}
+		
+		private function historyResultHandler(event:ResultEvent):void{
+			trace("History updated"+event.result);
+		}
+		public function set serverPath(path:String):void{
+			_serverPath = path;
+			dispatchEvent(new Event("updateServerPath"));
+		}
+		[Bindable(event="updateServerPath",  type="flash.events.Event")] 
+		public function get serverPath():String{
+			return _serverPath;
+		}
+		private function activateDemo(event:DemoEvents):void{
+			this.viewStack.selectedChild = this.mainView;
+			demoView = true;
+			var loadXml:LoadDemoXml = new LoadDemoXml();
+			loadXml.addEventListener(DemoEvents.FINISHED,xmlLoaded)
+			loadXml.addEventListener(DemoEvents.PROCESSING,processing)
+			Controller.getInstance().demoObj = loadXml;
+		
+		}
+		[Bindable]
+		private var selectedChild:String = 'mainView'
+		private function mainPageCreated(event:Event):void{
+			selectedChild = event.currentTarget.buttonName;						
+			viewStack.selectedChild = appPanelView;
+			createAppPanel();
+		}
+		private function processing(event:DemoEvents):void{
+			
+		}
+		private function xmlLoaded(event:DemoEvents):void{
+			var users:Users = new Users();
+			Controller.getInstance().userObj = users;
+			var resultMsg:XML = Controller.getInstance().demoObj.users
+			new XmlParser(XML(resultMsg.row),users); 
+			parseTaskData(Controller.getInstance().demoObj.taskXml);		
+		}
+		
+		private function loginSuccess(event:LoginEvents):void{
+			createMainView();
+			if(Controller.getInstance().userObj.type == "1"){
+				updateQuery = "select * from tasks where creator = '"+event.currentTarget.keyId+"' ORDER BY status ASC, dedline ASC";				
+			}else{
+				updateQuery = "select * from tasks ORDER BY status ASC, dedline ASC";				
+			}	
+			connect.addEventListener(ResultEvent.RESULT,resultHandler);
+			connect.getOperation('xmldb').send();			
+			this.viewStack.selectedChild = this.mainView;
+			if(main!=null){
+				main.init();
+				//createAppPanel();
+			}
+		}
+		public function createMainView():void{
+			main = new mainMenu();
+			main.id = "main";
+			main.addEventListener("buttonClicked",mainPageCreated);
+			mainView.addChild(main);			
+		}
+		public function createAppPanel():void{
+			appPan = new AppPanel();
+			appPan.id = "appPan";			
+			appPan.addEventListener("logOut",logOut);
+			appPan.addEventListener(FlexEvent.CREATION_COMPLETE,loadSelectedChild);
+			appPanelView.addChild(appPan);
+		}
+		private function loadSelectedChild(event:FlexEvent):void{
+			appPan.childName = selectedChild;
+			appPan.initCan();
+		}
+		public function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		public function get updateQuery():String{
+			return query;
+		}
+		private function faultHandler(event:FaultEvent):void{
+		  Alert.show('Error:'+event.message);
+		}
+		private function resultHandler(event:ResultEvent):void{
+			parseTaskData(XML(event.result))
+		}
+		private function parseTaskData(resultMsg:XML):void{
+			var tableData:XMLList = XMLList(resultMsg.row);
+			for(var i:int=0;i<tableData.length();i++){
+				
+				var taskData:Tasks = new Tasks();
+				new XmlParser(tableData[i],taskData);
+				var obj:Object = new Object();
+				obj["task"] = taskData;
+				taskObjects.addItem(obj);				
+			}	
+			Controller.getInstance().taskObj = taskObjects;
+			for(var j:int=0;j<taskObjects.length;j++){
+				if(demoView){
+					var demoObj:LoadDemoXml = Controller.getInstance().demoObj;
+					updateImageDeatils(demoObj["uploadDeatils_"+taskObjects[j].task.pk_task]);
+				}else{
+					getUploadedDetails(taskObjects[j].task.pk_task);
+				}
+			}
+		}
+		private function getUploadedDetails(id:String):void{
+			connect.removeEventListener(ResultEvent.RESULT,resultHandler);
+			updateQuery = "select * from uploadeddetails where pk_task = '"+id+"'"
+			connect.addEventListener(ResultEvent.RESULT,uploadResultHandler);
+			connect.getOperation('xmldb').send();			
+		}
+		private function uploadResultHandler(event:ResultEvent):void{
+			updateImageDeatils(XML(event.result));			
+		}
+		private function updateImageDeatils(resultMsg:XML):void{
+			var taskObject:Tasks = new Tasks();
+			 var _uploadedImageDeatils:ArrayCollection = new ArrayCollection();
+			var _deliveredImageDeatils:ArrayCollection = new ArrayCollection();
+			var tableData:XMLList = XMLList(resultMsg.row);
+			for(var i:int = 0; i<tableData.length();i++){				
+				var uploadedData:UploadDeatils = new UploadDeatils();
+				new XmlParser(tableData[i],uploadedData);
+				if(uploadedData.status=="uploaded"){
+					_uploadedImageDeatils.addItem(uploadedData);
+				}else if(uploadedData.status=="delivered"){
+					_deliveredImageDeatils.addItem(uploadedData);					
+				}
+			  taskObject = Controller.getInstance().getTaskObj(uploadedData.pk_task);
+			  
+			}		
+			taskObject.uploadedImageData = _uploadedImageDeatils;
+			taskObject.deliveredImageData = _deliveredImageDeatils;
+		}		
+		/**
+		 * Effect
+		 */
+		import mx.effects.easing.Elastic;
+		import mx.effects.easing.Bounce;
+		public var currentViewIndex:int;
+
+		private function changeStatus(userId:String):void{			
+			histQuery = "update users set sessionid = 0 where pk_user = '"+userId+"'";			
+			connect.getOperation('updateTable').send();
+		}
+		private function logOut(event:Event):void{
+			login.removeEvents();
+			changeStatus(Controller.getInstance().userObj.pk_user)
+			Controller.getInstance().garbageCollection()
+			viewStack.selectedChild = mainView
+			viewStack.selectedChild = loginView;
+			if(login!=null)login.init();
+			garbageCollection();
+		}
+		/**
+		 * Garbage Collection
+		 */
+		private function garbageCollection():void{
+			demoView = false;
+			connect.removeEventListener(ResultEvent.RESULT,resultHandler);
+			connect.removeEventListener(ResultEvent.RESULT,uploadResultHandler);
+			mainView.removeAllChildren();	
+			appPanelView.removeAllChildren();
+			//if(mainView!=null) viewStack.removeChild(mainView);
+			//if(appPanelView!=null) viewStack.removeChild(appPanelView);
+			
+		}
+	]]>
+</mx:Script>
+	<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="xmldb">
+				<mx:arguments>
+					<query>{updateQuery}</query>
+				</mx:arguments>
+			</mx:method>
+			<mx:method name="updateTable">
+				<mx:arguments>
+					<query>{histQuery}</query>
+				</mx:arguments>
+			</mx:method>
+	</mx:RemoteObject> 
+	
+	<mx:Parallel id="alertCreationCompleteEffect" target="{loginView}">
+        <mx:Fade duration="500" />
+        <mx:Move yFrom="100"
+                easingFunction="Elastic.easeOut"
+                duration="1000" />
+    </mx:Parallel>
+	<mx:HBox width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" >
+		<mx:ViewStack creationPolicy="all" id="viewStack" width="100%" height="100%" horizontalCenter="0" verticalCenter="0">
+			<mx:VBox width="100%" height="100%" creationCompleteEffect="alertCreationCompleteEffect" id="loginView">
+					
+			</mx:VBox>
+			<mx:VBox width="100%" height="100%" id="mainView">
+					
+			</mx:VBox>
+			<mx:VBox width="100%" height="100%" id="appPanelView">
+					
+			</mx:VBox>
+		</mx:ViewStack>
+	</mx:HBox>
+	<mx:HBox height="10" backgroundColor="#121212" width="100%"/>
+	<mx:HBox width="100%" height="70" backgroundColor="#c0c0c0" backgroundAlpha="0.5" verticalAlign="middle" horizontalAlign="center">
+		<mx:Image source="@Embed('assets/images/logo.png')" />
+		<mx:Spacer width="300" />
+		<mx:Image source="@Embed('assets/images/cutout_logo.png')" />
+	</mx:HBox>
+</mx:Application>

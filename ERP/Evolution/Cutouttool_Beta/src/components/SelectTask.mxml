@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+<mx:Script> 
+	<![CDATA[
+		import business.AccessRights;
+		import mx.managers.PopUpManager;
+		import mx.core.Application;
+		import events.TaskEvent;
+		import mx.controls.Alert;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import business.DateFormatterClass;
+		import mx.core.DragSource;
+		import mx.managers.DragManager;
+		import controller.Controller;
+		import data.Tasks;
+		import data.Interface.IModel;
+		import mx.collections.ArrayCollection;
+		[Bindable]		
+		private var upfiles:ArrayCollection;
+		[Bindable]		
+		private var deleveredfiles:ArrayCollection;
+		private var _selectedtaskObj:Tasks;
+		private var popUp:PopUp = new PopUp();
+		private var type:String = Controller.getInstance().userObj.type;		
+		[Bindable]
+		private var editButton:Boolean;
+		[Bindable]
+		private var archiveButton:Boolean				
+		[Bindable]
+		private var comboObj:ArrayCollection =new ArrayCollection([{label:"waiting",data:"1"},{label:"inprogress",data:"2"},
+											{label:"delivered",data:"3"},{label:"archived",data:"4"}])				
+		public function set selectedTaskObj(obj:Tasks):void{
+			_selectedtaskObj = obj;
+			loadvalues();
+		}
+		[Bindable]
+		private var uicomp_UploadButtonVisi:Boolean;
+		[Bindable]
+		private var uicomp_deliveredButtonVisi:Boolean;
+		private function loadvalues():void{
+			upfiles = _selectedtaskObj.uploadedImageData;
+			deleveredfiles = _selectedtaskObj.deliveredImageData;
+			task.text=unescape(_selectedtaskObj.label);
+			qtimages.text=_selectedtaskObj.number_of_images;
+			details.text=unescape(_selectedtaskObj.comments);			
+			var expectedArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.dedline).split(",");
+			expectedDate.text = expectedArr[0];
+			expected.text=expectedArr[1];
+			var estimatedArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.datetime_of_estimated).split(",");
+			estimatedDate.text =estimatedArr[0]   
+			estimated.text=estimatedArr[1]
+			timings.text=(_selectedtaskObj.time_spending=='0')?'':_selectedtaskObj.time_spending;
+			var _deliveryArr:Array = DateFormatterClass.displayFormat(_selectedtaskObj.date_of_delivery).split(",");
+			deliveryDate.text=_deliveryArr[0];
+			deliveryTime.text=_deliveryArr[1];
+			status.text =_selectedtaskObj.statusVal;
+			editButton = AccessRights.getEditState(status.text,type)
+			uicomp_UploadButtonVisi = AccessRights.getButtonVisi(_selectedtaskObj.statusVal,Controller.getInstance().userObj.type,0);
+			uicomp_deliveredButtonVisi = AccessRights.getButtonVisi(_selectedtaskObj.statusVal,Controller.getInstance().userObj.type,1);
+			archiveButton = false;
+			updateDataGrid()
+
+		}
+		private function updateDataGrid():void{
+			//popUp.uploadStack.selectedIndex=0;
+			var bool1:Boolean = (_selectedtaskObj.uploadedImageData!=null);
+			var bool2:Boolean = (_selectedtaskObj.deliveredImageData!=null);
+			uploadedFiles.dataProvider =(bool1)?_selectedtaskObj.uploadedImageData : new ArrayCollection();
+			DeliveredFiles.dataProvider =(bool2)?_selectedtaskObj.deliveredImageData: new ArrayCollection();
+		}
+		private function updateChanges():void{
+			var obj:Object = new Object();
+			obj.datetime_archive = archiveDate;
+			obj.status = getStatus('archived');
+			updateQuery = generateQuery(obj);
+			connect.addEventListener(ResultEvent.RESULT,resultHandler);
+			connect.getOperation('updateTable').send();
+		}
+		private function generateQuery(dataObj:Object):String{
+			var updateStr:String=''
+			for(var i:String in dataObj){
+				_selectedtaskObj[i]= dataObj[i]
+				updateStr+= i +" = '"+_selectedtaskObj[i]+"',"				
+			}
+			loadvalues();
+			updateStr = updateStr.substr(0,updateStr.length-1);
+			var conditionStr:String = " where pk_task = '"+_selectedtaskObj.pk_task+"'"
+			var queryStr:String = "update tasks set "+updateStr+conditionStr;
+			return queryStr;
+		}
+		[Bindable]
+		private var query:String;
+		private function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		private function get updateQuery():String{
+			return query;
+		}	
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("-fault-->"+event.fault);
+		}
+		private function resultHandler(event:ResultEvent):void{
+			dispatchEvent(new TaskEvent(TaskEvent.NEWTASK));
+		}
+		private function getStatus(status:String):String{
+			var statusVal:String = new String()
+			switch(status){
+				case "waiting":
+					statusVal = "1";
+				break;
+				case "inprogress":
+					statusVal = "2";
+				break
+				case "delivered":
+					statusVal = "3";
+				break
+				case "archived":
+					statusVal = "4";
+				break
+			}
+			return statusVal;
+		}
+		private var archiveDate:String;
+		[Bindable]
+		private var statusVal:int
+		private function updateArchive():void{
+			statusVal = 3;
+		//	status.selectedItem = 'archived';
+			Controller.getInstance().updateHistoryData('ARCHIVE')
+			var date:Date = new Date()
+			var month:Number = date.month+1 
+			var monthStr:String = (month>9)?String(month):"0"+String(month);
+			var dateVal:Number = date.day;
+			var dateStr:String = (dateVal>9)?String(dateVal):"0"+String(dateVal);
+			archiveDate = date.fullYear+"-"+monthStr+"-"+dateStr+" "+date.hours+":"+date.minutes+":"+date.seconds;
+			updateChanges();
+		}
+		private var currIndex:int = 0;
+		private function openPopup(num:int):void{
+			PopUpManager.removePopUp(popUp);			
+			PopUpManager.addPopUp(popUp, this, true);
+			popUp.loadChild(0);
+			popUp.loadChild(1);
+			PopUpManager.centerPopUp(popUp);
+			updateDataGrid();
+			currIndex = num
+			popUp.loadChild(num);
+			popUp.addEventListener("closed",removeActiveListener);
+			popUp.width = stage.width/2-20
+			popUp.setStackIndex(0);
+			popUp.x = 20
+			popUp.height = Application.application.height-20;
+			popUp.y = 10 
+			//stage.addEventListener(Event.RESIZE,checkPopup);
+		}
+		private function removeActiveListener(event:Event):void{
+			if(event.currentTarget.fileUploadedArr.length>0){
+				upfiles = event.currentTarget.fileUploadedArr;
+			}
+			if(event.currentTarget.fileDeliveredArr.length>0){
+				deleveredfiles = event.currentTarget.fileDeliveredArr;
+			}
+			stage.removeEventListener(Event.RESIZE,checkPopup);
+		}
+		private function checkPopup(event:Event):void{
+			openPopup(currIndex)
+			//popUp.width = 
+		}
+		[Bindable]
+		private var space:Number=10;
+		public function init():void{
+		}
+		public function garbageCollection():void{
+		}
+	]]>
+</mx:Script> 
+<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+				<mx:method name="updateTable" result="resultHandler(event)">
+					<mx:arguments>
+						<query>{updateQuery}</query>
+					</mx:arguments>
+				</mx:method>
+		</mx:RemoteObject>
+		<mx:TitleWindow title="Selected Task"  id="ntPanel" width="70%" showCloseButton="true" close="{this.parentDocument.init()}"  height="100%" horizontalAlign="center" paddingTop="15" paddingBottom="15" paddingLeft="15" paddingRight="15">
+		<mx:HBox verticalAlign="middle" horizontalAlign="left" width="100%" height="100%">
+		<mx:VBox width="100%" height="100%" horizontalAlign="left" >
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="task" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="task" width="40%" fontSize="15" fontWeight="bold" fontStyle="italic"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="qt images"  textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="qtimages" width="10%" height="20%" fontSize="15" fontWeight="bold" fontStyle="italic"/>
+			</mx:HBox>
+			<mx:HBox width="100%" height="30%">
+				<mx:Label width="19%" text="details (optional)" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="details" width="40%" height="100%"  fontSize="15" fontWeight="bold" fontStyle="italic"/>				
+			</mx:HBox> 
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="delivery deadline" fontWeight="bold" textDecoration="underline" textAlign="left"/>				
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="expected" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="expectedDate"  width="10%" height="20%" fontSize="15" fontWeight="bold" fontStyle="italic"/>
+				<mx:Label width="10%" text="Time" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label  id="expected" width="10%" fontSize="15" fontWeight="bold" fontStyle="italic"/>				
+			</mx:HBox>
+			
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="20%" text="estimated" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="estimatedDate" width="10%" height="20%" fontSize="15" fontWeight="bold" fontStyle="italic"/>
+				<mx:Label width="10%" text="Time" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="estimated" width="10%" fontSize="15" fontWeight="bold" fontStyle="italic"/>				
+			</mx:HBox>
+			
+			<mx:HBox width="100%" height="10%">
+				<mx:Label width="19.5%" text="timing (in minutes)" textAlign="left"/>
+				<mx:Spacer width = "{space}"/>
+				<mx:Label id="timings" width="30%" fontSize="15" fontWeight="bold" fontStyle="italic"/>				
+			</mx:HBox>
+			
+			<mx:HBox width="100%" height="10%">
+					<mx:Label width="20%" y="318" text="final" textAlign="left" x="126"/>
+					<mx:Spacer width = "{space}"/>
+					<mx:Label id="deliveryDate"  width="10%" height="20%" fontSize="15" fontWeight="bold" fontStyle="italic"/>
+					<mx:Label width="10%" text="Time" textAlign="left"/>
+					<mx:Spacer width = "{space}"/>
+					<mx:Label id="deliveryTime" width="10%" fontSize="15" fontWeight="bold" fontStyle="italic"/>		
+			</mx:HBox>
+			
+			<mx:HBox width="100%" height="10%">			 	
+					<mx:Label width="20%" y="349" text="status" textAlign="left" x="116"/>
+					<mx:Spacer width = "{space}"/>
+					<mx:Label id="status" width="20%" fontSize="15" fontWeight="bold" fontStyle="italic"/>
+			</mx:HBox >
+				<mx:HBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="right">
+			  	 <mx:Button label="Edit" click="{this.parentDocument.loadEditTask();}" visible="{editButton}"/>            
+			 	 <mx:Button label="Archive" click="updateArchive()" visible="{archiveButton}" />
+			</mx:HBox>
+			</mx:VBox>
+			<mx:HBox paddingTop="0">
+			<!--<mx:LinkButton  label="uploadedFiles" visible="{uicomp_UploadButtonVisi}"  width="20%" height="20%" click="openPopup(0)"/>
+			<mx:LinkButton  label="DeliveredFiles" visible="{uicomp_deliveredButtonVisi}"  width="20%" height="20%" click="openPopup(1)"/>-->
+			<mx:DataGrid  id="uploadedFiles" visible="{uicomp_UploadButtonVisi}" includeInLayout="{uicomp_UploadButtonVisi}"  width="100%" height="100%">				
+			</mx:DataGrid >
+			<mx:DataGrid id="DeliveredFiles" visible="{uicomp_deliveredButtonVisi}" includeInLayout="{uicomp_deliveredButtonVisi}"  width="100%" height="100%">				
+			</mx:DataGrid>
+			</mx:HBox>
+			
+		</mx:HBox>
+		</mx:TitleWindow>
+</mx:VBox>

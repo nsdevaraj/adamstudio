@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root label="Content">
+	<chap label="Overview" page="2">
+		<page label="Introduction" page="2"/>
+	</chap>
+	<chap label="Transparency" page="4">
+		<page label="Transparency 1" page="4"/>
+		<page label="Transparency 2" page="6"/>
+		<page label="Transparency 3" page="8"/>
+	</chap>
+	<chap label="Tearing" page="10">
+		<page label="Tearing Page" page="10"/>
+	</chap>
+	<chap label="Live Bitmapping" page="12">
+		<page label="Goto and Live Bitmapping" page="12"/>
+	</chap>
+	<chap label="Hard Back Page" page="14"/>
+	<chap label="Events" page="20"/>
+</root>

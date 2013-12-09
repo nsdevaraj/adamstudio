@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer	xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:components="com.adams.scrum.views.components.*" >
+	<fx:Script>
+		<![CDATA[ 			  
+			import com.adams.scrum.dao.AbstractDAO;
+			import com.adams.scrum.models.vo.Persons;
+			import com.adams.scrum.models.vo.Profiles;
+			import com.adams.scrum.models.vo.Teammembers;
+			import com.adams.scrum.utils.GetVOUtil;
+			import com.adams.scrum.views.components.NativeList;
+			
+			import mx.events.FlexEvent;
+			 
+			/**
+ 			 * The function to handle delete team member event
+ 			 * <p>
+ 			 * In addition, it dispatches signal to the owner of the renderer
+ 			 * </p>
+			 */			
+			
+			protected function deleteHandler(event:MouseEvent):void
+			{
+				Object(owner).renderSignal.dispatch(NativeList.TEAMMEMBERREMOVED);
+			}  
+			
+			/**
+ 			 * <p>
+ 			 * The Team Member renderer object is initiated with data
+ 			 * </p>
+			 */				
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				if(value){
+					var person:Persons= value.personObject as Persons;
+					var profile:Profiles= value.profileObject as Profiles;
+					personName.text = person.personFirstname;
+					profileName.text = profile.profileLabel;
+					sprintConfigBtn.visible = visibleRemoveButton();
+				}
+			}
+			private function visibleRemoveButton():Boolean{				
+				return Object(owner).removeRendererProperty;
+			}
+
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:HorizontalLayout verticalAlign="middle"
+							paddingLeft="0" paddingRight="0"
+							paddingTop="1" paddingBottom="0" />
+	</s:layout>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected" />
+	</s:states>
+	<s:Group width="100%" height="100%">
+		<s:HGroup verticalAlign="middle" top="1" bottom="0" left="5" right="5">
+			<s:Label id="personName" 
+					 width="50%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<s:Label id="profileName" 
+					 width="50%" 
+					 maxDisplayedLines="1"
+					 showTruncationTip="true" />
+			<components:NativeButton id="sprintConfigBtn" label="Remove" 
+					 styleName="DeleteSkin" 
+					 visible="{visibleRemoveButton()}"
+					 click="deleteHandler(event)" />  
+		</s:HGroup>
+	</s:Group>
+</s:ItemRenderer>

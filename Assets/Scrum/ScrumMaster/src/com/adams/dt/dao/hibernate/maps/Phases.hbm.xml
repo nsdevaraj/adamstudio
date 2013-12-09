@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Phases" table="phases">
+        <id name="phaseId" type="integer" column="phase_ID">
+            <generator class="increment" />
+        </id>
+        <property name="phaseCode">
+            <column name="phase_code" />
+        </property>
+        <property name="phaseName">
+            <column name="phase_name" />
+        </property>
+        <property name="phaseStatus">
+            <column name="phase_status" />
+        </property>
+        <property name="phaseStart">
+            <column name="phase_start" />
+        </property>
+        <property name="phaseEndPlanified">
+            <column name="phase_end_planified" />
+        </property>
+        <property name="phaseEnd">
+            <column name="phase_end" />
+        </property>
+        <property name="phaseDuration">
+            <column name="phase_duration" />
+        </property>
+        <property name="phaseDelay">
+            <column name="phase_delay" />
+        </property>
+        <property name="projectFk">
+            <column name="project_FK" />
+        </property>
+        <property name="phaseTemplateFK">
+            <column name="phase_template_FK" />
+        </property>
+    </class> 
+    <query name="Phases.findById">
+        select u from Phases u where u.projectFk = ?
+    </query>
+    <query name="Phases.findByName">
+        select u from Phases u where u.phaseName = ?
+    </query>
+</hibernate-mapping>

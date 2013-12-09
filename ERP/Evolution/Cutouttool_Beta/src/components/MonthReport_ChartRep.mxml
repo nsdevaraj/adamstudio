@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents"  xmlns:mx="http://www.adobe.com/2006/mxml" verticalGap="0" verticalAlign="top" horizontalAlign="left" width="80%" height="100%" 
+	creationComplete="{init(),Controller.getInstance().registerView = this}">
+<mx:Metadata>
+	[Event(name="loadSelectedTask", type="flash.events.Event")]
+</mx:Metadata>
+	
+<mx:Script>
+	<![CDATA[
+		import mx.controls.Alert;
+		import mx.graphics.SolidColor;
+		import mx.charts.series.ColumnSeries;
+		import business.GenerateADExcelData;
+		import mx.charts.events.ChartItemEvent;
+		import mx.collections.ArrayCollection;
+	 	[Bindable] 
+	    private var yearCollection:ArrayCollection = new ArrayCollection();
+
+
+		import business.GenerateExcelData;
+		import mx.core.Application;
+		import controller.Controller;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import business.GenerateReport;
+		
+		import business.org.alivepdf.pdf.PDF;
+		import business.org.alivepdf.image.ImageFormat;
+		import business.org.alivepdf.drawing.DashedLine;
+		import business.org.alivepdf.display.*;
+		import business.org.alivepdf.layout.*;
+		import business.org.alivepdf.colors.*;
+		import business.org.alivepdf.transitions.Transition;
+		import business.org.alivepdf.fonts.FontFamily;
+		import business.org.alivepdf.transitions.Dimension;
+		import business.org.alivepdf.display.PageMode;
+		import business.org.alivepdf.fonts.Style;
+		import business.org.alivepdf.viewing.*;
+		import business.org.alivepdf.saving.Download;
+		import business.org.alivepdf.saving.Method;
+		
+		import mx.collections.ArrayCollection;
+		[Bindable]
+        [Embed("../assets/icons/pdf.png")]
+        private var pdfIcon:Class;
+		
+		[Bindable]
+        [Embed("../assets/icons/print.png")]
+        private var printIcon:Class;
+		
+		[Bindable]
+       	[Embed("../assets/icons/excel.png")]
+        private var excelIcon:Class;
+   		private var prevSelectedColumn:DisplayObject;
+		[Bindable]
+		private var monthData:ArrayCollection = new ArrayCollection();
+		private var dataTipArr:Array =  ["January","February","March","April","May","June","July","August","september",
+		 								"October","November","December"];
+		[Bindable]
+		 private var monthArr:Array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","sep",
+		 								"Oct","Nov","Dec"]
+		 private var _year:Number = new Date().fullYear;
+		 private var report:GenerateReport = new GenerateReport();
+		 private var eventInterface:Event; 	
+		 public function init():void{
+		 	yearCollection = new ArrayCollection()
+		 	monthData = new ArrayCollection();
+		 	year = new Date().fullYear;
+		 	if(this.parentApplication.demoView)
+	 	 		dataFormation(Controller.getInstance().demoObj.report);
+	 	 	else
+	 	 		getData(eventInterface);
+	 	 		
+	 	 	this.addEventListener("DataChanged",getData);
+		 } 
+		
+		public function garbageCollection():void{
+		}
+		 private function getData(event:Event):void{
+		 	linChartCollection = new ArrayCollection();
+		 	
+		 	yearCollection.refresh();
+		 	profitPie.series[0].perWedgeExplodeRadius = []
+		 	if(this.parentApplication.demoView){
+	 	 		dataFormation(Controller.getInstance().demoObj.report)
+	 	 	}
+	 	 	else{
+		 		updateQuery = report.getReportQueryBt(_year,1,12); 
+		 		remoteDataConnector.getOperation("xmldb").send();
+		 		remoteDataConnector.addEventListener(ResultEvent.RESULT,resulthandler);
+	 	 	}
+		 }
+		 [Bindable]
+		 private var pageVal:Number = 1;
+		 private function resulthandler(event:ResultEvent):void{
+			dataFormation(XML(event.result))
+		 }
+		 private function dataFormation(_xml:XML):void{
+		 	monthData = report.getReortData(_xml);			
+			yearCollection = report.yearCollection;
+			calculatepage(monthData);
+			pieHighlight('profitPie',new Date().getMonth())
+			updateBarChart();
+		 }
+		 private function calculatepage(col:ArrayCollection):void{
+		 	Page.value = 1;
+			pageVal = col.length/pageSize
+			pageVal =(col.length%pageSize==0)?pageVal:(Math.floor(pageVal)+1);
+			refreshDataProvider(1);
+		 }
+		 private function faultHandler(event:FaultEvent):void{
+		 	
+		 }
+		 
+		 private function prevYear(event:Event):void{
+		 	year = (year-1);
+		 }
+		 private function nextYear(event:Event):void{
+		 	year = (year+1);
+		 }
+		 [Bindable (event="DataChanged",  type="flash.events.Event")]
+		 public function get year():Number{
+		 	return _year;
+		 }	
+		 public function set year(num:Number):void{
+		 	_year = num;
+		 	dispatchEvent(new Event("DataChanged"));
+		 }	
+		private var query:String;
+		public function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		public function get updateQuery():String{
+			return query;
+		}	
+	    
+	  	/**
+	  	 * DataGrid Paging
+	  	 */ 
+	    private var pageSize:Number = 8;
+	    [Bindable]
+	    private var myData:ArrayCollection =  new ArrayCollection();
+	    private function refreshDataProvider(start:Number):void
+		{
+			start = start-1
+			myData = new ArrayCollection( monthData.source.slice((start * pageSize),(start * pageSize) + pageSize));
+		}
+		
+		private var myPDF:PDF;
+		private function generatePdf():void{
+			myPDF = new PDF( Orientation.LANDSCAPE, Unit.MM, Size.A4 );		
+			myPDF.setDisplayMode (Display.REAL, Layout.SINGLE_PAGE );		
+			for(var i:int=1;i<=pageVal;i++){
+				myPDF.addPage();  				
+				myPDF.addImage (monthlyReport, 1, null, null, true, ImageFormat.JPG );
+			}  
+			var phpPath:String = Application.application.docRoot+"Cutouttool_Beta-debug/create.php"
+			myPDF.savePDF(Method.REMOTE, phpPath, Download.ATTACHMENT, "myPDF.pdf");
+			myPDF.end();
+		}
+
+		private var excelData:GenerateADExcelData = new GenerateADExcelData();
+		private function generateExcel():void{
+			monthlyReport.dataProvider = monthData;
+			var obj:Object = new Object();
+			obj['tasks']= totalTasks;
+			obj['images']= _totalImages;
+			obj['Hours']= hours;
+			obj['mins']= _min;
+			excelData.totalValues = obj;
+			excelData.loadDGInExcel(monthlyReport);
+			refreshDataProvider(1);
+		}
+		
+		/**
+    	* This is run when the pie chart is clicked on
+    	* @param event			The click event
+    	* @param dataGridName	The string name of the data grid that should be highlighted
+    	* @param barName		The string name of the column chart that should be highlighted
+    	*/
+    	[Bindable]
+    	private var totalTasks:Number;
+    	private function pieChartClick( event:ChartItemEvent, dataGridName:String, barName:String ):void
+    	{
+    		var monthId:int = event.hitData.chartItem.index;
+       		pieHighlight( event.currentTarget.id , monthId);
+       		
+    	}
+	    /**
+    	* This function "explodes" a piece of pie from a pie chart
+    	* @param pieName	The name of the pie chart that is to be modified
+    	* @param pieIndex	The index of the pie piece that is to be modified
+    	*/
+    	private function pieHighlight( pieName:String, pieIndex:int ):void
+    	{
+    		monthData = report.getMonthReport(pieIndex+1);
+    		hours = 0;
+    		_min = 0;
+    		_totalImages=0
+    		totalTasks = monthData.length;
+    		monthData.source.filter(getTotalTimings)
+    		calculatepage(monthData);
+    		updateBarChart();
+            var explodeData:Array = [];
+            explodeData[ pieIndex ] = .15; 
+            this[pieName].series[0].perWedgeExplodeRadius = explodeData;
+    	}
+    	[Bindable]	
+    	private var hours:int = 0;
+    	[Bindable]
+    	private var _min:int = 0;
+    	[Bindable]
+    	private var _totalImages:int= 0;
+    	private function set min(num:int):void{
+    		_min+=num;
+    		if(_min>60){
+    			hours+=1;
+    			_min = _min-60;
+    		}
+    	}    	
+    	private function getTotalTimings(item:Object, idx:uint, arr:Array):Boolean{
+    		trace(item.QtImages);
+    		_totalImages += int(item.QtImages);
+    		var obj:Object = item.Timing;
+    		hours += int(obj.Hours);
+    		min = int(obj.mins);
+    		return true;
+    	}
+    	[Bindable]
+    	private var linChartCollection:ArrayCollection = new ArrayCollection()
+    	
+    	private function updateBarChart():void{
+    		linChartCollection = report.lineChartCollection
+    		for(var i:String in linChartCollection){    			
+    			var column:ColumnSeries = new ColumnSeries();
+    			column.dataProvider = linChartCollection[i]['total'];
+    			column.setStyle("fill", new SolidColor(0xFF0000,100));
+    			profitBar.series.push(column);
+    		}
+			
+    	}
+    	public var _id:String = '';
+    	private function loadSelectedTask(event:Event):void{
+			_id = event.currentTarget.selectedItem.id;
+			dispatchEvent(new Event('loadSelectedTask'));
+		}
+    	
+	]]>
+	
+</mx:Script>
+
+<mx:SeriesInterpolate id="interpolate" elementOffset="10" />
+<mx:RemoteObject id="remoteDataConnector" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="xmldb">
+				<mx:arguments>
+					<query>{updateQuery}</query>
+				</mx:arguments>
+			</mx:method>
+	</mx:RemoteObject> 
+<mx:Panel title="Reports"  id="ntPanel" width="100%" height="100%" horizontalAlign="center" paddingLeft="15" paddingRight="15">
+	<mx:HBox width="100%" height="100%">	
+		<mx:VBox width="100%" height="100%" verticalAlign="middle" horizontalAlign="center">
+			<mx:HBox width="100%" height="100%">						
+				<mx:PieChart  id="profitPie" dataProvider="{yearCollection}" 
+					showDataTips="true" width="100%" height="100%" paddingRight="150" itemClick="pieChartClick(event,'monthlyReport','profitBar');">
+	                <mx:series>
+	                    <mx:PieSeries field="noOfTask" nameField="toolTip"
+	                    	 showDataEffect="{interpolate}"/>
+					</mx:series>
+		    	</mx:PieChart>
+	    	<mx:VBox height="100%" width="10%" verticalAlign="middle" horizontalAlign="left">
+					<mx:Label id="totalTask" fontWeight="bold" color="red" text="{'Total Tasks    : '+totalTasks }"/>
+					<mx:Label id="totalHours" fontWeight="bold" color="red" text="{'Total Hours   : '+hours+ 'h '+_min+'m' }"/>
+					<mx:Label id="totalImages" fontWeight="bold" color="red" text="{'Total Images : '+_totalImages }"/>
+				</mx:VBox>	
+			</mx:HBox>	
+			   	 <mx:HBox width="80%" height="20%" >
+			   	 	<mx:Button label="&lt;&lt;{year-1}" click="prevYear(event)" fontFamily="coFont" />
+			   	 	<mx:Text fontSize="20"  textAlign="center" text="Year {year}" fontFamily="coFont"/>
+			   	 	<mx:Button  label="{year+1}&gt;&gt;" click="{nextYear(event)}" fontFamily="coFont"/>
+			   	</mx:HBox>	
+			   	
+			</mx:VBox>
+						    	
+	    	<mx:VBox width="100%" height="100%">	    	
+		    	<mx:AdvancedDataGrid id="monthlyReport" width="100%"  height="98%"
+			        defaultLeafIcon="{null}" dataProvider="{myData}" verticalScrollPolicy="auto" doubleClickEnabled="true" itemDoubleClick="{loadSelectedTask(event)}">
+			        <mx:groupedColumns>
+			            <mx:AdvancedDataGridColumn dataField="Delivery" headerText="Delivery" width="120"/>
+			            <mx:AdvancedDataGridColumn dataField="CreatedBy" headerText="Created by"/>
+			            <mx:AdvancedDataGridColumn dataField="Task" headerText="Task" width="120"/>
+			            <mx:AdvancedDataGridColumn id="qtimages" dataField="QtImages" headerText="qt Images" width="80"/>
+			            <mx:AdvancedDataGridColumnGroup dataField="Timing">    
+			                <mx:AdvancedDataGridColumn id="hrs" dataField="Hours" width="60"/>
+			                <mx:AdvancedDataGridColumn id="mins" dataField="mins" width="60"/>
+			            </mx:AdvancedDataGridColumnGroup>    
+			        </mx:groupedColumns>
+			   </mx:AdvancedDataGrid> 
+		        <mx:ColumnChart id="profitBar" dataProvider="{linChartCollection}" 
+					showDataTips="true" width="100%" height="70%">
+				
+					<mx:horizontalAxis>
+						<mx:CategoryAxis categoryField="date"/>
+					</mx:horizontalAxis>
+					
+					 <mx:series>
+						<mx:ColumnSeries yField="total" displayName="Task">
+							<mx:itemRenderer>
+								<mx:Component>
+									<mx:BoxItemRenderer alpha="0.8" />
+								</mx:Component>										
+							</mx:itemRenderer>
+						</mx:ColumnSeries>
+				    </mx:series>		
+				</mx:ColumnChart>					
+			</mx:VBox>
+	    </mx:HBox>
+	    <mx:HBox horizontalAlign="left" width="100%">
+			<mx:LinkButton id="pdf" label = "Pdf" icon="{pdfIcon}" click="generatePdf()"/>
+			<mx:LinkButton id="print" label = "Print" icon="{printIcon}" />
+			<mx:LinkButton id="excel" label = "Excel" icon="{excelIcon}" click="generateExcel()"/>
+			<mx:Label text="Page No:"/>
+			<mx:NumericStepper id="Page" minimum="1" maximum="{pageVal}" change="refreshDataProvider(Page.value)"/>
+	</mx:HBox>	
+	</mx:Panel>
+</mx:VBox>

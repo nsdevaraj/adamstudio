@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Label xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  		xmlns:s="library://ns.adobe.com/flex/spark" 
+		  		xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dam.view.customComponents.FileContainerGrid;
+			
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.controls.textClasses.TextRange;
+			import mx.core.UIComponent;
+			
+			
+			private var textRange:TextRange;
+			private var clrtextRange:TextRange;
+			private var specificText:String;
+			
+			override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value;
+				}
+			}
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				if( data && text != '') {
+					
+					textRange = new TextRange( this, false, -1, -1 );
+					textRange.color = this.getStyle( "color" ); 
+					textRange.fontSize = this.getStyle( "fontSize" ); 
+					textRange.fontWeight = this.getStyle( "fontWeight" ); 
+					specificText = FileContainerGrid( listData.owner ).specificText.toLowerCase();
+					
+					if( ( FileContainerGrid( listData.owner ).selectedColumnIndex == -1 )  || ( FileContainerGrid( listData.owner ).selectedColumnIndex == listData.columnIndex ) ) {
+						if ( specificText != '' ) {
+							var begin:int = this.text.toLowerCase().indexOf( specificText );
+							if( begin > -1 ) {
+								clrtextRange = new TextRange( this, false );
+								clrtextRange.beginIndex = begin;
+								clrtextRange.endIndex = begin + specificText.length;
+								try{
+									clrtextRange.color = 0xFFFF00;
+								}
+								catch( er:Error ) {
+									
+								}
+							}
+						}
+					} 
+				}
+				super.updateDisplayList( unscaledWidth, unscaledHeight );
+			}  
+			
+		]]>
+	</fx:Script>
+</mx:Label>

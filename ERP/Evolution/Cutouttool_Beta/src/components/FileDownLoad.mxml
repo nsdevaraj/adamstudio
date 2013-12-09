@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:com="*"
+	layout="vertical" width="100%" minWidth="400" height="100%" minHeight="200"
+	title="Upload Files" creationComplete=""> 
+	<mx:Script>
+		<![CDATA[
+			private function changeView():void {
+				currentState = (currentState == "mini") ? "" : "mini";
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:states>
+		<mx:State name="mini">
+			<mx:SetProperty name="height" value="60"/>
+			<mx:SetProperty name="minHeight" value="60"/>
+			<mx:SetStyle target="{btnView}" name="icon" value="@Embed('assets/application_put.png')"/>
+		</mx:State>
+	</mx:states> 
+	<mx:transitions>
+		<mx:Transition fromState="*" toState="*">
+			<mx:Resize target="{this}" duration="1000"/>
+		</mx:Transition>
+	</mx:transitions> 
+	<mx:Canvas width="100%" height="100%">
+		<mx:DataGrid id="listFiles" left="0" top="0" bottom="0" right="0"
+			allowMultipleSelection="true" verticalScrollPolicy="on"
+			draggableColumns="false" resizableColumns="false" sortableColumns="false">
+			<mx:columns>
+				<mx:DataGridColumn headerText="File" dataField="name" wordWrap="true"/>
+				<mx:DataGridColumn headerText="Size" dataField="size" width="75" textAlign="right"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:Canvas>
+	<mx:ControlBar horizontalAlign="center" verticalAlign="middle">		
+		<mx:Button label="Upload" toolTip="Upload file(s)" id="btnUpload" click="" icon="@Embed('assets/bullet_go.png')"/>
+		<mx:Button id="btnV	iew" toolTip="Show/Hide file(s)" icon="@Embed('assets/application_get.png')" width="26" click="changeView()"/>
+	</mx:ControlBar>	
+</mx:Panel>

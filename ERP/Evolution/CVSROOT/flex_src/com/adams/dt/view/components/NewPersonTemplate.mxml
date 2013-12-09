@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="com.adams.dt.view.components.*" 
+	            xmlns:Gview="com.adams.dt.view.dataGridSearch.mainComponent.*" 
+	            showCloseButton="true" title="{ _categoryName }" close="closePerson( event )" 
+	            layout="absolute" headerHeight="30" width="900" horizontalScrollPolicy="off"
+	            styleName="bgContainer"  creationComplete="gridDetails()" verticalScrollPolicy="off" 
+	            mouseDownOutside="onMousedownOutside()" resizeEffect="Resize">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.DefaultTemplateEvent;
+			import com.adams.dt.business.util.ArrayUtil;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.events.ListEvent;
+			import com.adams.dt.model.vo.GroupPersons;
+			import com.adams.dt.model.vo.Groups;
+			import com.adams.dt.event.GroupsEvent;
+			import com.adams.dt.event.GroupPersonsEvent;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.event.PropertiespjEvent;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.model.vo.Companies;
+			import com.adams.dt.event.CompaniesEvent;
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.PersonsEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+		    private var model:ModelLocator = ModelLocator.getInstance();
+		    [Bindable]
+		    private var _formVisible:Boolean;
+		    [Bindable]
+		    private var _conVisible:Boolean = true;
+		    [Bindable]
+		    private var isNewObject:Boolean;
+		    private var _isValidated:Boolean;
+		    
+		    [Bindable]
+		    private var _categoryName:String = '';
+		    public var fromNewProject:Boolean;
+		    [Bindable]
+		    private var _headerArray:Array = [];
+		    [Bindable]
+		    private var _columnSelectArray:Array = [];
+		    
+		    private var _selectedProfilePerson:Persons;
+		    
+		    /**
+		    * Close this TitleWindow on the close button click.
+		    * Set the trafficView Text
+		    */	
+		    private function closePerson( event:CloseEvent ) :void {
+		    	if( ( _personList.selectedIndex != -1 ) && ( _isValidated ) ) {
+			    	if( ( model.personSelectionVersion == 'EPR' ) && ( fromNewProject ) ) {
+			    		model.currentImpremiuerID = Persons( _personList.selectedItem ).personId;
+			    		changeTrafficText( _personList.selectedItem );
+			    		removingFilters();
+			    	}	
+			    	else {
+			    		var eventsArray:Array = [];
+			    		if( ( model.personSelectionVersion == 'EPR' ) ) {
+			    			if( model.impPersonId != Persons( _personList.selectedItem ).personId ) {
+			    				var propPj:Propertiespj = Utils.propertyPjForFieldName( 'propertyTemplateID', model.currentProjects.propertiespjSet );
+			    				if( propPj ) {
+			    					propPj.fieldValue = '';
+			    					var updatePropertyPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ );
+			    					updatePropertyPjEvent.propertiespj = propPj;
+			    					eventsArray.push( updatePropertyPjEvent );
+			    				}
+			    			}
+			    			var getDefaultTemplateEvt:DefaultTemplateEvent = new DefaultTemplateEvent( DefaultTemplateEvent.GET_DEFAULT_TEMPLATE );
+							getDefaultTemplateEvt.companyId = Persons( _personList.selectedItem ).companyFk;
+							eventsArray.push( getDefaultTemplateEvt );
+			    		}
+			    		
+			    		var handler:IResponder = new Callbacks( onFinish, fault );
+						var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE, handler );
+				 		teamTempEvt.projectId = model.currentProjects.projectId; 
+				 		eventsArray.push( teamTempEvt ); 
+				 		
+				 		var sequence:SequenceGenerator = new SequenceGenerator( eventsArray );
+		          		sequence.dispatch();
+	      			}
+		      	}
+		    	else {
+		    		removingFilters();
+		    	}
+		    }
+		    
+		    private function removingFilters():void {
+		    	model.personsArrCollection.filterFunction = null;
+		    	model.personsArrCollection.refresh();
+		    	model.totalCompaniesColl.filterFunction = null;
+		    	model.totalCompaniesColl.sort = null;
+				model.totalCompaniesColl.refresh();
+		    	PopUpManager.removePopUp( this );
+		    }
+		    
+		    private function onFinish( rpcEvent:Object ):void {
+		    	removingFilters();
+		    }
+		    
+		    /**
+		    *  Update the Selected Person Text in New Project Screen
+		    */	
+		    private function changeTrafficText( item:Object ):void {
+		    	var ev:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_SELECTED_PERSON ); 
+		    	var curPersonName:String;
+		    	if( item ) {
+		    		curPersonName = GetVOUtil.getCompanyObject( item.companyFk ).companyname + '-' + item.personLastname + ', '+ item.personFirstname;
+		    	}	
+		    	else {
+		    		curPersonName = '';
+		    	}		
+		    	if( curPersonName != '' ) {
+    				ev.selectedPerson = curPersonName.substring( 0, curPersonName.indexOf( '-' ) );	
+    			}
+    			else {
+    				ev.selectedPerson = curPersonName;
+    			}	
+		    	dispatchEvent( ev );
+		    } 
+		    
+		    /**
+		    * Filter the personCollection based on the particular Selection
+		    */
+		    private function gridDetails() :void {
+		    	dataSource();
+		    	setSelectedItem( _selectedProfilePerson );
+		    	setUpAutoComplete();
+		    }
+		    
+		    private function dataSource():void {
+		    	model.personsArrCollection.filterFunction = null;
+		    	model.personsArrCollection.refresh();
+		    	switch( model.personSelectionVersion ){
+		    		case 'CHP':
+		    			model.personsArrCollection.filterFunction = chefProduitFilter;
+		    			_categoryName = 'CLIENT';
+		    			_selectedProfilePerson = model.CP_Person;
+		    		break;
+		    		case 'CPP':
+		    			model.personsArrCollection.filterFunction = chefProduitFilter;
+		    			_categoryName = 'CLIENT';
+		    			_selectedProfilePerson = model.CPP_Person;
+		    		break;
+		    		case 'COM':
+		    			model.personsArrCollection.filterFunction = commercialFilter;
+		    			_categoryName = 'PHOTOGRAVURE';
+		    			_selectedProfilePerson = model.comPerson;
+		    		break;
+		    		case 'IND':
+		    			model.personsArrCollection.filterFunction = industrialFilter;
+		    			_categoryName = 'INDUSTRIEL';
+		    			_selectedProfilePerson = model.indPerson;
+		    		break;
+		    		case 'AGN':
+		    			model.personsArrCollection.filterFunction = agencyFilter;
+		    			_categoryName = 'AGENCE';
+		    			_selectedProfilePerson = model.agencyPerson;
+		    		break;
+		    		case 'EPR':
+		    			model.personsArrCollection.filterFunction = impremiurFilter;
+		    			_categoryName = 'IMPRIMEUR';
+		    			_selectedProfilePerson = model.impPerson;
+		    		break;	
+		    		case 'BAT':
+		    		    model.personsArrCollection.filterFunction = batFilter;
+		    			_categoryName = 'BAT';	
+		    			_selectedProfilePerson = model.techPerson;
+		    		break;
+		    		default:
+		    		break;
+		    	}
+		    	model.personsArrCollection.refresh();
+		    }
+		    /**
+		    * FilterFunction for Chef Produit based on the defaultProfile value
+		    */
+		    private function chefProduitFilter( obj:Persons ):Boolean {
+		    	var retVal : Boolean = false;
+				if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'CLIENT' ) { 
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;
+		    }
+		    /**
+		    * FilterFunction for Commercial based on the defaultProfile value
+		    */	
+			private function commercialFilter( obj:Persons ):Boolean {
+		    	var retVal : Boolean = false;
+		    	if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'PHOTOGRAVURE' ) { 
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;
+		    }
+			/**
+		    * INDUSTRIEL Filter Function
+		    */
+		    private function industrialFilter( obj:Persons ):Boolean {
+		    	var retVal:Boolean;
+				if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'INDUSTRIEL' ) {  
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;
+		    }
+		    
+		    /**
+		    * AGENCE Filter Function
+		    */
+		    private function agencyFilter( obj:Persons ):Boolean {
+		    	var retVal:Boolean;
+				if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'AGENCE' ) { 
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;	    	
+		    } 
+		    /**
+		    * IMPREMIUR Filter Function
+		    */
+		    private function impremiurFilter( obj:Persons ):Boolean {
+		    	var retVal:Boolean;
+				if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'IMPRIMEUR' ) { 
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;	    	
+		    }
+		    /**
+		    * BAT Filter Function
+		    */
+		    private function batFilter( obj:Persons ):Boolean {
+		    	var retVal:Boolean;
+				if ( GetVOUtil.getCompanyObject( obj.companyFk ).companyCategory == 'BAT' ) { 
+					if( obj.activated != 0 ) {
+						retVal = true;
+					}
+				}
+				return retVal;	    	
+		    }
+		    
+		
+			/**
+		    * Fire the modify button MouseClickEVENT to display the selected items detail on dataGird item click
+		    */	
+			private function onItemClick():void {
+				if( ( _formVisible ) && ( !isNewObject ) ) {
+					if( !_selectionForm.makeEditing ) {
+						_details.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+					}
+					else {
+						_modify.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+					}		
+				}
+			}
+			
+			private function makeUserName():void {
+				if( ( !Persons( _personList.selectedItem ).personLogin ) || ( Persons( _personList.selectedItem ).personLogin.length == 0 ) ) {
+					_selectionForm._userName.editable = true;
+					_selectionForm._userName.styleName = 'TextInput';
+				} 
+				else {
+					_selectionForm._userName.editable = false;
+					_selectionForm._userName.styleName = 'disabledText';
+				} 
+			}
+			
+			private function showDetails():void {
+				var index:int = _personList.selectedIndex;
+				if( index == -1 ) {
+					Alert.show("Select An Item To Show");
+				}
+				else {
+					_selectionForm.makeEditing = false;
+					_selectionForm._userName.editable = false;
+					_selectionForm._userName.styleName = 'disabledText';
+					_selectionForm.isBindable = "Details";
+					onModification( _personList.selectedItem as Persons );
+				}
+			}
+			
+			/**
+		    * Get the current selected item person deatils on modify button click 
+		    * 
+		    */	
+			private function modifyPerson( event:MouseEvent ) :void { 
+				var index:int = _personList.selectedIndex;
+				if( index == -1 ) {
+					Alert.show("Select An Item To Modify");
+				}
+				else {
+					makeUserName();
+					_selectionForm._saveButton.label = 'Modify';
+					_selectionForm.isBindable = "Modify";
+					onModification( _personList.selectedItem as Persons );
+				}
+			}
+			
+			/**
+		    * Display the current selected person details
+		    */	
+			private function onModification( obj:Persons ):void {
+				if( !_formVisible ) {
+					_conVisible = false;
+					_formVisible = true;
+				}
+				_selectionForm._firstName.text = obj.personFirstname;
+				_selectionForm._lastName.text = obj.personLastname;
+				_selectionForm._email.text = obj.personEmail;
+				_selectionForm._phone.text = obj.personPhone;
+				_selectionForm._mobile.text = obj.personMobile;
+				_selectionForm._userName.text = obj.personLogin;
+				_selectionForm._password.text = obj.personPassword;
+				
+				var companyItem:Companies = GetVOUtil.getCompanyObject( obj.companyFk );
+				_selectionForm._companyName.text = companyItem.companyname;
+				_selectionForm._code.text = companyItem.companycode;
+				_selectionForm._category.text = companyItem.companyCategory;
+				_selectionForm._address.text = companyItem.companyAddress;
+				_selectionForm._companyPhone.text = companyItem.companyPhone;
+				_selectionForm._postalcode.text = companyItem.companyPostalCode;
+				_selectionForm._city.text = companyItem.companyCity;
+				_selectionForm._country.text = companyItem.companyCountry;
+			}
+			
+			/**
+		    * Display the FORM with empty values to add New Person
+		    */	
+			private function addPerson() :void {
+				if( !_formVisible ) {
+					_conVisible = false;
+					_formVisible = true;
+					isNewObject = true;
+					_selectionForm._firstName.text = '';
+					_selectionForm._lastName.text = '';
+					_selectionForm._email.text = '';
+					_selectionForm._phone.text = '';
+					_selectionForm._mobile.text = '';
+					_selectionForm._userName.text = '';
+					_selectionForm._password.text = '';
+					
+					_selectionForm._companyName.text = '';
+					_selectionForm._code.text = '';
+					_selectionForm._category.text = _categoryName;
+					_selectionForm._address.text = '';
+					_selectionForm._companyPhone.text = '';
+					_selectionForm._postalcode.text = '';
+					_selectionForm._city.text = '';
+					_selectionForm._country.text = '';
+					
+					_selectionForm._saveButton.label = 'Add';
+					_selectionForm._userName.editable = true;
+					_selectionForm._userName.styleName = 'TextInput';
+					_selectionForm.companiesVisibility = true;
+					_selectionForm.isBindable = "Add";
+					_selectionForm.makeFilterFunction( model.personSelectionVersion ); 
+				}
+			}
+			
+			/**
+		    * Save new Person while the "Add" labled button got clicked 
+		    * Update details while the "Update" labled button got clicked
+		    */		
+			private function getCompaniesList():void {
+				if( isNewObject ) {
+					if( _selectionForm._firstName.text == '' ) {
+						Alert.show( "Please Fill Person's FirstName " );
+					}
+					else if( _selectionForm._companyName.text == '' ) {
+	 					Alert.show( "Please Fill Company's Name " );
+	 				}
+	 				else if( _selectionForm._email.text == '' ) {
+	 					Alert.show( "Please Fill Mail Id " );
+	 				}
+	 				else if( _selectionForm._userName.text == '' ) {
+	 					Alert.show( "Please Fill Username " );
+	 				}
+	 				else if( _selectionForm._password.text == '' ) {
+	 					Alert.show( "Please Fill Password " );
+	 				}
+	 				else if( companyCodeCheck( _selectionForm._code.text ) && ( !_selectionForm.selectedCompany ) ) {
+	 					_selectionForm._code.editable = true;
+	 					_selectionForm._code.styleName = "TextInput";
+	 					Alert.show( "Company Code is Already Available" );
+	 				} 
+					else {
+						onSave();
+			  		}
+		  		}
+		  		else {
+		  			userNameCheck();
+		  		}
+			}
+			
+			private function companyCodeCheck( str:String ):Boolean {
+				for each( var item:Companies in model.totalCompaniesColl.source ) {
+					if( item.companycode == str ) {
+						return true;
+					}
+				}
+				return false;
+			}
+			
+			/**
+		    *  Save new Person 
+		    */	
+			private function onSave():void {
+				if( !Utils.checkPersonLogin( _selectionForm._userName.text.toLowerCase() ) ) {
+					
+					_selectionForm.companiesVisibility = false;
+					_selectionForm._availableCompanies.visible = false;
+					model.totalCompaniesColl.filterFunction = null;
+					model.totalCompaniesColl.sort = null;
+					_selectionForm._code.editable = false;
+	 				_selectionForm._code.styleName = "disabledText";
+					model.totalCompaniesColl.refresh();
+					
+					if( _selectionForm.selectedCompany ) {
+						addNewPerson();
+					}
+					else {
+						var companyObj:Companies = new Companies();
+		 				companyObj.companyname = _selectionForm._companyName.text;
+		 				companyObj.companycode = _selectionForm._code.text;
+		 				companyObj.companyCategory = _selectionForm._category.text;
+		 				companyObj.companyAddress = _selectionForm._address.text;
+		 				companyObj.companyPhone = _selectionForm._companyPhone.text;
+						companyObj.companyPostalCode = _selectionForm._postalcode.text;
+						companyObj.companyCity = _selectionForm._city.text;
+						companyObj.companyCountry = _selectionForm._country.text;
+						var handler:IResponder = new Callbacks( addResult, fault );
+		 				var addCompanyEvent:CompaniesEvent = new CompaniesEvent( CompaniesEvent.EVENT_CREATE_COMPANIES, handler );
+						addCompanyEvent.companies = companyObj;
+						addCompanyEvent.dispatch(); 
+					}
+				}
+				else {
+		    		Alert.show("Person Login is Already Available" ); 
+		    	}
+			}
+			
+			private function addNewPerson():void {
+				var personObj:Persons = new Persons();
+				personObj.personFirstname = _selectionForm._firstName.text;
+				personObj.personLastname = _selectionForm._lastName.text;
+				personObj.personEmail = _selectionForm._email.text;
+				personObj.personPhone = _selectionForm._phone.text;
+				personObj.personMobile = _selectionForm._mobile.text;
+				personObj.personLogin = _selectionForm._userName.text.toLowerCase();
+				personObj.personPassword = _selectionForm._password.text; 
+				personObj.activated = 1;
+				personObj.companyFk = _selectionForm.selectedCompany.companyid;
+				personObj.defaultProfile = Utils.getProfileId( model.personSelectionVersion );
+				_selectionForm.selectedCompany = null;
+				
+		    	var handler:IResponder = new Callbacks( addPersonResult, fault );
+				var addPersonEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_CREATE_PERSONS, handler );
+				addPersonEvent.persons = personObj;
+				addPersonEvent.dispatch();
+			}
+			
+			private function addResult( rpcEvent:Object ):void {
+				var personObj:Persons = new Persons();
+				personObj.personFirstname = _selectionForm._firstName.text;
+				personObj.personLastname = _selectionForm._lastName.text;
+				personObj.personEmail = _selectionForm._email.text;
+				personObj.personPhone = _selectionForm._phone.text;
+				personObj.personMobile = _selectionForm._mobile.text;
+				personObj.personLogin = _selectionForm._userName.text.toLowerCase();
+				personObj.personPassword = _selectionForm._password.text; 
+				personObj.activated = 1;
+				personObj.companyFk = Companies( rpcEvent.message.body ).companyid;
+				personObj.defaultProfile = Utils.getProfileId( model.personSelectionVersion );
+				
+		    	var handler:IResponder = new Callbacks( addPersonResult, fault );
+				var addPersonEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_CREATE_PERSONS, handler );
+				addPersonEvent.persons = personObj;
+				addPersonEvent.dispatch();
+		    } 
+			
+			private function addPersonResult( rpcEvent:Object ):void {
+				if( !( rpcEvent is String ) ) {
+					model.personsArrCollection.addItem( Persons( rpcEvent.message.body ) );
+					model.personsArrCollection.refresh();
+					_personList.selectedItem = Persons( rpcEvent.message.body );
+					if( model.personSelectionVersion == 'EPR' ) {
+						createGroups();
+					}
+					else if( model.personSelectionVersion != 'BAT' ) {
+						toCreateGroupPerson();
+					}
+					_selectionForm._cancel.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+				}
+			}
+			
+			private function createGroups():void {
+				var handler:IResponder = new Callbacks( groupResult, fault );
+				var groupsEvent:GroupsEvent = new GroupsEvent( GroupsEvent.EVENT_CREATE_GROUPS, handler );
+				var newGroup:Groups = new Groups();
+				newGroup.groupLabel = GetVOUtil.getCompanyObject( Persons( _personList.selectedItem ).companyFk ).companyname;
+				newGroup.authLevel="ROLE_IMP";
+				groupsEvent.groups = newGroup;
+				groupsEvent.dispatch();
+			}
+			
+			private function groupResult( rpcEvent:Object ):void {
+				var groupPersonEvent:GroupPersonsEvent = new GroupPersonsEvent( GroupPersonsEvent.EVENT_CREATE_GROUPPERSONS );
+				var newGroupPerson:GroupPersons = new GroupPersons();
+				newGroupPerson.groupFk = Groups( rpcEvent.message.body ).groupId;
+				newGroupPerson.personFk = Persons( _personList.selectedItem ).personId;
+				groupPersonEvent.groupPersons = newGroupPerson;
+				groupPersonEvent.dispatch();
+			}
+			
+			private function toCreateGroupPerson():void {
+				var groupPersonEvent:GroupPersonsEvent = new GroupPersonsEvent( GroupPersonsEvent.EVENT_CREATE_GROUPPERSONS );
+				var newGroupPerson:GroupPersons = new GroupPersons();
+				newGroupPerson.groupFk = getGroupId( 'ROLE_' + model.personSelectionVersion );
+				newGroupPerson.personFk = Persons( _personList.selectedItem ).personId;
+				groupPersonEvent.groupPersons = newGroupPerson;
+				groupPersonEvent.dispatch();
+			}
+			
+			private function getGroupId( str:String ):int {
+				for each( var item:Groups in model.CollectAllGroupsColl ) {
+					if( item.authLevel == str ) {
+						return item.groupId;
+					}
+				}
+				return -1;
+			}
+			
+			private function fault( rpcEvent:Object ):void {
+			} 
+			
+			/**
+		    *  Assign the company name as the selected project domain name
+		    */	
+			private function setCompany():int {
+				var returnValue:Companies;
+				var domain:Categories = Utils.getDomains( model.currentProjects.categories );
+				for( var i:int = 0;i < model.totalCompaniesColl.length;i++ ) {
+					if( domain.categoryCode == Companies( model.totalCompaniesColl.getItemAt( i ) ).companycode ) {
+						returnValue = Companies( model.totalCompaniesColl.getItemAt( i ) );
+					}
+				}
+				return returnValue.companyid;
+			}
+			
+			/**
+		    * Save Modified person details  
+		    */	
+			private function userNameCheck():void {
+				if( _selectionForm._userName.editable ) {
+					if( !Utils.checkPersonLogin( _selectionForm._userName.text.toLowerCase() ) ) {
+						upDateDetails();
+					}
+					else {
+						Alert.show("Person Login is Already Available" );
+					}
+				}
+				else {
+					upDateDetails();
+				}
+				
+			}
+			
+			private function upDateDetails():void {
+				var eventArray:Array = [];
+				var companyItem:Companies = GetVOUtil.getCompanyObject( _personList.selectedItem.companyFk );
+				companyItem.companyname = _selectionForm._companyName.text;
+				companyItem.companycode = _selectionForm._code.text;
+				companyItem.companyCategory = _selectionForm._category.text;
+				companyItem.companyAddress = _selectionForm._address.text;
+				companyItem.companyPhone = _selectionForm._companyPhone.text;
+				companyItem.companyPostalCode = _selectionForm._postalcode.text;
+				companyItem.companyCity = _selectionForm._city.text;
+				companyItem.companyCountry = _selectionForm._country.text;
+				
+				_personList.selectedItem.personFirstname = _selectionForm._firstName.text;
+				_personList.selectedItem.personLastname = _selectionForm._lastName.text;
+				_personList.selectedItem.personEmail = _selectionForm._email.text;
+				_personList.selectedItem.personPhone = _selectionForm._phone.text;
+				_personList.selectedItem.personMobile = _selectionForm._mobile.text;
+				_personList.selectedItem.personLogin = _selectionForm._userName.text;
+				_personList.selectedItem.personPassword = _selectionForm._password.text;
+				_personList.selectedItem.companyFk = companyItem.companyid;
+				
+				
+				var updateCompanyEvent:CompaniesEvent = new CompaniesEvent( CompaniesEvent.EVENT_UPDATE_COMPANIES);
+				updateCompanyEvent.companies = companyItem;
+				eventArray.push( updateCompanyEvent );
+				
+				var updatePersonEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_UPDATE_PERSONS );
+				updatePersonEvent.persons = Persons( _personList.selectedItem );
+				eventArray.push( updatePersonEvent );
+				
+				
+				var propString:String = getPropertyString( model.personSelectionVersion );
+				var propPj:Propertiespj = Utils.propertyPjForFieldName( propString, model.currentProjects.propertiespjSet );
+				if( propPj ) {
+					if( ( model.personSelectionVersion == 'EPR' ) || ( model.personSelectionVersion == 'IND' ) )
+						propPj.fieldValue = GetVOUtil.getCompanyObject( Persons( _personList.selectedItem ).companyFk ).companyname;
+					else
+						propPj.fieldValue = GetVOUtil.getCompanyObject( _personList.selectedItem.companyFk ).companyname + '-' + _personList.selectedItem.personLastname + ', '+ _personList.selectedItem.personFirstname;
+					
+					var propertiesPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ, handler );
+					propertiesPjEvent.propertiespj = propPj;
+					eventArray.push( propertiesPjEvent );
+					
+				}
+				
+				var teamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE );
+				teamlineEvent.projectId = model.currentProjects.projectId;
+				eventArray.push( teamlineEvent );   
+				
+				var handler:IResponder = new Callbacks( modificationResult, fault );
+				var eventSeq:SequenceGenerator = new SequenceGenerator( eventArray, handler );
+		    	eventSeq.dispatch(); 
+		   	}
+			
+			private function modificationResult( rpcEvent:Object ):void {
+				model.personsArrCollection.refresh();
+				_selectionForm._cancel.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+			}
+			
+			/**
+		    * Reset the container size while cancel the add or modify form cancel  
+		    */	
+			private function onCancel():void {
+				if( _formVisible ) {
+					_formVisible = false;
+					_conVisible = true;
+					isNewObject = false;
+				}
+			}
+			
+			/**
+		    * Set the existing selected Person Selected on dataGrid
+		    */	
+			private function setSelectedItem( item :Persons ):void {
+				var sort:Sort = new Sort(); 
+	            sort.fields = [ new SortField( 'personId' ) ];
+	            model.personsArrCollection.sort = sort;
+	            model.personsArrCollection.refresh(); 
+				var cursor:IViewCursor =  model.personsArrCollection.createCursor();
+				var found:Boolean = cursor.findAny( item );	
+				if( found ) {
+					_personList.selectedItem = cursor.current;
+					_personList.scrollToIndex( _personList.selectedIndex );
+					_personList.validateNow();
+				}
+			}
+			
+			/**
+		    * dispatch CloseEvent and set trafficView text on close Handler
+		    */	
+			private function onValidation():void {
+				if( _personList.selectedIndex == -1 ) {
+	    			Alert.show( "Select a Person To Validate" );
+	    		}
+	    		else {
+	    			_isValidated = true;
+	    			if( model.personSelectionVersion == 'EPR' ) {
+	    				if( !fromNewProject ) {
+	    					getProjectTeamlineCollection();
+	    				}
+	    				else {
+	    					this.dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+	    				}  
+	    			}
+	    			else {
+	    				getProjectTeamlineCollection();
+	    			}
+	    		}
+	    	}
+			
+			private function getProjectTeamlineCollection():void {
+				trace("here1----->>");
+				var teamlineEvent:TeamlineEvent;
+				var handler:IResponder = new Callbacks( teamlineResult, fault );
+				teamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_PROJECT_TEAMLINE, handler );
+				teamlineEvent.projectId = model.currentProjects.projectId;
+				teamlineEvent.dispatch();
+			}
+			/**
+		    * Close the window on MouseDownOutSide
+		    */	
+			private function onMousedownOutside():void {
+	    		_selectionForm._cancel.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+	    		dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+	    	}
+	    	
+	    	private function companyLabelFuction( item:Object, col:DataGridColumn ):String {
+	    		return GetVOUtil.getCompanyObject( item.companyFk ).companyname;
+			}
+			
+			private function teamlineResult( rpecEvent:Object ):void {
+				trace("here2----->>");
+				model.teamLineArrayCollection = rpecEvent.result as ArrayCollection;
+				var deafulProfile:int = Utils.getProfileId( model.personSelectionVersion );
+				var furtherMove:Boolean = true;
+				for each( var item:Teamlines in model.teamLineArrayCollection ) {
+					if( item.profileID == deafulProfile ) {
+						item.personID = Persons( _personList.selectedItem ).personId;
+						furtherMove = false;
+						break;
+					}
+					else {
+						furtherMove = true;
+					}
+				}
+				if( furtherMove ) {
+					var teamLines:Teamlines = new Teamlines();
+					teamLines.profileID = deafulProfile;
+					teamLines.projectID = model.currentProjects.projectId;
+					teamLines.personID = Persons( _personList.selectedItem ).personId;
+					model.teamLineArrayCollection.addItem( teamLines );
+				} 
+				
+				var teamprojectId:String = '';
+	  			var teamprofileId:String = '';
+	  			var teampersonId:String = '';
+	  			for each( var teamlineitem:Teamlines in model.teamLineArrayCollection ) {
+	  				teamprojectId = String(teamlineitem.projectID);
+					if(teamprofileId == '')
+					{
+						teamprofileId = teamlineitem.profileID.toString();
+					}
+					else{
+						teamprofileId = teamprofileId+";"+teamlineitem.profileID;
+					}
+					if(teampersonId == ''){
+						teampersonId = teamlineitem.personID.toString();
+					}
+					else
+					{
+						teampersonId = teampersonId+";"+teamlineitem.personID; 
+					}
+						
+				} 
+				trace("NewPersonTemplate teamprojectId :"+teamprojectId);
+				trace("NewPersonTemplate teamprofileId :"+teamprofileId);
+				trace("NewPersonTemplate teampersonId :"+teampersonId); 
+				
+				trace("NewPersonTemplate model.currentProjects.projectId :"+model.currentProjects.projectId); 
+				//------------------------------------
+				
+				
+				var propString:String = getPropertyString( model.personSelectionVersion );
+				var propPj:Propertiespj = Utils.propertyPjForFieldName( propString, model.currentProjects.propertiespjSet );
+				if( !propPj ) {
+					propPj = new Propertiespj();
+					propPj.projectFk = model.currentProjects.projectId;
+					var propPreset:Propertiespresets = getPropertiespresets( propString );
+					propPj.propertyPreset = propPreset;
+					propPj.propertyPreset.propertyPresetId = propPreset.propertyPresetId;
+				}
+				if( ( model.personSelectionVersion == 'EPR' ) || ( model.personSelectionVersion == 'IND' ) ){
+					propPj.fieldValue = GetVOUtil.getCompanyObject( Persons( _personList.selectedItem ).companyFk ).companyname;
+				}	
+				else {
+					propPj.fieldValue = GetVOUtil.getCompanyObject( _personList.selectedItem.companyFk ).companyname + '-' + _personList.selectedItem.personLastname + ', '+ _personList.selectedItem.personFirstname;
+				}	
+				
+				var propertiesprojectId:String = model.currentProjects.projectId.toString();
+  				var propertiespresetId:String = propPj.propertyPreset.propertyPresetId.toString();
+  				var propertiesfieldvalue:String = propPj.fieldValue;
+				
+				trace("NewPersonTemplate propertiesprojectId :"+propertiesprojectId);
+				trace("NewPersonTemplate propertiespresetId :"+propertiespresetId);
+				trace("NewPersonTemplate propertiesfieldvalue :"+propertiesfieldvalue); 
+								
+				
+				//var handler:IResponder = new Callbacks( updateTeamlineResult, fault );
+				var handler:IResponder = new Callbacks( finalClose, fault );
+				var teamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_ORACLE_UPDATE_TEAMLINE, handler );
+				teamlineEvent.oracleprojectId = teamprojectId;
+				teamlineEvent.oracleprofileId = teamprofileId;
+				teamlineEvent.oraclepersonId = teampersonId;
+				
+				teamlineEvent.oraclepropertiesprojectId = propertiesprojectId;
+				teamlineEvent.oraclepropertiespresetId = propertiespresetId;
+				teamlineEvent.oraclepropertiesfieldvalue = propertiesfieldvalue;
+				if(	propertiesprojectId.length!=0 && propertiespresetId.length!= 0 ) {
+					teamlineEvent.dispatch();
+				}
+			}
+			private function getPropertyString( value:String ):String {
+	    		var returnValue:String;
+	    		switch( value ) {
+	    			case 'CHP':
+	    				returnValue ="product_manager";
+	    			break;
+	    			case 'CPP':
+	    				returnValue ="chef_project_pack";
+	    			break;
+	    			case 'EPR':
+	    				returnValue ="impremiur";
+	    			break;
+	    			case 'IND':
+	    				returnValue ="industry_supplier";
+	    			break;
+	    			case 'AGN':
+	    				returnValue ="creation_agency";
+	    			break;
+	    			case 'COM':
+	    				returnValue ="commercial";
+	    			break;
+	    			case 'BAT':
+	    				returnValue ="bat_technician";
+	    			break;
+	    			default:
+	    			break;
+	    		}
+	    		return returnValue;
+	    	}
+	    	
+	    	private function finalClose( rpcEvent:Object ):void {
+	    		
+	    		if( !( rpcEvent is String ) ) {
+	    			this.dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+		    	}
+	    	}
+	    	
+	    	private function getPropertiespresets( str:String ):Propertiespresets {
+	    		for each( var item:Propertiespresets in model.propertiespresetsCollection ) {
+	    			if( item.fieldName == str ) {
+	    				return item;
+	    			}
+	    		}
+	    		return null;
+	    	}
+	    	
+	    	private function onCombochange( event:ListEvent ):void {
+	    		var currentIndex:int = ComboBox( event.currentTarget ).selectedIndex;
+				_autoComplete.labelField = currentIndex !=0 ? _headerArray[currentIndex-1] : 'All';
+	        }
+	        
+	        private function setUpAutoComplete():void {
+	        	var tempArray:Array = [];
+	        	_columnSelectArray.push( 'All' );
+	        	for( var i:int = 0; i < _personList.columns.length -1; i++ ) {
+	        		
+	        		tempArray.push( DataGridColumn( _personList.columns[ i ] ).dataField );
+	        		_columnSelectArray.push( DataGridColumn( _personList.columns[ i ] ).headerText );
+	        	}
+	        	_headerArray = tempArray;
+	        	selector.selectedIndex = 0; 
+	        }
+	        
+	        private function onDoubleClick():void {
+	        	_validate.dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+	        }
+	    	
+	    	public function deletePerson():void {
+	    		Alert.show( 'Do you want to delete this person?', 'Confirmation', Alert.YES|Alert.NO, this, onDelete );
+	    	}
+	    	
+	    	private var removeIndex:int;
+	    	private function onDelete( event:CloseEvent ):void {
+	    		if( event.detail == Alert.YES ) {
+	    			removeIndex = _personList.selectedIndex;
+	    			var selectedPerson:Persons = _personList.selectedItem as Persons;
+	    			selectedPerson.activated = 0;
+	    			
+	    			var handler:IResponder = new Callbacks( deleteHandler );
+	    			var personUpdateEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_UPDATE_PERSONS, handler );
+	    			personUpdateEvent.persons = selectedPerson;
+	    			personUpdateEvent.dispatch();
+	    		}
+	    	}
+	    	
+	    	private function deleteHandler( rpcEvent:Object ):void {
+	    		if( model.personsArrCollection.length > 0 ) {
+	    			if( model.personsArrCollection.length == removeIndex ) {
+						_personList.selectedItem = model.personsArrCollection.getItemAt( removeIndex - 1 );
+					}
+					else {
+						_personList.selectedItem = model.personsArrCollection.getItemAt( removeIndex );
+					}
+				}
+				if( _formVisible ) {
+					if( _personList.selectedItem ) {
+						if( !isNewObject ) {
+							onModification( _personList.selectedItem as Persons );
+						}
+					}
+					else {
+						onCancel();
+					}
+				} 
+			}
+	    	
+		]]>
+	</mx:Script>
+	<!--<mx:AnimateProperty id="_myEffect" property="height" target="{ this }"/>-->
+	             	
+	<Gview:DashBoardGrid  top="33" width="100%" id="_personList" 
+		dataProvider="{ model.personsArrCollection }" 
+		specificText="{ _autoComplete._input.text }" 
+	 	itemClick="onItemClick()" 
+	 	doubleClickEnabled="true" 
+	 	doubleClick="onDoubleClick()"  
+	 	itemRenderer="com.adams.dt.view.dataGridSearch.renderers.TextColorRenderer"
+	 	draggableColumns="false" allowMultipleSelection="false" >
+            <Gview:columns>
+            	<mx:DataGridColumn headerText="Company" labelFunction="companyLabelFuction" dataField="companyFk"/>
+            	<mx:DataGridColumn headerText="Firstname" dataField="personFirstname"/>
+                <mx:DataGridColumn headerText="Lastname" dataField="personLastname"/>
+                <mx:DataGridColumn headerText="Phone" dataField="personPhone" />
+                <mx:DataGridColumn headerText="Email" dataField="personEmail" />
+                <mx:DataGridColumn width="30" sortable="false">
+                	<mx:itemRenderer>
+                		<mx:Component>
+                			<mx:Canvas horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%">
+                				<mx:Button styleName="deleteIcon" useHandCursor="true"  verticalCenter="0" horizontalCenter="0"
+                						   buttonMode="true" mouseChildren="false" toolTip="Remove The Person"
+									       click="outerDocument.deletePerson()" right="4"/>
+                			</mx:Canvas>
+                		</mx:Component>
+                	</mx:itemRenderer>
+                </mx:DataGridColumn>
+            </Gview:columns>            
+        </Gview:DashBoardGrid> 
+        <mx:VBox top="{_personList.y+_personList.height+5}"  width="100%" paddingBottom="5">
+        	<view:SelectionForm id="_selectionForm" visible="{ _formVisible }" includeInLayout="{ _formVisible }"
+        	                save="getCompaniesList()" cancel="onCancel()" />
+        	                
+	        <mx:HBox visible="{ _conVisible }" includeInLayout="{ _conVisible }" 
+	        	width="100%" horizontalAlign="center" verticalAlign="middle" >
+	        	<mx:Button id="_details" label="Details" click="showDetails()"/>
+	        	<mx:Button id="_add" label="Add"  click="addPerson()"/>
+				<mx:Button id="_modify" label="Modify"  click="modifyPerson( event )"/>
+				<mx:Button id="_validate" label="Select" click="onValidation()"/>
+			</mx:HBox>
+        </mx:VBox>
+		<mx:HBox id="_autoCompletePanel" width="100%" horizontalAlign="center" top="5">
+			<mx:Label text="Search"/>
+			<Gview:TextComplete id="_autoComplete" width="180" styleName="autoCompleteColor"  
+				dataCollection="{ model.personsArrCollection }" 
+				nameProperty="{ _headerArray }" 
+				labelField="All" 
+				categoryFilter="{ _categoryName }" 
+				 comingFromPerson="true" />
+				
+			<mx:ComboBox id="selector" width="180" dataProvider="{ _columnSelectArray }" 
+						 change="onCombochange( event )"/>
+		</mx:HBox>
+</mx:TitleWindow>

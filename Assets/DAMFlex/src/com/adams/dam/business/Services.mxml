@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cairngorm:ServiceLocator xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx"
+						  xmlns:cairngorm="com.universalmind.cairngorm.business.*">
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dam.model.ModelLocator;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			public static const FILE_DETAIL_SERVICE:String = 'fileDetail';
+			public static const PROJECT_SERVICE:String = 'project';
+			public static const PERSON_SERVICE:String = 'person';
+			public static const CATEGORY_SERVICE:String = 'category';
+			public static const UPLOAD_DOWNLOAD_SERVICE:String = 'remoteUploadDownload';
+			
+		]]>
+	</fx:Script> 
+	
+	<fx:Declarations>
+		<mx:RemoteObject showBusyCursor="true" id="person" destination="person" concurrency="single"	 channelSet="{ model.channelSet }"/>
+		<mx:RemoteObject showBusyCursor="true" id="project" destination="project" concurrency="single" channelSet="{ model.channelSet }"/>
+		<mx:RemoteObject showBusyCursor="true" id="fileDetail" destination="fileDetail" concurrency="single" channelSet="{ model.channelSet }"/>
+		<mx:RemoteObject showBusyCursor="true" id="category" destination="category" concurrency="single" channelSet="{ model.channelSet }"/>
+		<mx:RemoteObject showBusyCursor="true" id="remoteUploadDownload" destination="fileIO" channelSet="{ model.channelSet }"/>
+	</fx:Declarations>
+	
+</cairngorm:ServiceLocator>

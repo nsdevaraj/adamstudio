@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:views="com.adams.dam.view.mxFiles.*">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("com.adams.dam.view.hosts.dummyHosts.DummyHost")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<s:ArrayList id="nameAList" source="[ 'All', 'projectName', 'fileName', 'taskId', 'filePath' ]"/>
+		<s:DropShadowFilter id="shadowFilter" color="0x000000" 	distance="4" blurX="3" blurY="3" alpha=".2" strength="1"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="listView"/>
+		<s:State name="thumbView"/>
+	</s:states>
+	<s:Group width="100%" id="bgPanel">		
+		<s:HGroup horizontalCenter="0" top="{filterPanel.height +20}" verticalAlign="middle">
+		<s:Label id="searchLbl" text="searchLbl"/>
+		
+		<views:TextComplete clipAndEnableScrolling="false" id="autoComplete" left="{ searchLbl.width + searchLbl.x + 10 }" 
+							width="477" styleName="autoCompleteColor" dataCollection="{ hostComponent.filesDataProvider }" 
+							displayField="All"/>		
+		<s:DropDownList  id="comboMenu" 
+						selectedIndex="0" dataProvider="{ nameAList }" 
+						left="{ autoComplete.x + autoComplete.width + 5 }"></s:DropDownList>		
+		<s:ToggleButton id="listBtn" styleName="listBtnSkin" selected="true" left="{ comboMenu.x + comboMenu.width + 20 }"/>		
+		<s:ToggleButton id="thumbBtn" styleName="thumbBtn" left="{ comboMenu.x + comboMenu.width + 50 }"/>
+		</s:HGroup>
+		<s:BorderContainer  horizontalCenter="0" borderVisible="false" top="0" width="100%"
+							height="65" id="filterPanel" backgroundColor="#152b39">
+			<s:layout><s:VerticalLayout  horizontalAlign="center" 
+										 paddingTop="10"
+										 paddingBottom="10"
+										 paddingLeft="10"
+										 paddingRight="10"/></s:layout>
+		<s:Group>
+			<s:layout><s:HorizontalLayout gap="25" variableColumnWidth="false" columnWidth="120" horizontalAlign="left"/></s:layout>
+			<s:Label text="Domain" />
+			<s:Label text="Category 1" />
+			<s:Label text="Category 2" />
+			<s:Label text="Project" />
+		</s:Group>
+		<s:Group>
+			<s:layout><s:HorizontalLayout gap="25" variableColumnWidth="false" columnWidth="120" horizontalAlign="left"/></s:layout>
+			<s:DropDownList id="domainList"/>
+			<s:DropDownList id="category1List"/>
+			<s:DropDownList id="category2List"/>
+			<s:DropDownList id="projectList"/>
+		</s:Group>
+		</s:BorderContainer>
+	</s:Group>
+	
+	<s:Group horizontalCenter="0" top="{bgPanel.height}" width="800" bottom="10">
+		<views:MyGrid id="filesList" includeIn="listView" top="50" left="0" width="100%" height="100%" 
+					  dataProvider="{ hostComponent.filesDataProvider }" 
+					  borderStyle="solid" borderColor="#2f363b" headerHeight="30">
+			<views:columns>
+				<mx:DataGridColumn labelFunction="hostComponent.getProjectName" headerText="Project Name"/>
+				<mx:DataGridColumn dataField="fileName" headerText="File Name"/>
+				<mx:DataGridColumn width="70" dataField="taskId" headerText="TaskId"/>
+				<mx:DataGridColumn width="70" dataField="filePath" headerText="Download" 
+								   itemRenderer="com.adams.dam.view.mxFiles.DownloadRenderer"/>
+			</views:columns>
+		</views:MyGrid>
+		
+		<views:MyList includeIn="thumbView" dataProvider="{ hostComponent.filesDataProvider }" 
+					  itemRenderer="com.adams.dam.view.mxFiles.DataThumbnail" borderAlpha="0" top="50" left="0" width="100%" height="100%">
+			<views:layout>
+				<s:TileLayout  columnAlign="justifyUsingWidth"/>
+			</views:layout>
+		</views:MyList>
+		
+	</s:Group>
+	
+</s:Skin>

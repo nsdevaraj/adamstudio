@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	<!--<mx:Script> dataChange="init()" creationComplete="init()" 
+		<![CDATA[
+			private function init():void{
+				URI = File.applicationDirectory.resolvePath(data.@thumbnailImage).nativePath;
+			}
+			[Bindable]
+			private var URI:String = "";
+		]]>
+	</mx:Script>-->
+	<!--<mx:Image source="{data.@thumbnailImage}" />-->
+	<mx:Image id="img" maintainAspectRatio="true" horizontalAlign="center" width="100%" height="100%" source="{data.thumbnailImage}"/>
+	<mx:Label text="{data.title}" horizontalCenter="0" />
+
+</mx:VBox>

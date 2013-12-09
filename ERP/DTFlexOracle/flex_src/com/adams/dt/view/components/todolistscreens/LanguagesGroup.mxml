@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="onCreationComplete()">
+<mx:Script>
+	<![CDATA[
+		
+		import com.adams.dt.model.ModelLocator;
+		import mx.controls.CheckBox;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		[Bindable]
+		public var isItEditing:Boolean;
+		
+		private var _selectedIndices:Array;
+		[Bindable]
+		public function get selectedIndices():Array {
+			_selectedIndices = [];
+			for( var i:int = 0; i < numChildren; i++ ) {
+				if( CheckBox( getChildAt( i ) ).selected ) {
+				 	_selectedIndices.push( 1 );
+				}
+				else {
+					_selectedIndices.push( 0 );
+				}		
+			}
+			return _selectedIndices;
+		} 
+		public function set selectedIndices( value:Array ):void {
+			_selectedIndices = value;
+			if( value.length > 0 ) {
+				for( var i:int = 0; i < numChildren;i++ ) {
+					if( value[ i ] == 0 )
+						CheckBox( getChildAt( i ) ).selected = false;
+					else
+						CheckBox( getChildAt( i ) ).selected = true;	
+				}
+			}
+			else {
+				for( var j:int = 0; j < numChildren;j++ ) {
+					CheckBox( getChildAt( j ) ).selected = false;
+				}
+			}
+		}
+		
+		private function onCreationComplete():void {
+			for( var i:int = 0; i < numChildren; i++ ) {
+				if( i == 0 ) {
+					getChildAt( i ).x = 0;	
+				}
+				else if( i == ( numChildren - 1 ) ) {
+					getChildAt( i ).x = 0;
+					getChildAt( i ).y = getChildAt( 0 ).y + getChildAt( i ).height + 5;
+				}
+				else {
+					getChildAt( i ).x = getChildAt( i - 1 ).x + getChildAt( i - 1 ).width + 3;
+				}
+			}
+		}
+		
+	]]>
+</mx:Script>
+	<mx:CheckBox enabled="{ isItEditing }" label="En"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Fr"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Sp"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Gr"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="It"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Pg"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Dt"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Other Languages" />
+</mx:Canvas>

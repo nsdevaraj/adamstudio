@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="Scrum.mxml" projectUUID="66f97970-af40-40a4-bf6d-2e0d90c1b848" version="7">
+  <compiler additionalCompilerArguments="-locale en_US -use-network=true -debug=false -keep-as3-metadata+=Dispatcher,Inject,MediateView,Mediate,PostConstruct,PreDestroy,MediateSignal,Form" autoRSLOrdering="false" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="true" outputFolderPath="bin-debug" sourceFolderPath="flex_src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="3">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="Scrum.mxml"/>
+  </applications>
+  <modules>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/HistoryModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/HistoryModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/HomeViewModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/HomeViewModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/LoginModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/LoginModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/ProductEditModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/ProductEditModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/ProductViewModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/ProductViewModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/SprintViewModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/SprintViewModule.mxml"/>
+    <module application="flex_src/Scrum.mxml" destPath="com/adams/scrum/views/modules/SprintEditModule.swf" optimize="true" sourcePath="flex_src/com/adams/scrum/views/modules/SprintEditModule.mxml"/>
+  </modules>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+</actionScriptProperties>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"  
+		xmlns:components="com.adams.scrum.views.components.*"> 
+	<fx:Metadata>
+		[HostComponent('com.adams.scrum.views.mediators.CompanyViewMediator')]
+	</fx:Metadata>  
+	<s:Group right="0" left="0" top="0" bottom="0" >
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="#000000" alpha=".7" />
+			</s:fill>
+		</s:Rect>
+		<s:Panel title="Company Form" id="formTitle" horizontalCenter="0" verticalCenter="0" >
+			<mx:Form id="companyForm"  verticalCenter="0" horizontalCenter="0">
+				<mx:FormItem width="100%" label="Company Name">
+					<s:TextInput id="companyname"/>
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company Code">
+					<s:TextInput id="companycode"/>
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company Category">
+					<s:TextInput id="companyCategory" />
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company Address">
+					<s:TextInput id="companyAddress" />
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company PostalCode">
+					<s:TextInput id="companyPostalCode"/>
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company Country">
+					<s:TextInput id="companyCountry"/>
+				</mx:FormItem>
+				<mx:FormItem width="100%" label="Company Phone">
+					<s:TextInput id="companyPhone"/>
+				</mx:FormItem>
+			</mx:Form>
+			<s:controlBarContent>
+				<components:NativeButton id="companyCreateBtn" label="Create" />
+				<components:NativeButton id="companyEditBtn" label="Edit" />
+				<components:NativeButton id="companyCancelBtn" label="Cancel" styleName="CancelIcon" /> 
+			</s:controlBarContent>
+		</s:Panel>
+	</s:Group>	
+</s:Skin>

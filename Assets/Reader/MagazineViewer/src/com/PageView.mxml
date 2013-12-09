@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Page #{data.@pageNo}"
+		currentStateChange="viewCurrentStateChangeHandler(event)"
+		creationComplete="viewCreationCompleteHandler(event)"
+		actionBarVisible="false" xmlns:mx="library://ns.adobe.com/flex/mx" 
+		xmlns:com="com.*"
+		left="0" right="0" top="0" bottom="0"
+		clipAndEnableScrolling="true">
+	<fx:Declarations>
+		<mx:Fade duration="500" id="fadeEff"/> 
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import model.StaticModel;
+			
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.events.StateChangeEvent;
+			
+			import spark.components.Button;
+			import spark.components.NumericStepper;
+			import spark.events.IndexChangeEvent;
+			
+			[Bindable]
+			private var listVisible:Boolean = false; 
+			private var loader:Loader = new Loader();
+			private var tempCurrentState:String = "";
+			
+			override public function set data(value:Object):void
+			{
+				super.data = value;
+				dataChange();
+			}
+			protected function viewCurrentStateChangeHandler(event:StateChangeEvent):void
+			{
+				dataChange();
+			}
+			private function dataChange():void
+			{
+				tempCurrentState = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+				if(tempCurrentState == 'portrait'){
+					loader.load(new URLRequest(String(data.pageP)));
+				}
+				else if(tempCurrentState == 'landscape'){
+					loader.load(new URLRequest(String(data.pageL)));
+				}			
+				
+				img.x = img.y = 0;
+				xmlBook = StaticModel.pagesList;
+				for each(var i:XML in xmlBook.page)
+				{
+					//i.@state = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+					i.@state = tempCurrentState
+				}
+				xmlListColl.source = xmlBook.page;
+				test.dataProvider = xmlListColl; 
+			}
+			private function createAssetsInterface():void
+			{
+				var i:int;
+				assetsLayer.removeAllElements();
+				tempCurrentState = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+				for(i=0;i<XML(data.assets).children().length();i++)
+				{
+					var but:ButtonInterface = new ButtonInterface();
+					if(tempCurrentState == 'portrait'){
+						but.width = Number(data.assets.Asset[i].portrait.@width);
+						but.height = Number(data.assets.Asset[i].portrait.@height);
+						but.x = Number(data.assets.Asset[i].portrait.@x);
+						but.y = Number(data.assets.Asset[i].portrait.@y);
+					}
+					else if(tempCurrentState == 'landscape'){
+						but.width = Number(data.assets.Asset[i].landscape.@width);
+						but.height = Number(data.assets.Asset[i].landscape.@height);
+						but.x = Number(data.assets.Asset[i].landscape.@x);
+						but.y = Number(data.assets.Asset[i].landscape.@y);
+					}
+					but.url = String(data.assets.Asset[i].url);
+					but.type = String(data.assets.Asset[i].@type);
+					but.addEventListener(MouseEvent.CLICK,onAssetInterfaceClicked);
+					but.useHandCursor = true;
+					but.buttonMode = true;
+					but.alpha = 0.1;
+					assetsLayer.addElement(but);
+				}	
+			}
+			protected function viewGesturePanHandler(event:TransformGestureEvent):void
+			{
+				event.currentTarget.x += event.offsetX * 2;
+				event.currentTarget.y += event.offsetY * 2;
+			}
+			private var xmlBook:XML = new XML();
+			private var xmlListColl:XMLListCollection = new XMLListCollection();
+			protected function viewCreationCompleteHandler(event:FlexEvent):void
+			{
+				Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+				xmlBook = StaticModel.pagesList;
+				for each(var i:XML in xmlBook.page)
+				{
+					i.@state = tempCurrentState;
+				}
+				
+				xmlListColl.source = xmlBook.page;
+				test.dataProvider = xmlListColl; 
+				img.addEventListener(TouchEvent.TOUCH_BEGIN, imgTouchHandler);
+				img.addEventListener(TouchEvent.TOUCH_END, imgTouchHandler);
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,imgLoaderInfoCompleteHandler);
+				img.x = img.y = 0;
+			}
+			private var prevXPosition:int = 0;
+			private var prevYPosition:int = 0;
+			
+			private var curXPosition:int = 0;
+			private var curYPosition:int = 0;
+			
+			protected function imgTouchHandler(event:TouchEvent):void
+			{
+				if(event.type == TouchEvent.TOUCH_BEGIN){
+					prevXPosition = event.stageX;
+					prevYPosition = event.stageY;
+				}else if(event.type == TouchEvent.TOUCH_END){
+					curXPosition = event.stageX;
+					curYPosition = event.stageY;
+					if(curXPosition<prevXPosition){
+						if(Number(StaticModel.pagesList.page.length()) != Number(data.@pageNo)){
+							StaticModel.currentPage = StaticModel.pagesList.page.(@pageNo == String((Number(data.@pageNo)+1)));
+							data =	StaticModel.currentPage;
+							/* navigator.popToFirstView()
+							navigator.pushView( PageView, StaticModel.currentPage, 
+								new SlideViewTransition( 1000, SlideViewTransition.SLIDE_LEFT  ) ); */
+						}  
+					}else if(curXPosition>prevXPosition){
+						if(data.@pageNo-1!=0){
+							StaticModel.currentPage = StaticModel.pagesList.page.(@pageNo == String((Number(data.@pageNo)-1)));
+							data =	StaticModel.currentPage;
+							/* navigator.popToFirstView()
+							navigator.pushView( PageView, StaticModel.currentPage, 
+								new SlideViewTransition( 1000, SlideViewTransition.SLIDE_RIGHT ) ); */
+						}
+					}
+				} 
+			} 
+			protected function imgLoaderInfoCompleteHandler(event:Event):void
+			{
+				img.source = event.currentTarget.url;
+				var scaleValue:Number = 0;
+				tempCurrentState = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+				if(tempCurrentState == 'portrait'){
+					scaleValue = this.width/event.currentTarget.width;
+				}
+				else if(tempCurrentState == 'landscape'){
+					scaleValue = this.height/event.currentTarget.height;
+				}
+				assetsLayer.width = event.currentTarget.width;
+				assetsLayer.height = event.currentTarget.height;
+				
+				assetsLayer.scaleX = scaleValue;
+				assetsLayer.scaleY = scaleValue;
+				assetsLayer.x = this.width/2 - (event.currentTarget.width*scaleValue)/2;
+				assetsLayer.y = this.height/2 - (event.currentTarget.height*scaleValue)/2;
+				
+				createAssetsInterface();
+			}
+
+			private function onAssetInterfaceClicked(event:MouseEvent):void
+			{
+				if(event.currentTarget.type == AssetViewer.VIDEO || 
+					event.currentTarget.type == AssetViewer.IMAGE ||
+					event.currentTarget.type == AssetViewer.SWF ||
+					event.currentTarget.type == AssetViewer.SWF_3D)
+				{
+					assetViewer.displayAsset(event.currentTarget.url,event.currentTarget.type);
+					assetViewer.visible = true;
+				}
+				if(event.currentTarget.type == AssetViewer.AUDIO)
+				{
+					audioPlayer.playSound(event.currentTarget.url);
+					audioPlayer.x = stage.mouseX;
+					audioPlayer.y = stage.mouseY;
+					
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="portrait"/>
+		<s:State name="landscape"/>
+	</s:states>  
+	<s:Image id="img" x="0" y="0" 
+			 width="100%" height="100%"
+			 verticalAlign="middle" horizontalAlign="center"/>
+	<s:Group width="100%" height="100%"
+			clipAndEnableScrolling="true">
+		<s:Group id="assetsLayer" x="0" y="0"/>	
+	</s:Group>
+	<s:Button id="homeBtn" click="navigator.popToFirstView();audioPlayer.visible=false;" icon="@Embed('assets/home.png')" 
+			  bottom="0" left="0"  width="50" height="50"/>
+	<s:List id="test" left="50" bottom="0" right="50" height="100" width="100%"
+			itemRenderer="com.PageViewThumbImage" visible="{listVisible}" 
+			showEffect="{fadeEff}" hideEffect="{fadeEff}"
+			change="navigator.pushView(PageView, test.selectedItem);audioPlayer.visible=false;">
+		<s:filters>
+			<s:DropShadowFilter angle="245" quality="1" alpha="0.5" distance="5" />
+		</s:filters>
+		<s:layout>
+			<s:HorizontalLayout columnWidth="100"/>
+		</s:layout>
+	</s:List>
+	<s:Button id="listBtn" bottom="0" right="0"  width="50" height="50"  
+			  icon="@Embed('assets/list.png')" 
+			  click="listVisible=!listVisible;"/>
+	<com:AssetViewer id="assetViewer" visible="false" />
+	<com:AudioPlayer id="audioPlayer" visible="false" />
+</s:View>

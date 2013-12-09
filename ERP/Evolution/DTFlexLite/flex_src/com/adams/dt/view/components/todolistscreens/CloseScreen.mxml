@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	xmlns="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.business.util.StringUtils;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.event.OpenToDoListScreenEvent;
+			import com.adams.dt.event.TasksEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.model.vo.Projects;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.FileDetails;
+			
+	    /**
+		 * delete the local files corresponding to the project
+		 */ 
+		private function deleteLocalFiles():void{
+			//var fileDetails:FileDetails = model.basicFileCollection.getItemAt(0) as FileDetails;
+			var currentProject:Projects = model.currentTasks.projectObject;
+			var domain:Categories = Utils.getDomains(currentProject.categories)
+			var dirPath:String = domain.categoryName+File.separator+currentProject.categories.categoryFK.categoryName+
+								File.separator+currentProject.categories.categoryName+File.separator+StringUtils.compatibleTrim(currentProject.projectName);
+			var file:File = File.userDirectory.resolvePath("DTFlex"+File.separator+dirPath);
+			if(file.exists)file.deleteDirectory(true);
+			
+			model.currentTasks.taskStatusFK= TaskStatus.FINISHED;
+			model.currentTasks.tDateEnd = model.currentTime;
+			var updateCloseTask:TasksEvent = new TasksEvent(TasksEvent.EVENT_UPDATE_CLOSETASKS);
+			CairngormEventDispatcher.getInstance().dispatchEvent(updateCloseTask);
+			updateTask();
+			
+		}
+		/**
+		 * Remove the finished task
+		 */ 
+		 private function updateTask():void{
+        	if(model.currentTasks.taskStatusFK== TaskStatus.FINISHED)
+			{
+				for each(var item : Object in model.taskCollection)
+				{
+					for each(var taskC : Tasks in item.tasks)
+					{
+						if(taskC.taskId == model.currentTasks.taskId){
+							item.tasks.removeItemAt(item.tasks.getItemIndex(taskC));
+						}
+					}
+				}
+					model.taskCollection.refresh();
+					model.workflowState = 0;
+				
+			}
+        }
+        
+        /**
+		 * override the gotoPrevTask and update the properties
+		 */
+		override public function gotoPrevTask():void{
+			super.gotoPrevTask();
+		}
+		/**
+		 * override the gotoNextTask and update the properties
+		 */
+		override public function gotoNextTask():void{
+			super.gotoNextTask();
+		} 
+		
+		override public function updateProperties():void {
+				
+		}
+		
+		]]>
+	</mx:Script>
+	<mx:Canvas id="mesgStage"
+		styleName="darkBorder" >
+		<mx:Text text="{model.loc.getString('closeProjectScreen')}"/>
+	</mx:Canvas>
+	<mx:HBox>
+		<mx:Button label="{model.loc.getString('deleteLocalFiles')}" click="deleteLocalFiles()"/>
+	</mx:HBox>
+</TodoList>

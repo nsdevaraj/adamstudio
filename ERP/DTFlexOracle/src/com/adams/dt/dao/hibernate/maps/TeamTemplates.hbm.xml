@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.TeamTemplates" table="team_templates">
+        <id name="teamTemplateId" type="integer" column="team_template_ID">
+            <generator class="increment" />
+        </id>
+        <property name="teamTemplateLabel">
+            <column name="team_template_label" />
+        </property>
+        <property name="workflowFk">
+            <column name="workflow_FK" />
+        </property>
+    </class> 
+    <query name="TeamTemplates.findById">
+        select u from TeamTemplates u where u.workflowFk=?
+    </query>
+</hibernate-mapping>

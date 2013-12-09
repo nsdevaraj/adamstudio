@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.dt.view.components.*">	
+	<fx:Script>
+		<![CDATA[
+			/*
+			
+			Copyright (c) 2011 Adams Studio India, All Rights Reserved 
+			
+			@author   NS Devaraj
+			@contact  nsdevaraj@gmail.com
+			@project  Limoges
+			
+			@internal 
+			
+			*/
+		]]>
+	</fx:Script>
+	<s:layout><s:HorizontalLayout /></s:layout>
+	<components:TitledBorderBox 
+		id="basicFileList" height="100%"  
+		minWidth="117" minHeight="124"
+		title="Basic Files"/>
+	<components:TitledBorderBox 
+		id="taskFileList" height="100%"  
+		minWidth="117" minHeight="124"
+		title="Task Files"/>
+	<components:TitledBorderBox
+		id="releaseFileList" height="100%"  
+		minWidth="117" minHeight="124"
+		title="Release Files" includeInLayout="{ releaseFileList.visible }"/>
+	<s:Group  width="100%" top="5" height="100%">
+		<s:Label id="deafultText" text="Select File to View" visible="false" 
+				 verticalCenter="0" horizontalCenter="0" styleName="headerLabel" fontSize="18" />
+		<mediators:PDFToolViewMediator id='pdfTool' skinClass='com.adams.dt.view.PDFToolSkinView'  
+									   homeState="{ currentState }" width='100%' height='100%'
+									   includeInLayout="{pdfTool.visible}"/>
+		<s:SWFLoader id="previewFile" horizontalAlign="center" verticalAlign="middle" width="100%" height="100%" visible="false"/>	
+		<s:Form id="otherFile" verticalCenter="0" width="100%" height="100%" 
+				horizontalCenter="0" visible="false">
+			<s:layout><s:VerticalLayout gap="20"/></s:layout>	
+			<s:FormItem label="File Name :" width="100%">
+				<s:Label id="otherFileName" width="100%"/>
+			</s:FormItem>
+			<s:FormItem label="File Type :" width="100%">
+				<s:Label id="otherFileType" width="100%"/> 
+			</s:FormItem>
+			<s:FormItem label="File Extension :" width="100%">
+				<s:Label id="otherFileExt" width="100%"/>
+			</s:FormItem>
+			<s:FormItem label="Preview :" width="100%">
+				<s:Label id="notAvailableFile" text="Not Available" width="100%"/>
+			</s:FormItem>
+		</s:Form>
+		
+	</s:Group>
+	
+</s:Skin>

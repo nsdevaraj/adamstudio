@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	LinksPanel
+	
+	This component provides the interface to add and remove "links" to other sites. Typically
+	a link will be to another blog.
+	
+	What makes this component a little different is how the links are added and removed. At first 
+	you just see a DataGrid of the links and labels. If you select one you can delete it. But if 
+	you press New, then something different happens.
+	
+	Normally you might expect a dialog box to take the information about the link. In this case,
+	the DataGrid is rotated out of view and the form to take the information is rotated into view.
+	This is a very cool effect and perhaps one of the most useful. Think of this as more of a
+	cube where the DataGrid is one side. When you pick New, the cube is rotated so another side
+	is facing you. 
+-->
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:mxeffects="com.adobe.ac.mxeffects.*" 
+	layout="absolute">
+	
+	<!-- this state changes the labels on the New and Delete buttons to Insert and Cancel.
+	-->
+	<mx:states>
+		<mx:State name="newLinkState">
+			<mx:SetProperty target="{button1}" name="label" value="Insert"/>
+			<mx:SetProperty target="{button2}" name="label" value="Cancel"/>
+			<mx:SetProperty target="{button2}" name="enabled" value="true"/>
+		</mx:State>
+	</mx:states>
+
+	<mx:Metadata>
+		[Event(name="addLink",type="com.adobe.blog.events.BlogEvent")]
+		[Event(name="deleteLink",type="com.adobe.blog.events.BlogEvent")]
+	</mx:Metadata>
+	
+	<mx:Script>
+	<![CDATA[
+		import com.adobe.blog.data.BlogLink;
+		import com.adobe.blog.events.BlogEvent;
+		
+		import mx.core.IFlexDisplayObject;
+		import mx.collections.ArrayCollection;
+		import mx.managers.PopUpManager;
+	
+		[Bindable] public var links:ArrayCollection;
+		
+		[Bindable] private var enableDeleteLink:Boolean = false;
+		
+		/**
+		 * clearFields
+		 *
+		 * Sets the input fields to blank
+		 */
+		private function clearFields() : void
+		{
+			textinput1.text = "";
+			textinput2.text = "";
+		}
+		
+		/**
+		 * validateLink
+		 *
+		 * This function determines if the label and url fields are valid. If so, the
+		 * function returns true. If not, the function sets each field's errorString and
+		 * then returns false.
+		 */
+		private function validateLink() : Boolean
+		{
+			var result:Boolean = true;
+			
+			var linklabel:String = textinput1.text;
+			if( linklabel.length == 0 ) {
+				textinput1.errorString = "You must supply a label";
+				result = false;	
+			}
+			else {
+				textinput1.errorString = null;
+			}
+			
+			var linkurl:String = textinput2.text;
+			if( linkurl.length == 0 ) {
+				textinput2.errorString = "You must supply a URL to save the link";
+				result =  false;
+			}
+			else if( linkurl.indexOf("http://") != 0 && linkurl.indexOf("https://") != 0 ) {
+				textinput2.errorString = "The link must begin with http:// or https://";
+				result =  false;
+			}
+			else {
+				textinput2.errorString = null;
+			}
+			
+			return result;
+		}
+	
+		/**
+		 * addLink
+		 *
+		 * This function is called as the click handler for the New/Insert
+		 * button. If the button is "New" the it switches the state. If the
+		 * button is Insert, it validates the data, dispatches an event, and
+		 * spins back to the base state.
+		 */
+		private function addLink() : void
+		{
+			if( currentState == "newLinkState" ) {
+				if( !validateLink() ) return;
+				var event:BlogEvent = new BlogEvent(BlogEvent.ADD_LINK);
+				event.linkLabel = textinput1.text;
+				event.linkURL   = textinput2.text;
+				dispatchEvent(event);
+				
+				callLater(switchToBaseState);
+			}
+			else {
+				switchToNewState();
+			}
+		}
+		
+		/**
+		 * deleteLink
+		 *
+		 * This function is the event handler for the Delete/Cancel button. If the
+		 * Cancel button is picked, it switches back to the base state. If the Delete
+		 * button is picked the selected item in the DataGrid is deleted.
+		 */
+		private function deleteLink() : void
+		{
+			if( currentState == "newLinkState" ) {
+				switchToBaseState();
+			}
+			else {
+				if( linkList.selectedIndex < 0 ) return;
+				
+				var l:BlogLink = linkList.selectedItem as BlogLink; 
+	
+				var event:BlogEvent = new BlogEvent(BlogEvent.DELETE_LINK);
+				event.linkLabel = l.label;
+				event.linkURL   = l.url;
+				dispatchEvent(event);
+			}
+		}
+		
+		/**
+		 * switchToNewState
+		 *
+		 * Switches the state to the newLinkState and sets the stack's selectedChild to the
+		 * newCanvas. The transition causes the newCanvas to spin into view.
+		 */
+		private function switchToNewState() : void
+		{
+			stack.selectedChild = newCanvas;
+			currentState = "newLinkState";
+		}
+		
+		/**
+		 * switchToBaseState
+		 *
+		 * Switches the state back to the base state, clearing the newLinkState's fields and
+		 * spinning the newCanvas away.
+		 */
+		private function switchToBaseState() : void
+		{
+			stack.selectedChild = gridCanvas;
+			clearFields();
+			currentState = "";
+		}
+	]]>
+	</mx:Script>
+	
+	<mx:Binding source="linkList.selectedIndex >= 0" destination="enableDeleteLink" />
+	
+	<mxeffects:CubeRotate 
+		id="flipIn" smooth="true" 
+		target="{ gridCanvas }" siblings="{ [ newCanvas ] }" 
+		direction="RIGHT" duration="500"/>
+	<mxeffects:CubeRotate 
+		id="flipBack" smooth="true"
+		target="{ newCanvas }" siblings="{ [ gridCanvas ] }" 
+		direction="LEFT" duration="500"/>
+	
+	<mx:ViewStack id="stack" left="0" right="0" top="0" bottom="0" creationPolicy="all">
+		<mx:Canvas id="gridCanvas" width="100%" height="100%" hideEffect="flipIn">
+			<mx:DataGrid id="linkList" left="0" right="0" top="0" bottom="0" dataProvider="{links}">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Label" dataField="label"/>
+					<mx:DataGridColumn headerText="URL" dataField="url"/>
+				</mx:columns>
+			</mx:DataGrid>
+		</mx:Canvas>
+		<mx:Canvas id="newCanvas" width="100%" height="100%" hideEffect="flipBack" >
+			<mx:Label text="Label:" left="12" top="20" id="label1" fontWeight="bold"/>
+			<mx:Label text="URL:" left="20" top="60" id="label2" fontWeight="bold"/>
+			<mx:TextInput width="200" left="61.5" top="18" id="textinput1"/>
+			<mx:TextInput width="200" left="61.5" top="58" id="textinput2"/>
+		</mx:Canvas>
+	</mx:ViewStack>
+	
+	<mx:ControlBar>
+		<mx:Button label="New" width="64" left="10" bottom="10" 
+			click="addLink()"  id="button1"/>
+		<mx:Button label="Delete" width="64" left="82" bottom="10" 
+			click="deleteLink()" 
+			enabled="{enableDeleteLink}" id="button2"/>
+	</mx:ControlBar>
+</mx:Panel>

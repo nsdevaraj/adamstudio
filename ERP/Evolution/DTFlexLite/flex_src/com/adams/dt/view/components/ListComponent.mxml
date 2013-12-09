@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" label="{ domainLabel }" xmlns:todolistscreens="com.adams.dt.view.components.todolistscreens.*" xmlns:dateFilter="com.adams.dt.view.components.todolistscreens.dateFilter.*">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.event.sortingevent.SortingEvent;
+		import com.adams.dt.business.util.DateUtils;
+		import mx.formatters.DateFormatter;
+		import com.adams.dt.model.vo.DefaultTemplate;
+		import com.adams.dt.model.vo.Propertiespj;
+		import com.adams.dt.event.PropertiespjEvent;
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.event.DefaultTemplateEvent;
+		import com.adams.dt.event.DefaultTemplateValueEvent;
+		import com.adams.dt.event.TeamlineEvent;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import mx.rpc.IResponder;
+		import com.adams.dt.model.vo.Phases;
+		import com.adams.dt.event.PDFTool.CommentEvent;
+		import mx.events.ScrollEvent;
+		import com.adams.dt.business.util.Utils;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.business.util.StringUtils;
+		import com.adams.dt.event.generator.SequenceGenerator;
+		import mx.events.ListEvent;
+		import com.adams.dt.event.PropertiespresetsEvent;
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import air.net.SocketMonitor;
+		import com.adams.dt.business.LocalFileDetailsDAODelegate;
+		import com.adams.dt.event.FileDetailsEvent;
+		import com.adams.dt.model.vo.FileDetails;
+		import com.adams.dt.model.vo.Categories;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.model.vo.PDFTool.CommentVO;
+		import com.adams.dt.event.PDFTool.PDFInitEvent;
+		import mx.events.CollectionEvent;
+		import com.adams.dt.model.vo.Events;
+		import com.adams.dt.event.EventsEvent;
+		import com.adams.dt.model.vo.EventStatus;
+		
+		import com.adams.dt.event.PhasestemplatesEvent;
+		import com.adams.dt.event.ProfilesEvent;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.model.vo.Projects;
+		import com.adams.dt.event.ProjectsEvent;
+		import mx.utils.ObjectUtil;
+		import mx.controls.Alert;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.event.TasksEvent;
+		import com.adams.dt.model.vo.TaskStatus;
+		import com.adams.dt.model.ModelLocator;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.OpenToDoListScreenEvent;
+		import com.adams.dt.model.vo.Tasks;
+		import mx.collections.ArrayCollection;
+		[Bindable]
+		public var taskData:ArrayCollection;
+		[Bindable]
+		public var domainLabel:String;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		
+		private function getTeamline( rpcEvent:Object ):void {
+			var handler:IResponder = new Callbacks( onTeamFetchResult );
+			var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE, handler );
+	 		teamTempEvt.projectId = model.currentProjects.projectId;
+	 		teamTempEvt.dispatch();
+		}
+		
+		private function onTeamFetchResult( rpcEvent:Object ):void {
+			if( ( model.currentUserProfileCode == 'FAB' ) || ( model.currentUserProfileCode == 'EPR' )  && ( model.impPerson.personId != 0 ) ) {
+			    var handler:IResponder = new Callbacks( onDefaultTemplateResult );
+				var getDefaultTemplateEvt:DefaultTemplateEvent = new DefaultTemplateEvent( DefaultTemplateEvent.GET_DEFAULT_TEMPLATE, handler );
+				getDefaultTemplateEvt.companyId = model.impPerson.companyFk;
+				getDefaultTemplateEvt.dispatch();
+			}
+			else {
+				model.selectedDefaultTemplate = '';
+				pickupTasks();
+			}
+		}
+		
+		private var selectedDefaultTemplateId:int;
+		private function onDefaultTemplateResult( rpcEvent:Object ):void {
+			var propertiesPj:Propertiespj = Utils.propertyPjForFieldName( 'propertyTemplateID', model.currentProjects.propertiespjSet );
+      		if( propertiesPj && propertiesPj.fieldValue ) {
+      			selectedDefaultTemplateId = -1;
+      			var handler:IResponder = new Callbacks( onTemplateValuesResult );
+      			if( !findDefaultTemplateExist( int( propertiesPj.fieldValue ) ) ) {
+      				var updateProperitesPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ, handler );
+      				propertiesPj.fieldValue = null;
+    				updateProperitesPjEvent.propertiespj = propertiesPj;
+    				updateProperitesPjEvent.dispatch();
+      			}
+      			else {
+					var defaultTempValueEvt:DefaultTemplateValueEvent = new DefaultTemplateValueEvent( DefaultTemplateValueEvent.GET_DEFAULT_TEMPLATE_VALUE, handler );
+					defaultTempValueEvt.defaultTemplateValuesID = int( propertiesPj.fieldValue );
+					selectedDefaultTemplateId = defaultTempValueEvt.defaultTemplateValuesID;
+					defaultTempValueEvt.dispatch();
+      			}
+			}
+			else {
+				model.selectedDefaultTemplate = '';
+				pickupTasks();
+			}
+		}
+		
+		private function findDefaultTemplateExist( id:int ):Boolean {
+			for each( var item:DefaultTemplate in model.specificDefaultTemplateCollect ) {
+				if( item.defaultTemplateId == id ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		private function onTemplateValuesResult( rpcEvent:Object ):void {
+			if( selectedDefaultTemplateId != -1 ) {
+				for each( var template:DefaultTemplate in model.specificDefaultTemplateCollect ) {
+					if( template.defaultTemplateId == selectedDefaultTemplateId ) {
+						model.selectedDefaultTemplate = template.defaultTemplateLabel;
+					}
+				}
+				selectedDefaultTemplateId = -1;
+			}
+			else {
+				model.selectedDefaultTemplate = '';
+			}
+			pickupTasks();
+		}
+		
+		private function pickupTasks():void {
+			var handler:IResponder = new Callbacks( openScreenFunction );
+			var tasksEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_FETCH_TASKS, handler );
+			tasksEvent.dispatch();
+		}
+		
+		private function openScreenFunction( rpcEvent:Object ):void {
+			if( model.workflowState == 0 ) {
+				var openScreen:String = StringUtils.trimSpace( _openTasks.workflowtemplateFK.taskCode );
+				var screenEvent:OpenToDoListScreenEvent = new OpenToDoListScreenEvent( openScreen );
+				screenEvent.dispatch();
+				model.fileAccess = checkFileAccess( model.workflowstemplates );
+			}
+		} 
+		
+		private function checkAvailableTasks():void {
+			if( Tasks( todo.selectedItem ).taskStatusFK == TaskStatus.WAITING ) {
+				var handler:IResponder = new Callbacks( onAvailabilityResult );
+				var taskEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_GET_SPECIFIC_TASK, handler );
+				taskEvent.taskeventtaskId = Tasks( todo.selectedItem ).taskId;
+				taskEvent.dispatch();
+			}	
+			else {
+				continueProcess();
+			}
+		}
+		
+		private function onAvailabilityResult( rpcEvent:Object ):void {
+			if( int( Tasks( rpcEvent.result.getItemAt( 0 ) ).personFK ) ) {
+				if( int( Tasks( rpcEvent.result.getItemAt( 0 ) ).personFK ) != model.person.personId ) {
+					var selectedItem:Tasks = todo.selectedItem as Tasks;
+					taskData.removeItemAt( taskData.getItemIndex( selectedItem ) );
+					taskData.refresh();
+					model.tasks.removeItemAt( model.tasks.getItemIndex( selectedItem ) );
+					model.tasks.refresh();
+					Alert.show( "The Task has been already taken by " + Tasks( rpcEvent.result.getItemAt( 0 ) ).personDetails.personFirstname );
+				}
+				else {
+					continueProcess();
+				}
+			}
+			else {
+				continueProcess();
+			}
+		}
+		
+        /**
+        * @param event, input from list item click event
+        * based on selected item from tasks list the corresponding screen will open
+        */
+        private var _openTasks:Tasks;
+        private function continueProcess():void {
+			
+			/* intialize the collections */
+			model.preloaderVisibility = true;
+			model.updatedFieldCollection = new ArrayCollection();
+			model.pdfDetailVO.localeBool = false;
+			model.pdfDetailVO.initDone = false;
+			model.showFileContainer = true;
+			
+			if( Tasks( todo.selectedItem ) ) {
+				
+				model.updateProperty = false;		
+				
+				var tasks:Tasks = Tasks( todo.selectedItem );	
+				_openTasks = tasks;
+				model.currentTasks = tasks;
+				
+				model.currentProjects= tasks.projectObject;
+				if( model.currentMainProject ) {
+					if( model.currentMainProject.projectId != model.currentProjects.projectId ) {
+						model.currentMainProject = null;
+						model.mainProjectState = 0;
+					}
+				}
+				
+				/* base on profile set the phase edit option */
+				if( model.currentUserProfileCode == "TRA" || model.currentUserProfileCode == "FAB" || model.currentUserProfileCode == "CLT") {
+					if( model.currentProjects.projectStatusFK != ProjectStatus.STANDBY 
+						&& model.currentProjects.projectStatusFK != ProjectStatus.ABORTED
+						&& !model.currentProjects.projectDateEnd ) {
+						model.updatePhase = true;
+						model.editForm = true;
+					}	
+					else {
+						model.updatePhase = false;
+						model.editForm = false;
+					}
+				}
+				else {
+					model.updatePhase = false;
+					model.editForm = false;
+				}
+				
+				model.currentPhasesSet = model.currentProjects.phasesSet;
+				model.currentProfiles = model.currentTasks.workflowtemplateFK.profileObject;
+				model.workflowstemplates = model.currentTasks.workflowtemplateFK;
+				
+				var cat2:Categories = model.currentProjects.categories; 
+	  			var cat1:Categories = cat2.categoryFK;
+	  			var domain:Categories = cat1.categoryFK;
+	  			model.currentDir = model.parentFolderName+domain.categoryName+"/"+cat1.categoryName+"/"+
+	  							  	cat2.categoryName+"/"+StringUtils.compatibleTrim( model.currentProjects.projectName );
+				
+				var sequenceEvents:Array = [];
+	  			
+	  			/* update the task status to inprogress if its in waiting*/
+	  			if( tasks.taskStatusFK == TaskStatus.WAITING ) {
+	  				var status:Status = new Status();
+					status.statusId = TaskStatus.INPROGRESS;
+					status.statusLabel = "in_progress";
+					tasks.taskStatusFK = status.statusId;
+					tasks.tDateInprogress = model.currentTime;
+					tasks.waitingTime = Utils.getDiffrenceBtDate( tasks.tDateCreation, model.currentTime );
+					if( tasks.tDateDeadline ) {
+					 	tasks.deadlineTime = Utils.getDiffrenceBtDate( model.currentTasks.tDateInprogress, tasks.tDateDeadline );
+					} 	
+					tasks.personDetails = model.person;	
+					model.waitingFab = false;
+					 		
+					var updateEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_UPDATE_TASKS );
+					updateEvent.tasks = tasks;
+					sequenceEvents.push( updateEvent );
+					
+					var fileEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_BASICFILEDETAILS );
+					sequenceEvents.push( fileEvent );
+	  			} 
+	  			else {
+	  				/* get the file details */
+	  				var getFilesEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_BASICFILEDETAILS );
+					sequenceEvents.push( getFilesEvent );
+	  			}
+				
+				if( model.onlyEmail == 'MESSAGE' || model.onlyEmail == 'REEMAIL' || model.onlyEmail == 'EMAIL' ) {
+					model.onlyEmail = ''; 
+				}
+				var getPropertiesPjEvt:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_GET_PROPERTIESPJ_BY_PROJECT);
+				getPropertiesPjEvt.prop_ProjectID = model.currentProjects.projectId;
+				sequenceEvents.push( getPropertiesPjEvt );
+				
+				var handler:IResponder = new Callbacks( inputOperations );
+				var eventSeq:SequenceGenerator = new SequenceGenerator( sequenceEvents, handler );
+		    	eventSeq.dispatch();
+			}
+			
+			/* check the tasks files to display in pdf tool */
+			if( model.currentTasks ) {
+				if( model.currentTasks.previousTask ) {
+					if( ( model.currentTasks.previousTask.fileObj ) && ( model.currentTasks.previousTask.workflowtemplateFK.taskLabel != "LANCEMENT LIVRAISON" ) ) {
+						var delegate:LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();	
+						model.compareTask = new Tasks();
+						model.pdfFileCollection = new ArrayCollection();
+						model.comaparePdfFileCollection = new ArrayCollection();
+						var result:SQLResult = delegate.getSwfFileDetails( model.currentTasks.previousTask.fileObj );
+						var array:Array = [];
+						array = result.data as Array;
+						if( array ) {
+							model.pdfDetailVO.localeBool = true;		 
+							model.pdfFileCollection = new ArrayCollection( array );
+							if( !Utils.checkTemplateExist( model.indReaderMailTemplatesCollection, model.currentTasks.workflowtemplateFK.workflowTemplateId ) ) {	
+								var pdfInitEvent:PDFInitEvent = new PDFInitEvent();
+								pdfInitEvent.dispatch();
+							}						
+						}
+						else {		
+							var fileEvents:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_SWFFILEDETAILS );
+							fileEvents.fileDetailsObj = model.currentTasks.previousTask.fileObj;
+							fileEvents.dispatch();
+							model.loadSwfFiles = true;
+						}
+					}
+				}
+			}	 
+			
+			if( Utils.checkTemplateExist( model.indReaderMailTemplatesCollection, model.currentTasks.workflowtemplateFK.workflowTemplateId ) ) {
+				model.compareTask = new Tasks();
+				model.pdfFileCollection = new ArrayCollection();
+				model.comaparePdfFileCollection = new ArrayCollection();
+				var fileDelegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();	
+				if( model.currentTasks.fileObj ) {		
+					var fileResult:SQLResult = fileDelegate.getIndFileDetails( model.currentTasks.fileObj ); 
+					var arr:Array = fileResult.data as Array;
+					if( arr ){
+						model.pdfDetailVO.localeBool = true;							 
+						model.pdfFileCollection = new ArrayCollection( arr );
+						for( var i:Number = 0; i < model.pdfFileCollection.length; i++ ) {  
+		 					var commentEvent:CommentEvent = new CommentEvent( CommentEvent.GET_COMMENT );
+							model.currentSwfFile = FileDetails( model.pdfFileCollection.getItemAt( 0 ) );
+							commentEvent.fileFk = FileDetails( model.pdfFileCollection.getItemAt( 0 ) ).remoteFileFk;
+							model.currentTasks.taskFilesPath = FileDetails( model.pdfFileCollection.getItemAt( 0 ) ).filePath;
+							commentEvent.dispatch();
+						}
+					}
+					else {	
+						var indFileEvents:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_INDFILEDETAILS );
+						indFileEvents.fileDetailsObj = model.currentTasks.fileObj;
+						indFileEvents.dispatch();
+						model.loadSwfFiles = true;
+					} 
+				}
+			} 
+		} 
+		
+		private function checkFileAccess( work:Workflowstemplates ):Boolean {
+			for each( var item:Workflowstemplates in model.fileAccessTemplates ) {
+				if( item.workflowTemplateId == work.workflowTemplateId )	return true;
+			}
+			return false;
+		}
+		
+		/**
+		 * No Interaction with db 
+		 * loads the screen based tasks selected from list 
+		 */
+		private function inputOperations( rpcEvent:Object ):void {
+			var handler:IResponder = new Callbacks( getTeamline );
+			var updatePersonCollectionEvent:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_UPDATE_ALL_PERSONS, handler );
+			updatePersonCollectionEvent.dispatch();
+		}
+		
+		/**
+		 * check file access based on the work flow template
+		 */
+		
+		
+		private var profile:String =  Profiles(model.profilesCollection.getItemAt(0)).profileCode;
+		/**
+		 * set the header visibility
+		 */
+		
+		private var _visibility:Boolean; 
+		public function get visibility():Boolean {
+			if( profile == 'CLT' ) {
+				return false;
+			}
+			return true;
+		}
+		/**
+		 * load the main project view
+		 */		
+    	private function loadMPV(eve:Event):void{
+    		if( mpvIcon.selectedItem ) {
+    			var tasks:Tasks;
+    			if( model.mainProjectState != 1 ) {
+					 tasks = Tasks( mpvIcon.selectedItem );
+					 model.currentProjects= tasks.projectObject;
+					 model.currentMainProject = model.currentProjects;
+			 		 model.mainProjectState = 1;
+			 		 model.preloaderVisibility = true;
+		 		 }
+		 		 else if( model.mainProjectState == 1 ) {
+		 		 	tasks = Tasks( mpvIcon.selectedItem );
+		 		 	model.currentProjects= tasks.projectObject;
+		 		 	if(  model.currentMainProject.projectId != model.currentProjects.projectId ) {
+		 		 		model.mainProjectState = 0;
+		 		 		model.currentMainProject = model.currentProjects;
+			 		 	model.mainProjectState = 1;
+			 		 	model.preloaderVisibility = true;
+		 		 	}
+		 		 }
+		 	     model.mainClass.navigateModule( "Dashboard" ).dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );
+    		}
+    	}
+    	
+    	/**
+		 * synchronize the scrollpostion
+		 */	
+    	private function checkScroll(eve:ScrollEvent):void{
+    		mpvIcon.verticalScrollPosition = eve.position;
+    	}
+    	
+    	/**
+		 * Sorting the View by Month....
+		 */
+    	[Bindable]
+		private var currentYear:String='';
+		[Bindable]
+		private var currentMonth:String='';
+		
+    	private function sortingTask(event:SortingEvent):void
+    	{
+    		if(SortingEvent.EVENT_GET_SORT_MONTH == event.type)
+    		{
+    			currentMonth = event.monthName
+    		}
+    		if(SortingEvent.EVENT_GET_SORT_YEAR == event.type)
+    		{
+    			currentYear = event.yearName
+    		}
+    		sortingView()
+    	}
+    	/**
+		 *set the Sorting type , whteher to be done by month and year or year...
+		 */
+    	private function sortingView():void
+    	{
+    		if(currentMonth.length>0)
+    		{
+    			taskData.filterFunction = filterByYearMonth
+    			taskData.refresh();
+    		}else if(currentYear.length>0)
+    		{
+    			taskData.filterFunction = filterByYear
+    			taskData.refresh();
+    		}
+    	}
+    	private function filterByYearMonth(item:Object):Boolean 
+    	{
+			var retVal:Boolean
+			if(DateUtils.getMonth( Tasks( item ).tDateCreation.getMonth() ) == currentMonth&& String(Tasks( item ).tDateCreation.getFullYear()) == currentYear )
+			{
+				retVal = true
+			}  
+			return retVal;
+    	}
+    	private function filterByYear(item:Object):Boolean 
+    	{
+			var retVal:Boolean
+			if(String(Tasks( item ).tDateCreation.getFullYear()) == currentYear )
+			{
+				retVal = true
+			}  
+			return retVal;
+    	}
+    	private function addSortingListener():void
+    	{
+    		monthSorter.addEventListener(SortingEvent.EVENT_GET_SORT_MONTH,sortingTask);
+    		yearSorter.addEventListener(SortingEvent.EVENT_GET_SORT_YEAR,sortingTask);
+    		
+    		monthSorter.addEventListener(SortingEvent.EVENT_GET_TOGGLE_NAME,btnSelected);
+    		yearSorter.addEventListener(SortingEvent.EVENT_GET_TOGGLE_NAME,btnSelected);
+    		
+    	}
+    	
+    	private function btnSelected(event:SortingEvent):void
+		{
+			switch (event.toggleName)
+			{
+				case Utils.WEEK:
+					 monthSorter.dateBtn.selected = true;
+					 yearSorter.dateBtn.selected = true;
+					break;
+				case Utils.MONTH:
+					 weekSorter.dateBtn.selected = false;
+					 yearSorter.dateBtn.selected = true;
+					 currentMonth = (event.toggleStatus)?event.monthName:'';
+					 currentYear =  yearSorter.dateBtn.label;
+					 taskData.filterFunction = (event.toggleStatus)?filterByYearMonth:filterByYear
+    				 taskData.refresh(); 
+					break;
+				case Utils.YEAR:
+					 monthSorter.dateBtn.selected = false;
+					 weekSorter.dateBtn.selected = false;
+					 currentYear = (event.toggleStatus)?String(yearSorter.dateBtn.label):'';
+					 currentMonth = '';
+					 taskData.filterFunction = (event.toggleStatus)?filterByYear:null;
+    				 taskData.refresh(); 
+					break;
+			}
+		}
+	]]>
+</mx:Script>
+	
+	<mx:HBox  height="35" top="0" horizontalGap="0"  left="0" right="0" styleName="todoListHeaderBG" paddingLeft="0" paddingRight="0">
+	
+		<mx:Canvas width="35" height="100%">
+			<mx:Image source="{ImageResourceEmbedClass.statusHeaderIconImg}" toolTip="Task Status" verticalCenter="0" horizontalCenter="0"/>
+			<mx:VRule height="100%" strokeWidth="1" right="0" styleName="vruleColor" />
+		</mx:Canvas>
+		
+		
+		<mx:Canvas width="100%" id="pjtNamePan" height="100%">
+			<mx:Label width="{pjtNamePan.width}" verticalCenter="0" left="0" styleName="todoListHeaderText" text="Project Name"/>
+			<mx:VRule height="100%" strokeWidth="1" right="0" styleName="vruleColor" />
+		</mx:Canvas>
+		
+		<mx:Canvas width="{(todo.width-313)/2.9}" id="cTaskPan" height="100%">
+			<mx:Label width="{cTaskPan.width}"  verticalCenter="0" left="0" styleName="todoListHeaderText" text="Current Task"/>
+			<mx:VRule height="100%" strokeWidth="1" right="0" styleName="vruleColor" />
+		</mx:Canvas>
+		
+		<mx:Canvas width="161" height="100%">
+			<mx:Text verticalCenter="0" left="0" styleName="todoListHeaderText" text="Date"/>
+			<mx:VRule height="100%" strokeWidth="1" right="0" styleName="vruleColor" />
+		</mx:Canvas>
+		
+		<mx:Canvas width="102" height="100%">
+			<mx:Text id="stTxt" top="0" left="0" paddingTop="0" paddingBottom="0"  styleName="todoListHeaderText" text="Status"/>
+			<mx:HBox bottom="0" horizontalGap="0" verticalAlign="bottom" paddingLeft="0" paddingBottom="0" paddingRight="0" paddingTop="0"
+				 width="100%" height="16" >
+				<mx:Label text="CP" width="20" fontSize="9"/>
+				<mx:VRule height="100%" strokeWidth="1" />
+				<mx:Label text="CPP" width="27" fontSize="9"/>
+				<mx:VRule height="100%" strokeWidth="1" />
+				 
+				<mx:Label text="IND" width="25" fontSize="9"/>
+				<mx:VRule height="100%" strokeWidth="1" />
+				<mx:Label text="IMP" width="27" fontSize="9"/>
+			</mx:HBox>
+			 <mx:VRule height="100%" strokeWidth="1" right="0" styleName="vruleColor" />
+		</mx:Canvas>
+		<mx:Spacer width="15"/>
+	</mx:HBox>
+	
+	<mx:List id="todo" left="0" top="35" bottom="1" right="0" paddingLeft="0" paddingRight="0" borderStyle="none" paddingBottom="0" paddingTop="1"
+		     backgroundAlpha="0" dataProvider="{taskData}"	doubleClickEnabled="true"  itemDoubleClick="checkAvailableTasks()"  verticalScrollPolicy="on"
+			 itemRenderer="com.adams.dt.view.components.ListRenderer" scroll="checkScroll(event)"/>
+				
+	<mx:List verticalScrollPolicy="off" borderStyle="none" id="mpvIcon" width="11" top="35" paddingBottom="0" paddingTop="1"
+		     height="{todo.height}" left="0" paddingLeft="0" paddingRight="0" 
+		     backgroundAlpha="0" dataProvider="{taskData}" itemClick="loadMPV(event)" 
+			 itemRenderer="com.adams.dt.view.components.mpvIconRenderer"/>
+			 
+	<mx:HBox top="0" left="300">
+				<dateFilter:DateSorter id="monthSorter" fieldType="{Utils.MONTH}" 
+				width="105"	dateSortField="{DateUtils.getMonth((new Date().getMonth()))}" 
+					creationComplete="addSortingListener()" sortCollection="{Utils.sortMonthColl}"/>
+				<dateFilter:DateSorter setSelection="true" id="yearSorter" fieldType="{Utils.YEAR}" 
+				width="75" dateSortField="{String(new Date().getFullYear())}"
+					sortCollection="{ Utils.sortYearColl}"/>
+				<dateFilter:DateSorter id="weekSorter"  
+					 dateSortField="{DateUtils.getMonth(new Date().getMonth())}" fieldType="Week" 
+					 visible="false" includeInLayout="false"/>
+	</mx:HBox>		 
+		
+</mx:Canvas>

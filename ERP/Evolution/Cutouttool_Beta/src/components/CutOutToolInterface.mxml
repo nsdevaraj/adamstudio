@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" xmlns:cmp="components.*" 
+	creationComplete="{init(),Controller.getInstance().registerView = this}">
+<mx:Metadata>
+	[Event(name="loadOtherForm", type="flash.events.Event")]
+</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import business.AccessRights;
+			import business.UpdateView;
+			import events.TaskEvent;
+			import mx.events.FlexEvent;
+			import data.Interface.IModel;
+			import data.Tasks;
+			import data.History;
+			import controller.Controller;
+			import mx.effects.easing.Elastic;
+			import mx.effects.easing.Bounce;
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var taskList:ArrayCollection;			
+			[Bindable]
+       		[Embed("assets/icons/task.gif")]
+       		private var newTaskIcon:Class;
+			[Bindable]
+        	[Embed("assets/icons/reports.gif")]
+        	private var reportsIcon:Class;
+			[Bindable]
+       		[Embed("assets/icons/hotel.gif")]
+        	private var backOfficeIcon:Class;
+        	[Bindable]
+        	private var titleStr:String="";
+        	private var controllerInstance:Controller = Controller.getInstance();
+        	[Bindable]
+			private var pageVal:Number = 1;
+			private var waitingList:ArrayCollection = new ArrayCollection();
+			private var inProgressList:ArrayCollection = new ArrayCollection();
+			private var deliveredList:ArrayCollection = new ArrayCollection();
+			private var archivedList:ArrayCollection = new ArrayCollection();
+			public var fromOtherId:String = '';
+			public var currentStatus:String = "waiting";
+        	public function set taskObjects(task:ArrayCollection):void{
+        		controllerInstance = Controller.getInstance();
+        	//	upadateInterfaceView(controllerInstance.userObj.group_id);
+        		taskList = new ArrayCollection();
+        		waitingList = new ArrayCollection();
+        		inProgressList = new ArrayCollection();
+        		deliveredList = new ArrayCollection();
+        		archivedList = new ArrayCollection();
+        		var displayTask:Boolean;        		
+        		for(var i:int=0;i<task.length;i++){   
+        			displayTask = (controllerInstance.userObj.type=="2")?(task[i].task.statusVal!="archived"):true;
+        			var object:Object=new Object();
+        			object["id"] = task[i].task.pk_task;
+        			object["label"] = unescape(task[i].task.label);
+        			object["status"] = task[i].task.statusVal;
+        			if(displayTask){        				
+        				taskList.addItem(object);        				
+        			}        			
+        			if(object.status == "waiting")waitingList.addItem(object);
+    				if(object.status == "inprogress")inProgressList.addItem(object);
+    				if(object.status == "delivered")deliveredList.addItem(object);
+    				if(object.status == "archived")archivedList.addItem(object);	
+        		}
+        		updatePgeValue(currentStatus)
+        	}
+        	private var currentDataC:ArrayCollection = new ArrayCollection();
+        	private function updatePgeValue(str:String):void{
+        		var arrC:ArrayCollection = new ArrayCollection();
+        		switch(str){
+        			case "waiting":
+        				arrC = waitingList;
+        			break;
+        			case "inprogress":
+        				arrC = inProgressList;
+        			break;
+        			case "delivered":
+        				arrC = deliveredList;
+        			break;
+        			case "archived":
+        				arrC = archivedList;
+        			break;
+        			case "Show All":
+        				arrC = taskList;
+        			break;
+        		}
+        		PendingtaskGrid.Page.value = 1;
+        		currentDataC = arrC
+				pageVal = arrC.length/pageSize
+				pageVal =(arrC.length%pageSize==0)?pageVal:(Math.floor(pageVal)+1);
+				refreshDataProvider(1,arrC);
+				//currentStatus = str;
+				PendingtaskGrid.selectedType = str;
+        	}
+        	public  function upadateInterfaceView(_gropuId:String):void{ 
+        		//backOffice.visible = AccessRights[_gropuId].BackOffice;
+			}
+            public function init():void{
+            	if(!this.parentDocument.fromother){
+	        		stack.selectedChild = Pendingtask;
+	        		if(PendingtaskGrid!=null) PendingtaskGrid.init();
+	        		if(controllerInstance.currentTaskObj!=null)currentStatus = controllerInstance.currentTaskObj.statusVal;
+	        			taskObjects = controllerInstance.taskObj;
+            	}else{
+            		dispatchEvent(new Event("loadOtherForm"));
+            	}
+        	}
+			public function garbageCollection():void{
+			}
+        	public function initializeNewTask(event:Event):void{
+        		event.currentTarget.addEventListener(TaskEvent.NEWTASK,updateNewTaskObject);
+        	}
+        	private function updateNewTaskObject(event:TaskEvent):void{
+        		taskObjects = controllerInstance.taskObj;
+        	}
+        	private function updateTaskObject(event:TaskEvent):void{
+        		taskObjects = controllerInstance.taskObj;
+        	}
+        	/* public function addNewTask():void{
+        		titleStr = "New Task Form";    		
+        		stack.selectedChild = newTaskPage;
+        	} */
+        	public function loadSelectedTask(event:Event):void{
+        		assignSelectedvalues(PendingtaskGrid.Pendingtask.selectedItem.id);
+        	}
+        	public function assignSelectedvalues(keyId:String):void{
+        		titleStr = "Select Task Form";
+        		stack.selectedChild= Pendingtask;
+				controllerInstance.currentTaskObj = controllerInstance.getTaskObj(keyId);      		        
+        		stack.selectedChild = selectedTask;
+        		if(selectedtaskInterface!=null) 
+        			selectedtaskInterface.selectedTaskObj = controllerInstance.currentTaskObj;
+        	}
+        	public function setObj(event:Event):void{
+        		event.currentTarget.selectedTaskObj = controllerInstance.currentTaskObj;
+        		event.currentTarget.addEventListener(TaskEvent.NEWTASK,updateTaskObject);        		
+        	}
+        	public function loadEditTask():void{
+        		titleStr = "Edit Task Form";
+        		if(edittaskInterface!=null) 
+        			edittaskInterface.selectedTaskObj = controllerInstance.currentTaskObj;        		
+        		stack.selectedChild = editTask;
+        	}
+        	private function updatePendingTaskView(event:Event):void{
+        		updatePgeValue(event.currentTarget.selectedType);
+        	}
+        	/**
+		  	 * DataGrid Paging
+		  	 */ 
+		    private var pageSize:Number = 12;
+		    [Bindable]
+		    private var myData:ArrayCollection;
+		    private function refreshDataProvider(start:Number,arrC:ArrayCollection):void
+			{
+				start = start-1
+				myData = new ArrayCollection( arrC.source.slice((start * pageSize),(start * pageSize) + pageSize));
+			}
+		]]>
+	</mx:Script>
+		<mx:Parallel id="mvIN">
+        <mx:Fade duration="200" />
+        <mx:Move xFrom="500"
+                easingFunction="Elastic.easeOut"
+                duration="1000" />
+	    </mx:Parallel>
+	    <mx:Parallel id="mvOUT">
+	        <mx:Fade duration="500" alphaTo="0" />
+	        <mx:Move xTo="-300"  easingFunction="Elastic.easeIn"
+	                duration="500" />
+	        
+	    </mx:Parallel>
+		<mx:HBox id="pending" width="100%" height="100%" horizontalAlign="left">				
+				<mx:ViewStack creationPolicy="queued" id="stack" width="100%" height="100%">
+					<mx:HBox id="Pendingtask" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}">
+						<cmp:PendingTask id="PendingtaskGrid" myData="{myData}" PageVal="{pageVal}" change="{refreshDataProvider(PendingtaskGrid.Page.value,currentDataC)}"
+								itemDoubleClick="{loadSelectedTask(event)}" comboBoxChange="{updatePendingTaskView(event)}" />
+					</mx:HBox>			
+					<mx:HBox id="editTask" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}">
+						<cmp:EditTask id="edittaskInterface" creationComplete="setObj(event)" />
+					</mx:HBox>	
+					<mx:HBox id="selectedTask" width="100%" height="100%" hideEffect="{mvOUT}" showEffect="{mvIN}">
+						<cmp:SelectTask id="selectedtaskInterface" creationComplete="setObj(event)"/>
+					</mx:HBox>					
+				</mx:ViewStack>		
+			</mx:HBox>	
+	
+</mx:VBox>

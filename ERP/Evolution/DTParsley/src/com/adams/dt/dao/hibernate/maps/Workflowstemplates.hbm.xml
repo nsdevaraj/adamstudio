@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Workflowstemplates" table="workflow_templates">
+        <id name="workflowTemplateId" type="integer" column="workflow_template_ID">
+            <generator class="increment" />
+        </id>
+        <many-to-one name="nextTaskFk" class="com.adams.dt.pojo.Workflowstemplates" column="option_next_task_FK" lazy="false" />
+        <many-to-one name="prevTaskFk" class="com.adams.dt.pojo.Workflowstemplates" column="option_prev_task_FK" lazy="false" />
+        <many-to-one name="jumpToTaskFk" class="com.adams.dt.pojo.Workflowstemplates" column="option_jump_task_FK" lazy="false" />
+        <many-to-one name="loopFk" class="com.adams.dt.pojo.Workflowstemplates" column="option_loop_task_FK" lazy="false" />
+        <property name="phaseTemplateFK">
+            <column name="phase_FK" />
+        </property>
+         <property name="profileFK">
+            <column name="profile_FK" />
+        </property>
+        <property name="taskCode">
+            <column name="task_code" />
+        </property>
+        <property name="taskLabel">
+            <column name="task_label" />
+        </property>
+        <property name="taskLabelTodo">
+            <column name="task_label_todo" />
+        </property>
+        <property name="optionPrevLabel">
+            <column name="option_prev_label" />
+        </property>
+        <property name="optionNextLabel">
+            <column name="option_next_label" />
+        </property>
+        <property name="optionJumpLabel">
+            <column name="option_jump_label" />
+        </property>
+        <property name="optionLoopLabel">
+            <column name="option_loop_label" />
+        </property>
+        <property name="optionStopLabel">
+            <column name="option_stop_label" />
+        </property>
+        <property name="workflowFK">
+            <column name="workflow_FK" />
+        </property>
+        <property name="defaultEstimatedTime">
+            <column name="default_estimated_time" />
+        </property>
+        
+    </class> 
+    <query name="Workflowstemplates.findList">
+        select u from Workflowstemplates u where u.optionStopLabel='ANNULATION'
+    </query>
+    <query name="Workflowstemplates.findByStopLabel">
+        select u from Workflowstemplates u where u.optionStopLabel=?
+    </query>
+    <query name="Workflowstemplates.findById">
+        select u from Workflowstemplates u where u.workflowFK=?
+    </query>
+    <query name="Workflowstemplates.findByProfile">
+        select u from Workflowstemplates u where u.optionStopLabel='MESSAGE' and u.profileFK = ?
+    </query>
+    <query name="Workflowstemplates.findByName">
+        select u from Workflowstemplates u where u.taskLabel = ?
+    </query>
+    <query name="Workflowstemplates.findByMailProfileId">
+        select u from Workflowstemplates u where u.optionStopLabel='MESSAGE' and u.profileFK = ?
+    </query>
+</hibernate-mapping>

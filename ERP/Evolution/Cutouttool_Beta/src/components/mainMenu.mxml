@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%"  height="100%"  verticalAlign="middle" horizontalAlign="center" 
+		creationComplete="{init(),Controller.getInstance().registerView = this}">
+	<mx:Metadata>
+        [Event(name="buttonClicked", type="flash.events.Event")]
+    </mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import business.AccessRights;
+			import controller.Controller;
+		import mx.effects.easing.Elastic;
+		import mx.effects.easing.Bounce;
+		import mx.core.Application;
+		public var buttonName:String = 'sathish';
+		private var type:String = Controller.getInstance().userObj.type;	
+		[Bindable]
+		private var newTaskBtn:Boolean;
+		[Bindable]
+		private var PendingTaskBtn:Boolean;
+		[Bindable]
+		private var ReportBtn:Boolean;
+		[Bindable]
+		private var backOfficeBtn:Boolean;	
+		public function init():void{
+			type = Controller.getInstance().userObj.type;	
+			newTaskBtn = AccessRights['type_'+type].NewTask;
+			PendingTaskBtn = true;
+			ReportBtn = AccessRights['type_'+type].Reports;
+			backOfficeBtn = AccessRights['type_'+type].BackOffice;
+		}
+		private function dispatch(_name:String):void{
+			buttonName = _name;
+			dispatchEvent(new Event('buttonClicked'))
+		}
+		public function garbageCollection():void{
+		}
+		]]>
+	</mx:Script>
+	<mx:Parallel id="alertCreationCompleteEffect" target="{mainMenuPanels}">
+        <mx:Fade duration="500" />
+        <mx:Move yFrom="100"
+                easingFunction="Elastic.easeOut"
+                duration="1000"/>
+    </mx:Parallel>
+	<mx:VBox height="100%" width="100%">
+	<mx:Spacer height="10%"/>
+	
+<mx:HBox width="100%" height="100%" verticalAlign="middle" id="mainMenuPanels" horizontalAlign="center"  creationCompleteEffect="alertCreationCompleteEffect" >
+	<mx:Panel backgroundAlpha="0.2" visible="{newTaskBtn}" includeInLayout="{newTaskBtn}" id="ntaskPanel"  width="205" height="300" horizontalAlign="center" rollOver="ntaskPanel.setStyle('backgroundAlpha',1)" rollOut="ntaskPanel.setStyle('backgroundAlpha',.2)" verticalAlign="middle" click="{dispatch('NewTask')}">
+		<mx:Label text="New Task" id="ntText" fontSize="12" />
+		<mx:Image source="@Embed('assets/images/newTask.png')"/>
+	</mx:Panel>
+	<mx:Panel backgroundAlpha="0.2" id="ptPanel" width="205" height="300" horizontalAlign="center" verticalAlign="middle" rollOver="ptPanel.setStyle('backgroundAlpha',1)" rollOut="ptPanel.setStyle('backgroundAlpha',.2)"  click="{dispatch('PendingTask')}">
+		<mx:Label text="Pending Task" fontSize="12" />
+		<mx:Image source="@Embed('assets/images/pendingTask.png')"/>
+	</mx:Panel>
+	<mx:Panel backgroundAlpha="0.2" id="rPanel" visible="{ReportBtn}" includeInLayout="{ReportBtn}"  width="205" height="300" horizontalAlign="center" verticalAlign="middle" rollOver="rPanel.setStyle('backgroundAlpha',1)" rollOut="rPanel.setStyle('backgroundAlpha',.2)" click="{dispatch('Report')}">
+		<mx:Label text="Report" fontSize="12" />
+		<mx:Image source="@Embed('assets/images/Report.png')"/>
+	</mx:Panel>
+	<mx:Panel backgroundAlpha="0.2" id="boPanel" visible="{backOfficeBtn}" includeInLayout="{backOfficeBtn}" width="205" height="300" horizontalAlign="center" verticalAlign="middle" rollOver="boPanel.setStyle('backgroundAlpha',1)" rollOut="boPanel.setStyle('backgroundAlpha',.2)" click="{dispatch('BackOffice')}">
+		<mx:Label text="Back Office" fontSize="12" />
+		<mx:Image source="@Embed('assets/images/backOffice.png')"/>
+	</mx:Panel>
+</mx:HBox>
+</mx:VBox>	
+</mx:VBox>

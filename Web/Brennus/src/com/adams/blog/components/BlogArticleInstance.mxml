@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	BlogArticleInstance
+	
+	This component makes up a segment of a blog article. This segment will either show
+	HTML text or an image/SWF.
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" >
+	
+	<mx:Script>
+	<![CDATA[
+		import mx.managers.SystemManager;
+		import mx.core.Application;
+		import com.adams.blog.service.BlogUtils;
+		
+		/**
+		 * htmlText - the text to display
+		 */
+		[Bindable]
+		private var htmlText:String;
+		
+		/**
+		 * swfurl - the image/swf to display
+		 */
+		[Bindable]
+		private var swfurl:String;
+		
+		/**
+		 * extractURL
+		 *
+		 * Finds the url="file.swf", encoded as url=&quot;file.swf&quot; in the
+		 * given string.
+		 */
+		private function extractURL( s:String ) : String
+		{
+			var pos:Number = s.indexOf("url=&quot;");
+			if( pos < 0 ) return null;
+			var pos2:Number = s.indexOf("&quot;",pos+10);
+			
+			var result:String = s.substring(pos+10,pos2);
+			return result;
+		}
+		
+		/**
+		 * extractAlign
+		 *
+		 * Finds the align="alignment", encoded as align=&quot;alignment&quot; in the
+		 * given string.
+		 */
+		private function extractAlign( s:String ) : String
+		{
+			var result:String = "left";
+			
+			var pos:Number = s.indexOf("align=&quot;");
+			if( pos < 0 ) return result;
+			var pos2:Number = s.indexOf("&quot;",pos+12);
+			
+			result = s.substring(pos+12,pos2);
+			return result;
+		}
+		
+		/**
+		 * extractWidth
+		 *
+		 * Finds the width=&quot;#or%&quot; in the string and returns the value between
+		 * the quotes.
+		 */
+		private function extractWidth( s:String ) : String
+		{
+			var result:String = "0";
+			
+			var pos:Number = s.indexOf("width=&quot;");
+			if( pos < 0 ) return result;
+			var pos2:Number = s.indexOf("&quot;",pos+12);
+			
+			result = s.substring(pos+12,pos2);
+			return result;
+		}
+		
+		/**
+		 * extractHeight
+		 *
+		 * Find the height=&quot;#or%&quot; in the string and returns the value
+		 * between the quotes.
+		 */
+		private function extractHeight( s:String ) : String
+		{
+			var result:String = "0";
+			
+			var pos:Number = s.indexOf("height=&quot;");
+			if( pos < 0 ) return result;
+			var pos2:Number = s.indexOf("&quot;",pos+13);
+			
+			result = s.substring(pos+13,pos2);
+			return result;
+		}
+		
+		/**
+		 * onComplete
+		 *
+		 * Makes the SWF/Image visible
+		 */
+		private function onComplete() : void
+		{
+			if( swfItem.loaderInfo == null ) return;
+			swfItem.alpha = 0;
+			swfItem.visible = true;
+			fadeIn.target = swfItem;
+			fadeIn.play();
+		}
+		
+		/**
+		 * data
+		 *
+		 * This override of data determines what is being shown: text or image/swf
+		 */
+		override public function set data(value:Object):void
+		{
+			super.data = value;
+			
+			if( value.type == "text" ) {
+				htmlText = value.value;
+				textItem.visible = true;
+			}
+			else {
+				// only the height really matters
+				var swfHeight:String = extractHeight(value.value);
+				var h:Number = BlogUtils.parseNumber(swfHeight);
+				if( isNaN(h) ) h = 100;
+				
+				swfItem.percentWidth = 100;
+				if( h > 0 ) {
+					if( BlogUtils.isPercent(swfHeight)) swfItem.percentHeight= h; else swfItem.height= h;
+				}
+				
+				swfItem.setStyle("horizontalAlign", extractAlign(value.value));
+				swfItem.visible = false;
+				loadingCanvas.visible=true
+				swfurl = extractURL(value.value);
+				swfItem.load(swfurl);
+			}
+		}
+	]]>
+	</mx:Script>
+	
+	<!--
+		The Text control displays the text content
+	-->
+	
+	<mx:Text id="textItem" htmlText="{htmlText}" visible="false" width="360"/>
+	
+	<!--
+		These components are for the image/swf content. The content is faded in when it
+		arrives, with a "Loading Content" label displayed while the content is being
+		downloaded to the server.
+	-->
+	
+	<mx:Fade id="fadeIn" alphaFrom="0" alphaTo="1" effectEnd="loadingCanvas.visible=false"/>	
+	
+	<mx:Canvas id="loadingCanvas" width="100%" visible="false">
+		<mx:Label text="Loading Content..." horizontalCenter="0" verticalCenter="0" styleName="LoadingNotice" />
+	</mx:Canvas>
+	
+	<mx:SWFLoader id="swfItem" autoLoad="false" scaleContent="true" visible="false"
+		width="100%"
+		init="loadingCanvas.height=swfItem.height"
+		complete="callLater(onComplete)"
+		/>
+		
+</mx:Canvas>

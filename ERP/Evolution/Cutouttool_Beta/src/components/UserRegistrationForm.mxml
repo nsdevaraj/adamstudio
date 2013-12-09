@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents"  xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:upload="components.*" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center"
+		creationComplete="{init(),Controller.getInstance().registerView = this}">
+		
+		<mx:Metadata>
+			[Event(name="loadBackOff", type="flash.events.Event")]
+		</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import mx.collections.ArrayCollection;
+		import mx.core.Application;
+		import mx.controls.Alert;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import controller.Controller;
+		private const USERS:String = "users";
+		[Bindable]
+		private var typeObject:ArrayCollection = new ArrayCollection([{type:"1",label:"Client"},{type:"2",label:"Supplier"},							
+																		{type:"3",label:"Admin"}]);
+		[Bindable]
+		private var activeObject:ArrayCollection = new ArrayCollection([{type:"1",label:"Activated"},{type:"0",label:"Deactivated"}])
+		public function init():void{
+			firstName.text = '';
+			lastName.text = '';
+			password.text = '';
+			emailId.text = '';
+			company.text = '';
+			groupId.text = '';
+			type.text = '';
+			activated.text = '';
+			
+		}
+		public function getUpdateStr(obj:Object):void{
+			var fieldVal:String = ""
+			var dataVal:String = ""
+			for(var i:String in obj){
+				if(obj[i]==null||obj[i]==undefined){					
+				}else{
+					fieldVal+=i+",";
+					dataVal+="'"+obj[i]+"' ,";
+				}
+			}
+			fieldVal = fieldVal.substring(0,fieldVal.length-1);
+			dataVal = dataVal.substring(0,dataVal.length-1);
+			updateQuery = 'insert into '+USERS+' ('+fieldVal+') values ('+dataVal+')';
+		}
+		[Bindable]
+		private var query:String;
+		public function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		public function get updateQuery():String{
+			return query;
+		}	
+		public function registerNewUser():void{
+			var obj:Object = new Object();
+			obj["firstname"]= escape(firstName.text);
+			obj["lastname"]= escape(lastName.text);
+			obj["userpswd"]= escape(password.text);
+			obj["email"]= escape(emailId.text);
+			obj["group_id"]= escape(groupId.text);
+			obj["company"]= escape(company.text);
+			obj["type"]=  type.selectedItem.type;
+			obj["activated"]= activated.selectedItem.type;
+			var date:Date = new Date();
+			var dateStr:String = date.fullYear+"-"+(date.month+1)+"-"+date.date+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+			obj["registration_date"]= dateStr;
+			getUpdateStr(obj);
+			connect.addEventListener(ResultEvent.RESULT,resultHandler);
+			connect.getOperation('updateTable').send();		
+		}
+		private function loadBackOffice():void{
+			dispatchEvent(new Event("loadBackOff"));
+		}
+		private function resultHandler(event:ResultEvent):void{
+			loadBackOffice();
+		}
+		
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("-fault-->"+event.fault);
+		}
+		public function garbageCollection():void{
+		}
+		
+	]]>
+</mx:Script>
+			<mx:RemoteObject id="connect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+					<mx:method name="updateTable">
+						<mx:arguments>
+							<query>{updateQuery}</query>
+						</mx:arguments>
+					</mx:method>
+			</mx:RemoteObject>
+			<mx:Panel title="New User Registration"  id="ntPanel" width="60%" height="100%" horizontalAlign="center" paddingTop="15" paddingBottom="15" paddingLeft="15" paddingRight="15">
+				<mx:VBox id="taskDeatils" width="70%" height="100%" verticalAlign="middle" paddingTop="0">
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="FirstName*"/>
+						<mx:TextInput id="firstName"  width="50%" />
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="LastName*"/>
+						<mx:TextInput id="lastName"  width="50%" />
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="EmailId*"/>
+						<mx:TextInput id="emailId"  width="50%"/>
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="Password*"/>
+						<mx:TextInput id="password"  width="50%" displayAsPassword="true"/>
+					</mx:HBox>
+					<!--<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="Confirm Password*"/>
+						<mx:TextInput id="password"  width="50%" displayAsPassword="true"/>
+					</mx:HBox>-->
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="GroupId*"/>
+						<mx:TextInput id="groupId"  width="50%" />
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="Company*"/>
+						<mx:TextInput id="company"  width="50%"/>
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="Type*"/>
+						<mx:ComboBox id="type" dataProvider="{typeObject}" width="50%"/>
+					</mx:HBox>
+					<mx:HBox height="10%" width="100%">
+						<mx:Label width="30%" text="Activated*"/>
+						<mx:ComboBox id="activated" dataProvider="{activeObject}"  width="50%"/>
+					</mx:HBox>
+					<mx:HBox horizontalAlign="center" width="100%">
+						<mx:Button label="Register" click="{registerNewUser()}"/>
+						<mx:Button label="Cancel" click="{loadBackOffice()}"/>
+					</mx:HBox>
+				</mx:VBox>
+				</mx:Panel>
+		</mx:VBox>

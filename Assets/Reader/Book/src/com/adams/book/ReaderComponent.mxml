@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:local="*" xmlns:book="com.rubenswieringa.book.*"
+		 xmlns:Component="Component.*" xmlns:com="com.*" 
+		 creationComplete="myBookHandler(event)"
+		 clipAndEnableScrolling="true">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace local "*";
+		@namespace book "com.rubenswieringa.book.*";
+		@namespace Component "Component.*";
+		.zoomBtn{ 
+			upSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg"); 
+			downSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			overSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			pop-up-down-skin:  Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			pop-up-over-skin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			
+			selectedUpSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			selectedDownSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+			selectedOverSkin: Embed("assets/skins/interfaceAssets.swf#zoomImg");
+		}
+		s|Button.exitIcon{
+			skinClass:ClassReference('assets.skins.ButtonSkins.CartThumbBtnSkin');
+			overSkin:Embed('assets/images/exitIcon.png');
+			upSkin:Embed('assets/images/exitIcon.png');
+			downSkin:Embed('assets/images/exitIcon.png');
+			disabledSkin:Embed('assets/images/exitIcon.png');
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import com.rubenswieringa.book.Book;
+			import com.rubenswieringa.book.limited;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.SWFLoader;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			[Bindable]
+			private var bokMark:Number;
+			[Bindable]
+			private var mark:Number;
+			private var my_snap:TextSnapshot;
+			private var my_clip:MovieClip;
+			private var my_snap1:TextSnapshot;
+			private var my_clip1:MovieClip;
+			private var index:Number;
+			private var index1:Number;
+			private var prevSear:String = "";
+			private var pageNum:Number ;
+			[Bindable]
+			private var listCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var firstTimeLoad:Boolean = false;
+			[Bindable]
+			private var rightPage_snap:TextSnapshot;
+			[Bindable]
+			private var rightPage_mc:MovieClip;
+			[Bindable]
+			private var leftPage_snap:TextSnapshot;
+			[Bindable]
+			private var leftPage_mc:MovieClip;
+			
+			[Embed(source='assets/skins/interfaceAssets.swf#readerLogo')]  
+			[Bindable]private var readerLogo:Class;
+			
+			[Bindable]
+			private var _readerUrl:String;
+			[Bindable]
+			public var serverXML:XML
+			public function get readerUrl():String
+			{
+				return _readerUrl;
+			}
+			
+			public function set readerUrl(value:String):void
+			{
+				_readerUrl = value;
+				serverXML = XML(_readerUrl)
+				
+			}
+			
+			
+			protected function pageNav_changeHandler(event:Event):void{
+				if(myBook.totalPages<7){
+					myBook.gotoPageNum(event.currentTarget.value);
+					gotopage.text= event.currentTarget.value+ " sur " + myBook.totalPages 
+				}else{
+					firstTimeLoad = true;
+					myBook.gotoPageNum(event.currentTarget.value);
+					gotopage.text= event.currentTarget.value+ " sur " + myBook.totalPages 
+				}
+				
+			}
+			
+			private var indexPosition:int = 0;
+			private var wordCount:int = 0;
+			private function highlightText(str:String, caseSensitive:Boolean ,txtSnapShot:TextSnapshot):void
+			{
+				indexPosition = 0;
+				wordCount = 0;
+				while(1)
+				{
+					indexPosition = txtSnapShot.findText(indexPosition,str, caseSensitive);
+					if(indexPosition==-1){
+						break;
+					}
+					txtSnapShot.setSelected(indexPosition,indexPosition+str.length,true);
+					txtSnapShot.setSelectColor(0xFFFF00);
+					indexPosition = indexPosition+str.length;
+				}
+				
+			}
+			private function setLeftTimeout():void{
+				highlightText( prevSear ,false , leftPage_snap)
+			}
+			private function setRightTimout():void{
+				highlightText( prevSear ,false , rightPage_snap)
+			}
+			protected function searchText(text:String):void
+			{
+				if( myBook.currentPage == -1)
+				{
+					
+					prevSear = text;
+					indexPosition=0;
+					if( SWFLoader(UIComponent(myBook.pages[0]).getChildAt(1)).content != null ){
+						rightPage_mc = SWFLoader(UIComponent(myBook.pages[0]).getChildAt(1)).content as MovieClip;
+						rightPage_snap = rightPage_mc.textSnapshot;
+						setTimeout(setRightTimout,200);
+					}
+				} else{
+					prevSear = text;
+					indexPosition=0;
+					if( SWFLoader(UIComponent( myBook.pages[myBook.currentPage] ).getChildAt(1)).content != null ){
+						rightPage_mc = SWFLoader(UIComponent( myBook.pages[myBook.currentPage] ).getChildAt(1)).content as MovieClip;
+						rightPage_snap = rightPage_mc.textSnapshot;
+						setTimeout(setRightTimout,200);
+					}
+					if(!myBook.getLastPage())
+					{
+						if( SWFLoader(UIComponent(myBook.pages[myBook.currentPage+1]).getChildAt(1)).content != null ){
+							leftPage_mc = SWFLoader(UIComponent(myBook.pages[myBook.currentPage+1]).getChildAt(1)).content as MovieClip;
+							leftPage_snap = leftPage_mc.textSnapshot;
+							setTimeout(setLeftTimeout,200);
+						}
+						
+					}
+				} 
+			}
+			protected function myBook_pageUpdateCompleteHandler(event:Event):void
+			{
+				gotopage.text = String( myBook.currentPageId() ) + " of "+ myBook.totalPages;
+				pageNav.value = Number ( myBook.currentPageId() );
+				if(txtSearch.text!=""){
+					searchText(txtSearch.text)
+				}
+			}
+			protected function gotoHandler(event:MouseEvent):void
+			{
+				var gotono:Number = (int(gotopage.text))
+				if(gotono<=0){
+					myBook.gotoPageNum(1)
+					gotopage.text = String(1)
+				}
+				else if(gotono>=myBook.totalPages)
+				{
+					myBook.gotoPageNum(myBook.totalPages)
+					gotopage.text = String(myBook.totalPages)
+				}
+				else
+					myBook.gotoPageNum(gotono);
+				gotopage.text = gotopage.text + " sur " + myBook.totalPages 
+				pageNav.value = gotono
+			}
+			
+			protected function navHandler(event:MouseEvent):void
+			{
+				switch(event.currentTarget.label){
+					case "Next":
+						myBook.nextPage(); 
+						break;
+					case "Previous":
+						myBook.previousPage()
+						break;
+					case "Recherche":
+						if(txtSearch.text == ""){
+							Alert.show("Entrer le texte à chercher dans ces pages","Recherche")
+						}else{
+							searchText(txtSearch.text);
+						}
+						break; 
+					case "+":
+						if(myBook.scaleX >= 1.5 && myBook.scaleY >= 1.5){
+							myBook.scaleX = 1.5
+							myBook.scaleY = 1.5
+						}else
+						{
+							myBook.scaleX +=0.05
+							myBook.scaleY +=0.05
+						}
+						zoomNav.value = myBook.scaleX;
+						break;
+					case "-":
+						if(myBook.scaleX <=0.5 && myBook.scaleY <= 0.5){
+							myBook.scaleX = 0.5
+							myBook.scaleY = 0.5
+						}else
+						{
+							myBook.scaleX -=0.05
+							myBook.scaleY -= 0.05
+						}
+						zoomNav.value = myBook.scaleX;
+						break;
+				}
+				
+			}
+			
+			protected function gotopage_keyDownHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode == Keyboard.ENTER && gotopage.text.length>0 && !isNaN(Number(gotopage.text))){
+					var gotono:Number = (int(gotopage.text))
+					if(myBook.totalPages<7 || myBook.totalPages>7){
+						if(gotono<=1){
+							myBook.gotoPageNum(1)
+							gotopage.text="1";
+						}else if(gotono>=myBook.totalPages){
+							myBook.gotoPageNum(myBook.totalPages)
+							gotopage.text=String(myBook.totalPages);
+						}else{
+							myBook.gotoPageNum(gotono);
+						}
+						this.setFocus()
+						pageNav.value = Number(gotopage.text);
+						gotopage.text = gotopage.text + " sur " + myBook.totalPages 
+					}
+				}
+				if(event.keyCode == Keyboard.ENTER && gotopage.text.length<=0){
+					this.setFocus();
+					gotopage.text = String(int(myBook.startIndex)+int(myBook.currentPage+2))
+					var num:Number = (int(gotopage.text))
+					if(num>=myBook.totalPages){
+						gotopage.text = myBook.totalPages + " sur " + myBook.totalPages 
+					}else
+						gotopage.text = String(int(myBook.startIndex)+int(myBook.currentPage+2)) + " sur "+ myBook.totalPages;
+				}
+			}
+			
+			protected function zoomNav_changeHandler(event:Event):void
+			{
+				myBook.scaleX=zoomNav.value;
+				myBook.scaleY=zoomNav.value;
+			}
+			
+			protected function myBookHandler(event:FlexEvent):void
+			{
+				myBook.addEventListener(MouseEvent.MOUSE_WHEEL,onMouseWheel)
+				gotopage.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE,gotopage_focusOutHandler)
+				gotopage.addEventListener(KeyboardEvent.KEY_DOWN,gotopage_keyFocusHandler)
+			}
+			
+			private function onMouseWheel(event:MouseEvent):void{
+				if(event.delta>0){
+					myBook.scaleX+=0.05
+					myBook.scaleY+=0.05
+					if(myBook.scaleX>=1.6 || myBook.scaleY>=1.6){
+						myBook.scaleX=1.6
+						myBook.scaleY=1.6
+					}
+				}
+				else{
+					myBook.scaleX-=0.05
+					myBook.scaleY-=0.05
+					if(myBook.scaleX<=0.5 || myBook.scaleY<=0.5){
+						myBook.scaleX=0.5
+						myBook.scaleY=0.5
+					}
+				}
+			}
+			protected function gotopage_focusOutHandler(event:FocusEvent):void
+			{
+				event.preventDefault();
+				stage.focus = gotoLabel;
+				gotopage.text = String(int(myBook.startIndex)+int(myBook.currentPage+2)) + " sur  "+ myBook.totalPages;
+			}
+			
+			private function gotopage_keyFocusHandler(event:KeyboardEvent):void{
+				if(event.keyCode == Keyboard.ESCAPE){
+					event.preventDefault();
+					stage.focus = gotoLabel;
+					gotopage.text = String(int(myBook.startIndex)+int(myBook.currentPage+2)) + " sur  "+ myBook.totalPages;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#252525"/>
+		</s:fill>
+	</s:Rect>
+	<s:Group>
+		<s:BorderContainer left="{(logo.x + logo.width)-35}" verticalCenter="0" 
+						   borderWeight="3" borderColor="#003966"
+						   borderStyle="solid" backgroundColor="#FFFFFF" cornerRadius="20" height="35">
+			<s:Label horizontalCenter="0" verticalCenter="0" id="titleLabel"
+					 paddingRight="10" paddingTop="10" paddingBottom="10" paddingLeft="10"
+					 maxDisplayedLines="1"
+					 fontSize="15" fontWeight="bold" maxWidth="300"/>
+		</s:BorderContainer>
+		<s:Image id="logo" source="{readerLogo}" top="20" left="20" visible="false"/>
+	</s:Group>
+	<s:BorderContainer borderVisible="false" backgroundAlpha="0" width="100%" bottom="40" top="0" >
+		<book:BookLite id="myBook" horizontalCenter="0" verticalCenter="0" bookXMLURL="{_readerUrl}" bookXML="{serverXML}"
+					   pageUpdateComplete="myBook_pageUpdateCompleteHandler(event)"/>	
+	</s:BorderContainer>
+	<s:Group  bottom="0" width="100%" height="40">
+		<s:Rect width="100%" height="100%">
+			<s:fill><s:SolidColor color="#333333"/></s:fill>
+		</s:Rect>
+		<s:HGroup id="navigation" horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle">
+			<s:TextInput id="txtSearch" />
+			<s:Button id="searchbtn" color="#ffffff" cornerRadius="5" chromeColor="#353333" label="Recherche" toolTip="Rechercher dans ces pages" click="navHandler(event)"/>
+			<mx:Spacer width="3"/>
+			<mx:PopUpButton toolTip="Agrandir" buttonMode="true" styleName="zoomBtn" verticalCenter="0" width="25" height="25">
+				<mx:popUp>
+					<s:Group width="55" height="180">
+						<s:Rect width="100%" height="100%" topLeftRadiusX="5" topRightRadiusX="5" bottomLeftRadiusX="5" bottomRightRadiusX="5">
+							<s:fill><s:SolidColor color="#555555"></s:SolidColor></s:fill>
+						</s:Rect>
+						<s:VGroup horizontalCenter="0" bottom="3" verticalCenter="0" horizontalAlign="center" verticalAlign="middle">
+							<s:Button skinClass="assets.skins.ZoominSkin" id="zoomin" label="+" width="25" toolTip="Agrandir" click="navHandler(event)"/>
+							<s:VSlider skinClass="assets.skins.VSliderSkin" id="zoomNav" liveDragging="true" height="90" snapInterval="0.05" minimum="0.5" value="{myBook.scaleX}" maximum="1.5" change="zoomNav_changeHandler(event)"/>
+							<s:Button skinClass="assets.skins.ZoomOutSkin" id="zoomout" label="-" width="25" toolTip="Rétrécir" click="navHandler(event)"/>
+						</s:VGroup>
+					</s:Group>
+				</mx:popUp>
+			</mx:PopUpButton>
+			<s:Button label="Previous" enabled="{(pageNav.value==1)?false:true}" id="prev" skinClass="assets.skins.PreviousSkin" toolTip="Précédente" width="45" click="navHandler(event)"/>
+			<s:HSlider skinClass="assets.skins.HsliderSkin" id="pageNav" minimum="1" snapInterval="1" maximum="{myBook.totalPages}" useHandCursor="true" value="{Math.round(myBook.currentPage)}" change="pageNav_changeHandler(event)"/>
+			<s:Button label="Next" id="next" enabled="{(pageNav.value==myBook.totalPages)?false:true}" skinClass="assets.skins.NextSkin" width="45" toolTip="Suivante" click="navHandler(event)"/>
+			<s:Label id="gotoLabel" text="Page" color="0xffffff"/>
+			<s:TextInput id="gotopage" focusIn="{gotopage.text = ''}" keyDown="gotopage_keyDownHandler(event)" restrict="0-9"/>
+			<mx:Spacer width="5"/>
+		</s:HGroup>
+	</s:Group>
+	<s:Button  styleName="exitIcon" id="closeBtn" top="8" horizontalCenter="0" click="{myBook.removeEndFlip()}"/>
+</s:Group>

@@ -1,0 +1,216 @@
+/* CSS file */
+Application {
+   backgroundColor: #4c4c4c;
+   background-image:   Embed("/assets/images/body_bg.jpg");
+    background-repeat:   repeat;
+   backgroundGradientColors: #4c4c4c, #4c4c4c;
+   themeColor: #4c4c4c;
+   color: #4d5a5b;
+   font-family: coFont;
+   font-size:11;
+   padding-bottom: 0;
+   padding-left: 0;
+   padding-right: 0;
+   padding-top: 0;
+}
+ComboBox {
+	color: #ffffff;
+	disabled-color: #dddddd;
+   dropDownStyleName: "myComboBoxDropDowns";
+}
+
+.myComboBoxDropDowns {
+   color: #000000;
+}
+@font-face {
+	font-family: coFont;
+	src: url("/assets/fonts/tahoma.ttf");
+	font-weight:normal;
+}
+
+@font-face {	
+	font-family: coFont;
+	src: url("/assets/fonts/tahomabd.ttf");
+	font-weight:bold;
+} 
+ApplicationControlBar {
+   fillAlphas: 0.37, 0;
+   cornerRadius: 11;
+   shadowDistance: 7;
+   shadowDirection: center;
+}
+Button {
+   cornerRadius: 0;
+   paddingLeft: 12;
+   highlightAlphas: 0, 0;
+   fillAlphas: 1, 1, 1, 1;
+   fillColors: #4c4c4c, #4c4c4c, #4c4c4c, #4c4c4c;
+   color: #cccccc;
+   textRollOverColor: #ffffff;
+   themeColor: #666666;
+}
+/* TextArea{
+border-alpha:0;
+border-style:none;
+background-alpha:0;	
+} */
+/* Image{
+resizeEffect: ClassReference("mx.effects.Resize");
+} */
+
+HBox{
+padding-bottom: 0;
+padding-left: 0;
+padding-right: 0;
+padding-top: 0;	
+} 
+
+Panel {
+   borderStyle: solid;
+   borderColor: #ffffff;
+   borderAlpha: 0.79;
+   borderThicknessLeft: 1;
+   borderThicknessTop: 1;
+   borderThicknessBottom: 1;
+   borderThicknessRight: 1;
+   roundedBottomCorners: true;
+   cornerRadius: 15;
+   headerHeight: 37;
+   backgroundAlpha: 1;
+   highlightAlphas: 0.52, 0.12;
+   headerColors: #121212, #000000;
+   backgroundColor: #f1f4ef;
+   titleStyleName: "mypanelTitle";
+}
+
+.mypanelTitle {
+   color: #ffffff;
+   font-size:12;
+}
+VScrollBar {
+    downArrowUpSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowOverSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowDownSkin: Embed(source="/assets/images/downArrow.png");
+    upArrowUpSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowOverSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowDownSkin: Embed(source="/assets/images/upArrow.png");
+    thumbDownSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbUpSkin: 
+    	Embed(source="/assets/images/thumb.jpg",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbOverSkin: 
+    	Embed(source="/assets/images/thumb.jpg",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    trackSkin: 
+    	Embed(source="/assets/images/track.png",
+        scaleGridLeft="7", scaleGridTop="4", 
+        scaleGridRight="8", scaleGridBottom="6" );       
+} 
+LinkButton {
+   cornerRadius: 5;
+   paddingLeft: 0;
+   rollOverColor: #00ffff;
+   selectionColor: #00cccc;
+   color: #000000;
+   textRollOverColor: #000000;
+   textSelectedColor: #333333;
+   fontWeight: bold;
+}
+TabNavigator {
+   tabStyleName: "myTabs";
+   firstTabStyleName: "myTabs";
+   lastTabStyleName: "myTabs";
+   selectedTabTextStyleName: "mySelectedTabs";
+}
+
+.myTabs {
+   textRollOverColor: #6699ff;
+
+}
+
+.mySelectedTabs {
+   color: #000000;
+}
+
+Alert
+{
+	 borderStyle: solid;
+   borderColor: #ffffff;
+   borderAlpha: 0.79;
+   borderThicknessLeft: 1;
+   borderThicknessTop: 1;
+   borderThicknessBottom: 1;
+   borderThicknessRight: 1;
+   roundedBottomCorners: true;
+   cornerRadius: 15;
+   headerHeight: 37;
+   backgroundAlpha: 1;
+   highlightAlphas: 0.52, 0.12;
+   headerColors: #121212, #000000;
+   backgroundColor: #f1f4ef;
+}
+
+.alertText
+{
+	background-image: 			Embed("/assets/images/alert_fondo1.png", scaleGridTop="1", scaleGridBottom="26", scaleGridLeft="5", scaleGridRight="85");
+	background-size: 			"100%";
+	font-family:				franklin1;
+	font-size:					11;
+	font-weight: 				normal;
+}
+
+.myTitle
+{
+	font-family:				franklin1;
+	font-size:					12;
+	font-weight: 				normal;
+	color:						#ffffff;
+	padding-left:				3;	
+}
+.disabledLabelStyle{
+	font-family:franklin1;
+	font-size:15;
+	font-style:italic;
+	font-weight:bold;
+	borderStyle: none;
+   	borderColor: #ffffff;
+   	backgroundAlpha: 0;
+   	backgroundColor: #ffffff;
+}
+.normalDisp{
+}
+HScrollBar {
+    downArrowUpSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowOverSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowDownSkin: Embed(source="/assets/images/downArrow.png");
+    upArrowUpSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowOverSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowDownSkin: Embed(source="/assets/images/upArrow.png");
+    thumbDownSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbUpSkin: 
+    	Embed(source="/assets/images/thumb.jpg",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbOverSkin: 
+    	Embed(source="/assets/images/thumb.jpg",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    trackSkin: 
+    	Embed(source="/assets/images/track.png",
+        scaleGridLeft="7", scaleGridTop="4", 
+        scaleGridRight="8", scaleGridBottom="6" );       
+} 

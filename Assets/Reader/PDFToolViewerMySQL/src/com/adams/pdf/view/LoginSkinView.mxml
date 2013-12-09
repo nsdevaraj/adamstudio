@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*">  
+	<s:Panel width="300"  horizontalCenter="0" verticalCenter="0" title="Limoges">
+		<s:Form   horizontalCenter="0"  >
+			<s:FormItem width="100%" label="User Login :" required="true">
+				<s:TextInput id="userNameTextInput" text="pm2"/>
+			</s:FormItem>
+			<s:FormItem width="100%" label="Password:" required="true">
+				<s:TextInput id="passwordTextInput" displayAsPassword="true" text="bre"/>
+			</s:FormItem>
+			<s:FormItem>
+				<s:Label bottom="10" horizontalCenter="0" id="wrongCredentials" color="red"/>
+			</s:FormItem>			
+		</s:Form>
+		<s:CheckBox label="Remember Me" id="rememberLogin" bottom="0"/>
+		<s:controlBarContent>
+			<s:HGroup horizontalAlign="center" width="100%" verticalAlign="middle">
+				<components:NativeButton id="login" label="Login"/>	
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+</s:Skin>

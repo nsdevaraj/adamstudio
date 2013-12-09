@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  styleName="transparentBackground" 
+		 xmlns:mx="library://ns.adobe.com/flex/halo" creationComplete="resultHandler()" 
+		 width="100%" height="100%" minHeight="600" horizontalAlign="center">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			
+			[Bindable]
+			private var items:ArrayCollection = new ArrayCollection();
+			
+			private function resultHandler():void
+			{
+			   for (var i:int =0; i<13; i++){
+					var obj:Object = new Object();
+					obj.image= "assets/detaileImages/"+String(i+1)+".png"
+					items.addItem(obj);
+      		   }
+      		   group.dataProvider = items
+				//items = event.result.catalog.product as ArrayCollection;
+			}
+			
+		]]>
+	</fx:Script>
+	 
+	<mx:Text text="References" width="100%" textAlign="left" styleName="introTitle" fontSize="24"/>
+	
+	<mx:HRule width="100%" />
+	
+	<s:DataGroup id="group"  height="100%" itemRenderer="renderers.ImageRenderer3" horizontalCenter="0" verticalCenter="0">
+		<s:layout>
+			<s:TileLayout columnWidth="250"/>
+		</s:layout>
+	</s:DataGroup>
+</mx:VBox>

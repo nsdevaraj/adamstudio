@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:chartView="com.adams.dt.view.chartpeople.*"
+	xmlns:business="com.adams.dt.business.chartpeople.*"
+	xmlns:control="com.adams.dt.control.chartpeople.*"
+	xmlns:projectView="com.adams.dt.view.*"
+	xmlns:view="com.adams.dt.view.projectselection.viewer.*"
+	xmlns:comp="com.adams.dt.view.components.*"
+	xmlns:msg="com.adams.dt.view.Message.*"
+	xmlns:rtcPods="com.adobe.rtc.pods.*"
+	xmlns:rtc="com.adobe.rtc.collaboration.*"
+	width="1400"
+	height="100%"
+	currentState="mesgState"
+	creationComplete="creationComplete()">
+	<mx:Script>
+		<![CDATA[
+			import com.adobe.cairngorm.enterprise.business.EnterpriseServiceLocator;
+			import com.adams.dt.business.util.SMTPUtil;
+			import com.adams.dt.model.vo.FileCategory;
+
+			import com.adams.dt.view.mainView.MainProjectView;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.mainView.ViewFactory;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.vo.Categories;
+
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.view.components.Upload;
+			import com.adams.dt.view.components.Attachment;
+			 
+ 
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.model.vo.EventStatus;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.event.WorkflowstemplatesEvent;
+			import com.adams.dt.model.vo.Tasks;
+					
+			import com.adams.dt.model.vo.Profiles;
+			import mx.core.Application;
+			import mx.events.ResizeEvent;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.managers.DragManager;
+		   
+			import flash.net.NetConnection;
+			import flash.media.Microphone;
+			import flash.media.SoundCodec;
+			//import mx.charts.chartClasses.StackedSeries;
+			import mx.formatters.DateFormatter;
+			import flash.sampler.Sample;
+			import mx.events.SliderEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;			
+			import mx.utils.ObjectUtil;
+			import mx.collections.ArrayCollection;
+			import mx.events.DragEvent; 
+
+			
+			import com.adams.dt.event.chartpeople.ChartDataEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.view.components.chatscreen.asfile.*;
+			import com.adams.dt.model.vo.Chat;
+			import com.adams.dt.model.vo.Persons;
+						
+			import com.adams.dt.event.loginevent.LogOutEvent;
+			import com.adams.dt.event.PersonsEvent;					
+			
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var viewFactory:ViewFactory = ViewFactory.getInstance(); 
+			
+			[Bindable]
+			public var model : ModelLocator = ModelLocator.getInstance();			
+			private var toDetailsArr :ArrayCollection = new ArrayCollection();		
+			private var dragDetailsArr :ArrayCollection = new ArrayCollection();			
+			
+			[Bindable]                                
+			private var userListArray:Array = [];
+			
+			[Bindable]                                
+			private var clickedMail:String = new String();
+			
+			private var _loginComplete:Boolean;			
+			
+			public var currState:String;
+			public var timelimeValue:String;
+			private var textFieldCollection:ArrayCollection  = new ArrayCollection();
+			private var myArry:Array = [];
+			private var messageDataCollection:ArrayCollection = new ArrayCollection();
+			private var countX:Number = 0;
+			private var countY:Number = 0;
+			private var countLen:Number = 0;
+			[Bindable]
+			private var arrBool:Boolean 
+			public function creationComplete() :void {
+				clickedMail ="Null"
+				model.messageBulkTaskCollection.addEventListener( CollectionEvent.COLLECTION_CHANGE, onMessageCollectionChange,false,0,true );
+				 
+			}
+			
+			private function onMessageCollectionChange ( event:CollectionEvent ):void {
+				if ( event.kind == CollectionEventKind.ADD ) {
+						mailTaskCollectionAssign( event.currentTarget as ArrayCollection );
+				}
+			}
+			public function mailTaskCollectionAssign( value:ArrayCollection ):void {
+				if( value != null ) {
+					sendMailTask( value );
+				}
+			}
+			private var _basicFileCollection:ArrayCollection;
+			[Bindable(event="projectPropertyChange")]
+			public function set tileFileCollection (value:ArrayCollection):void
+			{
+				if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",updateContainer,false,0,true);
+					if(value!=null){
+						_basicFileCollection = value; 
+						dispatchEvent (new Event ("projectPropertyChange"));
+					}
+			}	
+			public function get tileFileCollection ():ArrayCollection
+			{
+				return _basicFileCollection;
+			}
+			[Bindable]
+			public var creation:ArrayCollection = new ArrayCollection();
+			private function updateContainer(event:Event):void
+			{
+				trace("\n\n tileFileCollection :"+tileFileCollection.length);
+				creation = new ArrayCollection();
+				for each( var item:FileDetails in tileFileCollection)
+				{		
+					if(item.visible == true)
+					{					
+						creation.addItem(item);
+						creation.refresh()
+					}					
+				}
+				trace("creation :"+creation.length);
+				basicFilesId.dataProvider = creation;				
+			}
+				
+			public function projectNameFunc(name:String):void{
+			 	projectName.text=name;
+			 	projectNameDesc.text=name+" Description";
+			 }	   
+
+			private function separateMessage():void
+			{
+				//This is for Previous messagecollection send details remove
+				model.messageBulkMailCollection = new ArrayCollection();
+				//This is for Previous taskIDcollection send details remove
+				model.TaskIDAttachArrayColl = new ArrayCollection();
+					
+				var messageTaskCollection:ArrayCollection = new ArrayCollection();				
+				model.totalChatPerson.addItem(model.toPerson);
+				for each(var chatPer:Persons in model.totalChatPerson){
+					var person:Persons = chatPer;
+						var taskData:Tasks = new Tasks();
+						taskData.taskId = NaN;
+						taskData.previousTask = model.currentTasks;
+						taskData.projectObject = model.currentProjects;
+						taskData.personDetails = person;
+						var domain:Categories = Utils.getDomains(model.currentProjects.categories);
+						model.messageDomain = domain;
+						taskData.taskFilesPath = model.person.personId+","+model.person.defaultProfile;
+						var by:ByteArray = new ByteArray()
+						var sep:String = "&#$%^!@";
+						var str:String = userNameText.text+sep+subject.text+sep+body.text+sep+model.person.personId+","+model.person.defaultProfile;
+						by.writeUTFBytes(str)
+						taskData.taskComment = by;
+						var status:Status = new Status();
+						status.statusId = TaskStatus.WAITING;
+						taskData.taskStatusFK= status.statusId;
+						taskData.tDateCreation = model.currentTime;
+						taskData.workflowtemplateFK = getMessageTemplate(person.defaultProfile);
+						taskData.tDateEndEstimated = Utils.getCalculatedDate(model.currentTime,taskData.workflowtemplateFK.defaultEstimatedTime); 
+						taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;
+						messageTaskCollection.addItem(taskData);
+						
+				}	
+				var tevent:TasksEvent = new TasksEvent ( TasksEvent.CREATE_MSG_TASKS);	
+				tevent.tasksCollection = messageTaskCollection;
+				CairngormEventDispatcher.getInstance().dispatchEvent(tevent);	 								
+										
+				if(currentState == 'emailState')
+					model.outerEmailId = emailText.text;
+										
+				resetMessage();	
+			}
+			public function resetMessage():void
+			{
+				if(currentState == 'mesgState'){	
+					clearMessageAll();
+				}							
+				else if(currentState == 'feedBackState'){		
+					clearMessageAll();						
+				}						
+				else if(currentState == 'emailState')				
+				{	
+					emailText.text = '';
+					clearMessageAll();						
+				}
+			}
+			
+			public function clearMessageAll():void
+			{	
+				if(uploadId!=null)
+				{
+					uploadId.listFiles.dataProvider=[];
+					uploadId.UploadFiles = [];
+				}					
+					
+				if(model.totalChatPerson.length!=0)
+				{
+					model.totalChatPerson.removeAll();
+					model.totalChatPerson = new ArrayCollection();
+				} 
+				if(textCvs.numChildren!=0)
+					textCvs.removeAllChildren();
+				if(toFieldDefault.text.length!=0)
+					toFieldDefault.text = '';					
+				
+				body.text = '';	
+				
+				model.messageToPerson = false;
+			}
+			
+			public function clearMessagefn():void
+			{				 
+				if(basicFilesId.selectedItems!=null)
+				{
+					basicFilesId.dataProvider = creation;
+				}
+				
+				if(currentState == 'mesgState'){	
+					clearMessageAll();
+				}							
+				else if(currentState == 'feedBackState'){		
+					clearMessageAll();							
+				}						
+				else if(currentState == 'emailState'){	
+					clearMessageAll();						
+				} 	
+			}
+			public function basicFiles():void
+			{
+				model.basicAttachFileColl = new ArrayCollection();
+				
+				if(model.sendBasicMessageFileArr.length!=0)	
+				{	
+					var len:int = model.sendBasicMessageFileArr.length;
+					for(var i:int = 0;i < len; i++)
+					{
+						var tempFiledetails:FileDetails = model.sendBasicMessageFileArr[i] as FileDetails;					
+						var fileduplicate:FileDetails = new FileDetails();
+						fileduplicate.fileId = NaN;
+						trace("---PEOPLE-basicFiles-"+tempFiledetails.fileName);
+						fileduplicate.fileName = tempFiledetails.fileName;
+						fileduplicate.filePath = tempFiledetails.filePath;
+						fileduplicate.fileDate = tempFiledetails .fileDate;
+						//fileduplicate.taskId = taskid;
+						fileduplicate.categoryFK = tempFiledetails.categoryFK;
+						//fileduplicate.type = tempFiledetails.type;
+						fileduplicate.type = "Message";						
+						fileduplicate.storedFileName = tempFiledetails.storedFileName;
+						fileduplicate.projectFK = tempFiledetails.projectFK;
+						fileduplicate.visible = tempFiledetails.visible;
+						fileduplicate.releaseStatus = tempFiledetails.releaseStatus;
+						fileduplicate.miscelleneous = tempFiledetails.miscelleneous;
+						fileduplicate.fileCategory = tempFiledetails.fileCategory;
+						fileduplicate.page = tempFiledetails.page;
+						model.basicAttachFileColl.addItem(fileduplicate);
+					}	
+					trace("---PEOPLE-basicFiles FILE LENGTH--"+model.basicAttachFileColl.length+"\n");		
+				} 
+			}
+			public function sendMessagefn( ):void{ 
+			        	model.chatvo.senderId = model.person.personId;
+			 		model.chatvo.senderName = model.person.personFirstname;
+			 		model.chatvo.description = 'chatMsg';
+			 		model.chatvo.chatDateentry = new Date();	
+			 		model.chatvo.projectFk = model.currentProjects.projectId;
+			 		model.chatvo.chatArr = [3,4,5,1]; 
+			 		var producer:PersonsEvent = new PersonsEvent( PersonsEvent.EVENT_PRODUCER);				
+					producer.dispatch();	      
+					model.sendBasicMessageFileArr = basicFilesId.selectedItems;	
+					trace("\n PEOPLE clearMessagefn :"+model.sendBasicMessageFileArr.length);
+					basicFiles();
+					
+					if(model.onlyEmail == 'MESSAGE' || model.onlyEmail == 'REEMAIL' || model.onlyEmail == 'EMAIL')
+						model.onlyEmail = '';
+													
+					if(model.fileDetailsArray.length!=0)
+					{
+						model.fileDetailsArray.removeAll();
+						model.fileDetailsArray = new ArrayCollection();
+					}
+					if(model.FileAttachArrayColl.length!=0)
+					{
+						model.FileAttachArrayColl.removeAll();
+						model.FileAttachArrayColl = new ArrayCollection();
+					}
+					if(currentState == 'mesgState')
+					{		
+						model.onlyEmail = 'MESSAGE';	
+						separateMessage();		
+					}
+					
+					else if(currentState == 'feedBackState')
+					{	
+						model.onlyEmail = 'FEEDBACK';		
+						
+						//-----------NEW SERVER EMAIL ADD START------------------------
+						//SMTPUtil.mail(model.SmtpfrmLbl,subject.text,body.text);
+							
+						var eEvent:SMTPEmailEvent = new SMTPEmailEvent( SMTPEmailEvent.EVENT_CREATE_SMTPEMAIL );
+						var _smtpvo:SMTPEmailVO = new SMTPEmailVO();
+						_smtpvo.msgTo = model.SmtpfrmLbl;
+						_smtpvo.msgSubject = subject.text;   
+						_smtpvo.msgBody = body.text;
+						eEvent.smtpvo = _smtpvo;
+						eEvent.dispatch();
+						//-----------END ------------------------
+						
+						resetMessage();
+					}
+					
+					else if(currentState == 'emailState')
+					{		
+						model.onlyEmail = 'EMAIL';								
+						separateMessage();
+					}  	
+					Button( viewFactory.getObjectClass( "Dashboard" )._mpv.mesgBtn ).dispatchEvent( new MouseEvent( MouseEvent.CLICK ) );														
+			}
+			private function sendMailTask(value:ArrayCollection):void  //model.messageBulkTaskCollection
+			{
+				resetMessage();							
+			} 
+			public function getMessageTemplate(pro:int):Workflowstemplates{
+				trace(model.messageTemplatesCollection.length+"  JJJJJJJJJJ     "+model.currentProjects.workflowFK);
+				var workTemp:Workflowstemplates
+				var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.messageTemplatesCollection,model.currentProjects.workflowFK);
+				for each(var item:Workflowstemplates in  messageTemplateCollection){
+					trace(item.profileFK+" == "+pro)									
+					if(item.profileFK == pro){
+						workTemp =  item;
+						break;
+					}
+				}
+				return workTemp;
+			} 
+		    private function feedBackMode(eve:MouseEvent):void{
+		    	if(eve.currentTarget.selected == true){
+		    		currentState = "feedBackState"
+		    		emailBtn.selected = false;
+		    	}else{
+		    		currentState = "mesgState"
+		    	}
+		    }
+		    private function emailMode(eve:MouseEvent):void{
+		    	if(eve.currentTarget.selected == true){
+		    		currentState = "emailState"
+		    		feedBtn.selected = false;
+		    		
+		    	}else{
+		    		currentState = "mesgState"
+		    	}
+		    }
+		    
+			private function clearChatCollection() :void {
+				textCvs.removeAllChildren();
+				model.totalChatPerson.removeAll();
+				toFieldDefault.text = "";
+				model.messageToPerson = false;
+			}	
+			[Bindable]
+			public var chatReceiverName:String
+			public function simpleChatValueObject(toReceiver:Persons):void
+			{
+				var personName:String = toReceiver.personFirstname				
+				chatReceiverName = personName
+				var tempBool:Boolean = true;
+				for ( var i:int = 0;i<model.onlineUserCollection.length;i++ )
+				{
+					if(personName == model.onlineUserCollection.getItemAt(i).displayName)
+					{
+						
+						model.messagePanelState = true;
+						if(MainProjectView(this.parentDocument).currentState == "hideMesg")
+						{
+						 	MainProjectView(this.parentDocument).currentState = "openMesg";
+							break;
+						}
+						
+						MainProjectView(this.parentDocument).closeMesgPanels("online");
+			      		
+					}
+					else
+					{
+						MainProjectView(this.parentDocument).closeMesgPanels("online");
+					}
+				}
+				
+			}
+
+			import mx.events.ItemClickEvent;
+			import com.adobe.rtc.events.StreamEvent;
+			//private var activityTimer:Timer = new Timer(30,1); 
+			
+			private function onCreationComplete():void
+			{
+				//audioPub.addEventListener(StreamEvent.STREAM_RECEIVE,onStreamReceive);
+				//audioPub.addEventListener(StreamEvent.STREAM_DELETE,onStreamDelete);	
+			} 
+			/*
+			private function onStreamReceive(p_evt:StreamEvent):void
+			{
+				if ( p_evt.streamDescriptor.finishPublishing && p_evt.streamDescriptor.streamPublisherID == cSession.userManager.myUserID) {
+					if ( audioPub.microphone != null ) {
+						activityTimer.addEventListener(TimerEvent.TIMER_COMPLETE,onTimerComplete);
+						activityTimer.start();
+					}
+				}
+			}
+			 
+			private function onStreamDelete(p_evt:StreamEvent):void
+			{
+				if ( p_evt.streamDescriptor.streamPublisherID == cSession.userManager.myUserID) {
+					if ( audioPub.microphone != null ) {
+						activityTimer.removeEventListener(TimerEvent.TIMER_COMPLETE,onTimerComplete);
+						activityTimer.stop();
+					}
+				}
+			}
+			
+			 
+			private function onAudioClick(p_evt:MouseEvent):void
+			{
+				if ( p_evt.currentTarget.label == "call" ) {
+					audioPub.publish();
+					p_evt.currentTarget.label = "stop" ;
+				}else if (p_evt.currentTarget.label == "stop" ){
+					audioPub.stop();
+					p_evt.currentTarget.label = "call" ;
+				}
+			}
+			
+			private function onTimerComplete(p_evt:TimerEvent):void
+			{
+				activityTimer.start();
+				if ( audioPub.isPublishing && !audioPub.isPaused ) {
+				}
+				
+			} 
+			private function onGainChange(event:Event):void
+			{
+				//audioPub.gain = gainSlider.value ;
+			}
+			 
+			private function onKeyPress(event:KeyboardEvent):void
+			{
+				if ( event.keyCode == Keyboard.ENTER ) {
+					//audioPub.silenceTimeout = parseInt(timeoutInput.text);
+				}
+			} 
+			private function onTimeoutEnter(p_evt:MouseEvent):void
+			{
+				//audioPub.silenceTimeout = parseInt(timeoutInput.text);
+			} 
+			private function onItemClick(p_evt:ItemClickEvent):void
+			{
+				if ( p_evt.currentTarget.selectedValue == "Yes" ) {
+					audioPub.useEchoSuppression = true ;
+				}else if ( p_evt.currentTarget.selectedValue == "No" ) {
+					audioPub.useEchoSuppression = false ;
+				}
+			}
+ 			*/
+						    
+			]]>
+			</mx:Script>
+			<mx:states>
+				<mx:State name="feedBackState">
+					<mx:SetProperty target="{stTo}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{stTo}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{emailForm}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{emailForm}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{toTask}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{toTask}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{filesContainer}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{filesContainer}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="visible"
+						value="false"/>		
+				</mx:State>
+				<mx:State name="emailState">
+					<mx:SetProperty target="{stTo}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{stTo}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{emailForm}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{emailForm}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{toTask}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{toTask}"
+						name="includeInLayout"
+						value="true"/>
+					
+					<mx:SetProperty target="{filesContainer}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{filesContainer}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="visible"
+						value="true"/>	
+				</mx:State>
+				<mx:State name="mesgState">
+					<mx:SetProperty target="{stTo}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{stTo}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{emailForm}"
+						name="visible"
+						value="false"/>
+					<mx:SetProperty target="{emailForm}"
+						name="includeInLayout"
+						value="false"/>
+					<mx:SetProperty target="{toTask}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{toTask}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{filesContainer}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{filesContainer}"
+						name="visible"
+						value="true"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="includeInLayout"
+						value="true"/>
+					<mx:SetProperty target="{uploadContainer}"
+						name="visible"
+						value="true"/>		
+				</mx:State>
+			</mx:states>
+			<mx:Resize id="resize"/>
+			<mx:Canvas   
+				top="0"
+				left="0"
+				right="0"
+				bottom="0">
+				<mx:Canvas id="mesgPanel"
+					visible="true"
+					right="0"
+					width="431"
+					height="100%">
+					<mx:Canvas visible="true"
+						left="20"
+						styleName="darkBgContainer" 
+						width="409"
+						height="100%">
+						<mx:Canvas styleName="headerBgContainer" 
+							right="20"
+							left="20"
+							top="20"
+							height="32">
+							<mx:Image 
+								source="{ImageResourceEmbedClass.MAILICON}"
+								left="9"
+								verticalCenter="0"/>
+							<mx:Label text="message"
+								left="33"
+								verticalCenter="0"/>
+						</mx:Canvas>
+						<mx:HBox top="55"
+							left="20">
+							<mx:Button label="Feedback"
+								id="feedBtn"
+								click="feedBackMode(event)"
+								toggle="true"/>
+							<mx:Button label="E-Mail"
+								id="emailBtn"
+								click="emailMode(event)"
+								toggle="true"/>
+						</mx:HBox>
+						<mx:Text text="{model.loc.getString('projectName')}"
+							id="projectName"
+							styleName="prjDecText"
+							top="55"
+							right="20"/>
+						<mx:Text text="{model.currentProjects.projectName.length>30?model.currentProjects.projectName.slice(0,29)+'..,':model.currentProjects.projectName}"
+							id="projectNameDesc" toolTip="{model.currentProjects.projectName}"
+							top="75"
+							right="20"/>
+						<mx:VBox left="20"
+							right="20"
+							top="100">
+							<mx:Form id="loginForm"
+								paddingTop="5"
+								paddingBottom="5"
+								left="20"
+								right="20"
+								top="100"
+								styleName="loginlabel">
+								<mx:FormItem label="From:">
+									<mx:TextInput width="287"
+										editable="false"
+										styleName="fromField"
+										id="userNameText"
+										text="{model.person.personFirstname}"/>
+								</mx:FormItem>
+								<mx:FormItem label="e-mail:"
+									id="emailForm"
+									includeInLayout="false"
+									visible="false">
+									<mx:TextInput width="287"
+										styleName="fromField"
+										id="emailText"/>
+								</mx:FormItem>
+								<mx:FormItem label="To:"
+									id="stTo"
+									includeInLayout="false"
+									visible="false">
+									<!--  <mx:TextInput width="287" id="toField" styleName="fieldText" text="AV"/>-->
+									<mx:TextInput id="feedBackText"
+										text="DT Team"
+										width="287"
+										styleName="chartViewerDragDropBG"/>
+								</mx:FormItem>
+								<mx:FormItem label="To:"
+									id="toTask">
+									<mx:TextInput width="287" id="toFieldDefault" styleName="fieldText" editable="false"/>	
+									<mx:Canvas id="textCvs"
+										width="287"
+										height="100"
+										styleName="chartViewerDragDropBG"/>
+								</mx:FormItem>
+								<mx:FormItem label="Subject:">
+									<mx:TextInput id="subject"
+										editable="false"
+										text="{model.currentProjects.projectName}"
+										width="287"
+										styleName="fieldText"/>
+								</mx:FormItem>
+							</mx:Form>
+							
+							<mx:VBox id="holder" width="100%" >
+								<comp:WindowShade id="uploadContainer" label="{model.loc.getString('uploadFiles')}" width="100%" opened="false">
+									<mx:VBox  id="uploadFilesPan" width="100%" height="170">
+										<comp:Upload id="uploadId" type="Message" width="100%" height="100%" basicFileVisible="{true}"/>
+									</mx:VBox>
+								</comp:WindowShade>
+								<comp:WindowShade label="Project Files" width="100%" opened="false"
+									 id="filesContainer"  >
+									<mx:VBox id="projFiles" width="100%" height="150">
+										<msg:CheckBoxListComponent id="basicFilesId" width="100%" height="100%" 
+										dataProvider="{creation}" labelField="fileName" allowMultipleSelection="true"
+										itemRenderer="com.adams.dt.view.Message.CheckBoxRenderer" />	
+									<!--<msg:CheckBoxList id="basicFilesId" dataProvider="{creation}" width="100%" height="100%" />--> <!-- original -->
+									</mx:VBox>
+								</comp:WindowShade>	
+								<comp:WindowShade label="Message" opened="true" width="100%">
+									<mx:VBox  id="mesgArea" width="100%" paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5" height="130">
+										<mx:TextArea id="body"
+										width="100%"
+										height="100%"
+										styleName="fieldText"/>
+									</mx:VBox>
+								</comp:WindowShade>		
+							</mx:VBox>
+							
+							<mx:HBox width="100%"
+								horizontalGap="0"
+								left="20"
+								right="20"
+								top="286"
+								horizontalAlign="right">
+								<mx:Button styleName="cancelMesg"
+									id="cancelMessage"
+									label="{model.loc.getString('cancel')}"
+									click="{clearMessagefn()}"/>
+								<mx:Spacer width="5"/>
+								<mx:Button styleName="sendMesg"
+									id="sendMessage"
+									label="{model.loc.getString('send')}"
+									click="{sendMessagefn()}"/>
+								<mx:Spacer width="16"/>
+							</mx:HBox>
+							<mx:TextInput includeInLayout="false"
+								visible="false"
+								width="287"
+								id="toField"
+								styleName="fieldText"
+								text="AV"/>
+						</mx:VBox>
+						<!-- -->
+						
+						<mx:Canvas id="chatArea" visible="{model.messagePanelState}"
+								right="0"
+								left="0"
+								top="0" bottom="0" styleName="darkBgContainer" 
+								
+								verticalScrollPolicy="off"
+								horizontalScrollPolicy="off"
+								>
+								<mx:Canvas styleName="headerBgContainer"
+									right="20" left="20" top="20" height="32">
+									<mx:Image
+										source="{ImageResourceEmbedClass.CHATICON}" 
+										left="9"
+										verticalCenter="0"/>
+									<mx:Label text="{'Chat : ' +chatReceiverName }"
+										left="33"
+										verticalCenter="0"
+										/>
+									<!--<mx:Button id="btn" icon="@Embed('assets/swf/MainInterface.swf#callIcon')" label="call" 
+										click="onAudioClick(event)" verticalCenter="0" right="40" toggle="true"  />
+									-->
+								</mx:Canvas>
+								<!--<mx:VBox width="100%" id="cameraWindow" top="55" verticalGap="0" left="20" right="20">
+									<mx:HBox width="100%" click="formFun(event,webcam,'cam')" height="30" styleName="technicalFormHeader">
+										<mx:Button toggle="true" selected="true" styleName="chartViewerButton"/>
+										<mx:Label text="WebCamera" />
+									</mx:HBox>	
+									<mx:VBox includeInLayout="false" visible="false" id="webcam" width="100%" 
+										verticalAlign="middle" horizontalAlign="center" styleName="technicalFormContainer">
+										<rtcPods:WebCamera id="wbCam"/>
+									</mx:VBox>
+								</mx:VBox> top="{cameraWindow.height+55}"-->
+								
+								<mx:VBox width="100%" id="chatWindow" top="55"  left="20" right="20">
+								 
+									<!-- <rtc:AudioPublisher id="audioPub" height="0" />
+									<rtc:AudioSubscriber id="audioSub" height="0" />-->
+                				</mx:VBox>
+							</mx:Canvas>
+					</mx:Canvas>
+				</mx:Canvas>
+			</mx:Canvas>
+		</mx:Canvas>

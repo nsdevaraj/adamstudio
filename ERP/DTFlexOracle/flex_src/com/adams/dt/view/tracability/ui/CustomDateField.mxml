@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="150" 
+				   horizontalScrollPolicy="off" verticalScrollPolicy="off"
+				   creationComplete="onComplete()">
+<mx:Metadata>
+	[Event(name="applyReferenceDate", type="flash.events.Event")]
+</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Text;
+			import com.adams.dt.model.scheduler.util.DateUtil;
+			import mx.core.UIComponent;
+			import mx.effects.TweenEffect;
+			import mx.effects.CompositeEffect;
+			import mx.effects.Fade;
+			import mx.effects.MaskEffect;
+			import mx.effects.Iris;
+			import mx.effects.Move;
+			import mx.effects.Rotate;
+			import mx.effects.Resize;
+			import mx.effects.Glow;
+			import mx.effects.Zoom;
+			import mx.effects.WipeLeft;
+			import mx.effects.Dissolve;
+			import mx.managers.FocusManager;
+			import mx.events.FlexMouseEvent;
+			import mx.managers.PopUpManager;
+			import mx.controls.DateChooser;
+			
+			
+			private var _dater:DateChooser;
+			private var _drawingUI:UIComponent;
+			private var drawShape:Shape;
+			private var completeAnimation:Boolean;
+			private var _finishArray:Array = [ 22, 30, 38, 46, 54 ];
+			
+			[Bindable]
+			public var phaseNumber:String = '0';
+			[Bindable]
+			public var phaseLabel:String;
+			[Bindable]
+			public var lineColor:uint;
+			[Bindable]
+			public var globalStartPoint:Point;
+			[Bindable]
+			public var visibleDays:Boolean;
+			[Bindable]
+			public var visibleTotal:Boolean;
+			[Bindable]
+			public var startAdjustable:Boolean;
+			[Bindable]
+			public var localReferenceDate:Date;
+			
+			private var widthSet:Boolean;
+			
+			
+			private var _editEnabled:Boolean;
+			[Bindable]
+			public function get editEnabled():Boolean {
+				return _editEnabled;
+			}
+			public function set editEnabled( value:Boolean ):void {
+				_editEnabled = value;
+			}
+			
+			private var _orginPoint:Point;
+			public function get originPoint():Point {
+				var xyPoint:Point = new Point( _phaseInput.x, _phaseInput.y );
+				_orginPoint = new Point( ( xyPoint.x + _phaseInput.width / 2 ), ( xyPoint.y + _phaseInput.height - 5 ) );
+				return _orginPoint;
+			}
+			
+			private var _period:int;
+			[Bindable]
+			public function get period():int {
+				return _period;
+			}
+			public function set period( value:int ):void {
+				_period = value;
+				if( referenceDate && ( editEnabled || _dater ) ) {
+					selectedDate = new Date( referenceDate.getTime() + ( period * DateUtil.DAY_IN_MILLISECONDS ) );
+				}
+			}
+			
+			private var _referenceDate:Date;
+			[Bindable]
+			public function get referenceDate():Date {
+				return _referenceDate;
+			}
+			public function set referenceDate( value:Date ):void {
+				_referenceDate = value;
+				if( editEnabled || _dater ) {
+					selectedDate = new Date( value.getTime() + ( period * DateUtil.DAY_IN_MILLISECONDS ) );
+				}
+			}
+			
+			private var _selectedDate:Date;
+			[Bindable]
+			public function get selectedDate():Date {
+				return _selectedDate;
+			}
+			public function set selectedDate( value:Date ):void {
+				_selectedDate = value;
+				if( _days && !_days.visible && _phaseInput ) {
+					_phaseInput.text = _formatter.format( value.toDateString() );
+				} 
+			}
+			
+			private var _totalPeriod:Number;
+			[Bindable]
+			public function get totalPeriod():Number {
+				return _totalPeriod;
+			}
+			public function set totalPeriod( value:Number ):void {
+				if( value == 0 ) {
+					_totalPeriod = 1;
+				}
+				else {
+					_totalPeriod = value;
+				}
+				if( !isNaN( totalPeriod ) &&( selectedDate ) && ( initialDate )  ) {
+					drawUI();
+				}	
+			}
+			
+			private var _initialDate:Date;
+			[Bindable]
+			public function get initialDate():Date {
+				return _initialDate;
+			}
+			public function set initialDate( value:Date ):void {
+				_initialDate = value;
+			}
+			
+			private var _fromDater:Date;
+			[Bindable]
+			public function get fromDater():Date {
+				return _fromDater;
+			}
+			public function set fromDater( value:Date ):void {
+				_fromDater = value;
+				if( referenceDate ) {
+					period = Math.ceil( ( fromDater.getTime() - referenceDate.getTime() ) / DateUtil.DAY_IN_MILLISECONDS );
+				}
+			}
+			
+			private var _totalWidth:Number;
+			[Bindable]
+			public function get totalWidth():Number {
+				return _totalWidth;
+			}
+			public function set totalWidth( value:Number ):void {
+				_totalWidth = value;
+			}
+			
+			private function onComplete():void {
+				if( selectedDate ) {
+					_phaseInput.text = _formatter.format( selectedDate.toDateString() );
+				}
+			}
+			
+			private function onChooserClick():void {
+				if( _days.visible ) {
+					_days.visible = false;
+					_phaseInput.text = _formatter.format( selectedDate.toDateString() );
+				}
+				stage.focus = null;
+				editEnabled = false;
+				_dater = new DateChooser();
+				_dater.selectedDate = selectedDate;
+				if( referenceDate ) {
+					_dater.selectableRange = { rangeStart: referenceDate, rangeEnd: new Date( referenceDate.getTime() + ( 99 * DateUtil.DAY_IN_MILLISECONDS ) ) };
+				}
+				var globalPoint:Point = new Point( _dateChooser.x, _dateChooser.y );
+				globalPoint = localToGlobal( globalPoint );
+				_dater.x = globalPoint.x;
+				_dater.y = globalPoint.y;
+				_dater.addEventListener( Event.CHANGE, onDateSelect ,false,0,true);
+				_dater.addEventListener( FlexMouseEvent.MOUSE_DOWN_OUTSIDE, onClose ,false,0,true);
+				PopUpManager.addPopUp( _dater, this, false );
+			}
+			
+			private function onDateSelect( event:Event ):void {
+				if( referenceDate ) {
+					fromDater = _dater.selectedDate;
+					editEnabled = true;
+				}
+				else {
+					var localReferenceTime:Number = localReferenceDate.getTime();
+					var selectedTime:Number = _dater.selectedDate.getTime();
+					var tempPeriod:Number;
+					if( localReferenceTime < selectedTime ) {
+						tempPeriod = Math.ceil( ( selectedTime - localReferenceTime ) / DateUtil.DAY_IN_MILLISECONDS );
+						selectedDate = new Date( localReferenceDate.getTime() + ( tempPeriod * DateUtil.DAY_IN_MILLISECONDS ) );
+					}
+					else {
+						tempPeriod = Math.floor( ( localReferenceTime - selectedTime ) / DateUtil.DAY_IN_MILLISECONDS );
+						selectedDate = new Date( localReferenceDate.getTime() - ( tempPeriod * DateUtil.DAY_IN_MILLISECONDS ) );
+					}
+				}
+				close();
+				dispatchEvent( new Event( "applyReferenceDate" ) );
+			}
+			
+			private function close():void {
+				if( _dater ) {
+					PopUpManager.removePopUp( _dater );
+				} 
+			}
+			
+			private function onClose( event:FlexMouseEvent ):void {
+				editEnabled = true;
+				close();	 
+			}
+			
+			private function textInputClick():void {
+				if( referenceDate ) {
+					_days.visible = true;
+					_phaseInput.text = period.toString();
+				}
+			}
+			
+			private function onfocusOut():void {
+				if( _days.visible ) {
+					_days.visible = false;
+					_phaseInput.text = _formatter.format( selectedDate.toDateString() );
+				}
+			}
+			
+			private function onFocusIn():void {
+				textInputClick();
+			}
+			
+			private function onTextChange( event:Event ):void {
+				period = int( _phaseInput.text );
+				dispatchEvent( new Event( "applyReferenceDate" ) );
+			}
+			
+			private function drawUI():void {
+				if( _phaseInput ) {
+					
+					var partion:Number = ( totalWidth / totalPeriod ) * period;
+					var fromInitialDate:Number = Math.floor( ( selectedDate.getTime() - initialDate.getTime() ) / ( DateUtil.DAY_IN_MILLISECONDS ) );
+					var fromInitialPartion:Number = ( totalWidth / totalPeriod ) * fromInitialDate;
+					
+					 if( _drawingUI ) {
+						removeChild( _drawingUI );
+					} 
+					
+					
+					var lineStart:Point = originPoint;
+					var lineMiddleStart:Point = new Point( originPoint.x, ( originPoint.y + _finishArray[ int( phaseNumber ) ] ) );
+					var lineMiddleEnd:Point;
+					if( !referenceDate ) {
+						lineMiddleEnd = lineMiddleStart; 
+					}
+					else {
+						var localGlobalPoint:Point = localToGlobal(  originPoint );
+						var coveredDistance:Number = Math.floor( Math.sqrt( ( Math.pow( ( localGlobalPoint.x - globalStartPoint.x ), 2 ) + Math.pow( ( localGlobalPoint.y - globalStartPoint.y ), 2 ) ) ) );
+						var extendDistance:Number = fromInitialPartion - coveredDistance;
+						lineMiddleEnd = new Point( ( originPoint.x + extendDistance ), lineMiddleStart.y );
+					}
+					var adjustmentHeight:int = _finishArray[ _finishArray.length - 1 ]  - _finishArray[ int( phaseNumber ) ];
+					var lineEnd:Point = new Point( lineMiddleEnd.x, ( lineMiddleStart.y + adjustmentHeight + 40 ) );
+					
+					_drawingUI = new UIComponent();
+					drawShape = new Shape();
+					_drawingUI.addChild( drawShape );
+					var periodText:Text = new Text();
+					periodText.text = period.toString();
+					_drawingUI.addChild( periodText );
+					addChild( _drawingUI ); 
+					
+					drawShape.graphics.clear();
+					
+					drawShape.graphics.lineStyle( 2, lineColor, 1 );
+					drawShape.graphics.moveTo( ( lineStart.x - 5 ), lineStart.y );
+					drawShape.graphics.beginFill( lineColor, 1 );
+					drawShape.graphics.curveTo( lineStart.x, ( lineStart.y + 5 ), ( lineStart.x + 5 ), lineStart.y );
+					drawShape.graphics.endFill();
+					
+					drawShape.graphics.moveTo( lineStart.x, lineStart.y );
+					drawShape.graphics.lineTo( lineMiddleStart.x, lineMiddleStart.y );
+					drawShape.graphics.lineTo( lineMiddleEnd.x, lineMiddleEnd.y );
+					drawShape.graphics.lineTo( lineEnd.x, lineEnd.y );
+					
+					drawShape.graphics.moveTo( ( lineEnd.x - 5 ), lineEnd.y );
+					drawShape.graphics.beginFill( lineColor, 1 );
+					drawShape.graphics.curveTo( lineEnd.x, ( lineEnd.y + 5 ), ( lineEnd.x + 5 ), lineEnd.y );
+					drawShape.graphics.endFill();
+					
+					drawShape.graphics.moveTo( lineEnd.x, ( lineEnd.y - 30 ) );
+					drawShape.graphics.beginFill( lineColor, 1 );
+					var rectPoint:Point;
+					var rectWidth:Number;
+					if( !referenceDate ) {
+						rectPoint = new Point( lineStart.x, ( lineEnd.y - 30 ) );
+						rectWidth = partion - 1;
+					}
+					else {
+						rectPoint = new Point( lineEnd.x, ( lineEnd.y - 30 ) );
+						rectWidth = -partion + 1;
+					}
+					drawShape.graphics.drawRect( rectPoint.x, rectPoint.y, rectWidth, 20 );
+					drawShape.graphics.endFill();
+					
+					if( referenceDate && ( period != 0 ) && ( partion >= 15 ) ) {
+						var textfield:TextField = new TextField();
+						textfield.width = 20;
+						textfield.height = 20;
+						textfield.x = rectPoint.x - 15;
+						textfield.y = rectPoint.y;
+						textfield.text = period.toString();
+						_drawingUI.addChild( textfield );
+					}	
+				}
+			}
+			
+			override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void {
+				if( _dater ) {
+					var globalPoint:Point = new Point( _dateChooser.x, _dateChooser.y );
+					globalPoint = localToGlobal( globalPoint );
+					_dater.x = globalPoint.x;
+					_dater.y = globalPoint.y;
+				}
+				super.updateDisplayList( unscaledWidth, unscaledHeight );
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:DateFormatter id="_formatter" formatString="DD/MM/YYYY"/>
+	
+	<mx:Label text="{ phaseNumber }" id="_phaseValue" color="{ lineColor }" visible="{ !visibleDays }"/>
+	<mx:Label text="{ phaseLabel }" y="{ _phaseValue.y + _phaseValue.height + 2 }" id="_phaseHead" color="{ lineColor }"/>
+	<mx:TextInput y="{ _phaseHead.y + _phaseHead.height + 2 }" id="_phaseInput" focusOut="onfocusOut()" 
+				 width="88" restrict="0-9" maxChars="2" change="onTextChange( event )" height="25"
+				editable="{ editEnabled }" enabled="{ editEnabled }" focusIn="onFocusIn()"/>
+	<mx:Image source="assets/images/cal.png" x="{ _phaseInput.x + _phaseInput.width + 2 }" 
+			id="_dateChooser" click="onChooserClick()" y="{ _phaseInput.y }" visible="{ editEnabled || startAdjustable }"/>
+	<mx:Label text="Days" x="{ _phaseInput.x + 50 }" y="{ _phaseInput.y + 2 }" visible="false"
+			id="_days"/>		
+	<mx:Label text="Days" visible="{ visibleDays }" x="{ _phaseInput.x }" y="123"/>
+	<mx:VBox x="{ _phaseInput.x + ( _phaseInput.width / 2 ) + 10 }" visible="{ visibleTotal }" y="100">
+		<mx:Label text="Total Days"/>
+		<mx:TextInput width="50" editable="false" styleName="disabledText" id="totalDays"/>
+	</mx:VBox>
+</mx:Canvas>

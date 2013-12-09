@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Chat" table="chat">
+        <id name="chatId" type="integer" column="Chat_ID">
+            <generator class="increment" />
+        </id>
+        <property name="senderId">
+            <column name="Chat_Senderid" />
+        </property>
+        <property name="senderName">
+            <column name="Chat_Sendername" />
+        </property>
+        <property name="description">
+            <column name="Chat_Description" />
+        </property>
+        <property name="receiverId">
+            <column name="Chat_ReceiverId" />
+        </property>
+        <property name="receiverName">
+            <column name="Chat_Receivername" />
+        </property>
+        <property name="chatDateentry">
+            <column name="Chat_Dateentry" />
+        </property>
+        <property name="projectFk">
+            <column name="project_FK" />
+        </property>
+    </class> 
+    <query name="Chat.findByName">
+        select u from Chat u where u.senderName=?
+    </query>
+    <query name="Chat.findByChatList">
+        select u from Chat u where (u.senderId=? or u.receiverId=?) and u.projectFk =? ORDER BY u.chatId
+    </query>
+    <query name="Chat.findChatUserList">
+        select u from Chat u where (u.senderId=? or u.receiverId=?) and (u.senderId=? or u.receiverId=?) and u.projectFk =? ORDER BY u.chatId
+    </query>
+    <query name="Chat.findProjectId">
+        select u from Chat u where u.projectFk =? ORDER BY u.chatId
+    </query>
+</hibernate-mapping>

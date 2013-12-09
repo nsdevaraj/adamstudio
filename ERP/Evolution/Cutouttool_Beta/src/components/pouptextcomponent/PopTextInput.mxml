@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!-- dpcontrols\SortFilterArrayCollection.mxml -->
+<mx:Canvas horizontalScrollPolicy="off" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:cmp="components.pouptextcomponent.*" creationPolicy="all" xmlns:cmp1="components.textInput.*" 
+	creationComplete="addProperty()">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			private var _text:String;
+			[Bindable]
+			private var _editable:Boolean = true;
+			public function addProperty():void{
+				this.addEventListener(KeyboardEvent.KEY_DOWN,onkeyDownHandler)
+			}
+			private function onkeyDownHandler(event:KeyboardEvent):void{
+				auto.closeDropDownCalled = false
+				auto.callKeyDownHandler(event);
+			}
+			public function set text(str:String):void{
+				_text = str;
+				if(txtInput!=null)txtInput.text = str;
+				if(auto!=null)auto.closeDropDown();
+			}
+			public function set editable(bool:Boolean):void{
+				_editable = bool;
+			}
+			public function get text():String{
+				return txtInput.text;				
+			}
+			private function updateTxtInput():void{
+				txtInput.text = auto.text;
+				auto.closeDropDown();
+			}
+		]]>
+	</mx:Script>
+        <cmp:AutoComplete change="updateTxtInput()" x="{txtInput.x}" y="{txtInput.y-.2}" width="{txtInput.width-.7}" height="{txtInput.height-.7}"  typedText="{txtInput.text}" text="{txtInput.text}" id="auto" creationComplete="auto.closeDropDown()"/>
+        <cmp1:PTTextInputWmode editable="{_editable}" width="100%" height="100%" id="txtInput" creationComplete="{auto.closeDropDown(),txtInput.text = text }" restrict="0-9:" maxChars="5"/>
+        
+</mx:Canvas>

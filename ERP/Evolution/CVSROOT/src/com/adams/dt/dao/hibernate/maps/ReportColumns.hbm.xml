@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.ReportColumns" table="reports_columns">
+        <id name="reportColumnId" type="integer" column="Report_Columns_ID">
+            <generator class="increment" />
+        </id> 
+        <property name="reportfk">
+            <column name="Report_FK" />
+        </property>
+        <property name="columnfk">
+            <column name="Column_FK" />
+        </property>  
+    </class> 
+</hibernate-mapping>

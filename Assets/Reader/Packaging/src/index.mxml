@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" width="100%" height="100%" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:local="*" xmlns:view="com.packaging.view*" creationComplete="init()" backgroundColor="#262626">
+	<fx:Script> 
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import com.packaging.view.MainView.*;
+			[Bindable]
+			private var footerLinkData:ArrayCollection = new ArrayCollection(["Home","Profile","Process","Training","Clients","Showcase","Contact"]);
+			
+			private var contactView:Contact = new Contact();
+			private var homeView:HomeView = new HomeView();
+			
+			private var profileView:ProfileView = new ProfileView();
+			private var processView:ProcessView = new ProcessView();
+			private var trainingView:TrainingView= new TrainingView();
+			private var clientsView:ClientsView= new ClientsView();
+			private var showcaseView:ShowcaseView= new ShowcaseView();
+			 
+			public var myMenuBtns:Array = [];
+			
+			private function init():void{
+			    //stage.scaleMode = StageScaleMode.SHOW_ALL;
+				viewer.addElement(homeView);
+				myMenuBtns = [homeBtn,profileBtn,processBtn,trainingBtn,clientsBtn,showcaseBtn,contactBtn];
+			}
+			private var currentStack:String;
+			private var oldStack:String = "homeBtn";
+			private function setTabMenu(event:Event):void{
+				currentStack = event.currentTarget.id;
+				trace(currentStack + "::"+oldStack )
+				if(currentStack != oldStack){
+					for each (var but:Button in myMenuBtns){
+						but.selected = false;
+						trace(but.selected);
+					}
+				}
+				
+				if(currentStack != oldStack)viewer.removeAllElements();
+				/* if(homeView.pageViewer!=null){
+					if(homeView.pageViewer.selectedIndex != 3)homeView.backtoHome();	
+				} */
+				
+				switch(event.currentTarget.id){
+					case "homeBtn":
+						homeView.setStyle("addEffect",fadeIn); 
+						if(currentStack != oldStack){
+							viewer.addElement(homeView);
+							homeView.youtubePlayer.source="http://www.youtube.com/watch?v=rlMqw3ZQjkg";
+						}
+						break;
+					case "profileBtn":
+						homeView.setStyle("addEffect",fadeIn); 
+						if(currentStack != oldStack)viewer.addElement(profileView);
+						break;
+					case "processBtn":
+						processView.setStyle("addedEffect",fadeIn);
+						if(currentStack != oldStack)viewer.addElement(processView);
+						break;
+					case "trainingBtn":
+						trainingView.setStyle("addedEffect",fadeIn);
+						if(currentStack != oldStack)viewer.addElement(trainingView);
+						break;
+					case "clientsBtn":
+						clientsView.setStyle("addedEffect",fadeIn);
+						if(currentStack != oldStack)viewer.addElement(clientsView);
+						break;
+					case "showcaseBtn":
+						showcaseView.setStyle("addedEffect",fadeIn);
+						if(currentStack != oldStack)viewer.addElement(showcaseView);
+						break;
+					case "contactBtn":
+						contactView.setStyle("addedEffect",fadeIn);
+						if(currentStack != oldStack)viewer.addElement(contactView);
+						break;
+				}
+				if(event.currentTarget.id!="homeBtn"){
+					homeView.youtubePlayer.stop();
+				}
+				oldStack = currentStack;
+				event.currentTarget.selected = true;
+				
+			}
+			private function navPage(event:Event):void{
+				
+				//trace(Button(myMenuBtns[footMenu.selectedIndex]))
+				myMenuBtns[footMenu.selectedIndex].dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:Fade id="fadeOut"
+				duration="500"
+				/>
+		<s:Fade id="fadeIn"
+				duration="1000"
+				/>
+	</fx:Declarations> 
+	
+	<fx:Style source="assets/css/MainStyle.css"/>
+	<!--HEADER-->
+	 
+	
+	<s:Scroller width="100%" height="100%" id="scrl" >
+		<s:Group width="100%"  clipAndEnableScrolling="false" id="gr">
+			<s:BitmapImage id="img"  width="100%"  source="@Embed('assets/css/interface.swf#HeaderBackground')"/>	
+			<s:SkinnableContainer id="headerCanvas" horizontalCenter="0"  
+								   height="95"    >
+				<mx:Canvas height="100%" width="980" >
+					<mx:Canvas   height="100%">
+						<mx:Image left="0" verticalCenter="0" source="{ImageResourceExample.adamsLogo}"/>
+					</mx:Canvas>
+					<mx:HBox top="5" right="10" verticalAlign="middle">
+						<mx:Image source="{ImageResourceExample.smallMap}"/>
+						<mx:Label text="DUBLIN - LONDON - PARIS - CHENNAI - PONDICHERRY" styleName="locationText"/>
+					</mx:HBox>
+					<mx:HBox bottom="9" horizontalGap="2" right="10" verticalAlign="bottom" horizontalAlign="right">
+						<mx:Button styleName="MenuBtn" selected="true"  id="homeBtn" label="Home" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="profileBtn" label="Profile" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="processBtn" label="Process" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="trainingBtn" label="Training" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="clientsBtn" label="Clients" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="showcaseBtn" label="Showcase" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+						<mx:Button styleName="MenuBtn" id="contactBtn" label="Contact" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+					</mx:HBox>		 
+				</mx:Canvas>
+			</s:SkinnableContainer>
+			
+			<!--BODY-->
+			<s:Group id="viewer" width="980" horizontalCenter="0"  top="{headerCanvas.height-1}" >
+			</s:Group>
+			<mx:Canvas id="footerCanvas" top="{headerCanvas.height+viewer.height+10}" backgroundColor="#eeeeee"
+					   borderColor="#cfcfcf" borderStyle="solid"   width="980" height="40" horizontalCenter="0">
+				<mx:Label selectable="true" text="Copyrights © 2010 Adam's Studio India Pvt Ltd" left="10" 
+						  verticalCenter="0" color="#666666"/>
+				<mx:LinkBar id="footMenu" styleName="footerLinkBar" verticalCenter="0" right="10" itemClick="navPage(event)"
+							dataProvider="{footerLinkData}"/>
+			</mx:Canvas>
+			 
+		</s:Group>
+		
+	</s:Scroller>
+	
+</s:Application>

@@ -1,0 +1,14 @@
+<mx:Object 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:pimento="org.spicefactory.parsley.pimento.*">
+	
+	<pimento:MxmlConfigTag 
+	    url="http://localhost/test/service/"
+	    timeout="3000"
+	/>
+	<pimento:MxmlServiceTag
+	    name="echoService"
+	    type="{EchoServiceImpl}"
+	/>
+	
+</mx:Object> 

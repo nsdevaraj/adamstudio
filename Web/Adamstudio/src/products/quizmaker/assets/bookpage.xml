@@ -1,0 +1,366 @@
+﻿<?xml version="1.0"?>
+<book id="book001" type="book">
+<frontCover>
+<![CDATA[assets/images/frontCover.jpg]]>
+</frontCover>
+<page pagenum="pg0" totalcols="2">
+</page>	
+<page pagenum="pg1" totalcols="2">
+    <title font-family="Palatino-Roman" font-size="17.5pt" align="center">V SUPRAVENTRICULAR TACHYCARDIA</title>
+    <column tab="left">
+        <authorgroup><![CDATA[<p>Melvin M. Scheinman, m.d.<br>Sirisha Sundara, m.d.</p>]]></authorgroup>
+        <para font-family="Palatino-Roman" font-size="9pt"> <![CDATA[Over the past decade, enormous strides have been made in the treatment of patients with supraventricular tachycardia (SVT). Although acute therapy for SVT continues to require drugs or cardioversion, advances in the understanding of the mechanisms of SVT have led to the development of catheter ablation procedures for most forms of SVT. These procedures often cure the condition, freeing the patient from the need for lifelong drug therapy. This chapter focuses on the most common forms of SVT - excluding atrial fibrillation, which is discussed in detail elsewhere [<i>see 1:IV Atrial Fibrillation</i>].]]>
+  </para>
+         <title align="center" font-family="Palatino-Bold" font-size="9pt" level="2">
+
+  <![CDATA[<b>Classification</b>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[SVT is often paroxysmal (PSVT). Clinically, PSVT is marked by palpitations, occurring in episodes that start and end abruptly. During these episodes, the 12-lead electrocardiogram shows a heart rate greater than 100 beats/min and, typically, narrow QRS complexes. For almost all patients with PSVT, the underlying mechanism of the tachycardia is atrioventricular node reentry (AVNRT), reentry involving an accessory pathway (AVRT), or atrial tachycardia. AVNRT and AVRT are the most common]]>
+  </para>
+    </column>
+    <column tab="right">
+        
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[and the second most common causes of PSVT, respectively. Atrial flutter also presents as a rapid regular tachycardia, but this arrhythmia usually does not begin and end abruptly.]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The clinician has a variety of tools to distinguish the various mechanisms of SVT [ <i>see Figure 1</i> </a>]. The use of carotid massage or intravenous adenosine [ <i>see Figure 2</i>  </a>] may be diagnostic, therapeutic, or both. If vagal maneuvers terminate the arrhythmia acutely or produce no effect, the patient probably has AVNRT or AVRT. In patients with atrial tachycardia, these maneuvers will frequently result in transient AV block. Perpetuation of the arrhythmia in the face of AV block strongly suggests atrial tachycardia or atrial flutter.Intravenous adenosine will almost always terminate tachycardia caused by AVNRT or AVRT, but focal atrial tachycardia may also terminate abruptly after administration of adenosine. Hence, the use of adenosine does not reliably distinguish those disorders from atrial tachycardia unless it produces AV block.<a href="#ch01_bib3">3</a>]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Paying careful attention to the relationship between the P wave and the QRS complex during tachycardia is also very helpful in distinguishing tachycardia mechanisms[<a href="#ch01_fig1"> <i>see Figure 1</i> </a>]. If the retrograde P wave falls within or just after the QRS complex, the most likely diagnosis is AVNRT [<a href="#ch01_fig3">  <i>see Figure 3</i> </a>]. If the tachycardia shows a retrograde P wave in the ST segment [<a href="#ch01_fig4"> <i>see Figure 4</i> </a>], AVRT is most likely. Finally, atrial tachycardia]]>
+  </para>
+    </column>
+    <column tab="fullwidth">
+        <img src="images/fig1.jpg"/>
+    </column>
+</page>
+
+<page pagenum="pg2" totalcols="2">
+    <column tab="fullwidth">
+                   <img src="images/fig2.jpg"/>
+            <para> <i>Figure 2</i> The response to intravenous adenosine can be useful in determining the cause of tachycardia.1 (AT-atrial tachycardia; AV-atrioventricular; AVNRT-atrioventricular nodal reentrant tachycardia; AVRT-atrioventricular reentrant tachycardia; VT-ventriculart achycardia) </para>
+       
+    </column>
+    <column tab="left">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[is characterized by the presence of P waves immediately in front of the QRS complex (long RP tachycardia) [<i>see Figure 5</i>].]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Although the QRS complex is usually narrow in SVT, it may be broad (> 120 ms) in patients who have either bundle branch block or aberrant conduction. A number of ECG findings have been found very helpful in distinguishing SVT with a broad QRS complex from ventricular tachycardia (VT). For example, AV dissociation (i.e., independent atrial activity during tachycardia), fusion beats, or capture beats prove the presence of VT. Unfortunately, AV dissociation is not apparent in 80% to 85% of patients with rapid VT, because the P wave is obscured by the QRS complex and T waves. In this setting, morphologic criteria may be very helpful in distinguishing SVT from VT.]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Use of morphologic criteria begins with careful attention to the precordial leads [<i>see Figure 6</i>]. Any of the following features in the precordial tracings will favor the diagnosis of VT: (1) concordance of all the precordial leads (i.e., all are positive or all are negative); (2) absence of an initial positive deflection (r wave) in all precordial leads (s wave; recall that in ECG nomenclature, upper-case letters denote dominance; small waves are designated by lower-case letters); (3) an r/s pattern is present but the time from the initial r to the nadir of the s wave is greater than 100 ms; (4) presence of a right bundle branch pattern in lead V1, with an r greater than s or a qr pattern, where q indicates the initial nega-]]>
+  </para>
+    </column>
+    <column tab="right">
+  
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[tive deflection; (5) presence of a left bundle branch pattern in V1, with a broad r wave (> 30 ms) or an interval of greater than 70 ms from the onset of the r wave to the nadir of the s wave; (6) extreme left axis deviation; or (7) very broad QRS complexes (> 160 ms) in absence of drug therapy.]]>
+  </para>
+   
+        <title align="center" font-family="Palatino-Bold" font-size="9pt" font-weight="bold" level="2">
+
+  <![CDATA[<b>Atrioventricular Nodal Reentry Tachycardia</b>]]>
+  </title>
+       
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[PATHOGENESIS]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Normally, sinus impulses are discharged into the surrounding atria and directed to the region of the AV node. The AV nodal impulses then propagate through the ventricles over the His-Purkinje system. The normal AV node has a single transmission pathway. In two or three persons per 1,000 population, however, the AV node has both a normal (fast) pathway and a second, slow pathway.In such persons, the sinus impulse is ordinarily transmitted over the fast pathway to the ventricle, and slow pathway conduction is preempted. However, if an atrial premature complex (APC) occurs at a critical point in the conduction cycle, the impulse can block in the fast pathway, thus allowing for anterograde (forward) conduction over the slow pathway and retrograde (backward) conduction over the fast pathway [<a href="#ch01_fig7"><i>see Figure 7</i>  </a>]. The latter situation may produce a single ]]>  </para>
+    </column>
+    <column tab="fullwidth">
+         <img src="images/fig3.jpg"/>
+    </column>
+</page>
+
+<page pagenum="pg3" totalcols="2">
+    <column tab="fullwidth">
+            
+            <img src="images/fig4.jpg"/>
+        
+    </column>
+    <column tab="left">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[echo beat (a beat that returns to the chamber of origin) or stabilize into a circus-movement tachycardia.]]>
+  </para>
+       
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[diagnosis]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The diagnosis of AVNRT can usually be made by careful analysis of the 12-lead ECG.Because retrograde conduction over the AV node is occurring more or less simultaneously with anterograde conduction to the ventricles, the P wave is either buried within the QRS complex or inscribed just after the QRS. The P wave inscribed by retroconduction over the AV node will be negative in the inferior leads and positive in lead V1; therefore, PSVT from AVNRT may manifest as small negative deflections in the inferior leads and a small positive deflection in V1- the so-called pseudo r1 pattern [<a href="#ch01_fig3"> <i>see Figure 3</i></a>].]]>
+	  </para>
+        
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[management]]>
+  </title>
+      
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Acute Therapy</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[AVNRT may respond to carotid sinus massage but is highly responsive to intravenous adenosine, beta blockers,                <a href="#ch01_bib9">9</a> or calcium channel blockers <a href="#ch01_bib10">10</a>[<a href="#ch01_tbl1"><i>see Table 1</i></a>].]]>
+  </para>
+    </column>
+    <column tab="right">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[<b>Adenosine</b> If carotid massage fails to convert SVT, the drug of choice is intravenous adenosine, which is effective in 95% of cases.The initial dose is given as a rapid bolus infusion of 6 mg, followed by 12 mg and finally 18 mg if necessary. The bolus must be given rapidly and then followed by a saline flush. If administration is too slow, the adenosine may be metabolized before it reaches the AV node. Possible adverse effects include headache, wheezing, and flushing. These effects disappear within 45 to 60 seconds. It is important to note that atrial, ventricular, and junctional premature beats are commonly observed after adenosine. In 3% to 5% of cases, the APCs trigger atrial fibrillation,<a href="#ch01_bib3">3</a>which may result in serious problems for patients with accessory pathways (see below). If possible, an external defibrillator should be readily available when adenosine is administered.]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The most common reason for failure to respond to adenosine is that multiple premature beats retrigger the tachycardia. In this setting, a longer-acting intravenous preparation (i.e., 5 mg of metoprolol or 0.1 mg/kg of verapamil) is indicated. Agents that more selectively block purogenic receptors have been shown to be very effective and are associated with fewer side effects than]]>
+  </para>
+    </column>
+    <column tab="fullwidth">
+        <img src="images/fig5.jpg"/>
+     </column>
+</page>
+
+<page pagenum="pg4" totalcols="2">
+    <column tab="fullwidth">
+       <img src="images/fig6.jpg"/>
+            <p> <![CDATA[<i>Figure 6</i> Differential diagnosis for wide (> 120 ms) QRS complex tachycardia.1 If the tachycardia is regular and comparison with a baseline electrocardiogram shows that the QRS complex is identical to that during sinus rhythm, the patient may have supraventricular tachycardia (SVT) with bundle branch block (BBB) or antidromic atrioventricular reentrant tachycardia (AVRT). If the patient has a history of myocardial infarction or has structural heart disease, ventricular tachycardia (VT) is likely. Vagal maneuvers or adenosine may convert regular tachycardia, although adenosine should be used with caution when the diagnosis is unclear, because this drug may produce ventricular fibrillation (VF) in patients with coronary artery disease and patients with alternative pathways who have atrial fibrillation with a rapid ventricular rate. Precordial leads are concordant when all show either positive or negative deflections. Fusion complexes are diagnostic of VT. In preexcited tachycardias, the QRS is generally wider (i.e., more preexcited) than during sinus rhythm. (AT-atrial tachycardia; AV-atrioventricular; LBBB-left bundle branch block; RBBB-right bundle branch block)]]>
+            </p>
+        
+    </column>
+    <column tab="left">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[older agents. Selective purogenic blockers are currently under investigation.]]>
+  </para>
+        
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Long-term Therapy</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[A wide variety of drugs have proved effective for controlling episodes of AVNRT, including beta blockers,<a href="#ch01_bib9">9</a> calcium channel blockers,<a href="#ch01_bib12">12</a> and digoxin<a href="#ch01_bib13">13</a> [<a href="#ch01_tbl1"><i>see Table 1</i></a>]. Long-term drug therapy is associated with frequent recurrences and adverse effects, however. In patients who do not have structural cardiac disease, class IC antiarrhythmic agents (e.g., flecainide, propafenone) are more effective than drugs that act by blocking AV nodal conduction, but recurrence rates nevertheless range from 25% to 35%.14-<a href="#ch01_bib16">16</a> For patients who have episodes infrequently and who tolerate such episodes well, some cardiologists will prescribe medication for use as needed-the "pill in the pocket" approach. For example, single-dose diltiazem (120 mg) and propranolol (80 mg) have been shown to be more effective than placebo or flecainide in patients with PSVT.<a href="#ch01_bib17">17</a>]]>
+  </para>
+      
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Catheter Ablation</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Current catheter ablative techniques involve placement of an ]]>
+  </para>
+    </column>
+    <column tab="right">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[electrode catheter between the tricuspid annulus and coronary sinus in the so-called slow pathway region.<a href="#ch01_bib18">18</a> One or more applications of radiofrequency energy are delivered through the catheter to destroy or attenuate the slow pathway. The success rate of ablation is over 96%, and the only significant complication is AV block, which occurs in fewer than 1% of patients.<a href="#ch01_bib19">19</a>]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Catheter ablation for AVNRT has proved so safe and effective that it is clearly the procedure of choice for patients in whom drug therapy fails. Moreover, it can be offered to those with milder symptoms who prefer to avoid long-term drug therapy. Precise recommendations for deciding between drug therapy and ablative therapy are provided in the American College of Cardiology/American Heart Association/European Society of Cardiology guidelines.<a href="#ch01_bib1">1</a>]]>
+  </para>
+       
+        <title align="center" font-family="Palatino-Bold" font-size="9pt" font-weight="bold" level="2">
+
+  <![CDATA[<b>Atrioventricular Reentry Tachycardia</b>]]>
+  </title>
+      
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[pathogenesis]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The normal conduction system of the heart limits the propagation of electrical impulses from the atria to a single pathway]]>
+  </para>
+    </column>
+</page>
+<page pagenum="pg5" totalcols="2">
+    <column tab="fullwidth">
+         <img src="images/table1.jpg"/>
+     </column>
+</page>
+       
+<page pagenum="pg6" totalcols="1">
+    <column tab="left">
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Ventricular tachyarrhythmias characteristically are sudden in onset, unpredictable, and transitory. Consequently, their assessment and treatment present extraordinary challenges to the clinician. Moreover, the prognosis for patients with these arrhythmias is quite variable. In some patients, ventricular ectopic activity may be benign and without sequelae, but in other patients, comparable ectopy is a harbinger of ventricular fibrillation and sudden cardiac death.1 This chapter summarizes the practical aspects of evaluation and treatment of patients with ventricular arrhythmias.]]>
+  </para>
+        
+        <title align="center" font-family="Palatino-Bold" font-size="9pt" level="2">
+
+  <![CDATA[<b>Pathophysiology</b>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Ventricular tachyarrhythmias are mediated by one of three basic mechanisms: reentry, abnormal automaticity, and triggering. Although causation cannot be directly determined in individual patients, experimental and clinical observations make it possible to infer the mechanism underlying many of the ventricular arrhythmia syndromes encountered in practice.]]>
+  </para>
+       
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[ventricular tachycardia caused by reentry]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Reentrant arrhythmias (also called circus-movement tachycardias) are produced by a continuous circular or looping pattern of]]>
+  </para>
+    </column>
+    <column tab="right">
+        
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[myocardial activation. Reentry can occur around lines of anatomic or functional block or occur as spinning wavefronts or rotors that lack a fixed anatomic path. When reentry occurs around lines of block, two features must be present for reentry to occur: (1) a barrier around which the wavefront circulates, either a fixed region of inexcitability caused by scarring or a dysfunctional region resulting from local refractoriness, and (2) unidirectional block at the entrance of the circuit. If activation spreads down both sides of the barrier, the impulses will collide distally and reentry will not occur; however, if propagation is blocked in one limb and proceeds in an anterograde direction over the other, the activation wavefront may be capable of retrograde invasion of the initially blocked pathway, thereby initiating sustained reentry.]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[In patients with structural heart disease, most symptomatic ventricular arrhythmias are mediated by reentry.2,3 Sustained monomorphic ventricular tachycardia often occurs after transmural myocardial infarction (MI). The arrhythmia usually arises in the border zone of the scar [see Figure 1]. The larger the extent of this heterogeneous border zone, the greater the probability of a circuit capable of mediating reentrant ventricular tachycardia. This is consistent with the observation that the risk of malignant ventricular arrhythmias is proportional to the volume of the scar and the severity of left ventricular dysfunction after MI.4]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Ventricular fibrillation is also a reentrant phenomenon. Unlike ventricular tachycardia, during which a single activation wavefront circulates around a fixed barrier, ventricular]]>
+  </para>
+    </column>
+    <column tab="fullwidth">
+       
+            <img src="images/fig7.jpg"/>
+            <p>
+  <![CDATA[<i>Figure 1</i> Reentrant ventricular tachycardia usually arises as the result of reentry within the border zone of a myocardial infarction. This region consists of strands of viable myocytes interspersed with inexcitable fibrous tissue. Reentry begins when a wavefront of activation (1) encounters a bifurcation and blocks in one of the two pathways around an obstacle (2). The activation wavefront then conducts exclusively through the orthodromic pathway (3) and encounters a region of relatively slow conduction within the tachycardia circuit (4). The activation wavefront may exit from the tachycardia circuit at a site quite different from the entrance point (5). Although the anterograde limb of the circuit is initially refractory, it recovers excitability by the time it is depolarized by the reentrant wavefront (6). The activation wavefront reenters the orthodromic limb of the circuit, and the circus movement is established.]]>
+  </p>
+        
+    </column>
+</page>
+<page pagenum="pg7" totalcols="2">
+    <column tab="fullwidth">
+         <img src="images/fig8.jpg"/>
+     </column>
+    <column tab="left">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[tion is caused by multiple simultaneous impulses that travel around functional barriers of refractory tissue, moving continuously throughout the myocardium to create very rapid, irregular, and ineffective activation. Alternatively, in some patients, ventricular fibrillation may be initiated by very early ectopic beats in the specialized conduction system.]]>
+  </para>
+       
+            <img src="images/fig9.jpg"/>
+            <p>
+  <![CDATA[<i>Figure 3</i> The resting transmembrane potential of the myocardial cell is created by active maintenance of sodium and potassium gradients. The cell is depolarized (phase 0) by an electrical stimulus that allows a sudden influx of sodium (Na+ ). Repolarization, phases 1 through 3, requires an early rapid chloride influx, a plateau phase mediated by calcium currents, and reestablishment of the resting transmembrane potential via potassium (K+ ) efflux. Between action potentials, the resting potential is designated as phase 4. In cells with automaticity, depolarization mediated by calcium (Ca2+) and Na+ currents may occur during phase 4, resulting in spontaneous generation of the next action potential. In normal ventricular myocytes, the resting potential during electrical diastole (phase 4) remains in the region of -80 to -90 mV. The rate of automatic firing is determined by the resting potential, the slope of phase 4, and the threshold potential.]]>
+  </p>
+       
+    </column>
+    <column tab="right">
+       
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Like postinfarction arrhythmias, the ventricular tachycardia in patients with nonischemic cardiomyopathy is often the result of reentry in a zone of patchy fibrosis. However, in patients with left ventricular dilatation and slowed conduction in the specialized conduction system, the tachycardia may be mediated by bundle branch reentry: anterograde conduction over the right bundle branch, activation of the septum, and retrograde conduction over the left bundle branch [see Figure 2].7 Although an infrequent cause of ventricular tachycardia, bundle branch reentry is of interest to cardiac electrophysiologists because it can be cured by selective destruction of either the right or the left bundle branch by use of radiofrequency catheter ablation [see 1:VII Pacemaker Therapy].]]>
+  </para>
+      
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Normal ventricular myocytes maintain a steady transmembrane resting potential of -80 to -90 mV, depolarizing only when stimulated by an activation wavefront. Extrinsic factors, such as electrolyte imbalance and ischemia, or intrinsic disease may reduce the resting potential and produce simultaneous diastolic (phase 4) depolarization [see Figure 3].]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Unlike reentry, which can usually be induced and terminated by premature beats, automatic rhythms tend not to be influenced by pacing. Changes in heart rate at the onset of ventricular tachycardia may also provide insight into the arrhythmia mechanism. Reentrant tachycardias are usually stable because of a fixed conduction time around the circuit. In contrast, automaticity often shows warm-up, with progressive acceleration during the first few seconds of the tachycardia.]]>
+  </para>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Abnormal automaticity may play a role in a number of clinical arrhythmia syndromes. An accelerated idioventricular rhythm]]>
+  </para>
+    </column>
+</page>
+
+<page pagenum="pg8" totalcols="2">
+    <column tab="left">
+      
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Additional trials have been performed to determine whether prophylactic ICD implantation is beneficial in all patients with chronic heart failure of any cause, ischemic or nonischemic. In the Sudden Cardiac Death in Heart Failure Trial (SCD-HeFT), patients were evenly divided between those with ischemic and those with nonischemic cardiomyopathy. Patients who were receiving conventional treatment for heart failure were randomly assigned to supplemental therapy with amiodarone, placebo, or an ICD. Amiodarone did not increase survival, but simple, shock-only ICDs decreased mortality by 23%. The protective effect of the device was independent of the cause of the heart failure.]]>
+  </para>
+       
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Indications for ICD Implantation</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[Guidelines for the selection of patients for ICD implantation have been developed by the American College of Cardiology, the American Heart Association, and the National Association for Sport &amp; Physical Education [<a href="#ch01_tbl2"><i>see Table 2</i>  </a>].Since the 2002 revision of these guidelines, the indications for ICD implantation have expanded to include patients with nonischemic cardiomyopathy and an LVEF of less than 30%, even in the absence of symptomatic arrhythmias.]]>
+  </para>
+      
+        <title align="center" font-family="Palatino-SC" font-size="9pt" level="3">
+
+  <![CDATA[automated external defibrillators]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[An automated external defibrillator (AED) is a compact, easily portable device that can automatically analyze a patient's cardiac rhythm and, if it detects ventricular fibrillation, direct the rescuer to apply a shock. AEDs require minimal training to operate and are achieving widespread distribution.]]>
+  </para>
+  
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Public-Access AEDs</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[
+AEDs can now be found in many public places, such as airports, stadiums, casinos, and large office buildings. Preliminary data suggest that these devices may confer a survival benefit,67 although cost-effectiveness is difficult to calculate. It seems safe to say that the availability of public-access AEDs will result in increased numbers of patients successfully resuscitated from cardiac arrest, who will then require follow-up treatment.]]>
+  </para>
+      
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Home AEDs</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The FDA has approved several AED models for consumer use in the home, without a prescription, and these devices are now being marketed directly to the public for this purpose. The utility of home AEDs is uncertain, but the patients for whom these devices should be considered are those who meet the criteria for prophylactic ICD therapy but either have declined the implantation procedure or have comorbidities that make the implantation procedure inadvisable. The cost-effectiveness of these devices will be difficult to measure, and the potential medicolegal liability issues involved may be complex.]]>
+  </para>
+       
+        <title align="center" font-family="Palatino-Italic" font-size="9.5pt" font-style="italic" level="4">
+
+  <![CDATA[<i>Wearable Automatic Defibrillators</i>]]>
+  </title>
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[An automatic defibrillator that is worn as a vest has been approved by the FDA.68 This device is typically worn by patients who are awaiting heart transplants or who recently experienced an MI]]>
+  </para>
+    </column>
+    <column tab="right">
+        
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[or underwent coronary revascularization. At our institution, we have used the device to provide temporary prophylaxis for a patient who required removal of an ICD because of site infection.]]>
+  </para>
+
+        <para font-family="Palatino-Roman" font-size="9pt">
+
+  <![CDATA[The authors serve as clinical investigators for Medtronic, Inc, Guidant Corporation, and St. Jude Medical, Inc.]]>
+  </para>
+      
+            <title align="center" font-family="Palatino-Roman" font-size="11pt">
+
+  <![CDATA[References]]>
+  </title>
+    <p>   <![CDATA[1. Zipes DP: An overview of arrhythmias and antiarrhythmic approaches. J Cardiovasc Electrophysiol 10:267, 1999<br/>2. de Bakker JM, van Capelle FLJ, Janse MJ, et al: Reentry as a cause of ventricular tachycardia in patients with chronic ischemic heart disease: electrophysiological and anatomic correlation. Circulation 77:589, 1988<br/>3. de Bakker JM, Coronel R, Tasseron S, et al: Ventricular tachycardia in the infarcted, Langendorff-perfused human heart: role of the arrangement of surviving cardiac fibers. J Am Coll Cardiol 15:1594, 1990<br/>4. Callans DJ, Josephson ME: Ventricular tachycardias in the setting of coronary artery disease. Cardiac Electrophysiology: From Cell to Bedside. Zipes DP, Jalife J, Eds. WB Saunders Co, Philadelphia, 1995, p 732<br/>5. Kenknight BH, Bayly PV, Gerstle RJ, et al: Regional capture of fibrillating ventricular myocardium: evidence of an excitable gap. Circ Res 77:849, 1995<br/>6. Haissaguerre M, Shoda M, Jais P, et al: Mapping and ablation of idiopathic ventricu- lar fibrillation. Circulation 106:962, 2002<br/>7. Caceres J, Jazayeri M, McKinnie J, et al: Sustained bundle branch reentry as a mecha- nism of clinical tachycardia. Circulation 79:256, 1989<br/>8. Kaplinsky E, Ogawa S, Michelson EL, et al: Instantaneous and delayed ventricular arrhythmias after reperfusion of acutely ischemic myocardium: evidence for multiple mechanisms. Circulation 63:333, 1981<br/>9. Wall TS, Freedman RA: Ventricular tachycardia in structurally normal hearts. Curr Cardiol Rep 4:388, 2002<br/>10. Nibley C, Wharton JM: Ventricular tachycardias with left bundle branch block mor- phology. Pacing Clin Electrophysiol 18:334, 1995<br/>11. Ohe T, Shimomura K, Aihara N, et al: Idiopathic left ventricular tachycardia: clini- cal and electrophysiological characteristics. Circulation 77:560, 1988<br/>12. Gordon T, Kannel WB: Premature mortality from coronary heart disease: the Fram- ingham Study. JAMA 215:1617, 1971<br/>13. Myerburg RJ, Kessler KM, Castellanos A: Sudden cardiac death: epidemiology, transient risk and intervention assessment. Ann Intern Med 119:1187, 1993<br/>14. Doval HC, Nul DR, Grancelli HO, et al: Randomized trial of low-dose amiodarone in severe congestive heart failure. Lancet 344:493, 1994<br/>15. Singh SN, Fletcher RD, Fisher SG, et al: Amiodarone in patients with congestive heart failure and asymptomatic ventricular arrhythmia. Survival Trial of Antiarrhyth- mic Therapy in Congestive Heart Failure. N Engl J Med 333:77, 1995<br/>16. Breithardt G, Schwarzmaier M, Borggrefe M, et al: Prognostic significance of late ventricular potentials after acute myocardial infarction. Eur Heart J 4:487, 1983<br/>17. Hohnloser SH, Klingenheben T, Li YG, et al: T wave alternans as a predictor of re- current ventricular tachyarrhythmias in ICD recipients: prospective comparison with conventional risk markers. J Cardiovasc Electrophysiol 9:1258, 1998<br/>18. Kunavarapu C, Bloomfield DM: Role of noninvasive studies in risk stratification for sudden cardiac death. Clin Cardiol 27:192, 2004<br/>19. Schnipper JL, Kapoor WK: Diagnostic evaluation and management of patients with syncope. Med Clin North Am 85:423, 2001<br/>20. Krol RB, Morady FF, Flaker GC, et al: Electrophysiological testing in patients with unexplained syncope: clinical and noninvasive predictors of outcome. J Am Coll Cardi- ol 10:358, 1987<br/>21. Denes P, Ezri MD: The role of electrophysiological studies in the management of patients with unexplained syncope. Pacing Clin Electrophysiol 8:424, 1985<br/>22. Zheng ZJ, Croft JB, Giles WH, et al: Sudden cardiac death in the United States, 1989 to 1998. Circulation 104:2158, 2001<br/>23. Bardy GH, Olsen WH: Clinical characteristics of spontaneous-onset sustained VT and VF in survivors of cardiac arrest. Cardiac Electrophysiology: From Cell to Bedside. Zipes DP, Jalife J, Eds. WB Saunders Co, Philadelphia, 1995, p 778<br/>24. Brodsky MA, Mitchell LB, Halperin BD, et al: Prognostic value of baseline electro- physiology studies in patients with sustained ventricular tachyarrhythmia: the Antiar- rhythmics Versus Implantable Defibrillators (AVID) trial. Am Heart J 144:478, 2002<br/>25. Roden DM: Drug-induced prolongation of the QT interval. N Engl J Med 350:1013, 2004<br/>26. Wehrens XH, Vos MA, Doevendans PA, et al: Novel insights in the congenital long QT syndrome. Ann Intern Med 137:981, 2002<br/>27. Chiang CE: Congenital and acquired long QT syndrome: current concepts and management. Cardiol Rev 12:222, 2004<br/>28. Schwartz PJ: The long QT syndrome. Curr Probl Cardiol 22:297, 1997<br/>29. Khan IA: Long QT syndrome: diagnosis and management. Am Heart J 143:7, 2002<br/>30. Brugada P, Brugada J: Right bundle branch block, persistent ST segment elevation and sudden cardiac death: a distinct clinical and electrocardiographic syndrome: a mul- ticenter report. J Am Coll Cardiol 20:1391, 1992<br/>31. Hermida JS, Lemoine JL, Aoun FB, et al: Prevalence of the Brugada syndrome in an apparently healthy population. Am J Cardiol 86:91, 2000
+           ]]></p>    </column></page><page pagenum="pg9" totalcols="2">    <column tab="left">        <p continue="yes">           <![CDATA[32. Wilde AA, Antzelevitch C, Borggrefe M, et al: Proposed diagnostic criteria for the Brugada syndrome. Eur Heart J 23:1648, 2000<br/>33. Brugada R, Hong K, Dumaine R, et al: Idiopathic short QT interval: a new clinical syndrome? Cardiology 94:99, 2000<br/>34. Faita F, Giustetto C, Bianchi F, et al: Short QT syndrome: a familial cause of sudden death. Circulation 108:965, 2003<br/>35. Brugada R, Hong K, Dumaine R, et al: Sudden death associated with short-QT syn- drome linked to mutations in HERG. Circulation 109:30, 2004<br/>36. Singh SN, Patrick J, Patrick J: Antiarrhythmic drugs. Curr Treat Options Cardiovasc Med 6:357, 2004<br/>37. Vaughan Williams EM: Cardiac Arrhythmias. Sandoe E, Fiensted-Jensen E, Olson KH, Eds. Astra, Sodertalje, Sweden, 1970, p 449<br/>38. Singh BN, Opie LH, Marcus FI: Antiarrhythmic agents. Drugs for the Heart, Third Edition. Opie LH, Ed. WB Saunders Co, Philadelphia, 1991, p 180<br/>39. Opie LH: The Heart: Physiology, Metabolism, Pharmacology and Therapy. Grune &amp; Stratton, Orlando, 1984<br/>40. Olschewski A, Brau ME, Olschewski H, et al: ATP-dependent potassium channel in rat cardiomyocytes is blocked by lidocaine. Circulation 93:656, 1996<br/>41. Cowan JC, Vaughan Williams EM: Characterization of a new oral antiarrhythmic drug, flecainide (R818). Eur J Pharmacol 73:333, 1981<br/>42. Ikeda N, Singh BN, Davis LD, et al: Effects of flecainide on the electrophysiological properties of isolated canine and rabbit myocardial fibers. J Am Coll Cardiol 5:303, 1985<br/>43. Expert consensus document of beta-adrenergic receptor blockers. Task Force on Beta-Blockers of the European Society of Cardiology. Eur Heart J 25:1341, 2004<br/>44. Takanaka C, Singh BN: Barium induced nondriver action potential as a model of triggered potentials from early afterdepolarizations: significance of slow channel activ- ity and differing effects of quinidine and amiodarone. J Am Coll Cardiol 15:213, 1990<br/>45. Gaita F, Giustetto C, Leclercq JF, et al: Idiopathic verapamil-responsive left ventric- ular tachycardia: clinical characteristics and long-term follow-up of 33 patients. Eur Heart J 15:1252, 1994<br/>46. Waldo AL, Camm AJ, deRuyter H, et al: Survival with oral d-sotalol in patients with left ventricular dysfunction after myocardial infarction: rationale, design, and methods (the SWORD trial). Am J Cardiol 75:1023, 1995<br/>47. Levine JH, Morganroth J, Kadish AH: Mechanisms and risk factors for proarrhyth- mia with type Ia compared with Ic antiarrhythmic drug therapy. Circulation 80:1063, 1989<br/>48. Chaudhry GM, Haffajee CI : Antiarrhythmic agents and proarrhythmia. Crit Care Med 28(10 suppl):N158, 2000<br/>49. Preliminary report: effect of encainide and flecainide on mortality in a randomized trial of arrhythmia suppression after myocardial infarction. The Cardiac Arrhythmia Suppression Trial (CAST) investigators. N Engl J Med 321:406, 1989<br/>50. Teo KK, Yusuf S, Furburg CD: Effects of prophylactic antiarrhythmic drug therapy in acute myocardial infarction. JAMA 270:1589, 1993<br/>51. Kennedy HL, Brooks MM, Barker AH, et al: Beta blocker therapy in the Cardiac Ar- rhythmia Suppression Trial. CAST Investigators. Am J Cardiol 74:674, 1994<br/>52. Cairns JA, Connolly SJ, Roberts R, et al: Randomised trial of outcome after myocar- dial infarction in patients with frequent or repetitive ventricular premature depolarisa- tions: CAMIAT. Canadian Amiodarone Myocardial Infarction Arrhythmia Trial Inves- tigators. Lancet 349:675, 1997<br/>53. Julian DG, Camm AJ, Frangin G, et al: Randomised trial of effect of amiodarone on mortality in patients with left-ventricular dysfunction after recent myocardial infarction: EMIAT. European Myocardial Infarct Amiodarone Trial Investigators. Lancet 349:667, 1997
+]]></p>    </column>    <column tab="right">        <p  continue="yes"><![CDATA[54. Bardy GH, Hofer B, Johnson G, et al: Implantable transvenous cardioverter-defib- rillators. Circulation 87:1152, 1993<br/>55. DiMarco JP: Implantable cardioverter-defibrillators. N Engl J Med 349:1836, 2003<br/>56. A comparison of antiarrhythmic-drug therapy with implantable defibrillators in patients resuscitated from near-fatal ventricular arrhythmias. The Antiarrhythmics ver- sus Implantable Defibrillators (AVID) Investigators. N Engl J Med 337:1576, 1997<br/>57. Kuck KH, Cappato R, Siebels J, et al: Randomized comparison of antiarrhythmic drug therapy with implantable defibrillators in patients resuscitated from cardiac ar- rest: the Cardiac Arrest Study Hamburg (CASH). Circulation 102:748, 2000<br/>58. Connolly SJ, Gent M, Roberts RS, et al: Canadian implantable defibrillator study (CIDS): a randomized trial of the implantable cardioverter defibrillator against amio- darone. Circulation 101:1297, 2000<br/>59. Connolly SJ, Hallstrom AP, Cappato R, et al: Meta-analysis of the implantable car- dioverter defibrillator secondary prevention trials: AVID, CASH and CIDS studies. Eur Heart J 21:2071, 2000<br/>60. Bokhari F, Newman D, Greene M, et al: Long-term comparison of the implantable cardioverter defibrillator versus amiodarone: eleven-year follow-up of a subset of pa- tients in the Canadian Implantable Defibrillator Study (CIDS). Circulation 110:112, 2004<br/>61. Moss AJ, Hall WJ, Cannom DS, et al: Improved survival with an implanted defibril- lator in patients with coronary disease at high risk for ventricular arrhythmia. Multi- center Automatic Defibrillator Implantation Trial Investigators. N Engl J Med 335:1933, 1996<br/>62. Moss AJ, Fadl Y, Zareba W, et al: Survival benefit with an implanted defibrillator in relation to mortality risk in chronic coronary heart disease. Am J Cardiol 88:516, 2001<br/>63. Moss AJ, Zareba W, Hall WJ, et al: Prophylactic implantation of a defibrillator in pa- tients with myocardial infarction and reduced ejection fraction. Multicenter Automatic Defibrillator Implantation Trial II Investigators. N Engl J Med 346:877, 2002<br/>64. Bardy GH, Lee KL, Mark DB, et al: Amiodarone or an implantable cardioverter-de- fibrillator for congestive heart failure. N Engl J Med 352:225, 2005<br/>65. Bristow MR, Saxon LA, Boehmer J, et al: Cardiac-resynchronization therapy with or without an implantable defibrillator in advanced chronic heart failure. Comparison of Medical Therapy, Pacing, and Defibrillation in Heart Failure (COMPANION) Investi- gators. N Engl J Med 350:2140, 2004<br/>66. ACC/AHA/NSAPE 2002 Guideline Update for Implantation of Cardiac Pacemak- ers and Antiarrhythmia Devices: a report of the American College of Cardiology/ American Heart Association Task Force on Practice Guidelines (ACC/AHA/NASPE Committee on Implantation). American College of Cardiology, 2002 http://www.acc.org/clinical/guidelines/pacemaker/II_implantable.htm<br/>67. Caffrey SL, Willoughby PJ, Pepe PE, et al: Public use of automated external defibril- lators. N Engl J Med 347:1242, 2002<br/>68. Auricchio A, Klein H, Geller CJ, et al: Clinical efficacy of the wearable cardioverter- defibrillator in acutely terminating episodes of ventricular fibrillation. Am J Cardiol 81:1253, 1998
+]]></p>    </column></page><backCover>         <![CDATA[assets/images/backCover.jpg]]>     </backCover></book>

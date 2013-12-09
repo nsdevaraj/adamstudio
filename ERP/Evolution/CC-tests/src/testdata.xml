@@ -1,0 +1,1963 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>La boutique du Stade Français Paris</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<meta name="Description" content="Boutique du Stade Français Paris">
+<meta name="keywords" content="DIEVX DV STADE, rugby, dieux du stade, dieux, dievx, DVD Making of DIEVX DV STADE, Makingof, dieux du stade, calendrier, calendrier dieux du stade, calendrier rugby, Adidas, maillot rugby, calendrier stade de france, boxer, fashion, property of stade francais,">
+<meta name="Authors" content="Doyousoft">
+<meta name="Robots" content="index,follow">
+<title>Document sans nom</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="img/style.css" type="text/css" rel="stylesheet">
+<style type="text/css">
+<!-- @import url(css_dys_pwb/gabarit152.css);-->
+<!-- @import url(css_dys_pwb/recherche_resultats152.css);-->
+</style></head>
+<body>
+
+
+<div>
+<table width="980" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td><img src="img/logo-stade.jpg" alt="Stade.fr" width="217" height="195" border="0" usemap="#Map"></td>
+<td><img src="img/ban_img_h.jpg" width="559" height="195"></td>
+<td valign="top"><div><a href="sommaire_compte_client.cfm?code_lg=lg_fr"><img src="img/bt-mon-compte.jpg" alt="Mon compte" border="0"></a></div>
+<div><a href="panier.cfm?code_lg=lg_fr"><img src="img/bt-votre-selection.jpg" alt="Votre selection" border="0"></a></div>
+<div id="selection">
+
+
+<div id="encart_code_dev_votre_selection">
+<span id="titre_code_dev_votre_selection">Votre selection</span>
+<div id="image_code_dev_votre_selection"></div>
+</div>
+
+<div id="encart_texte_votre_selection">
+<a href="panier.cfm?code_lg=lg_fr" target="_self" class="lien_votre_selection">
+<span>
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td><a href="panier.cfm?code_lg=lg_fr" id="image_panier"></a></td>
+<td><a href="panier.cfm?code_lg=lg_fr" target="_self" class="lien_votre_selection">Votre sélection</a></td>
+</tr>
+</table>
+</span>
+</a>
+<div id="encart_mini_panier"><a href="panier.cfm?code_lg=lg_fr" id="lien_mini_panier"><span><span id="qte_mini_panier">0</span>&nbsp;article(s)</span></a></div>
+</div>
+
+<script language="JavaScript">
+if (window.XMLHttpRequest) //firefox et autres
+{
+xmlhttpSelection = new XMLHttpRequest();
+xmlhttpSelection.onreadystatechange = affiche_reponse;
+xmlhttpSelection.open("GET", "../cgi-bin/bin2/410/perl_nbre_articles.pl?randomVar=" + Math.random(),true);
+xmlhttpSelection.send(null);
+}
+else
+{
+if (window.ActiveXObject) //internet explorer
+{
+isIE = true;
+xmlhttpSelection = new ActiveXObject("Microsoft.XMLHTTP");
+if (xmlhttpSelection)
+{
+xmlhttpSelection.onreadystatechange = affiche_reponse;
+xmlhttpSelection.open("GET", "../cgi-bin/bin2/410/perl_nbre_articles.pl?randomVar=" + Math.random(),true);
+xmlhttpSelection.send(null);
+}
+}
+}
+function affiche_reponse() {
+if (xmlhttpSelection.readyState == 4)
+{
+if (xmlhttpSelection.status == 200)
+{
+var reponse=xmlhttpSelection.responseText;
+var reponseFormat=reponse.replace(/(^\s*)|(\s*$)/g,'');
+if ((reponseFormat!=null) && (reponseFormat!=""))
+{
+document.getElementById("qte_mini_panier").innerHTML=reponseFormat;
+}
+}
+else
+{
+alert("Il y a eu un problème lors de la connexion:\n"+xmlhttpSelection.statusText);
+}
+}
+}
+</script>
+</div></td>
+</tr>
+</table>
+</div>
+<div id="ban_recherche">
+<div style="float:left; "><img src="img/tb-la-boutique-stade-francais-paris.jpg" alt="La boutique stade français paris" width="217" height="62"></div>
+<div style="float:left;" id="recherche">
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<script language="javascript">
+function focusMotValue(input)
+{
+if (document.getElementById && document.getElementById(input).value == 'Recherchez un article')
+document.getElementById(input).value='';
+}
+function blurMotValue(input)
+{
+if (document.getElementById && document.getElementById(input).value == '')
+document.getElementById(input).value='Recherchez un article';
+}
+</script>
+
+
+<div id="encart_code_dev_recherche_style">
+<span id="titre_code_dev_recherche_style">Recherche</span>
+<div id="image_code_dev_recherche_style"></div>
+</div>
+<div id="encart_recherche_style">
+<form action="recherche_resultats.cfm" method="get" name="form_search" target="_self" style="margin:0;padding:0;">
+<input type="hidden" name="code_lg" value="lg_fr">
+<table cellpadding="0" cellspacing="0" border="0" style="display:inline;"><tr><td id="image_recherche_style"></td><td><input type="text" name="mot" id="champ_recherche_style" value="Recherchez un article" onfocus="focusMotValue(this.id);" onblur="blurMotValue(this.id);"></td></tr></table>
+<a href="#" onClick="document.form_search.submit();" id="bouton_texte_recherche_style"><span><input type="Button" name="aucun" value="OK" id="habillage_bouton_texte_recherche_style"></span></a>&nbsp;<a href="recherche_resultats.cfm?code_lg=lg_fr" id="bouton_texte_recherche_avancee_style"><span>Recherche avancée</span></a>
+</form>
+</div>
+
+
+</td>
+<td>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+function selectmarq(marq){
+if (marq.options[marq.selectedIndex].value != 0){
+window.location.href = "recherche_resultats.cfm?code_lg=lg_fr&marque_nav="+(marq.options[marq.selectedIndex].value);
+marq.selectedIndex=0;
+}
+}
+</SCRIPT>
+
+
+<div id="encart_code_dev_marques">
+<span id="titre_code_dev_marques">Marques</span>
+<div id="image_code_dev_marques"></div>
+</div>
+<div id="encart_marques">
+<select name="marq" size="1" onChange="selectmarq(this);" id="menu_marques">
+<option value="0">Toutes nos marques</option>
+<option value="0">----------------------------</option>
+<option value="1">
+ADIDAS
+
+</option>
+<option value="2">
+DIEVX DV STADE
+</option>
+<option value="3">
+STADE FRANCAIS PARIS
+</option>
+</select>
+</div>
+
+
+</td>
+<td>
+<script language="javascript">
+function categorySelectJS(categoryMenu)
+{
+if(categoryMenu.options[categoryMenu.selectedIndex].value=="")
+{
+alert('Veuillez selectionner une gamme d\\\'articles dans le menu.');
+}
+else
+{
+window.location.href = "liste_produits.cfm?type=" + categoryMenu.options[categoryMenu.selectedIndex].value + "&code_lg=lg_fr";
+categoryMenu.selectedIndex=0;
+}
+}
+</script>
+
+
+<div id="encart_code_dev_acces_rapide">
+<span id="titre_code_dev_acces_rapide">Acces rapide</span>
+<span id="image_code_dev_acces_rapide"></span>
+</div>
+<div id="encart_acces_rapide">
+<span id="texte_acces_rapide">Accès rapide :</span>
+<select name="categoryMenu" size="1" onChange="categorySelectJS(this);" id="menu_acces_rapide">
+<option>Tous nos articles</option>
+<option>------------------------------</option>
+<option value="22">
+Adidas Accessoires
+</option>
+<option value="21">
+
+Adidas Enfant
+</option>
+<option value="20">
+Adidas Femme
+</option>
+<option value="19">
+Adidas Homme
+</option>
+<option value="24">
+Bain
+</option>
+<option value="28">
+Bonnets/Echarpes
+</option>
+<option value="13">
+CALENDRIER
+</option>
+
+<option value="29">
+Casquettes
+</option>
+<option value="32">
+Collector Stade de France
+</option>
+<option value="27">
+Cravates
+</option>
+<option value="12">
+DVD DIEVX DV STADE
+</option>
+<option value="11">
+Enfant
+</option>
+<option value="10">
+Femme
+
+</option>
+<option value="25">
+Goodies
+</option>
+<option value="3">
+Homme
+</option>
+<option value="16">
+Les Bonnes Affaires
+</option>
+<option value="17">
+Ligne Cosmétique
+</option>
+<option value="23">
+Literie
+</option>
+<option value="35">
+
+Rentrée Scolaire
+</option>
+<option value="14">
+TSHIRTS DIEVX DV STADE
+</option>
+</select>
+</div>
+
+
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div style="clear:both; visibility:hidden; "></div>
+<div id="contener">
+<table width="971" border="0" cellspacing="0" cellpadding="0">
+
+<tr>
+<td valign="top" id="col_left"><div><img src="img/tt-catalogue.jpg" alt="Catalogue"></div>
+<div id="bloc_nav_verticale_1">
+
+
+<div id="encart_code_dev_nav_vertical">
+<span id="titre_code_dev_nav_vertical">Nos produits</span>
+<div id="image_code_dev_nav_vertical"></div>
+</div>
+<script language="JavaScript">
+function affiche_nav_verti(id) {
+var bloc = document.getElementById('nav_verti_smenutri'+id);
+var parent = document.getElementById('nav_verti_image_treeview'+id);
+if (bloc && parent){
+if (bloc.style.display=='none'){
+bloc.style.display='block';
+parent.className='nav_verti_image_treeview_open';
+}
+else{
+bloc.style.display='none';
+parent.className='nav_verti_image_treeview_close';
+}
+}
+}
+</script>
+<style type="text/css">
+/*--------------------------------*/
+/* CSS obligatoire non modifiable */
+/*--------------------------------*/
+.nav_verti_menu_pad{
+margin:0;padding:0;
+}
+</style>
+<div id="nav_verti_contener">
+<dl id="nav_verti_menu" class="nav_verti_menu_pad">
+<dt onclick="affiche_nav_verti('1');" style="cursor:pointer;" class="nav_verti_menu_pad">
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview1" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Rentrée des classes</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri1" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=35&num=61" style="display:block;">Rentrée Scolaire</a>
+</div>
+</dd>
+<dt onclick="affiche_nav_verti('2');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview2" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Collector StadeFrance</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri2" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=32&num=31" style="display:block;">Collector Stade de France </a>
+
+</div>
+</dd>
+<dt onclick="affiche_nav_verti('3');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview3" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Collection Adidas 2008</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri3" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=19&num=11" style="display:block;">Adidas Homme</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=20&num=11" style="display:block;">Adidas Femme</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=21&num=11" style="display:block;">Adidas Enfant</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=22&num=11" style="display:block;">Adidas Accessoires</a>
+</div>
+
+</dd>
+<dt onclick="affiche_nav_verti('4');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview4" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">DIEVX DV STADE</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri4" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=17&num=4" style="display:block;">Ligne Cosmétique</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=13&num=4" style="display:block;">CALENDRIER</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=12&num=4" style="display:block;">DVD DIEVX DV STADE</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=14&num=4" style="display:block;">TSHIRTS DIEVX DV STADE</a>
+</div>
+</dd>
+
+<dt onclick="affiche_nav_verti('5');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview5" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Collection Stade Français</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri5" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=3&num=1" style="display:block;">Homme</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=10&num=1" style="display:block;">Femme</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=11&num=1" style="display:block;">Enfant</a>
+</div>
+</dd>
+<dt onclick="affiche_nav_verti('6');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview6" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Accessoires</a></td></tr></table>
+
+</dt>
+<dd id="nav_verti_smenutri6" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=29&num=8" style="display:block;">Casquettes</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=28&num=8" style="display:block;">Bonnets/Echarpes</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=25&num=8" style="display:block;">Goodies</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=23&num=8" style="display:block;">Literie</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=24&num=8" style="display:block;">Bain</a>
+<a href="liste_produits.cfm?code_lg=lg_fr&type=27&num=8" style="display:block;">Cravates</a>
+</div>
+</dd>
+
+<dt onclick="affiche_nav_verti('7');" style="cursor:pointer;" class="nav_verti_menu_pad">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td><div id="nav_verti_image_treeview7" class="nav_verti_image_treeview_close"></div></td><td width="100%"><a href="#" onclick="return false;">Les bonnes affaires</a></td></tr></table>
+</dt>
+<dd id="nav_verti_smenutri7" class="nav_verti_menu_pad" style="display:none;">
+<div id="nav_verti_contener_sous">
+<a href="liste_produits.cfm?code_lg=lg_fr&type=16&num=7" style="display:block;">Les Bonnes Affaires</a>
+</div>
+</dd>
+</dl>
+</div>
+
+
+</div>
+<div><img src="img/tt-newsletter.jpg" alt="Newsletter"></div>
+<div id="bloc_mailling">
+
+<script LANGUAGE="JavaScript">
+function verif()
+{ var stop=0;
+var str='';
+var adresse = document.form_mailing.mail.value;
+var place = adresse.indexOf("@",1);
+var point = adresse.indexOf(".",place+1);
+if ((document.form_mailing.mail.value == '') || (document.form_mailing.mail.value == 'Votre E-mail'))
+{	str=str+'\n - Votre E-mail';
+stop=1;
+}
+else
+{	if ((place > -1)&&(adresse.length >2)&&(point > 1)&&(adresse.length > point+2))
+{
+}
+else
+{	if (stop == 0)
+{	stop=1;
+alert('Veuillez saisir une adresse E-mail valide.');
+document.form_mailing.mail.focus();
+}
+}
+}
+if (stop==0) document.form_mailing.submit();
+else if (str != '') alert('Veuillez saisir : '+str);
+}
+</script>
+
+
+<div id="encart_code_dev_mailing">
+<span id="titre_code_dev_mailing">Lettre d'infos</span>
+<div id="image_code_dev_mailing"></div>
+</div>
+<div id="encart_mailing">
+<form name="form_mailing" action="trait_mailinglist.cfm?code_lg=lg_fr" method="post" onsubmit="verif();return false;" style="padding:0;margin:0;">
+<span id="texte_mailing">Recevez notre lettre d'informations.<BR></span>
+<input type="radio" name="abonne" value="1" checked class="radio_mailing">
+<span id="texte_abonnement_mailing">Je m'abonne<BR></span>
+<input type="radio" name="abonne" value="0" class="radio_mailing">
+
+<span id="texte_desabonnement_mailing">Je me d&eacute;sabonne<BR></span>
+<input type="text" name="mail" onFocus="if (this.value=='Votre E-mail') {this.value=''}" value="Votre E-mail" id="champ_email_mailing"><a href="#" onClick="verif();" id="bouton_texte_ok_mailing"><span><input type="Button" name="aucun" value="OK" id="habillage_bouton_texte_ok_mailing"></span></a>
+</form>
+</div>
+
+
+</div><div><img src="img/bord-b-bloc-nav-g.jpg"></div>
+<div align="center">
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+_version=10;
+//-->
+</script>
+<SCRIPT LANGUAGE="JavaScript1.1">
+<!--
+_version=11;
+if (navigator.userAgent.indexOf('Mozilla/3') != -1){
+_version=10;} // --> </script>
+<SCRIPT LANGUAGE="JavaScript"> <!--
+var oas_server="http://regie.sportys.fr";
+var oas_sitepage="www.stade.fr/boutique";
+var oas_position="Right!Right";
+var oas_query="?";
+if (!(RN)) {
+var RN=new String (Math.random());
+var RNS=RN.substring (2, 11);
+}
+var oas_page=oas_sitepage + '/1' + RNS + '@' + oas_position + oas_query;
+if (_version < 11) {
+document.write ('<A HREF="' + oas_server + '/1c/'+ oas_page + '" TARGET="_top" ><IMG SRC="' + oas_server + '/1/' + oas_page + '" BORDER=0 ALT="Click!"></A>');
+} else {
+document.write ('<SCR'+'IPT LANGUAGE="JavaScript1.1" SRC="' + oas_server + '/3/' + oas_page + '">');
+document.write ('\<\!-- --\>');
+document.write ('\<\/SCRIPT\>');
+document.write ('\<\!-- --\>');
+}
+// -->
+</SCRIPT>
+</div>
+
+</td>
+<td valign="top" id="bloc_catalogue"><div class="cont_txt_page">
+<script language="javascript">
+function plus()
+{
+document.form_segmentation_rech.pag.value='2';
+document.form_segmentation_rech.submit();
+}
+function moins()
+{
+document.form_segmentation_rech.pag.value='0';
+document.form_segmentation_rech.submit();
+}
+function chiffre(page)
+{
+document.form_segmentation_rech.pag.value=page;
+document.form_segmentation_rech.submit();
+}
+</script>
+<form action="recherche_resultats.cfm" method="get" name="form_segmentation_rech">
+<input type="Hidden" name="mot" value="%">
+<input type="Hidden" name="pag" value="1">
+<input type="Hidden" name="code_lg" value="lg_fr">
+<input type="Hidden" name="classement" value="">
+<input type="Hidden" name="ordre" value="">
+<input type="Hidden" name="marque_nav" value="0">
+<input type="Hidden" name="rayon_nav" value="-1">
+<input type="Hidden" name="gamme_nav" value="0">
+<input type="Hidden" name="prix_min" value="">
+<input type="Hidden" name="prix_max" value="">
+<input type="Hidden" name="triage" value="0">
+</form>
+
+<script language="javascript">
+function rech_multi_clean()
+{
+if (document.form_rech_multi.mot.value == 'Rechercher :')
+document.form_rech_multi.mot.value = '';
+}
+function isNumeric(Data)
+{
+numChars = ".0123456789";
+var isNum = true;
+var index = 0;
+while ((index < Data.length) && (isNum))
+{
+isNum = (numChars.indexOf(Data.charAt(index)) != -1);
+index ++;
+}
+return isNum;
+}
+function rech_multi_submit(tri)
+{
+rech_multi_clean();
+if (tri == 0)
+document.form_rech_multi.triage.value = 0;
+if ( (isNumeric(document.form_rech_multi.prix_min.value))
+&& (isNumeric(document.form_rech_multi.prix_max.value)) )
+{
+if (Number(document.form_rech_multi.prix_min.value) <= Number(document.form_rech_multi.prix_max.value))
+{
+document.form_rech_multi.submit();
+}
+else
+{
+if (document.form_rech_multi.prix_max.value == '')
+document.form_rech_multi.submit();
+else
+window.alert('Attention, le prix minimum doit être inférieur au prix maximum.');
+}
+}
+else {
+window.alert('Veuillez entrer un nombre.');
+if (!isNumeric(document.form_rech_multi.prix_min.value))
+{
+document.form_rech_multi.prix_min.value = '';
+}
+if (!isNumeric(document.form_rech_multi.prix_max.value))
+{
+document.form_rech_multi.prix_max.value = '';
+}
+}
+}
+function cleangammes()
+{
+while(document.form_rech_multi.gamme_nav.length > 0)
+{
+document.form_rech_multi.gamme_nav.options[document.form_rech_multi.gamme_nav.length-1] = null;
+}
+document.form_rech_multi.gamme_nav.options[0] = new Option(convertURL("Toutes les gammes"), "0", false, true);
+document.form_rech_multi.gamme_nav.options[1] = new Option(convertURL("------------------------"), "0", false, false);
+}
+function selectchange(rayon)
+{
+if (rayon.value == 8)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Bain"), "24", false, false);
+document.form_rech_multi.gamme_nav.options[3] = new Option(convertURL("Bonnets/Echarpes"), "28", false, false);
+document.form_rech_multi.gamme_nav.options[4] = new Option(convertURL("Casquettes"), "29", false, false);
+document.form_rech_multi.gamme_nav.options[5] = new Option(convertURL("Cravates"), "27", false, false);
+document.form_rech_multi.gamme_nav.options[6] = new Option(convertURL("Goodies"), "25", false, false);
+document.form_rech_multi.gamme_nav.options[7] = new Option(convertURL("Literie"), "23", false, false);
+}
+if (rayon.value == 11)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Adidas Accessoires"), "22", false, false);
+document.form_rech_multi.gamme_nav.options[3] = new Option(convertURL("Adidas Enfant"), "21", false, false);
+document.form_rech_multi.gamme_nav.options[4] = new Option(convertURL("Adidas Femme"), "20", false, false);
+document.form_rech_multi.gamme_nav.options[5] = new Option(convertURL("Adidas Homme"), "19", false, false);
+}
+if (rayon.value == 1)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Enfant"), "11", false, false);
+document.form_rech_multi.gamme_nav.options[3] = new Option(convertURL("Femme"), "10", false, false);
+document.form_rech_multi.gamme_nav.options[4] = new Option(convertURL("Homme"), "3", false, false);
+}
+if (rayon.value == 31)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Collector Stade de France "), "32", false, false);
+}
+if (rayon.value == 4)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("CALENDRIER"), "13", false, false);
+document.form_rech_multi.gamme_nav.options[3] = new Option(convertURL("DVD DIEVX DV STADE"), "12", false, false);
+document.form_rech_multi.gamme_nav.options[4] = new Option(convertURL("Ligne Cosmétique"), "17", false, false);
+document.form_rech_multi.gamme_nav.options[5] = new Option(convertURL("TSHIRTS DIEVX DV STADE"), "14", false, false);
+}
+if (rayon.value == 7)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Les Bonnes Affaires"), "16", false, false);
+}
+if (rayon.value == 61)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Rentrée Scolaire"), "35", false, false);
+}
+if (rayon.value == -1)
+{
+cleangammes();
+document.form_rech_multi.gamme_nav.options[2] = new Option(convertURL("Adidas Accessoires"), "22", false, false);
+document.form_rech_multi.gamme_nav.options[3] = new Option(convertURL("Adidas Enfant"), "21", false, false);
+document.form_rech_multi.gamme_nav.options[4] = new Option(convertURL("Adidas Femme"), "20", false, false);
+document.form_rech_multi.gamme_nav.options[5] = new Option(convertURL("Adidas Homme"), "19", false, false);
+document.form_rech_multi.gamme_nav.options[6] = new Option(convertURL("Bain"), "24", false, false);
+document.form_rech_multi.gamme_nav.options[7] = new Option(convertURL("Billetterie"), "5", false, false);
+document.form_rech_multi.gamme_nav.options[8] = new Option(convertURL("Bonnets/Echarpes"), "28", false, false);
+document.form_rech_multi.gamme_nav.options[9] = new Option(convertURL("CALENDRIER"), "13", false, false);
+document.form_rech_multi.gamme_nav.options[10] = new Option(convertURL("Casquettes"), "29", false, false);
+document.form_rech_multi.gamme_nav.options[11] = new Option(convertURL("Collector Stade de France "), "32", false, false);
+document.form_rech_multi.gamme_nav.options[12] = new Option(convertURL("Cravates"), "27", false, false);
+document.form_rech_multi.gamme_nav.options[13] = new Option(convertURL("DVD DIEVX DV STADE"), "12", false, false);
+document.form_rech_multi.gamme_nav.options[14] = new Option(convertURL("Enfant"), "11", false, false);
+document.form_rech_multi.gamme_nav.options[15] = new Option(convertURL("Femme"), "10", false, false);
+document.form_rech_multi.gamme_nav.options[16] = new Option(convertURL("FETE DES MERES"), "33", false, false);
+document.form_rech_multi.gamme_nav.options[17] = new Option(convertURL("Flocage "), "30", false, false);
+document.form_rech_multi.gamme_nav.options[18] = new Option(convertURL("Goodies"), "25", false, false);
+document.form_rech_multi.gamme_nav.options[19] = new Option(convertURL("Homme"), "3", false, false);
+document.form_rech_multi.gamme_nav.options[20] = new Option(convertURL("Les Bonnes Affaires"), "16", false, false);
+document.form_rech_multi.gamme_nav.options[21] = new Option(convertURL("Ligne Cosmétique"), "17", false, false);
+document.form_rech_multi.gamme_nav.options[22] = new Option(convertURL("Literie"), "23", false, false);
+document.form_rech_multi.gamme_nav.options[23] = new Option(convertURL("Rentrée Scolaire"), "35", false, false);
+document.form_rech_multi.gamme_nav.options[24] = new Option(convertURL("TSHIRTS DIEVX DV STADE"), "14", false, false);
+rayon.selectedIndex = 0;
+}
+}
+function tri(classement,ordre)
+{
+document.form_rech_multi.triage.value = 1;
+if (classement == 1)
+document.form_rech_multi.classement.value = "produit_marque.nom_marque";
+if (classement == 2)
+{
+if ('#code_lg#' == "lg_us")
+document.form_rech_multi.classement.value = "produit.nom_us";
+else
+document.form_rech_multi.classement.value = "produit.nom_produit";
+}
+if (classement == 3)
+document.form_rech_multi.classement.value = "prix_unitaire";
+if (ordre == 1)
+document.form_rech_multi.ordre.value = "ASC";
+if (ordre == 2)
+document.form_rech_multi.ordre.value = "DESC";
+rech_multi_submit(1);
+}
+function convertURL(text)
+{
+text = replace(text,"&Agrave;",unescape('%C0'));
+text = replace(text,"&Aacute;",unescape('%C1'));
+text = replace(text,"&Acirc;",unescape('%C2'));
+text = replace(text,"&Atilde;",unescape('%C3'));
+text = replace(text,"&Auml;",unescape('%C4'));
+text = replace(text,"&Aring;",unescape('%C5'));
+text = replace(text,"&AElig;",unescape('%C6'));
+text = replace(text,"&Ccedil;",unescape('%C7'));
+text = replace(text,"&Egrave;",unescape('%C8'));
+text = replace(text,"&Eacute;",unescape('%C9'));
+text = replace(text,"&Ecirc;",unescape('%CA'));
+text = replace(text,"&Euml;",unescape('%CB'));
+text = replace(text,"&Igrave;",unescape('%CC'));
+text = replace(text,"&Iacute;",unescape('%CD'));
+text = replace(text,"&Icirc;",unescape('%CE'));
+text = replace(text,"&Iuml;",unescape('%CF'));
+text = replace(text,"&ETH;",unescape('%D0'));
+text = replace(text,"&Ntilde;",unescape('%D1'));
+text = replace(text,"&Ograve;",unescape('%D2'));
+text = replace(text,"&Oacute;",unescape('%D3'));
+text = replace(text,"&Ocirc;",unescape('%D4'));
+text = replace(text,"&Otilde;",unescape('%D5'));
+text = replace(text,"&Ouml;",unescape('%D6'));
+text = replace(text,"&Oslash;",unescape('%D8'));
+text = replace(text,"&Ugrave;",unescape('%D9'));
+text = replace(text,"&Uacute;",unescape('%DA'));
+text = replace(text,"&Ucirc;",unescape('%DB'));
+text = replace(text,"&Uuml;",unescape('%DC'));
+text = replace(text,"&Yacute;",unescape('%DD'));
+text = replace(text,"&THORN;",unescape('%DE'));
+text = replace(text,"&szlig;",unescape('%DF'));
+text = replace(text,"&agrave;",unescape('%E0'));
+text = replace(text,"&aacute;",unescape('%E1'));
+text = replace(text,"&acirc;",unescape('%E2'));
+text = replace(text,"&atilde;",unescape('%E3'));
+text = replace(text,"&auml;",unescape('%E4'));
+text = replace(text,"&aring;",unescape('%E5'));
+text = replace(text,"&aelig;",unescape('%E6'));
+text = replace(text,"&ccedil;",unescape('%E7'));
+text = replace(text,"&egrave;",unescape('%E8'));
+text = replace(text,"&eacute;",unescape('%E9'));
+text = replace(text,"&ecirc;",unescape('%EA'));
+text = replace(text,"&euml;",unescape('%EB'));
+text = replace(text,"&igrave;",unescape('%EC'));
+text = replace(text,"&iacute;",unescape('%ED'));
+text = replace(text,"&icirc;",unescape('%EE'));
+text = replace(text,"&iuml;",unescape('%EF'));
+text = replace(text,"&eth;",unescape('%F0'));
+text = replace(text,"&ntilde;",unescape('%F1'));
+text = replace(text,"&ograve;",unescape('%F2'));
+text = replace(text,"&oacute;",unescape('%F3'));
+text = replace(text,"&ocirc;",unescape('%F4'));
+text = replace(text,"&otilde;",unescape('%F5'));
+text = replace(text,"&ouml;",unescape('%F6'));
+text = replace(text,"&oslash;",unescape('%F8'));
+text = replace(text,"&ugrave;",unescape('%F9'));
+text = replace(text,"&uacute;",unescape('%FA'));
+text = replace(text,"&ucirc;",unescape('%FB'));
+text = replace(text,"&uuml;",unescape('%FC'));
+text = replace(text,"&yacute;",unescape('%FD'));
+text = replace(text,"&thorn;",unescape('%FE'));
+text = replace(text,"&yuml;",unescape('%FF'));
+return text;
+}
+function replace(string,text,by) {
+var strLength = string.length, txtLength = text.length;
+if ((strLength == 0) || (txtLength == 0)) return string;
+var i = string.indexOf(text);
+if ((!i) && (text != string.substring(0,txtLength))) return string;
+if (i == -1) return string;
+var newstr = string.substring(0,i) + by;
+if (i+txtLength < strLength)
+newstr += replace(string.substring(i+txtLength,strLength),text,by);
+return newstr;
+}
+</script>
+
+
+<div id="encart_grand_titre_recherche_resultat">
+<span id="grand_titre_recherche_resultat">Rechercher un article</span>
+</div>
+<br>
+<table cellspacing="0" cellpadding="6" border="0" width="100%">
+<form action="recherche_resultats.cfm" method="get" name="form_rech_multi" onSubmit="rech_multi_submit(1);return false;">
+<tr>
+<td valign="top">
+<table cellspacing="0" cellpadding="2" border="0">
+<tr>
+<td id="titre_par_marque_recherche_resultats">Par marque :&nbsp;</td>
+
+<td>
+<select name="marque_nav" size=1 id="select_par_marque_recherche_resultats">
+<option selected value="0">Toutes les marques</option>
+<option value="0">------------------------</option>
+<option value="1">ADIDAS
+<option value="2">DIEVX DV STADE
+<option value="3">STADE FRANCAIS PARIS
+</select>
+</td>
+</tr>
+<tr>
+<td id="titre_rayons_recherche_resultats">
+Par rayon :&nbsp;
+</td>
+
+<td>
+<select name="rayon_nav" class="popmenu" size=1 onchange="javascript:selectchange(this);" id="select_rayons_recherche_resultats">
+<option selected value="-1">Tous les rayons</option>
+<option value="-2">------------------------</option>
+<option value="8">Accessoires
+<option value="11">Collection Adidas 2008
+<option value="1">Collection Stade Français
+<option value="31">Collector StadeFrance
+<option value="4">DIEVX DV STADE
+<option value="7">Les bonnes affaires
+<option value="61">Rentrée des classes
+</select>
+</td>
+</tr>
+<tr>
+
+<td id="titre_gamme_recherche_resultat">
+Par gamme :&nbsp;
+</td>
+<td>
+<select name="gamme_nav" size=1 id="select_gamme_recherche_resultat">
+<option selected value="0">Toutes les gammes</option>
+<option value="0">------------------------</option>
+<option value="22">Adidas Accessoires
+<option value="21">Adidas Enfant
+<option value="20">Adidas Femme
+<option value="19">Adidas Homme
+<option value="24">Bain
+<option value="5">Billetterie
+<option value="28">Bonnets/Echarpes
+
+<option value="13">CALENDRIER
+<option value="29">Casquettes
+<option value="32">Collector Stade de France
+<option value="27">Cravates
+<option value="12">DVD DIEVX DV STADE
+<option value="11">Enfant
+<option value="10">Femme
+<option value="33">FETE DES MERES
+<option value="30">Flocage
+<option value="25">Goodies
+<option value="3">Homme
+<option value="16">Les Bonnes Affaires
+<option value="17">Ligne Cosmétique
+<option value="23">Literie
+<option value="35">Rentrée Scolaire
+<option value="14">TSHIRTS DIEVX DV STADE
+</td>
+
+</tr>
+<tr>
+<td nowrap id="titre_par_prix_recherche_resultat">Par prix :&nbsp;</td>
+<td nowrap>
+<span id="titre_prix_mini_recherche_resultat">
+Prix mini&nbsp;:
+</span>
+&nbsp;
+<input type="text" name="prix_min" value="" size="3" id="champ_prix_mini_recherche_resultat">
+&nbsp;
+<span id="devise_prix_mini_recherche_resultat">EURO</span>&nbsp;
+&nbsp;
+<span id="titre_prix_max_recherche_resultat">Prix max&nbsp;:</span>&nbsp;
+
+<input type="text" name="prix_max" value="" size="3" id="champ_prix_max_recherche_resultat">
+&nbsp;
+<span id="devise_prix_max_recherche_resultat">EURO</span>
+</td>
+</tr>
+<tr>
+<td nowrap id="titre_rechercher_recherche_resultat">Rechercher :&nbsp;</td>
+<td nowrap><input type="text" name="mot" value="%" onFocus="javascript:rech_multi_clean();" size="24" id="champ_rechercher_recherche_resultat">&nbsp;
+<a href="#" onclick="rech_multi_submit(1);" id="bouton_texte_rechercher_recherche_resultat">
+<span>
+<input type="Button" value="Rechercher" name="aucun" id="habillage_bouton_texte_rechercher_recherche_resultat">
+</span>
+</a>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top">
+<hr noshade size="1">
+<span id="texte_compte_recherche_resultats">181</span>&nbsp;<span id="texte_resultat_recherche">résultats de recherche</span>
+<span id="texte_pour_recherche_resultat">pour</span>&nbsp;<span id="texte_mot_cle_recherche_resultat">&quot;%&quot;</span>
+<br>
+<span id="texte_choix_recherche_resultat">
+</span>
+<hr noshade size="1">
+</td>
+
+</tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="1" id="couleur_fond_segmentation_recherche_resultats">
+<tr>
+<td>
+<table width="100%" border="0" cellspacing="0" cellpadding="3">
+<tr>
+<td align="left" nowrap width="20%">
+&nbsp;
+</td>
+<td align="center" width="60%">
+<span id="chiffre_numero_page_non_cliquable_recherche_resultats">1</span>
+<a href="javascript:chiffre(2);" id="lien_numero_pages_recherche_resultats"><span>2</span></a>
+<a href="javascript:chiffre(3);" id="lien_numero_pages_recherche_resultats"><span>3</span></a>
+
+<a href="javascript:chiffre(4);" id="lien_numero_pages_recherche_resultats"><span>4</span></a>
+<a href="javascript:chiffre(5);" id="lien_numero_pages_recherche_resultats"><span>5</span></a>
+<a href="javascript:chiffre(6);" id="lien_numero_pages_recherche_resultats"><span>6</span></a>
+<a href="javascript:chiffre(7);" id="lien_numero_pages_recherche_resultats"><span>7</span></a>
+<a href="javascript:chiffre(8);" id="lien_numero_pages_recherche_resultats"><span>8</span></a>
+<a href="javascript:chiffre(9);" id="lien_numero_pages_recherche_resultats"><span>9</span></a>
+<a href="javascript:chiffre(10);" id="lien_numero_pages_recherche_resultats"><span>10</span></a>
+</td>
+<td align="right" nowrap width="20%">
+<a href="javascript:plus();" id="lien_suivant_recherche_resultats">
+
+<span>
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td><a href="javascript:plus();" id="lien_suivant_recherche_resultats"><span>Suivante</span></a></td>
+<td id="image_fleche_suivante_recherche_resultats"></td>
+</tr>
+</table>
+</span>
+</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<div style="height:26px;">&nbsp;</div>
+
+<table width="100%" height="20" cellspacing="0" cellpadding="0" border="0" id="couleur_fond_entete_recherche_resultats">
+<tr>
+<td nowrap><span id="titre_nom_article_recherche_resultat">Nom article&nbsp;</span></td>
+<td><a href="javascript:tri(2,1);" id="bouton_image_croissant_nom_recherche_resultats" style="_margin-bottom:-10px;" title="Ordre alphabétique"></a></td>
+<td><a href="javascript:tri(2,2);" id="bouton_image_decroissant_nom_recherche_resultats" style="_margin-bottom:-10px;" title="Ordre alphabétique inversé"></a></td>
+<td nowrap><span id="titre_marque_tri_recherche_resultat">&nbsp;&nbsp;&nbsp;Marque&nbsp;</span></td>
+<td><a href="javascript:tri(1,1);" id="bouton_image_croissant_marque_recherche_resultats" style="_margin-bottom:-10px;" title="Ordre alphabétique"></a></td>
+<td><a href="javascript:tri(1,2);" id="bouton_image_decroissant_marque_recherche_resultats" style="_margin-bottom:-10px;" title="Ordre alphabétique inversé"></a></td>
+<td nowrap width="90%">&nbsp;</td>
+<td nowrap><span id="titre_prix_recherche_resultat">Prix&nbsp;</span></td>
+<td><a href="javascript:tri(3,1);" id="bouton_image_croissant_prix_recherche_resultats" style="_margin-bottom:-10px;" title="Prix croissant"></a></td>
+<td><a href="javascript:tri(3,2);" id="bouton_image_decroissant_prix_recherche_resultats" style="_margin-bottom:-10px;" title="Prix d&eacute;croissant"></a></td>
+<td nowrap width="10%">&nbsp;</td>
+</tr>
+
+</table>
+<input type="hidden" name="classement" value="">
+<input type="hidden" name="code_lg" value="lg_fr">
+<input type="hidden" name="ordre" value="">
+<input type="hidden" name="triage" value="0">
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=Espad01Marine_copie&code_lg=lg_fr" name="form_result0">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Espadrille Marine SF">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="28">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vEspad01Marine48.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=Espad01Marine_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vEspad01Marine48.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=Espad01Marine_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Espadrille Marine SF<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+28.00
+EURO
+
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+16.80
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=Espad01Marine_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=Espad01Rose_copie&code_lg=lg_fr" name="form_result1">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Espadrilles Roses SF">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="28">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vEspad01Rose91.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=Espad01Rose_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vEspad01Rose91.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+
+<td valign="top">
+<a href="fiche_produit.cfm?ref=Espad01Rose_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Espadrilles Roses SF<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+28.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+16.80
+EURO
+</span>
+
+<br>
+<a href="fiche_produit.cfm?ref=Espad01Rose_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\ntaille:');window.location.href='fiche_produit.cfm?ref=Espad01Rose_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=Opalnavy_copie&code_lg=lg_fr" name="form_result2">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Tong opal Marine ">
+
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="19">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vOpalnavy28.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.4">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=Opalnavy_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vOpalnavy28.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=Opalnavy_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Tong opal Marine <br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+
+<span class="texte_catalogue">
+<br>
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+19.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+13.30
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=Opalnavy_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=Opalnavy_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=opalkaki_copie&code_lg=lg_fr" name="form_result3">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Tong opal Kaki">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="19">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vopalkaki77.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.4">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=opalkaki_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vopalkaki77.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=opalkaki_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Tong opal Kaki<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+19.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+13.30
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=opalkaki_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=opalkaki_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=SAD006&code_lg=lg_fr" name="form_result4">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Rain Jacket Adidas">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="60">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vSAD006_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+
+<td width="1"><a href="fiche_produit.cfm?ref=SAD006&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vSAD006_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=SAD006&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Rain Jacket Adidas<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+Rain Jacket Adidas
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+60.00
+EURO
+
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+38.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=SAD006&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=SAD006&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=SAD003&code_lg=lg_fr" name="form_result5">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Maillot de rugby Adidas Tradition">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="68">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vSA003.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=SAD003&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vSA003.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+
+<a href="fiche_produit.cfm?ref=SAD003&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Maillot de rugby Adidas Tradition<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+Maillot de rugby Adidas tradition
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+68.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+55.00
+EURO
+</span>
+
+<br>
+<a href="fiche_produit.cfm?ref=SAD003&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=SAD003&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=sa3023blanc&code_lg=lg_fr" name="form_result6">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Tshirt 3éclairs col">
+
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="16">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vsa3023blanc_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.4">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=sa3023blanc&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vsa3023blanc_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=sa3023blanc&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Tshirt 3éclairs col<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+
+<span class="texte_catalogue">
+<br>
+<DIV>Tshirt Blanc avec 3 éclairs vintages en relief.
+<BR>
+<BR><B>VENDU UNIQUEMENT
+SUR INTERNET</B></DIV>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+16.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+9.00
+EURO
+</span>
+<br>
+
+<a href="fiche_produit.cfm?ref=sa3023blanc&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=TRACKTOPANTALON_copie&code_lg=lg_fr" name="form_result7">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Track Top + Pantalon">
+
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="120">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vTRACKTOPANTALON15.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=TRACKTOPANTALON_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vTRACKTOPANTALON15.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=TRACKTOPANTALON_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Track Top + Pantalon<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+
+<span class="texte_catalogue">
+<br>
+Track Top + Pantalon
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+120.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+69.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=TRACKTOPANTALON_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=189511&code_lg=lg_fr" name="form_result8">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="T-Shirt Women SS Tee Rose">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="35">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="v189511_2.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=189511&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/v189511_2.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=189511&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>T-Shirt Women SS Tee Rose<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+T-Shirt Women SS Tee Rose
+
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+35.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=189511&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=189511&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=189478_copie&code_lg=lg_fr" name="form_result9">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="T-Shirt Women SS Tee Kaki">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="35">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="v18947815.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=189478_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+
+<img src="images_produits/v18947815.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=189478_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>T-Shirt Women SS Tee Kaki<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+T-Shirt Women SS Tee Kaki
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+35.00
+EURO
+</span>
+
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+24.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=189478_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=189478_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=refA4_copie&code_lg=lg_fr" name="form_result10">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Polo Adidas Blanc">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="40">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vrefA4copie.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.7">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="50">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=refA4_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vrefA4copie.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=refA4_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Polo Adidas Blanc<br></span></a>
+
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+Coton et synthétique, logo Adidas et blason du Stade Français
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+40.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+20.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=refA4_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nChoisissez votre taille');window.location.href='fiche_produit.cfm?ref=refA4_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=189505_copie_copie&code_lg=lg_fr" name="form_result11">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Women Basic Tee Adidas">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="40">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="v189505_copie17.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.5">
+
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=189505_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/v189505_copie17.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=189505_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Women Basic Tee Adidas<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+Women Basic Tee Adidas
+
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+40.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+24.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=189505_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:alert('Pour ajouter cet article a votre panier, vous allez d\'abord choisir :\nTaille');window.location.href='fiche_produit.cfm?ref=189505_copie_copie&type=16&code_lg=lg_fr&num=7';void('');" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=189578_copie_copie&code_lg=lg_fr" name="form_result12">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Pantalon Femme Adidas Kaki">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="55">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="v189578_copie21.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=189578_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/v189578_copie21.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=189578_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Pantalon Femme Adidas Kaki<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+Pantalon Femme Adidas Kaki
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+55.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+33.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=189578_copie_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+<br>
+</td>
+</tr>
+<tr>
+
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=SFPapet0701&code_lg=lg_fr" name="form_result13">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Agenda bleu SF">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="12">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vSFPapet0701_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=SFPapet0701&amp;type=35&amp;code_lg=lg_fr&amp;num=61">
+
+<img src="images_produits/vSFPapet0701_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=SFPapet0701&amp;type=35&amp;code_lg=lg_fr&amp;num=61" id="lien_nom_article_recherche_resultats"><span>Agenda bleu SF<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+12.00
+EURO
+</span>
+<br>
+
+<a href="fiche_produit.cfm?ref=SFPapet0701&amp;type=35&amp;code_lg=lg_fr&amp;num=61" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:document.form_result13.submit();" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=refA16_copie&code_lg=lg_fr" name="form_result14">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Tshirt Adidas PARIS blanc">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="20">
+
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vrefA16copie.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.7">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="25">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=refA16_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vrefA16copie.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=refA16_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Tshirt Adidas PARIS blanc<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+20.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+15.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=refA16_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+
+<br>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=SFpapet02&code_lg=lg_fr" name="form_result15">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Classeur Bleu SF">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="6">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vSFpapet02_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=SFpapet02&amp;type=35&amp;code_lg=lg_fr&amp;num=61">
+<img src="images_produits/vSFpapet02_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=SFpapet02&amp;type=35&amp;code_lg=lg_fr&amp;num=61" id="lien_nom_article_recherche_resultats"><span>Classeur Bleu SF<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">STADE FRANCAIS PARIS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+6.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=SFpapet02&amp;type=35&amp;code_lg=lg_fr&amp;num=61" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:document.form_result15.submit();" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=refA11_copie&code_lg=lg_fr" name="form_result16">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="Tshirt Adidas blanc Collector">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="29">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vrefA11_copie_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="1">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="17.24">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=refA11_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7">
+<img src="images_produits/vrefA11_copie_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+
+<a href="fiche_produit.cfm?ref=refA11_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_nom_article_recherche_resultats"><span>Tshirt Adidas blanc Collector<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">ADIDAS<br></span>
+<span class="texte_catalogue">
+<br>
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_barre_recherche_resultats" style="text-decoration:line-through;white-space:nowrap;">
+29.00
+EURO
+</span>
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+18.00
+EURO
+</span>
+<br>
+
+<a href="fiche_produit.cfm?ref=refA11_copie&amp;type=16&amp;code_lg=lg_fr&amp;num=7" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=cosm01&code_lg=lg_fr" name="form_result17">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="N°1 Essai Transformé">
+
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="18">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vcosm01_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=cosm01&amp;type=17&amp;code_lg=lg_fr&amp;num=4">
+<img src="images_produits/vcosm01_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=cosm01&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_nom_article_recherche_resultats"><span>N°1 Essai Transformé<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">DIEVX DV STADE<br></span>
+
+<span class="texte_catalogue">
+<br>
+Gel de rasage
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+18.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=cosm01&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<span id="texte_indisponible_recherche_resultat">
+</span>
+<br>
+
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=cosme2&code_lg=lg_fr" name="form_result18">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="N°2 Coup d'Eponge">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="21">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vcosme2_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+
+<td height="4" colspan="3"></td>
+</tr>
+<tr>
+<td width="1"><a href="fiche_produit.cfm?ref=cosme2&amp;type=17&amp;code_lg=lg_fr&amp;num=4">
+<img src="images_produits/vcosme2_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+<a href="fiche_produit.cfm?ref=cosme2&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_nom_article_recherche_resultats"><span>N°2 Coup d'Eponge<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">DIEVX DV STADE<br></span>
+<span class="texte_catalogue">
+<br>
+Gel Nettoyant Exfoliant visage et corps
+</span>
+</td>
+<td width="1">&nbsp;</td>
+
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+21.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=cosme2&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+<br>
+<a href="javascript:document.form_result18.submit();" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+
+</form>
+<table width="100%" cellspacing="0" cellpadding="6" border="0">
+<form method="post" action="com_act.cfm?ref=cosme3&code_lg=lg_fr" name="form_result19">
+<INPUT TYPE="HIDDEN" NAME="titre" VALUE="N°3 Crème des Dievx">
+<INPUT TYPE="HIDDEN" NAME="prix" VALUE="34">
+<INPUT TYPE="HIDDEN" NAME="ima" VALUE="vcosme3_1.jpg">
+<INPUT TYPE="HIDDEN" NAME="poids" VALUE="0.3">
+<INPUT TYPE="HIDDEN" NAME="taxe" VALUE="19.6">
+<INPUT TYPE="HIDDEN" NAME="promo" VALUE="0">
+<tr>
+<td height="4" colspan="3"></td>
+</tr>
+<tr id="couleur_fond_pour_affichage_alterne_recherche_resultats">
+<td width="1"><a href="fiche_produit.cfm?ref=cosme3&amp;type=17&amp;code_lg=lg_fr&amp;num=4">
+<img src="images_produits/vcosme3_1.jpg" border="0" class="bordure_image_defaut" vspace="0" hspace="0"></a></td>
+<td width="1">&nbsp;</td>
+<td valign="top">
+
+<a href="fiche_produit.cfm?ref=cosme3&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_nom_article_recherche_resultats"><span>N°3 Crème des Dievx<br></span></a>
+<span id="titre_nom_marque_recherche_resultats">DIEVX DV STADE<br></span>
+<span class="texte_catalogue">
+<br>
+Crème hydratante Visage
+</span>
+</td>
+<td width="1">&nbsp;</td>
+<td width="90" valign="top" class="texte_catalogue">
+<span id="prix_devise_gras_recherche_resultats" style="white-space:nowrap;">
+34.00
+EURO
+</span>
+<br>
+<a href="fiche_produit.cfm?ref=cosme3&amp;type=17&amp;code_lg=lg_fr&amp;num=4" id="lien_plus_infos_recherche_resultats"><span>> Plus dýinfos</span></a>
+
+<br>
+<a href="javascript:document.form_result19.submit();" id="lien_selectionnez_recherche_resultats"><span>> Sélectionner</span></a>
+<br>
+</td>
+</tr>
+<tr>
+<td height="2" colspan="3"></td>
+</tr>
+</table>
+</form>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="1" id="couleur_fond_segmentation_recherche_resultats">
+<tr>
+<td>
+<table width="100%" border="0" cellspacing="0" cellpadding="3">
+<tr>
+
+<td align="left" nowrap width="20%">
+&nbsp;
+</td>
+<td align="center" width="60%">
+<span id="chiffre_numero_page_non_cliquable_recherche_resultats">1</span>
+<a href="javascript:chiffre(2);" id="lien_numero_pages_recherche_resultats"><span>2</span></a>
+<a href="javascript:chiffre(3);" id="lien_numero_pages_recherche_resultats"><span>3</span></a>
+<a href="javascript:chiffre(4);" id="lien_numero_pages_recherche_resultats"><span>4</span></a>
+<a href="javascript:chiffre(5);" id="lien_numero_pages_recherche_resultats"><span>5</span></a>
+<a href="javascript:chiffre(6);" id="lien_numero_pages_recherche_resultats"><span>6</span></a>
+<a href="javascript:chiffre(7);" id="lien_numero_pages_recherche_resultats"><span>7</span></a>
+
+<a href="javascript:chiffre(8);" id="lien_numero_pages_recherche_resultats"><span>8</span></a>
+<a href="javascript:chiffre(9);" id="lien_numero_pages_recherche_resultats"><span>9</span></a>
+<a href="javascript:chiffre(10);" id="lien_numero_pages_recherche_resultats"><span>10</span></a>
+</td>
+<td align="right" nowrap width="20%">
+<a href="javascript:plus();" id="lien_suivant_recherche_resultats">
+<span>
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td><a href="javascript:plus();" id="lien_suivant_recherche_resultats">Suivante</a></td>
+<td id="image_fleche_suivante_recherche_resultats"></td>
+</tr>
+</table>
+
+</span>
+</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="footer">
+<div style="float:left; "><img src="img/bt_h_p.jpg" alt="Haut de page" border="0" usemap="#Map2"></div>
+
+<div id="nav_b">
+<div id="left"><span class="texte_catalogue">
+
+
+<DIV style="TEXT-ALIGN: center"><A class="catalogue"
+href="infos_societe.cfm?code_lg=lg_fr" target="_self">Qui sommes nous</A> |
+<A class="catalogue" href="infos_cgv.cfm?code_lg=lg_fr" target="_self">Conditions
+générales de vente</A> | <A class="catalogue"
+href="infos_securite_tpev.cfm?code_lg=lg_fr" target="_self">Paiement
+sécurisé</A></DIV>
+
+
+</span></div>
+<div id="right"><span class="texte_catalogue">
+
+<A class="catalogue" href="http://www.stade.fr/" target="_self">stade.fr © Copyright
+2007 </A>
+
+
+</span></div>
+</div>
+</div>
+<div>&nbsp;</div>
+<map name="Map">
+<area shape="rect" coords="69,104,195,199" href="liste_rayons.cfm?code_lg=lg_fr">
+<area shape="rect" coords="39,1,101,30" href="liste_rayons.cfm?code_lg=lg_fr">
+<area shape="rect" coords="182,0,212,29" href="http://boutique.stade.fr/index_us.htm">
+</map>
+<map name="Map2">
+<area shape="rect" coords="55,5,183,43" href="#top">
+</map>
+
+
+<div style="font-family: arial, helvetica, verdana, sans-serif ; color: ; font-size: 07pt ; text-decoration: none ; background-color: ; width:100% ; text-align: center ;">powered by <a href="http://www.powerboutique.com/site/powerboutique_expert.cfm?code=DYS2" target="_blank"><img src="images_boutique/logo/mini_logo_pwb.gif" align="absmiddle" alt="Solution de site avec paiement par carte bancaire" border="0"> solution de sites commerciaux </a></div>
+<!-- eStat -->
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+var _PJS=0;
+//-->
+</SCRIPT>
+<SCRIPT LANGUAGE="JavaScript" SRC="http://prof.estat.com/js/m.js"></SCRIPT>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+if(_PJS) _estatl("237037197209","","boutique","stade_boutique");
+//-->
+</SCRIPT>
+<NOSCRIPT>
+<IMG SRC="http://prof.estat.com/m/web/237037197209?p=boutique&c=stade_boutique&st=0&sjs=0" BORDER="0" WIDTH="1" HEIGHT="1" />
+</NOSCRIPT>
+<!-- /eStat -->
+<a href="../wtec/welcome_bots.html"></a></body>
+
+</html>

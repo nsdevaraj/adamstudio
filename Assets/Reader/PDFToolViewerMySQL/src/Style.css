@@ -1,0 +1,174 @@
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx"; 
+
+@font-face
+{
+	fontFamily: Calibri;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: true;
+}  
+@font-face
+{
+	fontFamily: CalibriMx;
+	src: url("/assets/fonts/CALIBRI.TTF");
+	embedAsCFF: false;
+} 
+mx|Alert{
+	font-family: Calibri;
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+	background-color:#e1ecf6;
+	color:#282425;
+}
+s|Application{
+	chrome-color:#2d3239;
+	content-background-color:#313235;
+	color:#bdbdbd;
+	fontFamily: Calibri;
+	skin-class:ClassReference('assets.skins.ApplicationSkin');
+	background-color:#2d3540;
+	symbol-color:#ffff00;
+	focus-color:#efefef;
+}
+s|Panel{
+	background-color:#3f3f3f;
+} 
+s|TextArea{
+	fontFamily: Calibri;
+}
+s|DataGrid{
+	skin-class:ClassReference('assets.skins.DataGridSkin');
+	selection-color:#3f646b;
+}   
+s|FormItem{
+	skinClass : ClassReference("assets.skins.form.StackedFormItemViewSkin");
+}
+s|Label.header{
+	font-size:22;
+	color:#959595;
+	font-weight:normal;
+}
+s|ButtonBar{
+	skin-class:ClassReference('assets.skins.ButtonBar.ButtonBarSkin');
+} 
+s|TitleWindow{
+	skin-class:ClassReference('assets.skins.resize.ResizableDraggableTitleWindowSkin');
+}
+/* PDF Tool Skins */
+s|ToggleButton.LineBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#LineTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#LineSelected');
+}
+s|ToggleButton.RectangleBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#RectangleSelected');
+}
+s|ToggleButton.NormalRectangleBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIcon');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#noteIconOver');
+}
+s|ToggleButton.NoteOnOffBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#CommentOffSkin');
+}
+s|ToggleButton.NoteExpandCollpseBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CollapseBtnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#ExpandBtnSkin');
+}
+s|ToggleButton.PlayPauseBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#playButtonDownSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#pauseButtonDownSkin');
+}
+s|ToggleButton.OvalBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#OvalSelected');
+}
+s|ToggleButton.PathBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushTool');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#BrushSelected');
+}
+s|ToggleButton.RegionPointerToggleSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#DotBtnSkinSelected');
+}
+s|Button.PDF1BtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIconSelect');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIconSelect');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#FirstPDFIcon');
+	disabled-alpha: 0.5;
+}
+s|Button.PDF2BtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIcon');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIconSelect');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIconSelect');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#SecondPDFIcon');
+	disabled-alpha: 0.5;
+}
+s|Button.HelpBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#HelpSkin');
+	disabled-alpha: 0.5;
+}
+s|Button.CompareBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#CompareButtonOverSkin');
+	disabled-alpha: 0.5;
+}
+s|Button.doubleViewToggleBtnSkin{
+	skin-class:ClassReference('assets.skins.ButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewUp');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewOver');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewOver');
+	disabledSkin:Embed('assets/swf/additionalAssetsReader.swf#doubleViewUp');
+	disabled-alpha: 0.5;
+}
+s|ToggleButton.commentListDisplayBtnSkin{
+	skin-class:ClassReference('assets.skins.toggleButton.ToggleButtonSkin');
+	upSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	overSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	downSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListCloseSkin');
+	selectedSkin:Embed('assets/swf/additionalAssetsReader.swf#NoteListOpenSkin');
+}
+s|Button.commentBoxBtnSkin{
+	color: #eeeeee;
+	disabled-color: #cccccc;
+}
+s|TextInput.commentBoxTxtSkin{
+	color: #eeeeee;
+	disabled-color: #cccccc;
+}

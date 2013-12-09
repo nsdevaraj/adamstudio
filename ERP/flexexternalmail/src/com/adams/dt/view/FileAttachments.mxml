@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="95%" height="150" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10">
+<!-- <mx:Style>
+  .uploadDGStyle {
+     alternatingItemColors: #666666, #363636;
+     headerColors: #363636, #363636;
+     rollOverColor: #000000;
+     textRollOverColor: #ffffff;
+     selectionColor: #0f0f0f;
+     textSelectedColor: #cecece;
+     iconColor: #111111;
+     borderThickness: 0;
+     color: #ffffff;
+     headerStyleName: "uploadDGStylemydataGridHeaderStyle";
+  }
+  
+  .uploadDGStylemydataGridHeaderStyle {
+     color: #ffffff;
+     letterSpacing: 0;
+  }
+ </mx:Style>-->
+ <mx:Script>
+  <![CDATA[
+  	import com.adams.dt.model.ModelLocator;
+   import mx.collections.ArrayCollection;
+   import mx.controls.Alert;
+   private var _refAddFiles:FileReference; 
+   private var _refUploadFile:FileReference;
+   private var _arrUploadFiles:Array=new Array();
+   [Bindable]
+   public var arrayCollFinal:ArrayCollection=new ArrayCollection();
+   
+   [Bindable]
+   private var model:ModelLocator = ModelLocator.getInstance();
+   
+   private function addFiles():void {
+    if(_arrUploadFiles.length+1<6){
+    _refAddFiles = new FileReference();
+    _refAddFiles.addEventListener(Event.SELECT, onSelectFile);
+    
+    _refAddFiles.browse([new FileFilter("*.* (*.jpg, *.jpeg, *.gif, *.png, *.txt, *.pdf)", "*.jpg;*.jpeg;*.gif;*.png;*.txt;*.pdf")]);
+    }
+    else
+    {
+     Alert.show("Maximum 5 Files Only allowed","Limited")
+    }
+   }
+   private function removeFiles():void {
+    var arrSelected:Array = listFiles.selectedIndices;
+    if (arrSelected.length >= 1) {
+     for (var i:Number = 0; i < arrSelected.length; i++) {
+      _arrUploadFiles[Number(arrSelected[i])] = null;
+      arrayCollFinal.removeItemAt(Number(arrSelected[i]));
+     }
+     for (var j:Number = 0; j < _arrUploadFiles.length; j++) {
+      if (_arrUploadFiles[j] == null) {
+       _arrUploadFiles.splice(j, 1);
+       j--;
+      }
+     }
+     listFiles.dataProvider = _arrUploadFiles;
+     listFiles.selectedIndex = 0;     
+    }
+    if(_arrUploadFiles.length==0) 
+    {
+     listFiles.visible=false;
+    }
+    //updateProgBar();
+    scrollFiles();
+    //uploadCheck();
+   }
+   private var filename:String="";
+   private function onSelectFile(event:Event):void {
+    var sizeLen:Number=formatFileSize(_refAddFiles.size).length;
+    var sizeStr:String=formatFileSize(_refAddFiles.size);
+    filename="";
+    if((Number(sizeStr.substr(0,sizeLen-4))<=4 || sizeStr.substr(sizeLen-2)=="KB") && sizeStr.substr(sizeLen-2)!="GB"){
+     var selectOkMode:Boolean=true;
+     for (var i:Number = 0; i < _arrUploadFiles.length; i++) {
+      if (_arrUploadFiles[i].name == _refAddFiles.name) {
+       selectOkMode=false; 
+      }
+     }
+     if(selectOkMode){
+     _refAddFiles.addEventListener(Event.COMPLETE, onFileLoaded);
+     _refAddFiles.load();
+                _arrUploadFiles.push({
+        name:_refAddFiles.name,
+        size:formatFileSize(_refAddFiles.size),
+        file:_refAddFiles});
+      filename = _refAddFiles.name;
+      listFiles.dataProvider = _arrUploadFiles;
+      listFiles.selectedIndex = _arrUploadFiles.length - 1;
+     listFiles.visible=true;
+     scrollFiles(); 
+     }
+     else{
+      Alert.show("File already selected","Failed")
+     }
+    } 
+     else{
+     Alert.show("Maximum 4 MB File Only allowed","Failed")
+    } 
+    
+   }
+   public function onFileLoaded(event:Event):void
+   {
+    // localFileName
+    // byteDetail
+    var storeFileReference:FileReference = event.target as FileReference;
+    var myObject:Object= new Object();
+    myObject.localFileName = filename; 
+    myObject.byteDetail = storeFileReference.data;
+    arrayCollFinal.addItem(myObject);
+             
+      }
+   private function scrollFiles():void {
+    listFiles.verticalScrollPosition = listFiles.selectedIndex;
+    listFiles.validateNow();
+   }
+   private function formatFileSize(numSize:Number):String {
+    var strReturn:String;
+    numSize = Number(numSize / 1000);
+    strReturn = String(numSize.toFixed(1) + " KB");
+    if (numSize > 1000) {
+     numSize = numSize / 1000;
+     strReturn = String(numSize.toFixed(1) + " MB");
+     if (numSize > 1000) {
+      numSize = numSize / 1000;
+      strReturn = String(numSize.toFixed(1) + " GB");
+     }
+    }    
+    return strReturn;
+   }
+   
+  ]]>
+ </mx:Script>
+ <mx:Canvas width="100%">
+   <mx:Label text="{model.loc.getString('fileAttachementFlex')}" fontSize="11" fontWeight="bold" />
+   <mx:HBox right="0">
+    <mx:Button label="{model.loc.getString('addFilesFlex')}" click="addFiles()" enabled="{model.editForm}"/>
+    <mx:Button label="{model.loc.getString('removeFilesFlex')}" click="removeFiles()" enabled="{model.editForm}"/>
+   </mx:HBox>
+  </mx:Canvas>
+  <mx:Canvas width="100%" height="100%" borderColor="#000000" borderStyle="solid" borderThickness="1"  >
+   <mx:DataGrid id="listFiles" left="5" right="5" bottom="5" top="5" 
+    width="100%" height="100%" visible="false" 
+    allowMultipleSelection="true" 
+    draggableColumns="false" resizableColumns="false" sortableColumns="false">
+    <mx:columns>
+     <mx:DataGridColumn headerText="{model.loc.getString('fileHeaderFlex')}" dataField="name" wordWrap="true"/>
+     <mx:DataGridColumn headerText="{model.loc.getString('sizeFlex')}" dataField="size" width="150" textAlign="right"/>
+    </mx:columns>
+   </mx:DataGrid>
+   <mx:Label id="noattach" 
+    text="{model.loc.getString('noAttachementFlex')}" fontSize="11" fontWeight="bold"
+    visible="{!listFiles.visible}"  
+    horizontalCenter="0" verticalCenter="0"/>
+  </mx:Canvas>
+</mx:VBox>

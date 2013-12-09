@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()" 
+	  currentState="newState">
+<mx:Style>
+	.pad{
+		padding-bottom:10;
+		padding-left:10;
+		padding-right:10;
+		padding-top:10;
+		vertical-gap:5;
+		vertical-align:middle;
+		horizontal-align:center;
+	}	
+	.panelStyle{
+		border-style:solid;
+		border-thickness:1;
+		border-skin: ClassReference('mx.skins.halo.PanelSkin');
+		padding-bottom:10;
+		padding-left:10;
+		padding-right:10;
+		padding-top:10;
+		title-style-name:header;
+		header-height:25;
+		corner-radius: 0;
+	}
+	.header{
+		fontFamily: myFont;
+		font-weight:bold;
+		text-align:left;
+		font-size: 12;
+	}
+		
+</mx:Style>
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.Phasestemplates;
+		import com.adams.dt.model.vo.WorkFlowset;
+		import com.adams.dt.model.vo.Workflows;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import com.adams.dt.utils.GetVOUtil;
+		import com.adams.dt.utils.Utils;
+		
+		import mx.collections.ArrayCollection;
+		import mx.containers.HBox;
+		import mx.containers.Panel;
+		import mx.effects.Resize;
+		import mx.events.CloseEvent;
+		
+		
+		[Bindable]
+		public var currentWFTemp:Workflowstemplates;
+		private var wf:WF; 
+		private var wfView:WFTempViewer;
+		private var workFlowArr:ArrayCollection= new ArrayCollection();
+		private var cloneWorkFlowArr:ArrayCollection;
+		[Bindable]
+		private var clickedFrontWFTask:WorkFlowset  
+		[Bindable]
+		private var workFlowId:int = 1;
+		[Bindable]
+		private var workFlowHolder:Panel;
+		 
+		private var tempObj:Object = {};
+		private function init():void{ 
+			workFlowArr = Utils.getAllWorkflowTemplatesSet(workFlowId);
+			WFContainer.removeAllChildren()
+			for each(var phasetemp:Phasestemplates in GetVOUtil.phaseTemplateList.items){
+				if (phasetemp.workflowId == workFlowId){
+					workFlowHolder = new Panel();
+					workFlowHolder.title =  phasetemp.phaseName+" PHASE";
+					workFlowHolder.styleName = 'panelStyle';
+					workFlowHolder.layout = "horizontal"
+			      	workFlowHolder.data = phasetemp.phaseTemplateId;
+					workFlowHolder.percentWidth = 100;
+					WFContainer.addChild(workFlowHolder)
+					currentWFTemp = WorkFlowset(workFlowArr.getItemAt(0)).frontWFTask;
+					GetVOUtil.selectedWFTemplateID =  currentWFTemp.workflowTemplateId
+					loadWorkFlowTemp(workFlowHolder)
+				}
+			} 
+		} 
+		private function loadWorkFlowTemp(con:Panel) :void {
+			for each ( var workFlowTempSet:WorkFlowset in workFlowArr) {
+				if(con.data == workFlowTempSet.phasesId ) {
+					wf = new WF()
+					con.addChild(wf);
+					wf.selectedWFTemp = workFlowTempSet;
+					wf.aBox.addEventListener(MouseEvent.CLICK,getWindow);
+					wf.bBox.addEventListener(MouseEvent.CLICK,getWindow);
+					wf.aBox.data = workFlowTempSet; 
+					wf.bBox.data = workFlowTempSet;  
+				}
+			}
+			
+		}
+		private function getWindow(event:Event):void {
+			var front:Boolean 
+			(event.target.name) == 'aBox' ? front = true : front =false
+			front ? GetVOUtil.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).frontWorkFlowId : GetVOUtil.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).backWorkFlowId;
+			getWFTWindow( WorkFlowset(event.currentTarget.data) ,front);
+		}
+		private function getWFTWindow(clickedFrontWFTask:WorkFlowset,frontTask:Boolean):void { 
+			WFViewer.removeAllChildren();
+			currentState = 'newClsState' 
+			wfView = new WFTempViewer();
+			wfView.clickedWFTemp = clickedFrontWFTask;
+			wfView.data = workFlowArr;
+			wfView.styleName = 'panelStyle';
+			WFViewer.addChild(wfView); 
+             frontTask ? wfView.aBtn.alpha = 1.0 :  wfView.bBtn.alpha = 1.0
+			wfView.addEventListener(CloseEvent.CLOSE,removeViewer);
+		}
+		 
+		private function removeViewer(event:CloseEvent):void{
+			currentState = 'newState'
+		}
+		 
+		private function getSelectedItem() :void {
+			var wfk:Workflows = GetVOUtil.workflowList.items.getItemAt( comboContainer.selectedIndex ) as Workflows
+			workFlowId = wfk.workflowId ;
+			WFContainer.removeAllChildren();
+			init(); 
+		}
+	]]>
+</mx:Script>
+<mx:Fade id="myFadeIn" alphaFrom="0" alphaTo="1" duration="500" target="{WFViewer}" />
+<mx:states>
+		<mx:State name="newState">
+			<mx:SetProperty target="{WFContainer}" name="visible" value="true"/>
+			<mx:SetProperty target="{WFContainer}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{WFViewer}" name="visible" value="false"/>
+			<mx:SetProperty target="{WFViewer}" name="includeInLayout" value="false"/>
+			<mx:SetProperty target="{coForm}" name="visible" value="true"/>
+			<mx:SetProperty target="{coForm}" name="includeInLayout" value="true"/>
+			
+		</mx:State>
+		<mx:State name="newClsState"> 
+			<mx:SetProperty target="{WFViewer}" name="visible" value="true"/>
+			<mx:SetProperty target="{WFViewer}" name="includeInLayout" value="true"/> 
+		</mx:State>
+</mx:states>
+	<mx:VBox styleName="pad" id="WFContainer" left="0" right="40"  bottom="0" horizontalCenter="0" 
+		top="{coForm.height}"   />
+		<mx:Form right="50" id="coForm" top="5" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" >
+		<mx:FormItem label="Selected Workflow :">
+			<mx:ComboBox  id="comboContainer" dataProvider="{ GetVOUtil.workflowList.items}"  
+			change="getSelectedItem()" labelField="workflowLabel"/>		
+		</mx:FormItem>
+		</mx:Form>
+	<mx:HBox id="WFViewer" width="95%" height="100%" backgroundAlpha=".01" backgroundColor="#363636"
+		 horizontalAlign="right" verticalAlign="middle"/>
+		 
+	<mx:Resize id="r1"/>
+</mx:Canvas>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	initialize="setMask()"
+	xmlns:view="com.adams.dt.view.components.*"
+	right="5"
+	left="5"
+	bottom="0"
+	top="0">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.CompaniesEvent;
+			import com.adams.dt.model.vo.Groups;
+			import com.adams.dt.event.GroupsEvent;
+			import com.adams.dt.event.WorkflowsEvent;
+	import com.adams.dt.event.ProfilesEvent;
+	import com.adobe.cairngorm.control.CairngormEventDispatcher;
+	import com.adams.dt.event.TeamlineTemplatesEvent;
+ 	import mx.controls.Alert;
+ 	import com.adams.dt.model.vo.Profiles;
+ 	import com.adams.dt.model.ModelLocator;
+ 	[Bindable]
+ 	private var model:ModelLocator = ModelLocator.getInstance();
+ 	private var roundedMask:Sprite;
+ 	private function setMask():void{
+		roundedMask = new Sprite();
+		roundedMask.graphics.clear();
+		roundedMask.graphics.beginFill(0xFF0000);
+		var w:Number = 290;
+		var h:Number = 55;
+		var cornerRadius:uint = 15;
+		roundedMask.graphics.drawRoundRect(0, 0, w, h,cornerRadius, cornerRadius);
+		roundedMask.graphics.endFill();
+		imgCont.rawChildren.addChild(roundedMask);
+		imgCont.mask = roundedMask;
+		
+		
+	}
+ 	]]>
+	</mx:Script>
+	<mx:Canvas id="imgCont"
+		verticalScrollPolicy="off"
+		horizontalScrollPolicy="off"
+		right="0"
+		left="0"
+		bottom="0"
+		top="0">
+		<mx:Image id="bgImg"
+			height="55"
+			scaleContent="true"
+			source="{Profiles(model.profilesCollection.getItemAt( 0 )).profileBckgdImage}"/>
+		<mx:Canvas verticalScrollPolicy="off"
+			horizontalScrollPolicy="off"
+			right="5"
+			left="5"
+			bottom="3"
+			top="3">
+			<mx:Image id="pic"
+				source="{model.businessCard.personPict}"
+				width="50"
+				height="50"
+				left="5"/>
+			<mx:VBox right="5"
+				top="5"
+				left="{pic.width+15}"
+				verticalGap="0">
+				<mx:Text text="{model.businessCard.personFirstname+' '+model.businessCard.personLastname}"
+					styleName="menuText"/>
+				<mx:Text fontSize="10"
+					text="{}"
+					color="#ffffff"/>
+				<mx:Text text="{model.businessCard.personPosition}"
+					color="#ffffff"
+					fontSize="10"/>
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>
+</mx:Canvas>

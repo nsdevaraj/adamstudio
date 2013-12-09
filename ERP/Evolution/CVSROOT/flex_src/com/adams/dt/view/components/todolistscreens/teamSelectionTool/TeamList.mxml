@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%">
+<mx:Script>
+	<![CDATA[
+		import mx.collections.IViewCursor;
+		import mx.core.UIComponent;
+		import com.adams.dt.model.ModelLocator;
+		import mx.events.CollectionEvent;
+		import mx.events.FlexEvent;
+		import com.adams.dt.event.TeamlineEvent;
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.model.vo.Teamlines;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.business.util.GetVOUtil;
+		import mx.controls.Button;
+		import mx.controls.Alert;
+		import mx.collections.IList;
+		import mx.managers.DragManager;
+		import mx.collections.ArrayCollection;
+		import mx.events.DragEvent;
+		
+		[Bindable]
+		public var personList:List; 
+		
+		[Bindable]
+		public var personContainer:List; 
+		[Bindable]
+		public var dropEnabled:Boolean;
+		
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance(); 
+		override public function set data(value:Object):void
+		{
+			
+			super.data = value;
+			
+		}
+		private function dragEnterHandler( event:DragEvent ):void
+		{
+			var dropTarget:List=event.currentTarget as List;
+			
+			var dragObj:Array = event.dragSource.dataForFormat("items") as Array; 
+			if(dragObj[0].profile.profileId==dropTarget.name)
+			{
+				if(!checkDuplicateItems(dropTarget,dragObj))
+				{
+					checkDroppedItems(dragObj)
+					DragManager.acceptDragDrop(dropTarget);
+				}else{
+					//Alert.show(" Items Already There");
+				}
+			}
+			
+		}
+		private function dragDropHandler( event:DragEvent ):void
+		{
+			var dropTarget:List=event.currentTarget as List;
+			personList = List(event.dragInitiator)
+			var dragObj:Array = event.dragSource.dataForFormat("items") as Array; 
+			dropTarget.dataProvider.addItem( convertPersonToTeamline( dragObj ) );  
+			dropEnabled = true;
+			model.addedTeamLineColl.addItem(convertPersonToTeamline ( dragObj ))
+		}
+		private function convertPersonToTeamline(dragArr:Array):Teamlines
+		{
+			var teamLine:Teamlines = new Teamlines();
+			teamLine.personID = dragArr[0].person.personId;
+			teamLine.profileID = dragArr[0].profile.profileId;
+			teamLine.projectID = model.currentProjects.projectId;
+			return teamLine;
+		}
+		public function checkDuplicateItems( arr:List ,draggedArr:Array ):Boolean
+		{
+			var retVal:Boolean
+			var droppedColl:ArrayCollection = arr.dataProvider as ArrayCollection;
+			for( var i:int = 0;i<droppedColl.length;i++)
+			{
+				if(droppedColl.getItemAt(i).personID == draggedArr[0].person.personId)
+				{
+					retVal = true
+					break;
+				}else{
+					retVal = false;
+				}
+			}
+			return retVal;
+		}
+		public function convertTeamlineToPerson(obj:Teamlines):Object
+		{
+			var profileObj:Object = new Object();
+			profileObj.profile = GetVOUtil.getProfileObject( obj.profileID );
+		 	profileObj.person = GetVOUtil.getPersonObject( obj.personID );
+		 	profileObj.personId = GetVOUtil.getPersonObject( obj.personID ).personId;
+		 	return profileObj;
+		}
+		private function checkDroppedItems(dropObj:Array):void
+		{
+			for each( var deleteTeamLine:Teamlines in model.deleteTeamLineColl )
+			{
+				if(deleteTeamLine.personID == dropObj[0].person.personId )
+				{
+					model.deleteTeamLineColl.removeItemAt( model.deleteTeamLineColl.getItemIndex(deleteTeamLine) );
+				}
+			}
+		}
+		
+	]]>
+</mx:Script>
+
+	<mx:Box id="headerBox" x="{con.x}"  paddingLeft="5" paddingRight="5" top="5" left="5"
+				 backgroundColor="{GetVOUtil.getProfileObject(data.profileID).profileColor}">
+			 	<mx:Label text="{GetVOUtil.getProfileObject(data.profileID).profileLabel}" styleName="menuText" fontSize="12"/>
+	</mx:Box>
+	<mx:List id="con" name="{data.profileID}"  top="25" bottom="5" left="5" right="5" width="100%" dataProvider="{data.profileData}" 
+		 itemRenderer="com.adams.dt.view.components.todolistscreens.teamSelectionTool.ProfileHolder"
+		 rowCount="1"  paddingLeft="5" paddingBottom="5" paddingRight="5" paddingTop="5"
+		   useRollOver="false"
+		 dragEnter="dragEnterHandler(event)"
+		 dragDrop="dragDropHandler(event)"
+		 />
+</mx:Canvas>

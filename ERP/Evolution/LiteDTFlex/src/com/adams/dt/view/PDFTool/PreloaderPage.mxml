@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:PDFTool="com.adams.dt.view.PDFTool.*"
+	backgroundColor="#000000" backgroundAlpha="0.3" width="100%" height="100%">
+	<PDFTool:PreloaderImg horizontalCenter="0" verticalCenter="0"/>
+</mx:Canvas>

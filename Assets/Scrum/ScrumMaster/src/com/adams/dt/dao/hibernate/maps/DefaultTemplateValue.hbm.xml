@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.DefaultTemplateValue" table="default_template_value">
+        <id name="defaultTemplateValueId" type="integer" column="default_template_value_id">
+            <generator class="increment" />
+        </id> 
+        <property name="defaultTemplateValue">
+            <column name="default_template_value" />
+        </property>
+		<property name="propertiesPresetFK">
+            <column name="property_preset_fk" />
+        </property>
+        <property name="defaultTemplateFK">
+            <column name="default_template_fk" />
+        </property> 
+    </class>  
+    
+     <query name="DefaultTemplateValue.findById">
+        select u from DefaultTemplateValue u where u.defaultTemplateFK=?
+    </query>   
+</hibernate-mapping>

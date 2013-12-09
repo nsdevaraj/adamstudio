@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" showCloseButton="true" 
+	 headerHeight="30" width="800" height="600" verticalGap="5" borderThickness="5"  creationComplete="createDataGrid()"
+    title="Technical Summary"  horizontalAlign="center"  close="{PopUpManager.removePopUp(this)}">
+
+    <mx:Script>
+        <![CDATA[
+        	import com.adams.dt.business.util.Utils;
+        	import com.adams.dt.view.components.exportGenerator.ExcelGenerator;
+        	import com.adams.dt.view.components.exportGenerator.PdfGenerator;
+        	import com.adams.dt.view.components.exportGenerator.TextGenerator;
+        	import com.adams.dt.view.components.exportGenerator.HtmlGenerator;
+        	import mx.collections.IViewCursor;
+        	import mx.collections.SortField;
+        	import mx.collections.Sort;
+        	import mx.controls.Text;
+        	import mx.controls.TextArea;
+        	import mx.controls.DataGrid;
+        	import mx.controls.Label;
+        	import mx.collections.ArrayCollection;
+        	import mx.managers.PopUpManager;
+        	import com.adams.dt.model.ModelLocator;
+        	import mx.effects.Fade;
+        	[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			 
+		   	private var _exportColl:ArrayCollection;
+		   	private var _projectComments:String;
+		   	private function createDataGrid():void
+		   	{
+		   	 _exportColl = new ArrayCollection(); 
+	   		 for each(var techObj:Object in model.techCollection){
+		   		 var obj:Object = getUniqueItem(techObj.Category);
+		   		 if(obj)
+		   		 {
+		   		 	obj.properties.push( getFieldValue( techObj )  );
+		   		 }else{
+		   		 	obj = {};
+		   		 	obj.properties = new Array();
+		   		 	obj.Category = techObj.Category;
+		   		 	obj.properties.push( getFieldValue( techObj ) );
+		   		 	_exportColl.addItem( obj );
+		   		 }
+	   		 	}
+	   		 	//get the General Properties.....
+		   		var objProp:Object={};
+		   		objProp.Category = "GeneralProperties"
+		   		objProp.properties = new Array();
+		   		objProp.properties= getGeneralProperties();
+		   		_exportColl.addItem( objProp ); 
+		   		_exportColl.refresh();
+		   		sortByCatagories();
+		   		var projectRegExp:RegExp = /<font face=\u0022(.*)\u0022>(.*)<\/font>/i;
+			    var projectCommentObj:Object = projectRegExp.exec(model.currentProjects.projectComment.toString());
+			    _projectComments =  projectCommentObj[2]
+		  }
+		  private function getUniqueItem( item:String ):Object
+		  {
+		  	 	for each(var expObj:Object in _exportColl){
+		  	 		if(expObj.Category ==  item )
+		  	 		{
+		  	 			return expObj
+		  	 		}
+		  	 	}
+		  	 	return null;
+		  }
+		  private function getFieldValue(obj:Object):Object
+		  {
+		  	var fieldObj:Object = new Object()
+		  	fieldObj.Field = obj.Field;
+		  	fieldObj.Value = obj.Value;
+		  	return fieldObj
+		  }
+		  private function getGeneralProperties():Array
+		  {
+		  	var genArr:Array = ["ean","sap","department","brand","id","name"]
+		  	var retArr:Array = []
+		  	for (var i:int=0;i<genArr.length;i++)
+		  	{
+		  		var genObj:Object = new Object();
+		  		if(genArr[i]!= 'id' && genArr[i]!= 'name' )
+		  		{
+		  			genObj.Field = Utils.getPropPreset(genArr[i]).fieldLabel;
+		  			genObj.Value = Utils.getPropertyValue(model.currentProjects,genArr[i]);
+		  		}else{
+		  			genObj.Field = (genArr[i]=='id')?'ProjectID':'ProjectName'
+		  			genObj.Value = Utils.getName( model.currentProjects, genArr[i] )
+		  		}
+		  		retArr.push(genObj);
+		  	} 
+		  	return retArr
+		  }
+		  private function sortByCatagories():void
+		  {
+		  	var sort:Sort = new Sort()
+		  	sort.fields = [new SortField('Category')];
+		  	_exportColl.sort = sort; 
+		  	_exportColl.refresh();
+		  	for each( var exportObj:Object in _exportColl)
+		  	{
+		  		var title:Label = new Label();
+		   	 	title.text =  exportObj.Category;
+		   	 	title.styleName = 'dynamicReport';
+		   	 	title.percentWidth=95;
+		   	 	addChild(title);
+		   	 	var exportDataGrid:DataGrid = new DataGrid();
+		   	 	exportDataGrid.name =  exportObj.Category;
+		   	 	exportDataGrid.dataProvider = exportObj.properties;
+		   	 	var rheight:int = exportDataGrid.dataProvider.length*23+25;		   	
+		   	 	exportDataGrid.height = rheight;
+		   	 	exportDataGrid.percentWidth = 95;
+		   	 	addChild(exportDataGrid);
+		  	}
+		  }
+		  
+		  private function generatePDF():void
+		  {
+		  	var generatePdf:PdfGenerator = new PdfGenerator();
+		  	generatePdf.createPdf( _exportColl ,_projectComments );
+		  }
+		  private function generateExcel():void
+		  {
+		  	var generateExcel:ExcelGenerator = new ExcelGenerator();
+		  	generateExcel.createExcel( _exportColl ,_projectComments );
+		  }
+ 		  private function generateHtml():void
+ 		  {
+ 		  	var generateHtml:HtmlGenerator = new HtmlGenerator()
+ 		  	generateHtml.createHtml( _exportColl ,_projectComments );
+ 		  }
+ 		  private function generateText():void
+ 		  {
+ 		  	var generateText:TextGenerator = new TextGenerator();
+ 		  	generateText.createTextFile( _exportColl ,_projectComments );
+ 		  }
+ 		  
+        ]]>
+    </mx:Script>
+     <mx:ControlBar width="100%">
+    <mx:HBox verticalAlign="middle" horizontalAlign="right" width="100%" 
+			              paddingBottom="3" paddingTop="3" paddingLeft="5" paddingRight="5">
+		   <mx:Label text="Save file as :" />  
+		   <mx:Button styleName="Innerpdf" buttonMode="true" name="pdf" click="generatePDF(  )"/>
+           <mx:Button id="_xlsButton" styleName="xlSheet" buttonMode="true" name="xls" click="generateExcel( )"
+        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+           <mx:Button id="_txtButton" styleName="htmlIcon" buttonMode="true" name="txt" click="generateHtml( )"
+        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+           <mx:Button id="_textButton" styleName="textIcon" buttonMode="true" name="text" click="generateText( )"
+        		       showEffect="{mx.effects.Fade}" hideEffect="{mx.effects.Fade}"/>	
+	</mx:HBox>
+	</mx:ControlBar>
+  
+</mx:TitleWindow>  

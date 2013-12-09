@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:com="com.adams.dam.view.customComponents.*"
+		xmlns:autoComplete="com.adams.dam.view.hosts.autoComplete.*">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("com.adams.dam.view.hosts.allFiles.AllFilesView")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dam.model.FileCategory;
+			import com.adams.dam.model.ModelLocator;
+			
+			import mx.collections.IList;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+	</s:layout>
+	
+	<s:BorderContainer  horizontalCenter="0" borderVisible="false" top="0" width="100%"
+						height="65" id="filterPanel" backgroundColor="#152b39">
+		<s:layout><s:VerticalLayout  horizontalAlign="center" 
+									 paddingTop="10"
+									 paddingBottom="10"
+									 paddingLeft="10"
+									 paddingRight="10"/></s:layout>
+		<s:Group>
+			<s:layout><s:HorizontalLayout gap="25" variableColumnWidth="false" columnWidth="120" horizontalAlign="left"/></s:layout>
+			<s:CheckBox id="filtersKey" label="Filters"/>
+			<s:Label text="Domain" />
+			<s:Label text="Category" />
+			<s:Label text="Project" /> 
+		</s:Group>
+		
+		<s:Group>
+			<s:layout><s:HorizontalLayout gap="25" variableColumnWidth="false" columnWidth="120" horizontalAlign="left"/></s:layout>
+			<mx:Spacer/>
+			<s:DropDownList id="domain" dataProvider="{ model.domainCollection }" labelField="categoryName" enabled="{ filtersKey.selected }" selectedIndex="0"/>
+			<s:DropDownList id="category" dataProvider="{ hostComponent.categoryList }" labelField="categoryFilterName" enabled="{ filtersKey.selected }" selectedIndex="0"/>
+			<s:DropDownList id="project" dataProvider="{ hostComponent.projectList }" labelField="projectName" enabled="{ filtersKey.selected }" selectedIndex="0"/>
+		</s:Group>
+		
+	</s:BorderContainer>
+	
+	<s:HGroup   verticalAlign="middle">
+		<autoComplete:AutoCompleteView width="477" dataCollection="{ hostComponent.filesDataProvider }" labelField="All" nameProperty="[ 'fileName' ]" 
+									   skinClass="com.adams.dam.view.skins.autoComplete.AutoCompleteSkin" id="autoComplete"/>
+		<s:DropDownList id="searchSelector"  />
+		<s:ButtonBar dataProvider="{ stack }" requireSelection="true"/>
+	</s:HGroup>
+	
+	<mx:ViewStack id="stack" width="800" height="100%" selectedIndex="{ hostComponent.selectedIndex }">
+		<s:NavigatorContent width="100%" height="100%">
+			<com:FileContainerGrid id="dashBoardGrid" width="100%" height="100%" dataProvider="{ hostComponent.filesDataProvider }" 
+								   selectedColumnIndex="{ ( searchSelector.selectedIndex - 1 ) }"
+								   specificText="{ autoComplete.specificText }" itemRenderer="com.adams.dam.view.renderers.TextColorRenderer">
+				<com:columns>
+					<mx:DataGridColumn labelFunction="hostComponent.getProjectName" headerText="Project Name"/>
+					<mx:DataGridColumn dataField="fileName" headerText="File Name"/>
+					<mx:DataGridColumn dataField="fileCategory" headerText="File Catgory"/>
+				</com:columns>	
+			</com:FileContainerGrid> 	
+		</s:NavigatorContent>
+		<s:NavigatorContent width="100%" height="100%">
+			<com:FileContainerList width="100%" height="100%" dataProvider="{ hostComponent.filesDataProvider }" labelField="fileName"
+								   				borderVisible="false" dropEnabled="true" fileCategory="{ FileCategory.UNORGANIZED }"
+												uploadCompleted="{ model.uploadCompleted }">
+				<com:layout>
+					<s:TileLayout columnAlign="justifyUsingWidth" />
+				</com:layout>
+			</com:FileContainerList>
+		</s:NavigatorContent>	
+	</mx:ViewStack>
+	
+</s:Skin>

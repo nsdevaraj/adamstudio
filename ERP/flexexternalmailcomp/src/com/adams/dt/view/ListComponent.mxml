@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas initialize="{init()}" xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" label="{domainLabel}">
+<mx:Script> 
+	<![CDATA[
+		import com.adams.dt.event.generator.SequenceGenerator;
+		import mx.events.ListEvent;
+		import com.adams.dt.event.PropertiespresetsEvent;
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import com.adams.dt.event.FileDetailsEvent;
+		import com.adams.dt.model.vo.FileDetails;
+		import com.adams.dt.model.vo.Categories;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.model.vo.PDFTool.CommentVO;
+		import com.adams.dt.event.PDFTool.PDFInitEvent;
+		import mx.events.CollectionEvent;
+		import com.adams.dt.model.vo.Events;
+		import com.adams.dt.event.EventsEvent;
+		import com.adams.dt.model.vo.EventStatus;
+		
+		import com.adams.dt.event.PhasestemplatesEvent;
+		import com.adams.dt.event.ProfilesEvent;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.model.vo.Projects;
+		import com.adams.dt.event.ProjectsEvent;
+		import mx.utils.ObjectUtil;
+		import mx.controls.Alert;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.event.TasksEvent;
+		import com.adams.dt.model.scheduler.taskClasses.Task;
+		import com.adams.dt.model.vo.TaskStatus;
+		import com.adams.dt.model.ModelLocator;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.OpenToDoListScreenEvent;
+		import com.adams.dt.model.vo.Tasks;
+		import com.adams.dt.view.ListRenderer;
+		
+		import mx.collections.ArrayCollection;
+		[Bindable]
+		public var taskData:ArrayCollection;
+		[Bindable]
+		public var domainLabel:String;
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private function init():void{								
+			model.taskCollection.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateSelectedItem,false,0,true);	
+		}
+		private function updateSelectedItem(event:CollectionEvent):void{
+			todo.selectedItem = model.currentTasks;
+		}
+		public function dispacthCaigromEvent(event:Event):void
+		{
+			if(Tasks(todo.selectedItem)!=null)
+			{
+				model.updateProperty = false;		
+				var tasks:Tasks = Tasks(todo.selectedItem);			
+				model.currentTasks = tasks;				
+				
+				model.currentProjects = tasks.projectObject;
+				model.currentProfiles = model.currentTasks.workflowtemplateFK.profileObject;
+				model.workflowstemplates = model.currentTasks.workflowtemplateFK;				
+	  							  	
+	  			if(model.currentTasks.personDetails!=null)
+					model.currentPersons = model.currentTasks.personDetails;
+				
+				if(tasks.previousTask!=null){
+					model.businessCard = tasks.previousTask.personDetails
+	  			}
+  			 	 
+	  			var openScreen:String
+	  			openScreen = tasks.workflowtemplateFK.taskCode;
+	  			if(tasks.taskStatusFK == TaskStatus.WAITING){
+					var status:Status = new Status();
+					tasks.taskStatusFK = TaskStatus.INPROGRESS;;
+					tasks.tDateInprogress = model.currentTime;
+					tasks.personDetails = model.person;	
+									 		
+					var updateEvent:TasksEvent = new TasksEvent(TasksEvent.EVENT_UPDATE_TODO_TASKS);
+					updateEvent.tasks = tasks;
+					CairngormEventDispatcher.getInstance().dispatchEvent( updateEvent );
+					
+					/* var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_BASICFILEDETAILS);
+					CairngormEventDispatcher.getInstance().dispatchEvent( fileEvent ); */
+	  			} else{
+	  				
+	  				var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_SELECT_IMP_FILE);
+	  				CairngormEventDispatcher.getInstance().dispatchEvent( fileEvent );
+	  				/* var fileEvent:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_BASICFILEDETAILS);
+					CairngormEventDispatcher.getInstance().dispatchEvent( fileEvent ); */
+	  			}
+				trace("projectName :"+model.currentProjects.projectName);
+				trace("Sender :"+model.currentTasks.previousTask.personDetails);
+				//trace("Sender :"+model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname+' '+model.currentTasks.previousTask.personDetails.company.companyname+'')
+				//trace("Receiver :"+model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname+' '+model.currentTasks.personDetails.company.companyname+'');
+				
+	  			//var screenEvent:OpenToDoListScreenEvent = new OpenToDoListScreenEvent(openScreen);
+				//screenEvent.dispatch();
+				//model.expiryState = 'loadState'; 
+								
+				model.mainClass.planView.selectedIndex = 1;
+				model.businessCard =  model.person;
+							
+			}
+			//model.propertiespresetsCollection.refresh();
+			//model.propertiespresetsCollection.dispatchEvent(collectionEvent);
+		}
+		private var collectionEvent:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
+		public function checkFileAccess(work:Workflowstemplates):Boolean{
+			/* for each(var item:Workflowstemplates in model.fileAccessTemplates){
+				if(item.workflowTemplateId == work.workflowTemplateId)return true;
+			} */
+			return false;
+		} 
+		private var profile:String =  Profiles(model.profilesCollection.getItemAt(0)).profileCode;
+		public function get visibility():Boolean{
+    			if(profile == 'CLT'){
+    				return false;
+    			}
+    			return true;
+    		}
+    	 
+	]]>
+</mx:Script> 
+	<mx:HBox  height="35" top="0" horizontalGap="0" left="0" right="0" backgroundColor="#39382d">
+		<mx:Canvas width="55" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" text="Status"/>
+		</mx:Canvas>
+		<mx:Canvas width="{(todo.width-180)/2}" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" text="Project Name"/>
+		</mx:Canvas>
+		<mx:Canvas width="{(todo.width-180)/4}" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" text="Current Task"/>
+		</mx:Canvas>
+		<mx:Canvas width="{(todo.width-180)/4}" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" text="Date"/>
+		</mx:Canvas>
+		<mx:Canvas width="90" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" visible="{visibility}" text="Category" />
+		</mx:Canvas>
+		<!--<mx:Canvas width="55" height="100%">
+			<mx:Text verticalCenter="0" horizontalCenter="0" color="#a2a2a2" styleName="menuText" text="Detail"/>
+		</mx:Canvas>-->
+	</mx:HBox>
+	
+	<mx:List id="todo" left="0" top="35" bottom="0" right="0" paddingLeft="0" paddingRight="0" borderStyle="none" 
+		backgroundAlpha="0" dataProvider="{taskData}" itemClick="dispacthCaigromEvent(event)" itemRenderer="com.adams.dt.view.ListRenderer"/>
+			
+				
+</mx:Canvas>

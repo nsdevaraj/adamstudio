@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TodoList xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%" creationComplete="updateProperties()"
+	xmlns="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:todolistscreens="com.adams.dt.view.components.todolistscreens.*">
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection; 
+		import com.adams.dt.model.ModelLocator;
+		
+		/**
+		 * override the gotoPrevTask and update the properties
+		 */
+		override public function gotoPrevTask():void{
+			//model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+			var arrc:ArrayCollection = property.getPropertiespjSet();
+			var totalConcat:ArrayCollection = new ArrayCollection( arrc.source.concat( model.extraPropertyCollection.source ) );
+			model.currentTasks.projectObject.propertiespjSet = totalConcat;
+			super.gotoPrevTask();
+		}
+		/**
+		 * override the gotoNextTask and update the properties
+		 */
+		override public function gotoNextTask():void{
+			//model.currentTasks.projectObject.propertiespjSet = property.getPropertiespjSet();
+			var arrc:ArrayCollection = property.getPropertiespjSet();
+			var totalConcat:ArrayCollection = new ArrayCollection( arrc.source.concat( model.extraPropertyCollection.source ) );
+			model.currentTasks.projectObject.propertiespjSet = totalConcat;
+			super.gotoNextTask();
+		}
+		
+		override public function updateProperties():void {
+			if( property.timeChalk ) {
+				property.timeChalk.updateProperties();
+			}
+		}
+		
+	]]>
+	</mx:Script>
+	<todolistscreens:OrderDescImp id="property"/>
+</TodoList>

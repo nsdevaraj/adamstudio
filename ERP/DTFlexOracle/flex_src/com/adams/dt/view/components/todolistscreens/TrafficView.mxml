@@ -1,0 +1,839 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:components="com.adams.dt.view.components.*"
+	width="98%" 
+	xmlns:teamSelection="com.adams.dt.view.components.todolistscreens.teamSelectionTool.*"
+	creationComplete="updateProperties()"
+	creationCompleteEffect="{ mx.effects.Fade }">
+	<mx:Metadata>
+		[Event(name="propertySaveonMail", type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.RefreshEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.effects.Fade;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.view.components.InformationTool;
+			import com.adams.dt.view.components.todolistscreens.teamSelectionTool.ProfileSelection;
+		/**
+		 * General screen
+		 */ 
+		import com.adams.dt.event.PropertiespjEvent;
+		import mx.events.ChildExistenceChangedEvent;
+		import com.adams.dt.model.vo.TaskStatus;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import mx.events.CloseEvent;
+		import com.adams.dt.model.vo.Impremiur;
+		import com.adams.dt.event.CompaniesEvent;
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.view.components.NewPersonTemplate;
+		import com.adams.dt.event.generator.SequenceGenerator;
+		import com.adams.dt.model.vo.Tasks;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import mx.collections.IViewCursor;
+		import com.adams.dt.model.vo.Projects;
+		import com.adams.dt.business.util.Utils;
+		import com.adams.dt.event.ImpremiurEvent;
+		import com.adams.dt.model.vo.Proppresetstemplates;
+		import com.adams.dt.model.vo.Presetstemplates;
+		import com.adams.dt.model.vo.Categories;
+		import mx.core.UIComponent;
+		import mx.events.EffectEvent;
+		import com.adams.dt.event.ProjectsEvent;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.event.TeamlineEvent;
+		import  mx.events.ItemClickEvent;
+
+		import mx.events.CollectionEvent; 
+		import mx.managers.PopUpManager;
+		import com.adams.dt.view.components.CategorySelection;
+		import mx.core.IFlexDisplayObject;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.PhasesEvent;
+		import mx.controls.Alert;
+		import com.adams.dt.model.vo.Propertiespj;
+		import com.adams.dt.model.vo.Propertiespresets;
+		import mx.containers.FormItem;
+		import com.adams.dt.model.vo.Workflows;
+		import mx.collections.ArrayCollection;
+		import mx.effects.easing.Elastic;
+		import com.adams.dt.model.ModelLocator;
+		private var project_name:String="pro_name";
+		private var project_quantity:String="pro_quan";
+		private var project_status:String="pro_status";
+		private var popWindow:IFlexDisplayObject;
+		private var categorySelection:CategorySelection = new CategorySelection();
+		
+		[Bindable]
+		private var LWidth:int = 200;
+		
+		[Bindable]
+		public var sendStatusMail:Boolean;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private var _projectProperty:ArrayCollection;
+		[Bindable]
+		public function get projectProperty ():ArrayCollection {
+			return _projectProperty;
+		}
+		public function set projectProperty( value:ArrayCollection ):void {
+			_projectProperty = value;
+		}
+		
+		/**
+		 * create the propertypj values based on the filed present in the screen 
+		 */
+		public function getPropertiespjSet():ArrayCollection {
+			var arrC:ArrayCollection = new ArrayCollection();
+			for( var i:int = 0; i < projectProperty.length; i++ ) {				
+				var item:Propertiespresets = Propertiespresets( projectProperty.getItemAt( i ) );
+				var propertySets:Propertiespj; 
+				if( hasOwnProperty( "text_" + item.fieldName ) ) {						
+					propertySets = checkItemExist( item );
+					propertySets.projectFk = model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this[ "text_" + item.fieldName ].text;	
+					arrC.addItem( propertySets );	
+				}
+				if( this.hasOwnProperty( "popup_" + item.fieldName ) ) {				
+					propertySets = checkItemExist( item );
+					propertySets.projectFk = model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this[ "popup_" + item.fieldName ].selectedIndex;
+					arrC.addItem( propertySets );	
+				}
+				if ( this.hasOwnProperty( "lang_"+item.fieldName ) ) { 
+					propertySets = checkItemExist( item );
+					propertySets.projectFk= model.currentProjects.projectId;
+					propertySets.propertyPreset = item;
+					propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+					propertySets.fieldValue = this[ "lang_"+item.fieldName ].selectedIndices.toString();
+					arrC.addItem( propertySets ); 
+				}  
+			}
+			return arrC;			
+		} 
+		
+		/**
+		 * Check the property existence on propertiespj
+		 * IF EXIST return the corresponding object
+		 * ELSE create new propertiesPj object
+		 */
+		public function checkItemExist( item:Propertiespresets ):Propertiespj {
+			for( var i:int = 0; i < model.currentProjects.propertiespjSet.length; i++ ) {
+				var chekProperty:Propertiespj = model.currentProjects.propertiespjSet.getItemAt( i ) as Propertiespj;
+					if( ( chekProperty.propertyPreset.propertyPresetId == item.propertyPresetId ) && ( chekProperty.projectFk == model.currentProjects.projectId ) ) {
+							return chekProperty;
+					}
+			}
+			return new Propertiespj();
+	    } 
+		/**
+		 * update the project property value
+		 * set the component visibilty based on propertypresetTemplate values
+		 * set the edit rights based on the profile
+		 */
+		public function updateProperties():void { 
+			model.generalFieldChanged = false;
+			model.updatedPresetId = [];
+			
+			for( var i:int = 0; i < projectProperty.length; i++ ) {				
+				var item:Propertiespresets = Propertiespresets( projectProperty.getItemAt( i ) );
+				var visible:Proppresetstemplates = checkTemplate( item );
+				if( this.hasOwnProperty( "label_" + item.fieldName ) && ( this[ "label_" + item.fieldName ] ) ) {
+					if( visible ) {		
+						this[ "label_" + item.fieldName ].visible = true;			
+						this[ "label_" + item.fieldName ].text = visible.fieldLabel;
+					}
+					else {
+						this[ "label_" + item.fieldName ].visible = false;
+					}
+				} 
+				if( this.hasOwnProperty( "popup_" + item.fieldName ) && ( this[ "popup_" + item.fieldName ] ) ) {
+					if( visible ) {
+						var popStr:String = String( visible.fieldOptionsValue );
+						var popArr:Array = popStr.split( "," );
+						var value:String = getPropertyValue( item.propertyPresetId );
+						this[ "popup_" + item.fieldName ].name = item.propertyPresetId;
+						this[ "popup_" + item.fieldName ].dataProvider = popArr;
+						this[ "popup_" + item.fieldName ].visible = true;
+						if( value == '' ) {	
+							this[ "popup_" + item.fieldName ].selectedIndex = ( item.fieldDefaultValue ) ? item.fieldDefaultValue : 0;
+						}
+						else{
+							this[ "popup_"+item.fieldName ].selectedIndex = Number( value );						
+						} 
+						if( !model.editForm ) {
+							if( !( this[ "popup_" + item.fieldName ] is RadioGropus ) ) {
+								this[ "popup_" + item.fieldName ].enabled = false;
+							}
+						}
+						else {
+							if( !( this[ "popup_" + item.fieldName ] is RadioGropus ) ) {
+								this[ "popup_" + item.fieldName ].enabled = true;
+							}
+						}
+					}
+					else {
+						this[ "popup_" + item.fieldName ].visible = false;
+					}
+					this[ "popup_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+					this[ "popup_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true );
+				}  
+				if( hasOwnProperty( "text_" + item.fieldName ) && ( this[ "text_" + item.fieldName ] ) ) {	
+					var propvalue:String = getPropertyValue( item.propertyPresetId );
+					this[ "text_" + item.fieldName ].name = item.propertyPresetId;	
+					if( visible ) {
+						this[ "text_" + item.fieldName ].visible = true;
+						if( propvalue == '' ) {
+							this[ "text_" + item.fieldName ].text = ( item.fieldDefaultValue ) ? item.fieldDefaultValue : ''; 
+						}
+						else {								
+							this[ "text_" + item.fieldName ].text = propvalue;
+						}
+						if( !model.editForm ) {
+							if("text_chp_validation" == "text_" + item.fieldName){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}
+							else if("text_cpp_validation" ==  "text_" + item.fieldName ){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}else if("text_agn_validation" ==  "text_" + item.fieldName ){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}else if("text_comm_validation" ==  "text_" + item.fieldName ){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}else if("text_ind_validation" ==  "text_" + item.fieldName ){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}else if("text_imp_validation" ==  "text_" + item.fieldName ){
+								this[ "text_" + item.fieldName ].alpha = 0.5;
+							}else{
+								this[ "text_" + item.fieldName ].styleName = 'disabledText';
+								this[ "text_" + item.fieldName ].enabled = false;
+							}	
+						}
+						else {
+							this[ "text_" + item.fieldName ].styleName = 'TextArea';
+							this[ "text_" + item.fieldName ].enabled = true;
+						}
+					}
+					else {
+						this[ "text_" + item.fieldName ].visible = false;
+					}
+					this[ "text_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+					this[ "text_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true );
+					 
+				}
+				if( this.hasOwnProperty("lang_"+item.fieldName) && this["lang_"+item.fieldName] != null ) {
+					if( visible != null ){
+						var str:String = getPropertyValue( item.propertyPresetId );
+						if( str != '' )
+							this["lang_"+item.fieldName].selectedIndices = str.split(",");
+						else	
+							this["lang_"+item.fieldName].selectedIndices = [];
+						if( !model.editForm ) 
+							this["lang_"+item.fieldName].isItEditing = false;
+						else
+							this["lang_"+item.fieldName].isItEditing = true;		
+					}
+				}
+			} 
+			/* set the project status */ 
+			if( model.currentProjects.projectStatusFK == ProjectStatus.WAITING ) {				
+				statusGroup.selectedValue = "InProgress";
+				InProgress.selected = true;
+			}
+			if( model.currentProjects.projectStatusFK == ProjectStatus.INPROGRESS ) {				
+				statusGroup.selectedValue = "InProgress";
+				InProgress.selected = true;
+			}
+			else if( model.currentProjects.projectStatusFK == ProjectStatus.STANDBY ) {
+				statusGroup.selectedValue = "StandBy";
+				StandBy.selected = true;
+			}
+			else if( model.currentProjects.projectStatusFK == ProjectStatus.ABORTED ) {
+				statusGroup.selectedValue = "Cancelled";
+				Cancelled.selected = true;
+			}
+			else if( model.currentProjects.projectStatusFK == ProjectStatus.URGENT ) {
+				statusGroup.selectedValue = "Urgent";
+				urgent.selected = true;
+			} 
+			
+			if( !model.editForm ) {
+				prjNamePart1.styleName = 'disabledText';
+				prjNamePart2.styleName = 'disabledText';
+				prjNamePart1.enabled = false;	
+				prjNamePart2.enabled = false;
+				statusGroup.enabled = false;	
+			}
+			
+			if( model.currentProjects.projectStatusFK == ProjectStatus.STANDBY ) {
+				statusGroup.enabled = false;	
+			}	
+			
+ 		}
+		
+		/**
+		 * check the property existence in Proppresetstemplates
+		 */
+		public function checkTemplate( preset:Propertiespresets ):Proppresetstemplates {
+			for each( var item:Proppresetstemplates in model.currentProjects.presetTemplateFK.propertiesPresetSet ) {
+				if( preset.propertyPresetId == item.propertypresetFK ) {
+					if(!item.companyFK){
+						return item;
+					}
+					else if(Utils.getClientFK(model.currentProjects.categories) == item.companyFK ){
+						return item;	
+					}
+				}
+			}
+			return null;
+		}	
+		
+		/**
+		 * get the property value from projects
+		 */
+		public function getPropertyValue( id:int ):String {
+			for each( var item:Propertiespj in model.currentProjects.propertiespjSet ) {
+				if( item.propertyPreset.propertyPresetId == id ) {
+					return item.fieldValue;
+				}
+			}
+			return '';
+		} 
+		
+		private var status:String;
+		private function projectStatusChange( event:ItemClickEvent ):void {
+			status = event.currentTarget.selectedValue;			
+			var alertStr:String = "Are you sure you want to change the Project status";
+			Alert.yesLabel = 'Confirmation';
+			Alert.buttonWidth = 120;
+			Alert.show( alertStr, '', Alert.YES|Alert.NO, this, confirmationHandler );	
+						
+		}
+		
+		private function confirmationHandler( event:CloseEvent ):void {
+			if ( event.detail == Alert.YES ) {
+				onStatusChange( status );
+			}
+			else { 
+				if( model.currentProjects.projectStatusFK == ProjectStatus.WAITING ) {				
+					statusGroup.selectedValue = "InProgress";
+					InProgress.selected = true;
+				}
+				if( model.currentProjects.projectStatusFK == ProjectStatus.INPROGRESS ) {				
+					statusGroup.selectedValue = "InProgress";
+					InProgress.selected = true;
+				}
+				else if( model.currentProjects.projectStatusFK == ProjectStatus.STANDBY ) {
+					statusGroup.selectedValue = "StandBy";
+					StandBy.selected = true;
+				}
+				else if( model.currentProjects.projectStatusFK == ProjectStatus.ABORTED ) {
+					statusGroup.selectedValue = "Cancelled";
+					Cancelled.selected = true;
+				}
+				else if( model.currentProjects.projectStatusFK== ProjectStatus.URGENT ) {
+					statusGroup.selectedValue = "Urgent";
+					urgent.selected = true;
+				} 
+			}
+		}
+		
+		/**
+		 * on status change update the project status
+		 * on STANDBY the last task status changed into finished and create the stand by task to fab 
+		 * create the close task on CANCELL the project
+		 */
+		private function onStatusChange( statusValue:String ):void { 
+			if( statusValue == "InProgress" ) {				
+				model.currentProjects.projectStatusFK = ProjectStatus.INPROGRESS;
+			}
+			else if( statusValue == "Urgent" ) {
+				model.currentProjects.projectStatusFK = ProjectStatus.URGENT;
+			}
+			else if( statusValue == "StandBy" ) {
+				model.currentProjects.projectStatusFK = ProjectStatus.STANDBY;
+			}
+			else if( statusValue == "Cancelled" ) {
+				createCloseTask();
+			}
+			
+			var eventsArray:Array = [];
+			
+			var eventproj:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_STATUSUPDATE_PROJECTS );
+			eventproj.projects = model.currentProjects;
+			eventsArray.push( eventproj );
+			
+			if( model.currentProjects.projectStatusFK != ProjectStatus.URGENT ) {
+				var refreshEvent:RefreshEvent = new RefreshEvent( RefreshEvent.REFRESH );
+				eventsArray.push( refreshEvent );
+			}
+			
+			var statusChangeEvents:SequenceGenerator = new SequenceGenerator( eventsArray );
+	  		statusChangeEvents.dispatch();
+		}
+		
+		/**
+		 * On CANCELL the project create the close task for the team members
+		 */
+		private function createCloseTask():void {		
+			
+			model.currentProjects.projectStatusFK = ProjectStatus.ABORTED;	
+			model.currentProjects.projectDateEnd = model.currentTime;
+			
+			var closeProjectCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection( model.closeProjectTemplate, model.currentProjects.workflowFK );
+			
+			model.closeTaskCollection = new ArrayCollection();	
+			model.modelCloseTaskArrColl = new ArrayCollection();
+			
+			for each( var wTemp:Workflowstemplates in closeProjectCollection ) {
+				var taskData:Tasks = new Tasks();
+				taskData.taskId = NaN;
+				taskData.projectObject = model.currentProjects;
+				
+				var status:Status = new Status();
+				status.statusId = TaskStatus.WAITING;
+				taskData.taskStatusFK = status.statusId;
+				
+				var byte:ByteArray = new ByteArray();
+				byte.writeUTFBytes( "Project Aborted" );
+				
+				taskData.taskComment = byte;
+				taskData.tDateCreation = model.currentTime;
+				taskData.workflowtemplateFK = wTemp;
+				taskData.tDateEndEstimated = Utils.getCalculatedDate( model.currentTime, taskData.workflowtemplateFK.defaultEstimatedTime ); 
+				taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;				
+				
+				model.closeTaskCollection.addItem( taskData );
+			}		
+			model.closeTaskCollection.refresh();					
+		}
+		
+		/**
+		 * Open the particular Person selection window with the use of passing CP,CPP and COM String Parameters
+		 * to the NewPersonTemplate class 
+		 * 
+		 * Added the addEventListener to fire the changedPerson function on person selection
+		 */
+		private function openPeopleSelection( version:String ):void {
+			model.personSelectionVersion = version;
+			var perWindow:NewPersonTemplate = new NewPersonTemplate();
+			PopUpManager.addPopUp( perWindow, this );
+		    PopUpManager.centerPopUp( perWindow );
+		}
+		
+		private var domain:Categories;
+		
+	   /**
+		* update the project with the new name
+		*/ 
+		private function onProjectNameChange():void{
+			var prjEvent:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_UPDATE_PROJECTNAME );
+			model.currentProjects.projectName = prjNamePart1.text + "_" + prjNamePart2.text;
+			domain = Utils.getDomains( model.currentProjects.categories) ;
+			model.pendingCurrentDomain = domain;
+			if( model.currentTasks ) {
+				if( model.currentTasks.projectObject.projectId == model.currentProjects.projectId ) {
+					model.currentTasks.projectObject.projectName == model.currentProjects.projectName;
+				}
+				else {
+					updateTaskCollection();
+				}
+			}
+			else {
+				updateTaskCollection();
+			}
+			checkRepeatedItem( model.currentProjects, model.projectsCollection );
+			prjEvent.dispatch();
+		}
+		
+		/**
+		 * update the task collection with the new name
+		 */
+		private function updateTaskCollection():void{
+			var tasksCollection:ArrayCollection = new ArrayCollection();
+			for each( var item:Object in model.taskCollection ) {
+				if( item.domain.categoryId ) {
+					if( item.domain.categoryId == domain.categoryId ) {
+						for each( var taskItem:Tasks in item.tasks ) {
+							var itemPlace:int = ArrayCollection( item.tasks ).getItemIndex( taskItem );
+							if( taskItem.projectObject.projectId == model.currentProjects.projectId ) {								
+								taskItem.projectObject.projectName = model.currentProjects.projectName;
+								ArrayCollection( item.tasks ).removeItemAt( itemPlace );
+								ArrayCollection( item.tasks ).addItemAt( taskItem, itemPlace );
+							}
+						}
+						break;
+					}
+				}
+			}
+			model.taskCollection.refresh();
+		}
+		
+		/**
+		 * check the repeated item in the projectCollection
+		 */
+		private function checkRepeatedItem( item:Projects, dp:ArrayCollection ):void {
+			var sort:Sort = new Sort(); 
+            sort.fields = [ new SortField( "projectId" ) ];
+            dp.sort = sort;
+            dp.refresh(); 
+			var cursor:IViewCursor = dp.createCursor();
+			var found:Boolean = cursor.findAny( item );	
+			if(	found ) {
+				Projects( cursor.current ).projectName = item.projectName;
+			}
+			model.projectsCollection.refresh();
+			model.domainCollection1.refresh();
+		}
+        
+		/**
+		 * get the changed field name and property to update events
+		 * IF changes made by client send message with updated property to traffic
+		 * refer propertypjcommand for sending message
+		 */ 
+		private function onFieldChange( event:FocusEvent ):void {
+			model.generalFieldChanged = true;			
+			if( model.updatedPresetId.indexOf( event.currentTarget.name ) == -1 ) {
+				model.updatedPresetId.push( event.currentTarget.name );
+				getChangedFields( event.currentTarget.name );
+			}
+		}
+		
+		/**
+		 * get the changed field name and property to update events
+		 * IF changes made by client send message with updated property to traffic
+		 * refer propertypjcommand for sending message
+		 */ 
+		private function onTxtChange( event:Event ):void {
+			model.generalFieldChanged = true;		
+			if( model.updatedPresetId.indexOf( event.currentTarget.name ) == - 1 ) {
+				model.updatedPresetId.push( event.currentTarget.name );
+				getChangedFields( event.currentTarget.name );
+			}
+		}
+		/**
+		 * @param id:String, input propertyPj id
+		 * get changed field name and property
+		 */ 
+		private function getChangedFields( id:String ):void {
+			var object:Object = new Object();
+			var propertiesPj:Propertiespj = Utils.getPropertyPj( Number( id ), model.currentProjects.propertiespjSet );
+			var propertyPresetTemplate:Proppresetstemplates = Utils.getPropertyPresetTemp( Number( id ), model.currentProjects.presetTemplateFK.propertiesPresetSet );
+			if( ( propertiesPj ) && ( propertyPresetTemplate ) ) {
+				object[ "propertiesPj" ] = propertiesPj;
+				object[ "propertyPresetTemplate" ] = propertyPresetTemplate;
+				model.updatedFieldCollection.addItem( object );
+			}
+		}
+		
+		private function openInfoSelection( str:String ):void {
+			var infoWindow:InformationTool = new InformationTool();
+			infoWindow.selectedProfile = str;
+			PopUpManager.addPopUp( infoWindow, this );
+		    PopUpManager.centerPopUp( infoWindow );
+		}
+		
+		private function getinfoVisible( editFormValue:Boolean, id:int ):Boolean {
+			var returnValue:Boolean;
+			if( id != 0 ) {
+				returnValue = true;
+			}
+			return returnValue;
+		}
+		
+		private function getUnselectVisible( id:int, editValue:Boolean ):Boolean {
+			var returnValue:Boolean;
+			if( id != 0 && editValue ) {
+				returnValue = true;
+			}
+			return returnValue;
+		}
+		
+		/**
+	    *  Update the Selected Person Text in the Traffic view
+	    */	
+	    private function changeTrafficText( item:Persons, switchString:String ):String {
+	    	var result:String ='' ; 
+	    	var curPersonName:String;
+	    	if( item.personId != 0 )
+	    		curPersonName = GetVOUtil.getCompanyObject( item.companyFk ).companyname + '-' + item.personLastname + ', '+ item.personFirstname;
+	    	else
+	    		curPersonName = '';	
+	    	switch( switchString ) {
+	    		case 'COM':
+	    		case 'AGN':
+	    		case 'CHP':
+	    		case 'CPP':
+	    			result = curPersonName; 
+	    		break;
+	    		case 'EPR':
+	    		case 'IND':
+	    			if( curPersonName != '' ) {
+	    				result = curPersonName.substring( 0, curPersonName.indexOf( '-' ) );	
+	    			}
+	    			else
+	    				result = curPersonName;
+	    		break;
+	    		default:
+	    		break;
+	    	}  
+	    	return result;
+	    }
+	    
+	    private function getEnabaled( prj:Projects ):Boolean {
+	    	if( prj.projectStatusFK != ProjectStatus.STANDBY ) {
+	    		return true;
+	    	}
+	    	return false;
+	    }
+	    
+	    private function onSendMail( event:Event ):void {
+	    	dispatchEvent( new Event( "propertySaveonMail" ) );
+	    }
+		
+		private var unselectPersonID:int;
+		private var unselectPersonProfileID:int;
+		private var unselectPropertyPj:String;
+		private function unSelectPerson( person:Persons, profile:String, propString:String ):void {
+			unselectPersonID = person.personId;
+			unselectPersonProfileID = Utils.getProfileId( profile );
+			unselectPropertyPj = propString;
+			Alert.show( 'Do you want to unselect this person?', 'Confirmation', Alert.YES|Alert.NO, this, onConfirmation );
+		}
+		
+		private function onConfirmation( event:CloseEvent ):void {
+			if( event.detail == Alert.YES ) {
+				var eventsArray:Array = [];
+				
+				var deleteTeamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_DELETE_TEAMLINE_UNSELECTPERSON );
+				deleteTeamlineEvent.teamline = Utils.getTeamlineOnPersonFK( unselectPersonID, unselectPersonProfileID );
+				eventsArray.push( deleteTeamlineEvent );
+				
+				var handler:IResponder = new Callbacks( getTeamLineProjectResult );
+				var teamTempEvt:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_SELECT_TEAMLINE, handler );
+				teamTempEvt.projectId = model.currentProjects.projectId; 
+				eventsArray.push( teamTempEvt );
+				
+				var sequence:SequenceGenerator = new SequenceGenerator( eventsArray );
+		        sequence.dispatch();
+			}
+		}
+		
+		private function getTeamLineProjectResult( rpcEvent:Object ):void {
+			var propPj:Propertiespj = Utils.propertyPjForFieldName( unselectPropertyPj, model.currentProjects.propertiespjSet );
+			propPj.fieldValue = '';
+			var updatePropertyPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_DEFAULTVALUE_UPDATE_PROPERTIESPJ );
+			updatePropertyPjEvent.propertiespj = propPj;
+			updatePropertyPjEvent.dispatch();
+		}
+		
+		]]>
+	</mx:Script>
+	
+	<mx:Style>
+		.pad{
+			padding-bottom:10;
+			padding-left:10;
+			padding-right:10;
+			padding-top:10;
+			border-style:solid;
+			border-color:#4c4c4c;
+			vertical-gap:5;
+		}
+	</mx:Style>	    
+	
+	 
+			<!--<mx:VBox paddingBottom="10" horizontalScrollPolicy="off" paddingLeft="10" paddingRight="24" paddingTop="5"
+				     verticalGap="13" left="0" right="0" top="0">-->
+				<mx:Grid verticalGap="7" width="100%" horizontalCenter="0" top="5" id="traGrid">
+					<mx:GridRow width="100%">
+						<mx:GridItem  rowSpan="2"  height="100%" width="50%" verticalAlign="bottom">
+							 <mx:VBox width="100%">
+								<mx:VBox verticalGap="10" width="100%">
+									<mx:Label   id="labelclient" text="Client :"/>
+									<mx:Label width="100%"  id="textclient" styleName="menuText" fontSize="25" color="#959595"
+										      text="{ ( Utils.getDomains( model.currentProjects.categories ) ).categoryName }"/>	 
+								</mx:VBox>
+								<mx:VBox styleName="pad" id="gridBox"  width="100%">
+									<mx:Label text="Reference dossier"/>
+									<mx:HBox width="100%">
+										<mx:TextInput id="prjNamePart1" text="{ Utils.getName( model.currentProjects, 'id' ) }" 
+											          enabled="false" styleName="disabledText" width="80" maxChars="250"/>
+										<mx:TextInput id="prjNamePart2" text="{ Utils.getName( model.currentProjects, 'name' ) }" 
+											          width="100%" focusOut="onProjectNameChange()" maxChars="250"/>
+									</mx:HBox>
+									<mx:HBox width="100%">
+										<mx:VBox verticalGap="0" width="50%">
+											<mx:Label id="label_ean"/>
+											<mx:TextInput id="text_ean" width="100%" maxChars="250" restrict="0-9"/>
+										</mx:VBox>
+										<mx:VBox verticalGap="0" width="50%"> 
+											<mx:Label id="label_sap"/>
+											<mx:TextInput id="text_sap" width="100%" maxChars="250" />
+										</mx:VBox>
+									</mx:HBox>
+									<mx:VBox verticalGap="0" width="100%"> 
+											<mx:Label id="label_department"/>
+											<mx:ComboBox id="popup_department" width="100%"/>
+									</mx:VBox>	
+									<mx:VBox verticalGap="0" width="100%"> 
+											<mx:Label id="label_brand"/>
+											<mx:ComboBox id="popup_brand" width="100%"/>
+									</mx:VBox>
+								</mx:VBox>
+								
+								<mx:VBox width="100%" height="100%" styleName="pad">
+									<!--<mx:Label id="label_docType" text="Document type"/>
+									<view:RadioGropus id="popup_document_type" vGap="110"
+													groupName="Document Type"
+													numOfColumns="3"/>-->
+									<mx:Label id="label_langues" text="Languages"/>
+									<mx:Canvas>
+										<view:LanguagesGroup id="lang_language_group"/>
+										<mx:TextInput x="123" y="30" id="text_langues" maxChars="250"/>
+									</mx:Canvas>
+								</mx:VBox>
+							
+							</mx:VBox>		
+						
+						</mx:GridItem>
+						
+						<mx:GridItem width="50%" verticalAlign="middle" height="35" styleName="statusContent" paddingRight="10"> 
+								<mx:Canvas width="80" height="100%" styleName="statusHeader" >
+									<mx:Label horizontalCenter="0" verticalCenter="0" text="{ model.loc.getString( 'status' ) + ' :' }"/>
+								</mx:Canvas>
+								<mx:RadioButtonGroup id="statusGroup" itemClick="projectStatusChange( event )" enabled="{ getEnabaled( model.currentProjects ) }"/>
+								<mx:RadioButton id="urgent" value="Urgent" label="Urgent" groupName="statusGroup"/>
+								<mx:RadioButton id="InProgress" value="InProgress" label="{ model.loc.getString( 'inProgress' ) }" groupName="statusGroup" selected="true"/>
+								<mx:RadioButton id="StandBy" value="StandBy" label="stand by" groupName="statusGroup"/>
+								<mx:RadioButton id="Cancelled" value="Cancelled" label="{ model.loc.getString( 'canceled' ) }" groupName="statusGroup"/>
+						</mx:GridItem>
+					</mx:GridRow>
+					
+					<mx:GridRow width="100%">
+						<mx:GridItem  width="50%" height="100%" styleName="pad">
+								<mx:VBox width="100%" height="320">
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_product_manager"/>
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+								 		          click="openPeopleSelection('CHP')"	mouseChildren="false" text="select" visible="{model.editForm}" top="8" right="0" />
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" click="openInfoSelection('CHP')" 
+								 			      mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.CP_Person.personId ) }" top="8" right="40" /> 
+										<mx:TextInput id="text_product_manager" styleName="disabledText" maxChars="250" text="{ changeTrafficText( model.CP_Person, 'CHP' ) }" 
+											          change="onTxtChange(event)" editable="false" bottom="0" left="0" width="100%"/>
+										<mx:Button styleName="closeButton" visible="{ getUnselectVisible( model.CP_Person.personId, model.editForm ) }"	
+														  right="5" x="{ text_product_manager.x + text_product_manager.width - 10 }" y="{ text_product_manager.y + 6 }" 
+														  click="unSelectPerson( model.CP_Person, 'CHP', 'product_manager' )" buttonMode="true" useHandCursor="true" 
+														  toolTip="unselect the person"/>	          
+									</mx:Canvas>	
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_chef_project_pack"/>
+								 		<mx:Label id="lcpPackSelect" textDecoration="underline" visible="{model.editForm}" useHandCursor="true" buttonMode="true" 
+								 		          click="openPeopleSelection('CPP')" mouseChildren="false" text="select"  top="8" right="0" />
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" click="openInfoSelection('CPP')" 
+								 			      mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.CPP_Person.personId ) }" top="8" right="40" />
+										<mx:TextInput id="text_chef_project_pack" maxChars="250" styleName="disabledText" change="onTxtChange(event)" editable="false" 
+											          bottom="0" left="0" width="100%" text="{ changeTrafficText( model.CPP_Person, 'CPP' ) }"/>
+										<mx:Button styleName="closeButton" visible="{ getUnselectVisible( model.CPP_Person.personId, model.editForm ) }"	
+														  right="5" x="{ text_chef_project_pack.x + text_chef_project_pack.width - 10 }" y="{ text_chef_project_pack.y + 6 }" 
+														  click="unSelectPerson( model.CPP_Person, 'CPP', 'chef_project_pack' )" buttonMode="true" useHandCursor="true" 
+														  toolTip="unselect the person"/>	          
+									</mx:Canvas>	
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_commercial"/>
+								 		<mx:Label id="commercialSelect" textDecoration="underline" visible="{model.editForm}" useHandCursor="true" buttonMode="true" 
+								 		          click="openPeopleSelection('COM')" mouseChildren="false" text="select"  top="8" right="0" />
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+								 			      click="openInfoSelection('COM')" mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.comPerson.personId ) }" top="8" right="40" />
+										<mx:TextInput id="text_commercial" maxChars="250" styleName="disabledText" change="onTxtChange(event)" 
+											          editable="false" bottom="0" left="0" width="100%" text="{ changeTrafficText( model.comPerson, 'COM' ) }"/>
+										<mx:Button styleName="closeButton"  visible="{ getUnselectVisible( model.comPerson.personId, model.editForm ) }"	
+														  right="5" x="{ text_commercial.x + text_commercial.width - 10 }" y="{ text_commercial.y + 6 }" 
+														  click="unSelectPerson( model.comPerson, 'COM', 'commercial' )" buttonMode="true" useHandCursor="true" 
+														  toolTip="unselect the person"/>	          
+									</mx:Canvas>
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_creation_agency"/>
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+								 		          click="openPeopleSelection('AGN')" 	mouseChildren="false" text="select" visible="{model.editForm}" top="8" right="0" />
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" click="openInfoSelection('AGN')" 
+								 			      mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.agencyPerson.personId ) }" top="8" right="40" />
+										<mx:TextInput id="text_creation_agency" maxChars="250" styleName="disabledText" change="onTxtChange(event)" 
+											          editable="false" bottom="0" left="0"  width="100%" text="{ changeTrafficText( model.agencyPerson, 'AGN' ) }"/>
+										<mx:Button styleName="closeButton" visible="{ getUnselectVisible( model.agencyPerson.personId, model.editForm ) }"	
+														  right="5" x="{ text_creation_agency.x + text_creation_agency.width - 10 }" y="{ text_creation_agency.y + 6 }" 
+														  click="unSelectPerson( model.agencyPerson, 'AGN', 'creation_agency' )" buttonMode="true" useHandCursor="true" 
+														  toolTip="unselect the person"/>											          
+									</mx:Canvas>
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_industry_supplier"/>
+										<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+								 			      click="openPeopleSelection('IND')" mouseChildren="false" text="select" visible="{model.editForm}" top="8" right="0" />
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" click="openInfoSelection('IND')" 
+								 			      mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.indPersonId ) }" top="8" right="40" />	
+								 		<mx:TextInput id="text_industry_supplier" maxChars="250" styleName="disabledText" change="onTxtChange(event)" editable="false"
+											          bottom="0" left="0" width="100%" text="{ changeTrafficText( model.indPerson, 'IND' ) }"/>
+										<mx:Button styleName="closeButton" visible="{ getUnselectVisible( model.indPerson.personId, model.editForm ) }"	
+														  right="5" x="{ text_industry_supplier.x + text_industry_supplier.width - 10 }" y="{ text_industry_supplier.y + 6 }" 
+														  click="unSelectPerson( model.indPerson, 'IND', 'industry_supplier' )" buttonMode="true" useHandCursor="true" 
+														  toolTip="unselect the person"/>											          
+									</mx:Canvas>	
+									<mx:Canvas  height="100%" width="100%">
+										<mx:Label top="8" left="0" id="label_impremiur"/>
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true" 
+								 			      click="openPeopleSelection('EPR')" mouseChildren="false" text="select" id="impSelection" visible="{ model.editForm }" top="8" right="0"/>
+								 		<mx:Label textDecoration="underline" useHandCursor="true" buttonMode="true"  
+								 			      click="openInfoSelection('EPR')" mouseChildren="false" text="info" visible="{ getinfoVisible( model.editForm, model.impPersonId ) }" top="8" right="40" />
+										<mx:TextInput id="text_impremiur" maxChars="250" styleName="disabledText" change="onTxtChange(event)" editable="false" 
+											          bottom="0" left="0" width="100%" text="{ changeTrafficText( model.impPerson, 'EPR' ) }"/>
+									</mx:Canvas>
+								</mx:VBox>	
+								<mx:Canvas height="100%" width="95" styleName="statusContent"  >
+									<mx:Canvas width="100%" height="25" top="0" styleName="statusHeader">
+										<mx:Label horizontalCenter="0" verticalCenter="0" text="Validation"/>
+									</mx:Canvas>
+									<components:StatusPanel id="text_chp_validation" top="28" left="0" right="0" correctPerson="{ model.CP_Person }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="CHP"
+										                    mailVisibility="{ sendStatusMail }" onSendMail="onSendMail( event )"/>	
+	             					<components:StatusPanel id="text_cpp_validation" top="84" left="0" right="0" correctPerson="{ model.CPP_Person }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="CPP"
+										                    mailVisibility="{ sendStatusMail }" onSendMail="onSendMail( event )"/>
+	             					<components:StatusPanel id="text_comm_validation" top="138" left="0" right="0" correctPerson="{ model.comPerson }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="COM"
+										                     mailVisibility="false" onSendMail="onSendMail( event )"/>
+										                     <!--mailVisibility="{ sendStatusMail }"-->
+	             					<components:StatusPanel id="text_agn_validation" top="192" left="0" right="0" correctPerson="{ model.agencyPerson }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="AGN"
+										                    mailVisibility="false"  onSendMail="onSendMail( event )"/>	
+	             					<components:StatusPanel id="text_ind_validation" top="246" left="0" right="0" correctPerson="{ model.indPerson }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="IND"
+										                    mailVisibility="{ sendStatusMail }" onSendMail="onSendMail( event )"/>	 
+									<components:StatusPanel id="text_imp_validation" top="300" left="0" right="0" correctPerson="{ model.impPerson }" 
+										                    fromConfirmationCheck="{ model.fromConfirmation }" belongProfile="EPR"
+										                    mailVisibility="{ sendStatusMail }" onSendMail="onSendMail( event )"/>														
+								</mx:Canvas>
+						</mx:GridItem>
+					</mx:GridRow>
+				</mx:Grid>
+					 
+				<mx:VBox width="100%" horizontalCenter="0" horizontalAlign="center" top="{traGrid.y+traGrid.height+13}" verticalGap="0">
+					<mx:HBox width="100%" height="30" styleName="technicalFormHeader">
+						<mx:Label text="Planning Deadlines"  styleName="subHeader" />
+					</mx:HBox>
+	      	  		<view:Tracability id="phases" width="100%"  styleName="technicalFormContainer" backgroundAlpha="0" enabledValue="{ model.updatePhase }" fromPhases="true" height="190"
+					                  datesArray="{ model.tracTaskContent.createDates( model.currentProjects.phasesSet, phases.enabledValue )}"/>
+				</mx:VBox>
+			
+
+</mx:Canvas>

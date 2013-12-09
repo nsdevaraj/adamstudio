@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:components="com.adams.scrum.views.components.*"
+		xmlns:mediators="com.adams.scrum.views.mediators.*"> 
+	<fx:Metadata>
+		[HostComponent('com.adams.scrum.views.mediators.TicketDetailedViewMediator')]
+	</fx:Metadata>  
+	<s:Group right="0" left="0" top="0" bottom="0" >
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="#000000" alpha=".7" />
+			</s:fill>
+		</s:Rect>
+		
+		<s:Panel title="Ticket Details" horizontalCenter="0" verticalCenter="0" width="600" > 
+			<s:layout>
+				<s:HorizontalLayout paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2"/>
+			</s:layout>
+			<s:Group width="100%" height="100%" clipAndEnableScrolling="true">
+				<s:Rect top="0" height="35" left="0" right="0"><s:fill><s:SolidColor color="#cfcfcf"/></s:fill></s:Rect>
+				<s:HGroup left="2" right="2" height="35" top="0" verticalAlign="middle" >
+					<s:Label text="personName" width="30%"/>
+					<s:Label text="hours" width="10%"/>
+					<s:Label text="date" width="20%"/>
+					<s:Label text="notes" width="30%"/>
+					<s:Label text="info" width="10%"/>
+				</s:HGroup>
+				<components:NativeList id="ticketsList" top="{35}" bottom="0" width="100%"  resizeEffect="Resize"/>
+			</s:Group>	
+			
+			<mediators:TicketViewMediator skinClass="com.adams.scrum.views.TicketSkinView"
+										  id="newTicketMediator"  includeInLayout="false" visible="false"
+										  />
+			
+			<s:controlBarContent>
+				<components:NativeButton id="cancelBtn"  label="Cancel" styleName="CancelIcon"/>
+			</s:controlBarContent>
+		</s:Panel>
+		
+	</s:Group>	
+</s:Skin>

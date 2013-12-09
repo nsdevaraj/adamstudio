@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="com.adams.dt.pojo.Sprints" table="sprints">
+		<id name="sprintId" type="integer" column="Sprint_ID">
+			<generator class="increment" />
+		</id>
+		<property name="domainFK">
+			<column name="Domain_FK" />
+		</property>
+		<many-to-one name="sprintTask"
+			class="com.adams.dt.pojo.Tasks" column="Task_FK"
+			cascade="none" lazy="false" />
+		<property name="YesterToday">
+			<column name="Yest_Today" />
+		</property>
+		<property name="taskDate">
+			<column name="Task_Date" />
+		</property>
+		<property name="taskTimeSpent">
+			<column name="Task_TimeSpent" />
+		</property> 
+		<property name="taskComments">
+			<column name="Task_Comments" />
+		</property> 
+	</class>
+</hibernate-mapping>

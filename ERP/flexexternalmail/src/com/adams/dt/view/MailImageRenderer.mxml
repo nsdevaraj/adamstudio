@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" verticalScrollPolicy="off" horizontalScrollPolicy="off" horizontalAlign="center" verticalAlign="middle">
+	<mx:Script>
+		<![CDATA[
+			import mx.containers.Tile;
+			[Bindable]
+			public var fileId:int;
+			[Bindable]
+			public var fileName:String;
+			
+			[Bindable]
+            [Embed(source="assets/swf/MainInterface.swf#pdf_ico_newdownload")]
+            public var pdfDownload:Class;
+			
+			private function checkClick():void
+			{
+				dispatchEvent(new MouseEvent('checkClick'));
+			} 
+			private function buttonClick():void
+			{
+				dispatchEvent(new MouseEvent('buttonClick'));
+			} 
+			private function buttonAction(event:MouseEvent):void
+			{
+				for(var i:Number=0;i<Tile(event.target.parent.parent).getChildren().length;i++)
+				{
+					MailImageRenderer(Tile(event.target.parent.parent).getChildren()[i]).checkbox.visible=true;
+					MailImageRenderer(Tile(event.target.parent.parent).getChildren()[i]).downloadId.visible=false;
+				}
+
+				if(event.target.id=="checkbox"){
+					checkbox.visible=!(downloadId.visible=true);
+					checkClick();
+				}
+				if(event.target.id=="downloadId"){
+					checkbox.visible=!(downloadId.visible=false);
+					buttonClick();
+				}
+			}
+
+		]]>
+	</mx:Script>
+	<mx:Metadata>
+		[Event(name="checkClick", type="flash.events.MouseEvent")]
+	</mx:Metadata> 
+	<mx:Metadata>
+		[Event(name="buttonClick", type="flash.events.MouseEvent")]
+	</mx:Metadata> 		
+	
+	<mx:Button id="checkbox" name="{fileId.toString()}"  includeInLayout="{checkbox.visible}" label="{fileName}" width="150" click="buttonAction(event)" />
+	<mx:Button id="downloadId" name="{fileId.toString()}" visible="false" includeInLayout="{downloadId.visible}" label="{fileName}" width="150" icon="{pdfDownload}" 
+	click="buttonAction(event);" />
+</mx:VBox>

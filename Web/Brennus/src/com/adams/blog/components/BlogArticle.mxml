@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	BlogArticle
+	
+	This is the 'renderer' for a blog article that's displayed by the Blog Reader.
+	
+	Each article is displayed as a series of BlogArticleInstance components as an article may
+	have [swf url="file" align="alignment"] sprinkled throughout it.
+	
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:adobecomp="com.adams.blog.components.*" xmlns:adobesr ="com.adams.blog.service.*" >
+
+	<mx:Script>
+	<![CDATA[
+		import mx.controls.Alert;
+		import mx.core.Application;
+		import mx.collections.ArrayCollection;
+		import com.adams.blog.data.Article;
+	
+		[Bindable] public var article:Article;	
+		[Bindable] public var segments:ArrayCollection;
+		
+		/**
+		 * data
+		 *
+		 * This override of the data setter passes the html content to the processContent
+		 * function.
+		 */
+		override public function set data(value:Object):void
+		{
+			super.data = value;
+			
+			processContent( data.content );
+		}
+		
+		/**
+		 * processContent
+		 *
+		 * This function creates an ArrayCollection of {type,value} objects which are then passed
+		 * to the BlogArticleInstance components for display.
+		 */
+		private function processContent( content:String ) : void
+		{
+			var copy:String = content;
+			
+			// regexp
+			var pattern:RegExp = /\[swf url.*?\]/g;
+			
+			// finds the patterns in the string that match
+			var matches:Array = copy.match(pattern);
+			var result:Array = [];
+						
+			var pos:Number = 0;
+			var index:Number = 0;
+			for(var i:int=0; i < matches.length; i++) {
+				pos = copy.indexOf(matches[i]);
+				if( pos >= 0 ) {
+					result.push( {type:"text", value:copy.substring(index,pos)} );
+					index = pos+matches[i].length;
+					result.push( {type:"swf", value:matches[i]} );
+				}
+			}
+			if( index < copy.length ) {
+				result.push( {type:"text", value:copy.substring(index)} );
+			}
+			
+			segments = new ArrayCollection(result);		
+			rep.dataProvider = segments;
+		}
+		private function loBlog():void{
+				Application.application.headerView.blogReaderView.searchBlogsTitle(String(headerTitle.text));
+		}
+			
+			
+		
+	]]>
+	</mx:Script>
+	<adobesr:BlogService id="bloPhp" />
+	<mx:DateFormatter id="dfmt" formatString="MMM DD, YYYY LL:NN A" />
+	
+	<mx:Text text="{data.title}" id="headerTitle" click="loBlog()" left="10" right="10" top="0" styleName="headerText"/>
+	<mx:Text text="{dfmt.format(data.date)}" left="10" top="18" right="10" styleName="ArticleDate" />
+	
+	<mx:VBox left="10" right="10" top="42">
+		<mx:Repeater id="rep" >
+			<adobecomp:BlogArticleInstance id="blogArtInst" data="{rep.currentItem}" width="100%" />
+		</mx:Repeater>
+	</mx:VBox>
+	
+	
+</mx:Canvas>

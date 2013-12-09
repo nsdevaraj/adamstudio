@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:fx ="http://ns.adobe.com/mxml/2009" minHeight="500"
+	 width="100%" height="100%"   creationComplete="canvas1_creationCompleteHandler(event)"
+xmlns:local="com.packaging.view.*"
+	 xmlns:mediaplayer="com.packaging.mediaplayer.*" >
+<fx:Script>
+	<![CDATA[
+		import mx.events.FlexEvent;
+
+		protected function canvas1_creationCompleteHandler(event:FlexEvent):void
+		{
+			youtubePlayer.source =  "http://www.youtube.com/watch?v=rlMqw3ZQjkg";
+			// TODO Auto-generated method stub
+		}
+
+	]]>
+</fx:Script>
+ 
+     
+	
+	<mx:Canvas id="mainContent" width="980" height="100%" backgroundColor="#000000" top="0" horizontalCenter="0" 
+			   horizontalScrollPolicy="off">
+		<mx:Image source="assets/images/home_bg.png" horizontalCenter="0" bottom="0"/>
+		<mx:Image source="assets/images/3dImg.png"   left="15" bottom="15"/>
+		<mx:Text text="Packaging" color="#dbdbdb" styleName="headerText" left="15" top="40" fontSize="36"/>
+		<mediaplayer:YoutubePlayer id="youtubePlayer" autoPlay="true" right="25" top="40"
+								   symbolColor="#232323" skinClass="assets.skins.videoSkins.YoutubePlayerSkin"/>
+		<mx:Text right="25" fontSize="13" color="#dbdbdb" styleName="headerText" width="550" height="100%" top="{youtubePlayer.y+youtubePlayer.height+35}" text="International brand design agency  Adama's Studio India in Puducherry creates consumer brand identities and packaging designs. It is basically a French based pre-press packaging offshore outsourcing company. We have clients around the world especially European countries providing world class service, since 2004..">
+			
+			
+		</mx:Text>
+		
+	</mx:Canvas>
+</mx:Canvas>

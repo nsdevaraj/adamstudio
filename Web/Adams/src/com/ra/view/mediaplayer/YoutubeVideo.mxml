@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:UIComponent xmlns:mx="http://www.adobe.com/2006/mxml"
+creationComplete="group1_creationCompleteHandler(event)">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			public var player:Object;
+			private var loader:Loader;
+			private var state:int;
+			
+			private var _source:String;
+			public function set source(value:String) : void
+			{
+				if(value is String && value != null && value != '')
+				{
+
+					var base:String = "http://youtube.com/v/";
+					var p:String = String(value).split('?')[1];
+					var params:Array = p.split('&');
+					for each(var param:String in params)
+					{
+						var kv:Array = param.split('=');
+						if(kv[0] == 'v')
+						{
+							_source = kv[1];
+							if(player)
+							{
+								player.loadVideoById(_source, 0);
+								player.setVolume(50);
+							}	
+						}
+						break;
+					}
+				}
+			}
+			private function onLoaderInit(event:Event):void {
+				this.addChild(loader);
+				loader.content.addEventListener("onReady", onPlayerReady);
+				//loader.content.addEventListener("onError", onPlayerError);
+				//loader.content.addEventListener("onStateChange", onPlayerStateChange);
+				//loader.content.addEventListener("onPlaybackQualityChange", 
+				//S	onVideoPlaybackQualityChange);
+			}
+			
+			private function onPlayerReady(event:Event):void {
+				// Event.data contains the event parameter, which is the Player API ID 
+				trace("player ready:", Object(event).data);
+				
+				// Once this event has been dispatched by the player, we can use
+				// cueVideoById, loadVideoById, cueVideoByUrl and loadVideoByUrl
+				// to load a particular YouTube video.
+				player = loader.content;
+				player.setSize(320,240);
+				this.width = 320;
+				this.height = 240;
+				if(_source)
+				{
+					player.loadVideoById(_source, 0);
+					player.setVolume(50);
+				}
+			}			
+			private function onPlayerStateChange(event:Event):void {
+				// Event.data contains the event parameter, which is the new player state
+				trace("player state:", Object(event).data);
+				state = Object(event).data
+			}
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.INIT, onLoaderInit);
+				loader.load(new URLRequest("http://www.youtube.com/apiplayer?version=3"));
+			}
+			
+			public function get volume():Number
+			{
+				if(player)
+					return player.getVolume() / 100;
+				else
+					return 0.5;
+			}
+			public function set volume(value:Number):void
+			{
+				if(player)
+					player.setVolume(value*100);
+			}
+			public function pause_play():void
+			{
+				state  = player.getPlayerState();
+				if(state == 1)  // playing
+				{
+					player.pauseVideo();
+				}
+				else if(state == 2)
+				{
+					player.playVideo();	
+				}
+			}
+			public function get isBuffering():Boolean
+			{
+				return player.getVideoBytesLoaded() < player.getVideoBytesTotal();
+			}
+			public function get bytesLoaded():Number
+			{
+				return player.getVideoBytesLoaded() / player.getVideoBytesTotal() * player.getDuration();
+			}
+		]]>
+	</mx:Script>
+	
+</mx:UIComponent>

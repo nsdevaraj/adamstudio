@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding ="utf-8"?>
+<componentPackage>
+	<component class="com.adams.swizdao.dao.PagingDAO" id="PagingDAO" />
+	<component class="com.adams.swizdao.model.vo.CurrentInstance" id="CurrentInstance" />
+	<component class="com.adams.swizdao.response.SignalSequence" id="SignalSequence" />
+	<component class="com.adams.swizdao.signals.PushRefreshSignal" id="PushRefreshSignal" />
+	<component class="com.adams.swizdao.signals.ResultSignal" id="ResultSignal" />
+	<component class="com.adams.swizdao.signals.AbstractSignal" id="AbstractSignal" />
+	<component class="com.briankotek.mediateview.MediateViewProcessor" id="MediateViewProcessor" />
+	<component class="com.nsdevaraj.swiz.processors.SignalsProcessor" id="SignalsProcessor" />
+	<component class="com.nsdevaraj.swiz.processors.MediateSignalProcessor"	id="MediateSignalProcessor" />
+	<component class="com.adams.swizdao.controller.ServiceController" id="ServiceController" />
+</componentPackage>

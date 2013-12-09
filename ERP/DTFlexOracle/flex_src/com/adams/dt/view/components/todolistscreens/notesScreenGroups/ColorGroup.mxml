@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml">
+<mx:Script>
+	<![CDATA[
+		
+		import com.adams.dt.model.ModelLocator;
+		import mx.controls.CheckBox;
+		
+		[Bindable]
+		public var isItEditing:Boolean;
+		
+		private var _selectedIndices:Array;
+		[Bindable]
+		public function get selectedIndices():Array {
+			_selectedIndices = [];
+			for( var i:int = 0; i < numChildren; i++ ) {
+				if( CheckBox( getChildAt( i ) ).selected ) {
+				 	_selectedIndices.push( 1 );
+				}
+				else {
+					_selectedIndices.push( 0 );
+				}		
+			}
+			return _selectedIndices;
+		} 
+		public function set selectedIndices( value:Array ):void {
+			_selectedIndices = value;
+			if( value.length > 0 ) {
+				for( var i:int = 0; i < numChildren;i++ ) {
+					if( value[ i ] == 0 )
+						CheckBox( getChildAt( i ) ).selected = false;
+					else
+						CheckBox( getChildAt( i ) ).selected = true;	
+				}
+			}
+			else {
+				for( var j:int = 0; j < numChildren;j++ ) {
+					CheckBox( getChildAt( j ) ).selected = false;
+				}
+			}
+		}
+		
+	]]>
+</mx:Script>
+	<mx:CheckBox enabled="{ isItEditing }" label="C"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="M"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="Y"/>
+	<mx:CheckBox enabled="{ isItEditing }" label="B"/>
+</mx:HBox>

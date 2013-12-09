@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center"
+		creationComplete="init()">
+	<mx:Script>
+	<![CDATA[
+		import business.LoadXml;
+		import events.DemoEvents;
+		import controller.Controller;
+		import data.Users;
+		import business.XmlParser;
+		import events.LoginEvents;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.events.FlexEvent;
+		import mx.core.Application;
+		[Bindable]
+   		[Embed("assets/icons/task.gif")]
+   		private var demoIcon:Class;
+		[Bindable]
+		private var query:String = ""
+		public var keyId:String = ""
+		public var userData:Users = new Users();
+		private var initBool:Boolean = false;
+		public function init():void{
+			initBool = true
+			query = '';
+			keyId = '';
+			username.text = 'you@yourDomain.com';
+			password.text = '';
+		}
+		private function ligin(event:MouseEvent):void{
+			query = "select * from users where email='"+username.text+"' and userpswd = '"+password.text+"'  and activated = '1'";
+			dbconnect.getOperation('xmldb').send();
+		}
+		private function displayError(event:Event):void{
+			Alert.show("Error:Enter the valid Email Address");
+		}
+	
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("Error:Could Not able to Connect");
+		}
+		private function resultHandler(event:ResultEvent):void{
+			updateUserDate(XML(event.result),false);
+		}
+		private function updateUserDate(_xml:XML,demo:Boolean):void{
+			Controller.getInstance().userObj = userData;
+			var resultMsg:XML = XML(_xml);	
+			keyId = resultMsg.row.group_id;
+			var checkStr:Number = Number(resultMsg.num);			
+			if(checkStr>0){		
+				new XmlParser(XML(resultMsg.row),userData);
+				//if(Controller.getInstance().userObj.sessionid=='0'){
+					//changeStatus(Controller.getInstance().userObj.pk_user);	
+					if(Application.application.demoView)
+						dispatchEvent(new DemoEvents(DemoEvents.DEMO))
+					else
+						dispatchEvent(new LoginEvents(LoginEvents.LOGINSUCCESS));				
+			/* 	}else{
+					Alert.show("Please LogOut from Another Session");
+				}	 */			
+				
+			}else{
+				Alert.show("InCorrect UserName and Password");
+			}
+		}
+		[Bindable]
+		private var updateQuery:String = '';
+		private function changeStatus(userId:String):void{
+			updateQuery = "update users set sessionid = 1 where pk_user = '"+userId+"'";
+			dbconnect.getOperation('updateTable').send();
+		}
+		private function demoView():void{
+			Application.application.demoView = true;
+			var loadXmlData:LoadXml = new LoadXml();
+			loadXmlData.loadXmlData("assets/demoxml/users.xml",'',false);
+			loadXmlData.addEventListener(Event.COMPLETE,userDemoXml);
+		}
+		private function updateResulthandler(event:ResultEvent):void{
+			
+		}
+		private function userDemoXml(event:Event):void{
+			updateUserDate(event.currentTarget.xmlData,true);
+		}		
+	]]>
+</mx:Script>
+		<mx:RemoteObject id="dbconnect" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="xmldb" result="resultHandler(event)">
+				<mx:arguments>
+					<query>{query}</query>
+				</mx:arguments>
+			</mx:method>
+			<mx:method name="updateTable" result="updateResulthandler(event)" >
+				<mx:arguments>
+					<query>{updateQuery}</query>
+				</mx:arguments>
+			</mx:method>
+		</mx:RemoteObject>
+		<mx:EmailValidator
+	        id="emailValidator"
+	        source="{username}" property="text" invalid="displayError(event)"/>
+		<mx:VBox horizontalAlign="center" >
+			<mx:Spacer height="50"/>
+			<mx:Panel title="Login" width="300"  horizontalAlign="center"  verticalAlign="middle" >
+					<mx:Form id="myForm" >
+				        <mx:FormItem label="Email id" labelStyleName="labelStyleName">
+				            <mx:TextInput id="username" focusAlpha="0" text="ks@g.com"/>
+				        </mx:FormItem>
+				        <mx:FormItem label="Password" labelStyleName="labelStyleName">
+				            <mx:TextInput id="password" focusAlpha="0"  displayAsPassword="true" text="s"/>
+				        </mx:FormItem>
+				    </mx:Form>
+				    <mx:ControlBar verticalAlign="middle" horizontalAlign="center">
+				    <mx:LinkButton icon="{demoIcon}" color="black" id="demo" label="Demo" click="demoView()"/>
+					<mx:Button label="Login" styleName="loginButton" click="ligin(event)" />    	
+				    </mx:ControlBar>
+				    <mx:HBox horizontalAlign="center" width="100%" height="100%">
+						<mx:Label text="support"/>
+						<mx:Label text="techsupport@brennus.com" textDecoration="underline" color="#4556F2"/>
+					</mx:HBox>				  
+				</mx:Panel>				
+		</mx:VBox>
+</mx:VBox>

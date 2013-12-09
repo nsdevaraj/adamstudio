@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:Gview="com.adams.dt.view.dataGridSearch.mainComponent.*"  
+			    showCloseButton="true" horizontalAlign="center" height="500" mouseDownOutside="onCancel()" title="Reference Project"
+	            layout="absolute" headerHeight="30" width="700" horizontalScrollPolicy="off" close="onClose( event )"
+	            styleName="bgContainer" verticalScrollPolicy="off" xmlns:reference="com.adams.dt.view.dataGridSearch.mainComponent.*"
+	            creationComplete = "belongDomain()">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ListEvent;
+			import com.adams.dt.event.TeamlineEvent;
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.controls.HTML;
+			import com.adams.dt.view.mainView.NewProject;
+			import mx.effects.Fade;
+			import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Reports;
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+		    private var _headerArray:Array = [];
+		    
+		    public var versionbehindScreen:VersionViewComponent;
+		    
+			public var behindScreen:NewProject;
+			[Bindable]
+			private var _referenceCollection:ArrayCollection = new ArrayCollection();
+			
+			private var _selectedDomain:Categories;
+			[Bindable]
+			public function get selectedDomain():Categories {
+				return _selectedDomain;
+			}
+			
+			public function set selectedDomain( value:Categories ):void {
+				_selectedDomain = value;
+			}
+			
+			private function belongDomain(): void {
+				_referenceCollection.removeAll();
+				for each( var prj:Projects in model.projectsCollection ) {
+					if( makeProjectFilter( prj ) ) {
+						_referenceCollection.addItem( prj );
+					}
+				}
+				_referenceCollection.refresh();
+				setUpAutoComplete();
+			}
+			
+			private function makeProjectFilter( obj:Projects ):Boolean {
+				var retVal : Boolean = false;
+				if ( obj.categories.categoryFK.categoryFK.categoryName == selectedDomain.categoryName ) { 
+		    		retVal = true;
+				}
+				return retVal;
+		    }
+			
+			private function onValidation():void {
+				if( _grid.selectedIndex == -1 ) {
+	    			Alert.show( "Select a Project To Validate" );
+	    		}
+	    		else {
+	    			model.referenceProject = _grid.selectedItem as Projects; 
+	    			if( behindScreen ){
+		    			/* behindScreen.text_ean.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'ean', false );
+						behindScreen.text_sap.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'sap', false );
+						behindScreen.text_impremiur.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'impremiur', false ); */
+						
+						behindScreen.popup_priority.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'ean', false );
+						behindScreen.date_clt_date.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'sap', false );
+						behindScreen.text_impremiur.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'impremiur', false );
+	    			}
+					/* behindScreen.comment.htmlText = '';
+					var referenceString:String = 'Reference Project: '+ model.referenceProject.projectName + '(' + String( model.referenceProject.projectDateStart ) + ')'+ behindScreen.comment.text;
+					behindScreen.comment.text = referenceString;  */
+					if( versionbehindScreen ){		
+						versionbehindScreen.text_ean.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'ean', false );
+						versionbehindScreen.text_sap.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'sap', false );
+						versionbehindScreen.text_impremiur.text = Utils.getPropertyValue( Projects( _grid.selectedItem ), 'impremiur', false );
+					}
+					
+					var handler:IResponder = new Callbacks( teamlineResult );
+					var teamlineEvent:TeamlineEvent = new TeamlineEvent( TeamlineEvent.EVENT_PROJECT_TEAMLINE, handler );
+					teamlineEvent.projectId = model.referenceProject.projectId;
+					teamlineEvent.dispatch();
+				} 
+			}
+			
+			private function teamlineResult( rpcEvent:Object ):void {
+				model.referenceTeamline = rpcEvent.result as ArrayCollection;
+				onCancel();	
+			}
+			
+			private function onCancel():void {
+				dispatchEvent( new CloseEvent( CloseEvent.CLOSE ) );
+			}
+			
+			private function onClose( event:CloseEvent ):void { 
+				PopUpManager.removePopUp( this );
+			}
+			
+			private function nameFunction( item:Object, col:DataGridColumn ):String {
+				return item.projectName.substring( ( item.projectName.indexOf( '_' ) + 1 ), item.projectName.length );
+			}
+	    	
+	    	private function idFunction( item:Object, col:DataGridColumn ):String {
+				return item.projectName.split( '_' )[ 0 ];
+			}
+			
+			private function marquesFunction( item:Object, col:DataGridColumn ):String {
+				return Utils.getPropertyValue( Projects( item ), 'brand', false );
+			}
+			
+			private function rayonFunction( item:Object, col:DataGridColumn ):String {
+				return Utils.getPropertyValue( Projects( item ), 'department', false );
+			}
+			
+			private function eanFunction( item:Object, col:DataGridColumn ):String {
+				return Utils.getPropertyValue( Projects( item ), 'ean', false );
+			}
+			 
+			private function gestionFunction( item:Object, col:DataGridColumn ):String {
+				return Utils.getPropertyValue( Projects( item ), 'sap', false );
+			}
+			
+			private function setUpAutoComplete():void {
+				_headerArray.push( DataGridColumn( _grid.columns[ 0 ] ).dataField );
+	        }
+	        
+	    ]]>
+	</mx:Script>
+		<Gview:DashBoardGrid  left="5" right="5" bottom="5" top="33" id="_grid"
+              dataProvider="{ _referenceCollection }" 
+			  specificText="{ _autoComplete._input.text }" 
+              doubleClickEnabled="true" doubleClick="onValidation()"  
+              itemRenderer="com.adams.dt.view.dataGridSearch.renderers.TextColorRenderer">
+            <Gview:columns>
+				<mx:DataGridColumn dataField="projectName" labelFunction="nameFunction" headerText="ReferenceName"/>
+				<mx:DataGridColumn labelFunction="idFunction" headerText="ReferenceId"/>
+				<mx:DataGridColumn labelFunction="marquesFunction" headerText="Marques"/>
+				<mx:DataGridColumn labelFunction="rayonFunction" headerText="Rayon"/>
+				<mx:DataGridColumn labelFunction="eanFunction" headerText="EAN"/>
+				<mx:DataGridColumn labelFunction="gestionFunction" headerText="CodeGestion"/>
+			</Gview:columns>            
+        </Gview:DashBoardGrid>	
+        <mx:Label id="lbl" text="Search" right="{_autoComplete.width+15}" top="5"/>
+		<Gview:TextComplete id="_autoComplete" width="180" top="5" right="5"
+			styleName="autoCompleteColor"   
+			dataCollection="{ _referenceCollection }" 
+			nameProperty="{ _headerArray }" 
+			isReferenceProject="true" 
+			labelField="projectName"/>
+</mx:TitleWindow>

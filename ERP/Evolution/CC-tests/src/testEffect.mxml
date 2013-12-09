@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+<mx:Script>
+<![CDATA[
+private function testExt():void {
+  if(ExternalInterface.available) {
+    ExternalInterface.addCallback("flexFunctionName", flexFunctionName);
+  }
+}
+
+public function flexFunctionName(paramString:String):void {
+ trace( "toto" );
+}
+
+  //NaN is the default value of the Number Data Type 
+   private var myNumber:Number;
+   private function checkType():void{
+      // if(myNumber==NaN){   // output error - Ilogical comparison with NaN
+      if(myNumber==isNaN(myNumber)) trace( "Never triggers" );
+      if(isNaN(myNumber)) trace( "Correct testing" );
+  }
+]]>
+</mx:Script>
+	
+<mx:Button top="400" label="Test NaN" click="checkType()" />
+
+
+
+<mx:Parallel id="dissolveIn" target="{testPanel}">
+<mx:Fade duration="2000" alphaFrom="1.0" alphaTo="0.0" />
+<mx:Blur duration="2000" blurXFrom="0.0" blurXTo="10.0"/>
+</mx:Parallel>
+
+<mx:VBox>
+	
+<mx:Panel id="testPanel" width="400" height="200">
+	<mx:Label text="hello"/>
+</mx:Panel>
+<mx:Button label="Effect" click="dissolveIn.play()">
+	
+</mx:Button>
+<mx:Button label="Effect" click="dissolveIn.reverse()">
+	
+</mx:Button>
+</mx:VBox>
+</mx:Application>

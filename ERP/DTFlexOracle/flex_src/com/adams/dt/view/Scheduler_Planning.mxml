@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="com.adams.dt.view.scheduler.mainViews.*"
+			xmlns:scheduler="com.adams.dt.view.scheduler.*"
+	 	   creationCompleteEffect = "{ mx.effects.Fade }" width="100%">
+	<mx:Script>
+		<![CDATA[
+		
+		import mx.core.UIComponent;
+		import mx.effects.Fade;
+		import com.adams.dt.model.tracability.TracPhase;
+		import mx.controls.Button;
+		import mx.events.SliderEvent;
+		import com.adams.dt.model.scheduler.taskClasses.IEntry;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.model.vo.Phasestemplates;
+		import com.adams.dt.model.vo.Workflows;
+		import mx.containers.Canvas;
+		
+		 import com.adams.dt.model.ModelLocator;
+		 import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		 import com.adams.dt.model.scheduler.taskClasses.TaskData;
+		 import com.adams.dt.model.scheduler.taskClasses.ColouredEntry;
+         import com.adams.dt.model.scheduler.util.DateUtil;
+         
+		 import mx.rpc.events.ResultEvent;
+         import mx.collections.IList;
+         import mx.collections.ArrayCollection;
+         import mx.controls.Alert;
+         import mx.events.ScrollEvent;
+         import mx.events.ScrollEventDirection;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+         private var _schedulerCollection:ArrayCollection;
+         [Bindable]
+         public function get schedulerCollection():ArrayCollection {
+         	return _schedulerCollection;
+         } 
+         public function set schedulerCollection( value:ArrayCollection ):void {
+         	_schedulerCollection = value;
+         	scheduler.schedulerInput = value;
+         } 
+          
+    ]]>
+	</mx:Script>
+	
+	<scheduler:Scheduler id="scheduler" width="100%" rowsToShow="3" rowHeight="40"/>
+	<view:PlanningDetails id="_palnningDetails" y="{ scheduler.y + scheduler.height + 20 }" displayIMPRewind="true" 
+									itemIndex="{ model.tracTaskContent.dispatchingIndex }"/>
+				          			<!--viewerReference="{ UIComponent( taskViewer.task.entryViewer ) }" -->
+				          			
+</mx:Canvas>

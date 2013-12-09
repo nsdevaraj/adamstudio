@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fancy Gallery by Randy Drisgill 2006 - FancyGallery@drisgill.com -->
+<!-- uses reflection's by Trey Long and updated by Narciso Jaramillo -->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+		import flash.net.navigateToURL;
+		import mx.effects.easing.*;
+		import mx.core.Application;
+		
+		[Bindable]
+		public var imgLink:String;
+		[Bindable]
+		public var imgTip:String;
+		[Bindable]
+		public var iconStyle:String;
+		[Bindable]
+		public var imgTitle:String = '';
+		[Bindable]
+		public var imgH:int=100;
+		[Bindable]
+		public var imgW:int=100;
+		
+	]]>
+	</mx:Script>
+	<mx:VBox horizontalAlign="center"
+		verticalGap="20">
+		<mx:Canvas id="theImg"
+			width="{imgW}"
+			height="{imgH}"
+			styleName="{iconStyle}"/>
+		<mx:Label text="{imgTitle}"/>
+	</mx:VBox>
+</mx:Canvas>

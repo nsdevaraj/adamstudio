@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping>
+	<class name="com.adams.dt.pojo.Languages"
+		table="languages">
+		<id name="id" type="integer" column="id">
+			<generator class="increment" />
+		</id>
+		<property name="formid">
+			<column name="formid"/>
+		</property>
+		
+		<property name="frenchlbl">
+			<column name="french_label"/>
+		</property> 
+		
+		<property name="englishlbl">
+			<column name="english_label"/>
+		</property>
+ 		 
+	</class>
+	
+	<!-- Retrieve an object that was previously persisted to the database all obect and primary key order -->
+	<query name="Languages.findAll">
+		<![CDATA[select u from Languages u ORDER BY u.id]]>
+	</query> 
+</hibernate-mapping>

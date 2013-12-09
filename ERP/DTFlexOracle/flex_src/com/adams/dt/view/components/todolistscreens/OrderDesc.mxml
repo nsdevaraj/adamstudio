@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	width="100%"
+	height="100%"
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:comp="com.adams.dt.view.filemanagement.*"
+	xmlns:notesView="com.adams.dt.view.components.*">
+	<mx:Script>
+		<![CDATA[
+		
+		import mx.managers.PopUpManager;
+		import com.adams.dt.view.components.ConfirmationDemandeValidation;
+		import com.adams.dt.event.PropertiespjEvent;
+		import com.adams.dt.event.departure.DepartureMapEvent;
+		import com.adams.dt.event.ProjectsEvent;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import mx.rpc.IResponder;
+		import com.adams.dt.event.TasksEvent;
+		import mx.events.FlexEvent;
+		import mx.binding.utils.BindingUtils;
+		import com.adams.dt.model.vo.Propertiespj;
+		import com.adams.dt.model.vo.Projects;
+		import mx.controls.Alert;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.FileDetailsEvent;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.ModelLocator;
+		
+		import com.adams.dt.view.components.FileManagement;
+		import com.adams.dt.view.components.todolistscreens.Depart;
+		import com.adams.dt.view.components.todolistscreens.TimesheetChalkBoard;
+		import com.adams.dt.view.components.todolistscreens.TrafficView;
+			
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance(); 
+		
+		private var _sendBulkMail:Boolean;
+		
+		/**
+		 * get the updated properties 
+		 */
+		public function getPropertiespjSet():ArrayCollection{			
+			var arrayCollect:ArrayCollection = traffic_View.getPropertiespjSet();
+			if( timeSheet ) {
+				for each( var itemT:* in timeSheet.getPropertiespjSet() ) {
+					arrayCollect.addItem( itemT );
+				}	
+			}
+			if( _notesScreen ) {
+				for each( var itemN:* in _notesScreen.getPropertiespjSet() ) {
+					arrayCollect.addItem( itemN ); 
+				}	
+			}
+			if( departView ) {
+				for each( var itemD:* in departView.getPropertiespjSet() ) {
+					arrayCollect.addItem( itemD ); 
+				}	
+			}
+			tempObj={};
+			removeCollection = new ArrayCollection();
+			var arrc:ArrayCollection = filterCollection( arrayCollect );
+			for each( var propitem:Propertiespj in removeCollection ) {
+				arrc.removeItemAt( arrc.getItemIndex( propitem ) );
+				removeCollection.removeItemAt( removeCollection.getItemIndex( propitem ) );
+			}
+			return arrc;
+		}
+		
+		/**
+		 * Remove duplicated items
+		 */
+		private function filterCollection(filterBtnCol:ArrayCollection):ArrayCollection {
+			filterBtnCol.filterFunction = deDupe;
+			filterBtnCol.refresh();
+			return filterBtnCol;
+		}
+		
+		private var tempObj:Object;
+		private var removeCollection:ArrayCollection;
+		/**
+		 * Check the item exist or not
+		 */
+		private function deDupe( item:Propertiespj ):Boolean {
+			var retVal:Boolean = true;
+			if( !tempObj.hasOwnProperty(item.propertyPreset.propertyPresetId ) ) {
+				tempObj[ item.propertyPreset.propertyPresetId ] = item.propertyPreset.propertyPresetId;
+				retVal = true;
+			}
+			else {
+				removeCollection.addItem( item );
+			}
+			return retVal;
+		}
+		
+		/**
+		 * set the selected index of tabnavigator
+		 */ 		
+		private function getIndex( number:Number ):Number {
+			return 0;
+		}
+		
+		/**
+		 * load the screens in tabnavigtor
+		 */ 
+		private function onTabNavigatorChange( event:Event ):void {
+			if( TabNavigator( event.currentTarget ).selectedIndex == 3 ) {
+				var fileEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GET_BASICFILEDETAILS );
+				CairngormEventDispatcher.getInstance().dispatchEvent( fileEvent );
+			}
+		}
+		
+		public function updateProperties():void {
+			var event:Event;
+			if( traffic_View ) traffic_View.updateProperties();
+			if( timeSheet ) timeSheet.updateProperties();
+			if( _notesScreen ) _notesScreen.updateProperties();
+			if( departView ) departView.updateProperties();
+		}
+		
+		private function saveNotes():void {
+			model.currentProjects.projectComment = _notesScreen.getComment();
+			var updatePjEvent:ProjectsEvent = new ProjectsEvent( ProjectsEvent.EVENT_UPDATE_PROJECTNOTES );
+			updatePjEvent.dispatch();
+		}
+		
+		private function getNotesImage( comment:ByteArray ):Class {
+			var returnValue:Class;
+			if(comment!=null)
+			{
+				var str:String = comment.toString();
+				if( str ) {
+					if( str.length != 0 ) {
+						var myXML:XML = new XML( "<myXML>"+str+"</myXML>");
+						returnValue = traverseThroughXML( myXML );
+					}
+					else {
+						returnValue = ImageResourceEmbedClass.noLabel;
+					}
+				}
+				else {
+					returnValue = ImageResourceEmbedClass.noLabel;
+				}
+			}
+			else {
+					returnValue = ImageResourceEmbedClass.noLabel;
+			}
+			return returnValue; 
+		}
+		
+		private function traverseThroughXML( myXML:XML ):Class {
+			var returnValue:Class = ImageResourceEmbedClass.noLabel;
+			for( var i:int = 0 ; i < myXML.children().length(); i++ ) {
+				if( String( myXML.children()[ i ].children()[ 0 ].FONT ).length != 0 ) {
+					returnValue = ImageResourceEmbedClass.yesLabel;
+					break;
+				}
+			}
+			return returnValue;
+		}
+		
+		private function departureFieldMapping( event:DepartureMapEvent ):void {
+			if( event.currentTarget is TimesheetChalkBoard ) {
+				if( departView ) {
+					if( departView.hasOwnProperty( event.changedField ) ) {
+						if( event.changedField.split('_')[ 0 ] == 'text' ) {
+							departView[ event.changedField ].text = timeSheet[ event.changedField ].text;
+						}
+						else if( event.changedField.split('_')[ 0 ] == 'popup' ) {
+							departView[ event.changedField ].selectedIndex = timeSheet[ event.changedField ].selectedIndex;
+						}
+						else if( event.changedField.split('_')[ 0 ] == 'checkbox' ) {
+							departView[ event.changedField ].selected = timeSheet[ event.changedField ].selected;
+						}
+					}
+				}
+			}
+			else if( event.currentTarget is Depart ) {
+				if( timeSheet ) {
+					if( timeSheet.hasOwnProperty( event.changedField ) ) {
+						if( event.changedField.split('_')[ 0 ] == 'text' ) {
+							timeSheet[ event.changedField ].text = departView[ event.changedField ].text;
+						}
+						else if( event.changedField.split('_')[ 0 ] == 'popup' ) {
+							timeSheet[ event.changedField ].selectedIndex = departView[ event.changedField ].selectedIndex;
+						}
+						else if( event.changedField.split('_')[ 0 ] == 'checkbox' ) {
+							timeSheet[ event.changedField ].selected = departView[ event.changedField ].selected;
+						}
+					}
+				}
+			}
+		}
+		
+		private function onPropertySaveonMail():void {
+			model.propertiespjCollection = getPropertiespjSet();
+			var handler:IResponder = new Callbacks( onPropertiesSave ); 
+			var updatepropPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_BULKUPDATE_PROPERTIESPJ, handler );
+			updatepropPjEvent.dispatch();
+		}
+		
+		private function onPropertiesSave( rpcEvent:Object ):void {
+			if( model.mainProjectState != 0 ) {
+				if( model.updateMPV )	model.updateMPV = false;
+				else	model.updateMPV = true;
+			}
+			if( _sendBulkMail ) {
+				_sendBulkMail = false;
+				var mailEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_CREATE_BULKEMAILTASKS );
+		    	mailEvent.dispatch();
+			}
+		}		
+		
+		private function sendBulkMail():void {
+			var conWindow:ConfirmationDemandeValidation = new ConfirmationDemandeValidation();
+			conWindow.projectProperty = model.propertiespresetsCollection;				
+			conWindow.addEventListener( 'confirmationChecked', checkConfirmation,false,0,true );
+			PopUpManager.addPopUp( conWindow, this ,true );
+			PopUpManager.centerPopUp( conWindow );
+		}
+		
+		private function checkConfirmation( event:Event ):void {
+			_sendBulkMail = true;
+			onPropertySaveonMail();
+		}
+		
+		private function mailButtonVisible( index:int ):Boolean {
+			if( index == 0 ) {
+				if( model.clientCode == 'FAB' ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		private function saveNotesVisible( index:int, editValue:Boolean ):Boolean {
+			if( index == 2 && editValue ) {
+				return true;
+			}
+			return false;
+		} 
+		
+		]]>
+	</mx:Script>
+	
+	<mx:Canvas   top="0" left="0" right="0" bottom="0">
+		<mx:Button icon="@Embed(source='assets/swf/General_Assets.swf#mailIcon')" label="Send Validations" top="0" right="5" click="sendBulkMail()" id="bulkMailButton"
+			               visible="{ mailButtonVisible( tab.selectedIndex ) }" includeInLayout="{ bulkMailButton.visible }"
+			               toolTip="Send Bulk Mail"/>
+ 		<mx:TabNavigator selectedIndex="{getIndex(model.workflowState)}" id="tab" 
+						 change="{onTabNavigatorChange(event)}"  
+						 paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" horizontalGap="0"
+						 top="0" left="0" right="0" bottom="0" >
+				<mx:Canvas label="General" width="100%" id="general" height="100%">
+					<view:TrafficView name="Traffic" id="traffic_View" projectProperty="{model.propertiespresetsCollection}"
+						              sendStatusMail="true" propertySaveonMail="onPropertySaveonMail()"/>
+				</mx:Canvas>
+				<mx:Canvas label="{model.loc.getString('technicalProperties')}" width="100%" id="technical" height="100%">
+					<view:TimesheetChalkBoard id="timeSheet" name="TimeSheet" projectProperty="{model.propertiespresetsCollection}" 
+						                      toRemoveHighlight="{ model.workflowState }" applyDefaultTemplateValue="{ model.applyProjectDftValue }" 
+						                      saveVisible="true" getUpdated="{ model.getPropertiesUpdated }" 
+						                      currentDefaultTemplateValue="{ model.projectDefaultValue }"
+						                      mapDeparture="departureFieldMapping( event )"/>
+				</mx:Canvas>
+				<mx:Canvas label="{model.loc.getString('notesMessages')}" width="100%" id="_notes" height="100%"
+					       icon="{ getNotesImage( model.currentProjects.projectComment ) }">
+					<notesView:NotesScreen id="_notesScreen" name="Notes" projectProperty="{ model.propertiespresetsCollection }" />
+				</mx:Canvas>
+				<mx:Canvas label="{ model.loc.getString('departures') }" width="100%" id="depart" height="100%">
+					<view:Depart name="Depart" id="departView" projectProperty="{model.propertiespresetsCollection}"
+						         mapDeparture="departureFieldMapping( event )"/>
+				</mx:Canvas>
+		</mx:TabNavigator>
+	</mx:Canvas>
+	<mx:Button label="Save Notes" visible="{ saveNotesVisible( tab.selectedIndex, model.editForm ) }" click="saveNotes()"
+		       right="10" top="0"/>
+</mx:Canvas>

@@ -1,0 +1,696 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:flex="http://www.springframework.org/schema/flex"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:context="http://www.springframework.org/schema/context"       
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/flex 
+		http://www.springframework.org/schema/flex/spring-flex-1.0.xsd	
+		http://www.springframework.org/schema/security 
+		http://www.springframework.org/schema/security/spring-security-2.0.1.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+		  
+<bean id="customerContext" class="com.adams.dt.dao.CustomerContextHolder">
+	<flex:remoting-destination />
+</bean>
+		 <!-- findAll -->
+ 	   <bean id="lang" parent="abstractDao">
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Languages
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+		<flex:remoting-destination channels="my-polling-amf" include-methods="findAll,getList" />
+	</bean>   
+	<!-- findAll,getList -->
+	<bean id="maillang" parent="abstractDao">
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Languages
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+		<flex:remoting-destination channels="my-streaming-amf" include-methods="getList" />
+	</bean>  
+	<!-- findByTaskId,update,findMailList,create,findByEmailId -->
+	<bean id="mail" parent="abstractDao">
+		<flex:remoting-destination channels="my-streaming-amf" include-methods="findByTaskId,update,findMailList,create,findByEmailId"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Tasks
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean> 
+	
+	<!-- findByMailPersonId,findById,findByName,findIMPEmail,findAll,getList -->
+	<bean id="personmail" parent="abstractDao">
+		<flex:remoting-destination channels="my-streaming-amf" include-methods="getList,findByMailPersonId,findById,findByName,findIMPEmail"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Persons
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean> 
+	
+	<!-- findByMailProfileId,findAll,getList,findProfilesList -->
+	 <bean id="mailprofiles" parent="abstractDao">
+     	<flex:remoting-destination channels="my-streaming-amf" include-methods="findByMailProfileId,getList,findProfilesList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Profiles
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+	
+	<!-- findByMailProfileId,findById,findAll,getList -->
+	<bean id="mailworkflowstemplates" parent="abstractDao">
+     	<flex:remoting-destination channels="my-streaming-amf" include-methods="findByMailProfileId,findById,getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Workflowstemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- findByIdName,findByMailFileId,create,findByNameFileId,findByIndProjId -->
+	<bean id="mailFile" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="findByIdName,findByMailFileId,create,findByNameFileId,findByIndProjId"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.FileDetails
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   	
+	
+	<!-- update,findPersonsList -->
+	<bean id="mailproject" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="update,findProjectId,findPersonsList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Projects
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+	
+	<!-- findAll,getList -->
+	<bean id="mailpropertiespreset" parent="abstractDao">
+      	<flex:remoting-destination channels="my-streaming-amf" include-methods="getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Propertiespresets
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+	 
+	<!-- bulkUpdate -->
+	<bean id="mailpropertiespj" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="bulkUpdate"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Propertiespj
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+	
+	<!-- bulkUpdate -->
+	<bean id="mailphases" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="bulkUpdate"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Phases
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+	
+	<!-- findById,findByTeamLinesId -->
+	<bean id="mailteamline" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="findById,findByTeamLinesId"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Teamlines
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+	
+	
+	<!-- findDomain,findAll,getList -->
+	<bean id="mailcategory" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="findDomain,getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Categories
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean>   
+	
+	<!-- findAll,getList -->
+	<bean id="mailstatus" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Status
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+	<!-- create -->
+	<bean id="mailevents" parent="abstractDao">
+     	<flex:remoting-destination channels="my-streaming-amf" include-methods="create"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Events
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+	<!-- findAll,getList -->	
+	<bean id="mailpresetTemplate" parent="abstractDao">
+      	<flex:remoting-destination channels="my-streaming-amf" include-methods="getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Presetstemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>    
+	
+	<!-- findAll,getList -->	
+	<bean id="mailphasestemplate" parent="abstractDao">
+     	<flex:remoting-destination channels="my-streaming-amf" include-methods="getList"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Phasestemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+	
+	<!--create,update,findByNums,findAll,getList,deleteById -->	
+	<bean id="mailnote" parent="abstractDao">
+    	<flex:remoting-destination channels="my-streaming-amf" include-methods="create,update,findByNums,getList,deleteById"/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Notes
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 	
+	
+	<bean id="category" parent="abstractDao">
+		<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Categories
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean>   
+    
+    <bean id="note" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Notes
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+    
+    <bean id="fileDetail" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.FileDetails
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+    
+    <bean id="tag" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Tags
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+    
+    
+    <bean id="teamline" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Teamlines
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+	
+    <bean id="person" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Persons
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+    
+    <bean id="group" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Groups
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+     <bean id="profile" parent="abstractDao">
+     	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Profiles
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+    <bean id="project" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Projects
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+    <bean id="status" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Status
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>     
+    
+    <bean id="teamtemplate" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.TeamTemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+    
+    <bean id="task" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Tasks
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+    <bean id="phase" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Phases
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+    
+     <bean id="event" parent="abstractDao">
+     	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Events
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+
+     <bean id="phasestemplate" parent="abstractDao">
+     	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Phasestemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+    
+    <bean id="propertiespj" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Propertiespj
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+    <bean id="pagingDAO"
+		class="com.adams.dt.dao.hibernate.DTPageDAO">
+		<flex:remoting-destination />
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+      <bean id="propertiespreset" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Propertiespresets
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>    
+    
+      <bean id="workflow" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Workflows
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+
+     <bean id="workflowstemplate" parent="abstractDao">
+     	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Workflowstemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+    
+    <bean id="chat" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Chat
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+     
+    <bean id="groupperson" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Grouppersons
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+    
+    <bean id="teamlinestemplate" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Teamlinestemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+	<bean id="domainworkflow" parent="abstractDao">
+		<flex:remoting-destination/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Domainworkflows
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean> 
+	<bean id="profilemodule" parent="abstractDao">
+		<flex:remoting-destination/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.ProfileModules
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean> 
+	<bean id="module" parent="abstractDao">
+		<flex:remoting-destination/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Modules
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean> 
+	<bean id="company" parent="abstractDao">
+		<flex:remoting-destination/>
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Companies
+					</value>
+				</constructor-arg>
+			</bean>
+		</property> 
+	</bean>
+	
+      <bean id="phasetemplates" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Phasestemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>    
+	<bean id="impremiur" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Impremiur
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>    
+	<bean id="proppresetstemplates" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Proppresetstemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>    
+	<bean id="presetstemplates" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Presetstemplates
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean> 
+	<bean id="reports" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Report
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>   
+	<bean id="sprints" parent="abstractDao">
+      	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.Sprints
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>  
+	<bean id="filetags" parent="abstractDao">
+    	<flex:remoting-destination />
+		<property name="target">
+			<bean parent="abstractDaoTarget">
+				<constructor-arg>
+					<value>
+						com.adams.dt.pojo.FileTags
+					</value>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>     
+</beans>

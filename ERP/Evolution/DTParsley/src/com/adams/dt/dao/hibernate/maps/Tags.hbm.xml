@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Tags" table="tags">
+        <id name="tagId" type="integer" column="Tag_ID">
+            <generator class="increment" />
+        </id>
+        
+        <property name="tagLabel">
+            <column name="TagLabel" />
+        </property> 
+         
+         <set name="filesetObject" table="file_tags" cascade="none" order-by="File_FK"  lazy="false" >
+                <key column="Tag_FK"/>
+                <many-to-many column="File_FK" class="com.adams.dt.pojo.FileDetails" />
+	    </set>
+        
+    </class> 
+    <query name="Tags.findById">
+        select u from Tags u where u.tagId=?
+    </query>
+</hibernate-mapping>

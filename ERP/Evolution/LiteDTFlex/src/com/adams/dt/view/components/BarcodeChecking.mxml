@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Style>
+		@font-face {
+			            src: local("Verdana");
+			            fontFamily: VerdanaEmbedded;
+			            fontWeight: bold;
+			        }
+			
+			        .errorMessage {
+			            fontFamily: VerdanaEmbedded;
+			            fontWeight: bold;
+			        }
+			
+			        .validTextInputStyle {
+			            backgroundAlpha: 0.6;
+			            backgroundColor: haloGreen;
+			            color:haloGreen;
+			        }
+			
+			        .invalidTextInputStyle {
+			            backgroundAlpha: 0.3;
+			            backgroundColor: red;
+			            color:red;
+			        }
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+        	
+            [Bindable]
+			private var _text:String;
+			[Bindable]
+			private var validStr:String;
+			
+			public function set text(str:String):void{
+				_text = str;
+
+			}
+			public function get text():String{
+				return textInput.text;
+			}
+            
+        ]]>
+	</mx:Script>
+	<mx:TextInput id="textInput"
+		text="{_text}"
+		width="200"/>
+</mx:Canvas>

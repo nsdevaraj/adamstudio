@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" 
+		xmlns:components="com.adams.scrum.views.components.*" 
+		xmlns:mediators="com.adams.scrum.views.mediators.*">	
+	<s:states>
+		<s:State name="BasicState"/>
+		<s:State name="NewTicket"/>
+		<s:State name="TicketDetail"/>
+	</s:states> 
+	<fx:Metadata>
+		[HostComponent("com.adams.scrum.views.mediators.SprintOpenViewMediator")]
+	</fx:Metadata> 
+	<components:NativePanel id="splPanel" width="100%" height="100%" 
+			horizontalCenter="0" verticalCenter="0"
+			title="Sprint Backlog" 
+			skinClass="assets.skins.ClosePanelSkin"> 
+		<s:Scroller top="4" bottom="4" left="4" right="4">
+			<s:VGroup  clipAndEnableScrolling="true" width="100%" height="100%" >
+				<s:Group width="100%"><s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#d7dee2"/></s:fill></s:Rect>
+					<s:HGroup width="100%" horizontalAlign="left" paddingTop="10" paddingRight="5" 
+							  paddingLeft="5" paddingBottom="5" verticalAlign="middle">
+						<components:NativeButton id="sConfigBtn" label="Config" styleName="ConfigIcon"/>
+						<s:Label id="sprintNameTxt" styleName="headerStyle" width="{width/2}" maxDisplayedLines="1" showTruncationTip="true"/>
+						<s:Label text="Theme Filter"/>
+						<s:DropDownList id="sprintThemeList" labelField="themeLbl" selectedIndex="0" />
+						
+						<s:Button id="sprintStatusTxt" right="0" verticalCenter="0"/>
+						<s:VGroup>
+							<s:HGroup>
+								<s:ToggleButton label="Select TimeSheet Date" id="timeSheetBtn"/>
+								<mx:DateField  id="timeSheetDate" selectedDate="{new Date()}" visible="{timeSheetBtn.selected}"/>
+							</s:HGroup>	
+							<s:HGroup>
+								<components:NativeButton label="Excel" id="createExcel"/>
+								<components:NativeButton label="Pdf" id="createPDF"/>
+								<components:NativeButton label="Html" id="createHtml"/>
+							</s:HGroup>
+						</s:VGroup>
+						<s:Group> 
+							<s:VGroup id="statusPanel" bottom="0" left="0">
+								 <s:Label text="Tasks Status" />
+								 <s:HGroup variableColumnWidth="false" columnWidth="50" verticalAlign="middle">
+									 <s:Label text="WAITING" />
+									 <s:Label text="PENDING" /> 
+									 <s:Label text="DONE" />
+								 </s:HGroup>
+							</s:VGroup>
+							<s:VGroup left="{statusPanel.width}" bottom="0">
+									<s:Label text="Hours" />
+									<s:HGroup variableColumnWidth="false" columnWidth="22" verticalAlign="bottom" horizontalAlign="center">
+										<s:Label text="estimate" rotation="-90"/>
+										<s:Label text="done"  rotation="-90"/>
+										<s:Label text="balance" rotation="-90"/>
+									</s:HGroup>									
+							</s:VGroup>
+						</s:Group>	
+						<mx:Spacer width="70"/>
+					</s:HGroup>
+				</s:Group>	 
+				<s:Group width="100%"><s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="#d7dee2" /></s:fill></s:Rect>
+					<s:HGroup width="100%" verticalAlign="middle">
+						<s:Label text="Stories" styleName="headerStyle"/>
+						<s:ToggleButton label="Collapse" id="expandIcon" />
+						<mx:Spacer width="100%"/>
+						<s:HGroup variableColumnWidth="false" columnWidth="50" verticalAlign="middle">							
+							<s:Label id="totalWaitingTxt"/>
+							<s:Label id="totalPendingTxt"/> 
+							<s:Label id="totalDoneTxt"/>
+						</s:HGroup>
+						<s:HGroup variableColumnWidth="false" columnWidth="22" verticalAlign="middle">							
+							<s:Label id="storyTotalEstimatedTxt"/>
+							<s:Label id="storyTotalDoneTxt"/>
+							<s:Label id="storyTotalRemainingTxt"/>
+						</s:HGroup>
+						<components:NativeButton label="Product View" width="70" id="productView"/>
+					</s:HGroup>
+				</s:Group> 					
+					<components:NativeADGrid id="storyList" height="100%" headerHeight="0" width="100%" 
+											 folderClosedIcon="{ null }"  variableRowHeight="true" 
+											 folderOpenIcon="{null}" resizeEffect="Resize"  
+											 doubleClickEnabled="true"  
+											 borderStyle="solid" 
+											 selectionMode="multipleRows">
+					
+					<components:dataProvider>
+						<mx:HierarchicalData id="storyGridProvider" childrenField="taskSet" />
+					</components:dataProvider>
+					
+					<components:columns >
+						<mx:AdvancedDataGridColumn id="storyColumn" draggable="true"  dataField="taskId"/>
+					</components:columns>
+					
+					<components:rendererProviders>
+						<components:NativeADGRProvider id="storyRender" column="{ storyColumn }" 
+															 depth="1"  />
+						<components:NativeADGRProvider id="taskRender" column="{ storyColumn }" 
+															 depth="2"  />
+					</components:rendererProviders>
+					
+				</components:NativeADGrid>
+			</s:VGroup>			
+		</s:Scroller>
+	</components:NativePanel>
+	
+	<mediators:TicketViewMediator skinClass="com.adams.scrum.views.TicketSkinView"
+								  id="newTicketMediator"
+								  width="100%" height="100%" includeIn="NewTicket"/>
+	
+	<mediators:TicketDetailedViewMediator skinClass="com.adams.scrum.views.TicketDetailedSkinView"
+								  id="ticketDetailedMediator"
+								  width="100%" height="100%" includeIn="TicketDetail"/>
+</s:Skin>

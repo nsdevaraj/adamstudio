@@ -1,0 +1,121 @@
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+			 minHeight="24" creationComplete="sparkskin1_creationCompleteHandler(event)">
+	<fx:Metadata>
+		[HostComponent("spark.components.windowClasses.TitleBar")]
+	</fx:Metadata> 
+	<fx:Script>
+		<![CDATA[
+		import mx.core.FlexGlobals;
+		import mx.events.FlexEvent;
+		static private const exclusions:Array = ["titleIconImage", "titleText"];
+		private var trayURL:String = 'assets/images/16.png';	
+		private var dockImage:BitmapData; 	
+		override public function get colorizeExclusions():Array {return exclusions;}
+			private function prepareForSystray(event:Event):void {
+			dockImage=event.target.content.bitmapData;
+			if (NativeApplication.supportsSystemTrayIcon) {
+				setSystemTrayProperties();
+				SystemTrayIcon(NativeApplication.nativeApplication.icon).menu = createSystrayRootMenu(); 
+			}
+		}	
+		private function createSystrayRootMenu():NativeMenu {
+			var menu:NativeMenu=new NativeMenu  ;
+			var openNativeMenuItem:NativeMenuItem=new NativeMenuItem("Open");
+			var exitNativeMenuItem:NativeMenuItem=new NativeMenuItem("Exit");
+			openNativeMenuItem.addEventListener(Event.SELECT,undock, false, 0,true);
+			exitNativeMenuItem.addEventListener(Event.SELECT,closeAPP, false, 0,true);
+			menu.addItem(openNativeMenuItem);
+			menu.addItem(new NativeMenuItem("",true));
+			menu.addItem(exitNativeMenuItem);
+			return menu;
+		}	
+		private function setSystemTrayProperties():void {
+			SystemTrayIcon(NativeApplication.nativeApplication.icon).tooltip= titleText.text;
+			SystemTrayIcon(NativeApplication.nativeApplication.icon).addEventListener(MouseEvent.CLICK,undock, false, 0,true);
+		}
+		private function dock(eve:MouseEvent):void {
+			eve.stopImmediatePropagation()
+			if(Capabilities.os.search("Mac") >= 0){
+				stage.nativeWindow.minimize();
+			}else{
+				stage.nativeWindow.visible=false;
+				NativeApplication.nativeApplication.icon.bitmaps = [dockImage];
+			} 
+		} 
+		private function undock(evt:Event):void {
+			stage.nativeWindow.visible=true;
+			stage.nativeWindow.orderToFront();
+			NativeApplication.nativeApplication.icon.bitmaps = []; 
+		}
+		private function closeAPP(event:Event):void{
+			stage.nativeWindow.close();
+		}
+		protected function sparkskin1_creationCompleteHandler(event:FlexEvent):void
+		{
+			var loader:Loader=new Loader();
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE,prepareForSystray, false, 0,true);
+			loader.load(new URLRequest(trayURL));
+		}
+
+		]]>
+
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="normalAndMaximized" stateGroups="maximizedGroup" />
+		<s:State name="disabledAndMaximized" stateGroups="maximizedGroup" />
+	</s:states>
+	
+	<!-- fill -->
+	<!--- Defines the background color of the skin. -->
+	
+	<s:Rect id="background" left="1" right="1" top="2" bottom="0"   >
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="#4c4c4c" alpha="1.0" ratio="0"/>
+				<s:GradientEntry color="#181818" ratio="0.5647058823529412" alpha="1.0"/>
+				<s:GradientEntry color="#000000" alpha="1.0" ratio="1"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<s:Rect width="55" height="100%" right="1" top="0">
+		<s:fill>
+			<s:SolidColor color="#000000" />
+		</s:fill>
+	</s:Rect>
+	<s:Group minHeight="24" width="100%" height="100%" left="2" right="2" >
+		
+		<s:layout>
+			<s:HorizontalLayout verticalAlign="middle" gap="5" />
+		</s:layout>
+		
+		<!-- title bar icon -->
+		<s:BitmapImage id="titleIconImage" left="4" verticalCenter="0" source="@Embed('assets/images/headerIcon.png')" />
+		
+ 
+		<s:Label id="titleText" left="20"  color="#cfcfcf" maxDisplayedLines="1" width="100%" verticalCenter="0" />
+		
+		<s:Button id="minimizeButton" buttonMode="true" click="dock(event)"
+				  skinClass="assets.skins.TitleBar.DMinimizeButtonSkin"
+				  top="2" bottom="2" verticalCenter="0" 
+				  />
+		<s:Button id="maximizeButton"  
+			skinClass="assets.skins.TitleBar.DMaximizeButtonSkin"   />
+		<s:Button id="closeButton" buttonMode="true"
+				  skinClass="assets.skins.TitleBar.DCloseButtonSkin"
+				  verticalCenter="0"  />
+	</s:Group>
+	
+	<s:Line left="1" right="1" top="0">
+		<s:stroke>
+			<s:SolidColorStroke color="#383838" />
+		</s:stroke>
+	</s:Line>
+	<s:Line left="1" right="1" top="1">
+		<s:stroke>
+			<s:SolidColorStroke color="#858585" />
+		</s:stroke>
+	</s:Line>
+</s:SparkSkin>

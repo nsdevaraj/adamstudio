@@ -1,0 +1,14 @@
+/* AUTOMATICALLY GENERATED ON Wed Feb 23 12:56:32 GMT+05:30 2005*/
+/* DO NOT EDIT */
+
+grant codeBase "http://localhost/FileReferenceApplet/*"   
+{
+  permission java.security.AllPermission;
+  permission java.net.SocketPermission "*", "accept, connect, listen, resolve";
+  permission java.io.FilePermission "<<ALL FILES>>", "read, write, delete, execute";
+  permission java.net.SocketPermission "*", "accept,connect,resolve";
+
+};
+
+
+

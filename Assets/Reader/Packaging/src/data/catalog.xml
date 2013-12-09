@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<catalog>
+
+    <product productId="1">
+<name>Client Name</name>
+        <image>assets/detaileImages/1.png</image>
+         
+    </product>
+
+    <product productId="2">
+<name>Client Name</name>
+        <image>assets/detaileImages/2.png</image>
+        
+    </product>
+
+    <product productId="3">
+<name>Client Name</name>
+        <image>assets/detaileImages/3.png</image>
+         
+    </product>
+
+    <product productId="4">
+<name>Client Name</name>
+        <image>assets/detaileImages/4.png</image>
+        
+    </product>
+
+    <product productId="5">
+<name>Client Name</name>
+        <image>assets/detaileImages/5.png</image>
+       
+    </product>
+
+    <product productId="6">
+<name>Client Name</name>
+        <image>assets/detaileImages/6.png</image>
+       
+    </product>
+
+    <product productId="7">
+<name>Client Name</name>
+        <image>assets/detaileImages/7.png</image>
+       
+    </product>
+
+    <product productId="8">
+<name>Client Name</name>
+        <image>assets/detaileImages/8.png</image>
+       
+    </product>
+
+    <product productId="9">
+<name>Client Name</name>
+        <image>assets/detaileImages/9.png</image>
+        
+    </product>
+
+    <product productId="10">
+<name>Client Name</name>
+        <image>assets/detaileImages/10.png</image>
+        
+    </product>
+
+    <product productId="11">
+ <name>Client Name</name>
+        <image>assets/detaileImages/11.png</image>
+         
+    </product>
+
+    <product productId="12">
+   <name>Client Name</name>
+        <image>assets/detaileImages/12.png</image>
+        
+    </product>
+
+    <product productId="13">
+   		<name>Client Name</name>
+        <image>assets/detaileImages/13.png</image>
+        
+    </product>
+
+    <product productId="14">
+       <name>Client Name</name>
+        <image>assets/detaileImages/14.png</image>
+    </product>
+
+</catalog>

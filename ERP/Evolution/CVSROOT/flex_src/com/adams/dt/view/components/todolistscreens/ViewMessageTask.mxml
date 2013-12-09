@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	width="100%"
+	height="100%"
+	xmlns:view="com.docktrack.view.*"
+	xmlns:comp="com.adams.dt.view.components.*"
+	xmlns:compfile="com.adams.dt.view.filemanagement.*" 
+	currentState="inboxView">
+	<mx:Binding source="model.messageFileCollection" destination="this.messageFileDownload"/>
+	<mx:Metadata>
+		[Event(name="archive", type="flash.events.Event")]
+	</mx:Metadata> 
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.view.components.Upload;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.model.vo.EventStatus;
+			
+			import com.adams.dt.event.TasksEvent;
+			import com.adams.dt.event.WorkflowstemplatesEvent;
+			import com.adams.dt.model.vo.TaskStatus;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			
+			private var attach:Upload;
+			
+			[Bindable]
+			public var model:ModelLocator = ModelLocator.getInstance();	
+			private var sep:String = "&#$%^!@";	
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}
+			private function getBody(str:String):String{
+				return str.split(sep)[2];
+			}			
+			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+			private var fileReference:FileReference;
+			[Bindable]
+			private var messageCollection:ArrayCollection = new ArrayCollection();
+						
+			private var _messageDownloadCollection:ArrayCollection;
+			public function set messageFileDownload (value:ArrayCollection):void
+			{
+				_messageDownloadCollection = value;
+				currentDisplyFile(value);
+			}
+			[Bindable]
+			public function get messageFileDownload():ArrayCollection
+			{
+				return _messageDownloadCollection;
+			}	
+			private function currentDisplyFile(value:ArrayCollection):void
+			{
+				if(messageCollection.length!=0){
+					messageCollection.removeAll();
+				}
+				else{
+					messageCollection = new ArrayCollection();
+				} 
+										
+				for each(var item:FileDetails in value)
+				{	
+					if(item.taskId == model.currentTasks.taskId){
+						if(item.visible == true){
+							messageCollection.addItem(item);
+						}
+					}
+				}
+				repdownload.dataSource = messageCollection;
+				
+			}
+			private var messageTaskCollection:ArrayCollection = new ArrayCollection();
+			public function sendMessagefn( ):void{ 
+				
+					model.messageBulkMailCollection = new ArrayCollection();
+					model.basicAttachFileColl = new ArrayCollection();
+				
+					var person:Persons = model.messageSender;
+					var profile:Profiles = model.senderProfile;
+					
+					var taskData:Tasks = new Tasks();
+					taskData.taskId = NaN;
+					taskData.previousTask = model.currentTasks;
+					taskData.projectObject = model.currentProjects;
+					taskData.personDetails = person;
+					var domain:Categories = Utils.getDomains(model.currentProjects.categories);
+					model.messageDomain = domain;
+					var by:ByteArray = new ByteArray()
+					var sep:String = "&#$%^!@";
+					var str:String = from.text+sep+replySubject.text+sep+replyText.text+sep+model.person.personId+","+model.currentProfiles.profileId;
+					by.writeUTFBytes(str)
+					taskData.taskComment = by;
+					var status:Status = new Status();
+					status.statusId = TaskStatus.WAITING;
+					taskData.taskStatusFK = status.statusId;
+					taskData.tDateCreation = model.currentTime;
+					taskData.workflowtemplateFK = getMessageTemplate(profile.profileId);	
+					taskData.tDateEndEstimated = Utils.getCalculatedDate(model.currentTime,taskData.workflowtemplateFK.defaultEstimatedTime); 
+					taskData.estimatedTime = taskData.workflowtemplateFK.defaultEstimatedTime;			
+					messageTaskCollection.addItem(taskData);
+					updateCurrentTask();
+				
+		}
+		public function updateCurrentTask():void{ 
+			model.TaskIDAttachArrayColl = new ArrayCollection();	
+			model.onlyEmail = 'REEMAIL';
+			
+			var status:Status = new Status()
+			status.statusId =  TaskStatus.FINISHED;
+			model.currentTasks.taskStatusFK= status.statusId;
+			model.currentTasks.tDateEnd = model.currentTime;
+			var event:TasksEvent = new TasksEvent( TasksEvent.EVENT_UPDATE_MSG_TASKS);
+			event.tasks = model.currentTasks
+			event.tasksCollection = messageTaskCollection;
+			CairngormEventDispatcher.getInstance().dispatchEvent(event);
+			dispatchEvent(new Event("archive"));		
+			model.workflowState=0;	
+								
+			onClearDisply();
+		}
+		public function getMessageTemplate(pro:int):Workflowstemplates{
+			var messageTemplateCollection:ArrayCollection = Utils.getWorkflowTemplatesCollection(model.messageTemplatesCollection,model.currentProjects.workflowFK);
+			for each(var item:Workflowstemplates in  messageTemplateCollection){
+				if(item.profileFK== pro){
+					return item;
+				}
+			}
+			return null;
+		}
+			public function onReplyClick():void{ 
+				
+				var personEvent:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_GETMSG_SENDER);
+				var person:Persons = new Persons();
+				person.personId = getReplyID(String(model.currentTasks.taskComment)).split(",")[0];
+				var profiles:Profiles = new Profiles();
+				profiles.profileId = getReplyID(String(model.currentTasks.taskComment)).split(",")[1];
+				personEvent.persons = person;
+				personEvent.profiles = profiles;
+				CairngormEventDispatcher.getInstance().dispatchEvent(personEvent);
+				
+				holder.removeAllChildren();
+				holder.includeInLayout = false;
+		    	holder.visible = false;
+				attechLink.includeInLayout = true;
+				attechLink.visible = true;
+				 
+			}	
+			private function addUploadComponent(event:MouseEvent):void{
+		    	//var attach:Upload = new Upload();
+		    	attach = new Upload();
+		    	holder.addChild(attach);
+		    	holder.includeInLayout = true;
+		    	holder.visible = true;
+		    	attach.addEventListener("uploadComplete",uploadCompleted,false,0,true);
+		    	attach.type = "Message";
+		    	attach.basicFileVisible = true;
+		    	event.currentTarget.visible = false;
+		    	event.currentTarget.includeInLayout = false;
+		    }				    
+		    private function uploadCompleted(event:Event):void{				    	
+	    	
+		    } 
+			public function onClear(event:Event):void
+			{
+				if(replyText.text.length!=0) 
+					replyText.text='';
+				
+				if(attach!=null)
+				{
+					attach.listFiles.dataProvider=[];						
+					attach.UploadFiles = [];
+				}
+			}
+			public function onClearDisply():void
+			{
+				if(mesgField.text.length!=0) 
+					mesgField.text='';		
+					
+				clear.dispatchEvent(new MouseEvent(MouseEvent.CLICK));	
+				currentState = "inboxView";			
+			}  	
+		]]>
+	</mx:Script>
+	<mx:states>
+		<mx:State name="inboxView">
+			<mx:SetProperty target="{inboxView}"
+				name="visible"
+				value="true"/>
+			<mx:SetProperty target="{inboxView}"
+				name="includeInLayout"
+				value="true"/>
+			<mx:SetProperty target="{replyView}"
+				name="visible"
+				value="false"/>
+			<mx:SetProperty target="{replyView}"
+				name="includeInLayout"
+				value="false"/>
+		</mx:State>
+		<mx:State name="replyView">
+			<mx:SetProperty target="{inboxView}"
+				name="visible"
+				value="false"/>
+			<mx:SetProperty target="{inboxView}"
+				name="includeInLayout"
+				value="false"/>
+			<mx:SetProperty target="{replyView}"
+				name="visible"
+				value="true"/>
+			<mx:SetProperty target="{replyView}"
+				name="includeInLayout"
+				value="true"/>
+		</mx:State>
+	</mx:states>
+	<mx:Canvas top="10"
+		left="10" 
+		right="10"
+		bottom="10">
+		<mx:Canvas id="inboxView"
+			visible="true"
+			left="20"
+			width="100%" bottom="0"
+			height="100%">
+			<mx:Canvas styleName="headerBgContainer" 
+				right="20"
+				left="20"
+				top="20"
+				height="32">
+				<mx:Image 
+					source="{ImageResourceEmbedClass.MAILICON}" 
+					left="9"
+					verticalCenter="0"/>
+				<mx:Label text="message"
+					left="33"
+					verticalCenter="0"/>
+			</mx:Canvas>
+			<mx:VBox left="42"
+				right="20"
+				top="{titleText.height+72}"
+				bottom="{footer.height+10}">
+				<!--<comp:Download width="50%" height="100%" dataProvider="{model.messageTaskCollection}" visible="{Boolean(model.messageTaskCollection.length)}" 
+				includeInLayout="{Boolean(model.messageTaskCollection.length)}"/>-->				
+			<mx:TextArea width="100%" height="100%"
+				text="{getBody(String(model.currentTasks.taskComment))}"
+				id="mesgField"
+				styleName="fieldText"/>
+			</mx:VBox>
+			<mx:VBox left="42"
+				width="100%"
+				id="titleText"
+				top="62">
+				<mx:Text id="userNameText"
+					text="From : {getFromName(String(model.currentTasks.taskComment))}"/>
+				<mx:Text top="100"
+					left="42"
+					id="subField"
+					text="Subject :{getSubject(String(model.currentTasks.taskComment))}"
+					fontSize="18"
+					styleName="mainProjectHeader"/>
+					 
+				<mx:VBox width="100%" height="100" id="downloadfile" includeInLayout="{messageCollection.length!=0}" visible="{messageCollection.length!=0}" paddingRight="10">
+					<compfile:FileContainer id="repdownload" dataSource="{ messageCollection }" deleteShow="false" replaceShow="false"  
+														itemRenderer="com.adams.dt.view.filemanagement.renderers.ImageRenderer"
+														width="100%" height="100" borderStyle="solid"  
+														columnWidth="70" rowHeight="70"  rowCount="1"/>
+				</mx:VBox>
+			</mx:VBox>
+			<mx:HBox left="20"
+				right="20"
+				bottom="0"
+				horizontalAlign="right"
+				id="footer">
+				<mx:Button id="replyMessage"
+					label="Reply"
+					click="currentState = 'replyView',onReplyClick()"/>
+				<mx:Button id="Archive"
+					label="archive"
+					click="updateCurrentTask()"/>
+			</mx:HBox>
+		</mx:Canvas>
+		<mx:Canvas id="replyView"
+			visible="true"
+			left="20"
+			width="100%"
+			height="100%">
+			<mx:Canvas styleName="headerBgContainer" 
+				right="20"
+				left="20"
+				top="20"
+				height="32">
+				<mx:Image
+					source="{ImageResourceEmbedClass.MAILICON}"  
+					left="9"
+					verticalCenter="0"/>
+				<mx:Label text="message"
+					left="33"
+					verticalCenter="0"/>
+			</mx:Canvas>
+			<mx:Button label="Back" right="20" top="80" click="{currentState = 'inboxView',onClear(event)}"/>
+			<mx:VBox left="20" width="100%"
+					right="20"
+					top="100">
+					<mx:Form id="loginForm"
+						paddingTop="5"
+						paddingBottom="5"
+						left="20"
+						right="20"
+						top="100"
+						height="90"
+						styleName="loginlabel">
+						<mx:FormItem label="From:">
+							<mx:TextInput id="from"
+								text="{model.person.personFirstname}"
+								width="287"
+								styleName="fromField"/>
+						</mx:FormItem>
+						<mx:FormItem label="To:">
+							<mx:TextInput text="{getFromName(String(model.currentTasks.taskComment))}"
+								width="287"
+								styleName="fieldText"/>
+						</mx:FormItem>
+						<mx:FormItem label="Subject:">
+							<mx:TextInput id="replySubject" text="{getSubject(String(model.currentTasks.taskComment))}"
+								width="287"
+								styleName="fieldText"/>
+						</mx:FormItem>					
+					</mx:Form>
+					
+					<mx:VBox id="holder" width="70%" height="200" includeInLayout="false" visible="false">
+					</mx:VBox>
+					<mx:LinkButton id="attechLink" styleName="attachBtn"   
+						label="Attach file" click="addUploadComponent(event)"/>
+					<mx:FormItem labelWidth="0" width="100%" left="42"	right="20" top="190">
+						<mx:VBox width="100%" height="100%">
+							<mx:Label text="Message"/>
+							<mx:TextArea id="replyText" width="100%" height="150" styleName="fieldText"/>	
+						</mx:VBox>
+					</mx:FormItem>	
+					<mx:HBox left="20"
+						right="20"
+						top="286"
+						horizontalAlign="right">
+						<mx:Button styleName="sendMesg"
+							id="sendMessage"
+							label="Send"
+							click="{sendMessagefn()}"/>
+						<mx:Button id="clear"
+								label="Clear"
+								click="onClear(event)"/>
+					</mx:HBox>
+			</mx:VBox>
+		</mx:Canvas>
+	</mx:Canvas>
+</mx:Canvas>

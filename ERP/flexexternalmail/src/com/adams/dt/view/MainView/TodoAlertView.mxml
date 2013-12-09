@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300" xmlns:view="com.adams.dt.view.*">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.ModelLocator;
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();	
+		private function onTabChange( event:Event ):void {
+				//model.propertiespresetsCollection.refresh();				
+		}
+		private function onTabNavigatorChange( event:Event ):void {
+			fileView.tileFileCollection = model.modelTileFileCollection;
+		}
+		
+		private function setToDoName():void{
+			currentState = 'todoState';
+			planView.selectedIndex = 0;
+        	model.workflowState=0;
+        	//todoLabel.text = model.loc.getString('toDoList');
+    	}
+	]]>
+</mx:Script>
+	<mx:ViewStack id="planView" width="100%" height="100%" backgroundColor="#363636" top="10" bottom="5" change="onTabChange( event )">
+			<mx:Canvas label="TodoList" width="100%" height="100%">
+				<view:TodoListMain width="100%" height="100%" />				
+			</mx:Canvas>			
+			<mx:VBox id="PropertiesFilesvbox" width="100%" top="0" left="0">	
+				<mx:Canvas label="PropertiesFiles" width="100%" height="100%">
+					<mx:VBox width="100%"  height="100%">	
+						<mx:Form width="100%" height="100%" top="45">
+							<mx:FormItem label="ProjectName" styleName="mainOrangeTitle">
+								<mx:Text text="{model.currentProjects.projectName}" selectable="false" left="35" textAlign="left" styleName="mainOrangeTitle" />
+							</mx:FormItem>						
+							<mx:FormItem label="Sender" styleName="subBlueTitle">
+								<mx:Text text="{model.currentTasks.previousTask.personDetails.personFirstname+' '+model.currentTasks.previousTask.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+							</mx:FormItem>						
+							<mx:FormItem label="Receiver" styleName="subBlueTitle">
+								<mx:Text text="{model.currentTasks.personDetails.personFirstname+' '+model.currentTasks.personDetails.personLastname}" selectable="false" left="35" textAlign="left" styleName="subBlueTitle" />
+							</mx:FormItem>						
+						</mx:Form>						
+					</mx:VBox>			
+					<mx:Button styleName="backTODO" click="setToDoName()" right="30" id="backTotoDoList" />						
+					<mx:TabNavigator width="100%" height="100%" top="20" id="tabView" backgroundColor="#363636" creationPolicy="auto" change="onTabNavigatorChange( event )">
+						<mx:Canvas label="Properties" width="100%" height="100%">
+							<view:TimesheetChalkBoard id="TimeSheet" width="100%" height="100%" projectProperty="{model.propertiespresetsCollection}"/>
+						</mx:Canvas>
+						<mx:Canvas label="Files" width="100%" height="100%">
+							<view:FileView id="fileView" width="100%" height="100%" tileFileCollection="{model.modelTileFileCollection}"  />
+						</mx:Canvas>
+					</mx:TabNavigator>	
+				</mx:Canvas>
+			</mx:VBox>				
+		</mx:ViewStack>	
+</mx:Canvas>

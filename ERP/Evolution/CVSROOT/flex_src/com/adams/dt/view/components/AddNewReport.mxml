@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off"> 
+	<mx:Binding source="model.reportAllColl" destination="this.allReportCollection"/>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.Utils;
+			import mx.events.ListEvent;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.model.vo.Columns;
+			import com.adams.dt.model.vo.Reports;
+			import com.adams.dt.event.ReportEvent;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+		
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			private var reportStatusArray:ArrayCollection = new ArrayCollection(["All","projectDateEndIsNull","projectDateEndIsNotNull","CLT","OPE","EPR","FAB","TRA","CurrentYear","SUB","TRAFAB","DepartureDateIsNull","ArrivalDateIsNull","CurrentMonthArrival","PreviousMonthArrival"]);
+ 	
+			[Bindable]
+		    private var _formVisible:Boolean;
+		    
+		    [Bindable]
+		    private var isNewObject:Boolean;
+		    private var _isValidated:Boolean;	
+		    
+		    [Bindable]
+			private var formEditOption:Boolean;
+			[Bindable]
+			private var formAddOption:Boolean;
+			
+			private var localColumns:Array = [];
+					
+			[Bindable]
+			private var currentLable:String;
+			
+			public function setReportValue():void {
+				model.reportAllColl.addEventListener( CollectionEvent.COLLECTION_CHANGE, onCollectionChange ,false,0,true); 
+			}
+			private function onCollectionChange ( event:CollectionEvent ):void {
+				/* if ( event.kind == CollectionEventKind.ADD ) {
+					setProvider( event.currentTarget as ArrayCollection );
+				}
+				else if ( event.kind == CollectionEventKind.REFRESH ) {
+					setProvider( event.currentTarget as ArrayCollection );
+				}
+				else if ( event.kind == CollectionEventKind.REMOVE ) {
+					setProvider( event.currentTarget as ArrayCollection );
+				} */
+				if( event.kind == CollectionEventKind.ADD || 
+					event.kind == CollectionEventKind.REFRESH ||
+					event.kind == CollectionEventKind.REMOVE ||
+					event.kind == CollectionEventKind.REPLACE ||
+					event.kind == CollectionEventKind.RESET ||
+					event.kind == CollectionEventKind.UPDATE ){
+						setProvider( event.currentTarget as ArrayCollection );
+					}
+					
+			} 
+			public function setProvider( value:ArrayCollection ):void {			
+				for each(var item:Reports in value){
+					if( !Utils.checkDuplicateReportItem( item, reportCollection, "reportId" ) ) {
+						reportCollection.addItem( item );
+					}		
+				}
+			}	
+			
+			 private var _allReportCollection:ArrayCollection;
+			public function get allReportCollection ():ArrayCollection {
+				return _allReportCollection;
+			}
+			[Bindable]	
+			public function set allReportCollection ( value:ArrayCollection ):void {
+				_allReportCollection = value; 
+				currentDisplyReport(value);
+			}   
+			[Bindable]
+			private var reportCollection:ArrayCollection = new ArrayCollection();
+			private function currentDisplyReport(value:ArrayCollection):void
+			{										
+				/* for each(var item:Reports in value){
+					if( !Utils.checkDuplicateReportItem( item, reportCollection, "reportId" ) ) {
+						reportCollection.addItem( item );
+					}		
+				}
+				reportGrid.dataProvider = reportCollection; */
+				
+				setProvider( value );
+			}
+			
+	 		private function addReportColumn():void{
+				var handler:IResponder = new Callbacks(insertReportResult);
+				var reportEvent:ReportEvent = new ReportEvent(ReportEvent.EVENT_CREATE_REPORTS, handler)
+				var report:Reports = new Reports();
+				report.reportName=reportName.text;
+				report.stackBarName=barChartName.text;
+				report.profileFk=Profiles(profileList.selectedItem).profileId;
+				report.pieChartCol = columnChart.selectedItem as Columns;
+				report.stackBarCol = barChart.selectedItem as Columns;
+				report.projectStatus = reportStatus.selectedItem as String
+				report.pieChartName = columnChartName.text
+				for each( var col:Columns in reportColList.selectedItems){
+					report.columnSet.addItem(col);	
+				}
+				reportEvent.reportentry = report;
+				reportEvent.dispatch();
+					
+			}
+			public function insertReportResult( rpcEvent : Object ) : void{	
+				var handlerResult:IResponder = new Callbacks(getAllReport,fault);
+				var reportAllEvent:ReportEvent = new ReportEvent( ReportEvent.EVENT_GET_ALL_REPORTS,handlerResult);
+				reportAllEvent.dispatch();
+				
+				Alert.show("New Report "+reportName.text+" created");
+				clearForm(); 
+				
+			}
+			public function getAllReport( rpcEvent : Object ) : void{
+				var returnCollection:ArrayCollection = rpcEvent.result as ArrayCollection;
+				if(returnCollection!=null){
+					var tempCollection:ArrayCollection = new ArrayCollection();
+					for each (var reportObj:Reports in returnCollection){
+						for each (var col:Columns in reportObj.columnSet){
+							reportObj.headerArray.push(col.columnName);
+							reportObj.fieldArray.push(col.columnField);
+							reportObj.widthArray.push(col.columnWidth);
+							reportObj.booleanArray.push(col.columnFilter);
+							reportObj.resultArray.push('');
+						}
+						tempCollection.addItem(reportObj);
+					}
+					model.reportAllColl = tempCollection;
+					model.reportAllColl.refresh();
+				}
+			}
+			private function clearForm():void
+			{
+				reportName.text="";	
+				barChartName.text="";
+				columnChartName.text="";
+				profileList.selectedIndex = 0;
+				columnChart.selectedIndex = 0;
+				barChart.selectedIndex = 0;
+				reportStatus.selectedIndex = 0;
+				reportColList.selectedIndices=[];
+				
+				showForm = false;
+			}
+			private function createReport() :void {
+			  	if(getStrLen(reportName.text).length>0 && 
+				getStrLen(barChartName.text).length>0 && 
+				getStrLen(columnChartName.text).length>0 &&
+				reportColList.selectedIndices.length>0)
+				{
+					addReportColumn();
+				}else{
+					Alert.show("Please fill all the details");
+				}
+			}
+			private function modifyReport(modify:Boolean,order:Boolean) :void {
+				if(getStrLen(reportName.text).length>0 && 
+				getStrLen(barChartName.text).length>0 && 
+				getStrLen(columnChartName.text).length>0 &&
+				reportColList.selectedIndices.length>0)
+				{
+					modifyReportColumn(modify,order);
+				}else{
+					Alert.show("Please fill all the details");
+				}
+			}
+			private function modifyReportColumn(modify:Boolean,order:Boolean):void{
+				var handler:IResponder = new Callbacks(modifyReportResult,fault);
+				var orderHandler:IResponder = new Callbacks(orderReportResult,fault);
+				
+				var reportEvent:ReportEvent 
+				var report:Reports
+				if(modify){
+					report = reportGrid.selectedItem as Reports; 
+				}else{
+					report = new Reports();
+				}
+				
+				report.reportName = reportName.text;
+				report.stackBarName = barChartName.text;
+				report.profileFk=Profiles(profileList.selectedItem).profileId;
+				report.pieChartCol = columnChart.selectedItem as Columns;
+				report.stackBarCol = barChart.selectedItem as Columns;
+				report.projectStatus = reportStatus.selectedItem as String;
+				report.pieChartName = columnChartName.text;
+				var tempOrder:ArrayCollection = new ArrayCollection()
+				for each( var orCol:Columns in reportColOrderList.dataProvider){
+						tempOrder.addItem(orCol);	
+				} 
+				report.columnSet.removeAll()
+				if(order){
+					for each( var col1:Columns in tempOrder){
+						report.columnSet.addItem(col1); 
+					}
+					reportEvent = new ReportEvent(ReportEvent.EVENT_ORDER_COLUMNS, orderHandler);
+					reportEvent.reportentry = report;
+				}else{
+					reportEvent = new ReportEvent(ReportEvent.EVENT_UPDATE_REPORTS, handler);
+					for each( var col:Columns in reportColList.selectedItems){
+						report.columnSet.addItem(col);	
+					} 
+					reportEvent.reportsCollection.addItem(report);
+				}
+				reportEvent.dispatch();
+			}
+			public function orderReportResult( rpcEvent : Object ) : void{
+				Alert.show("Modify Report "+reportName.text+" updated");
+				clearForm(); 
+			}
+			public function modifyReportResult( rpcEvent : Object ) : void{			
+				Alert.show("Modify Report "+reportName.text+" updated");
+				
+				var handlerResult:IResponder = new Callbacks(getAllReport,fault);
+				var reportAllEvent:ReportEvent = new ReportEvent( ReportEvent.EVENT_GET_ALL_REPORTS,handlerResult);
+				reportAllEvent.dispatch();
+				
+				clearForm(); 
+			}
+			private function fault( rpcEvent : Object ):void{				
+			}
+			private function result( rpcEvent : Object ):void{				
+			}
+			
+			/**
+			*check the string whether space bar entered or not.....
+			**/
+	 	    private function getStrLen(str:String):String{
+				return str.split(" ").join("")
+			}
+			[Bindable]
+			private var showForm:Boolean;
+			
+			private function showDetails( event:MouseEvent ):void {
+				var strName:String = event.currentTarget.label.toString();
+				var index:int = reportGrid.selectedIndex;
+				var selectedReport:Reports = reportGrid.selectedItem as Reports;
+				localColumns = [];
+				
+				reportColOrder.visible = false;
+				reportColOrder.includeInLayout = false;
+				if(strName == "View"){
+					formAddOption = false;
+					if( index == -1 ) {
+						Alert.show("Select An Item To View");
+						showForm = false;
+						formEditOption = false;						
+						return;
+					}
+					else{
+						showForm = true;
+						formEditOption = false;
+						
+						viewReport(selectedReport);						
+					}
+				}else if(strName == "Modify"){
+					currentLable = "Modify Form";
+					formAddOption = false;
+					if( index == -1 ) {
+						Alert.show("Select An Item To Modify");	
+						showForm = false;					
+						formEditOption = false;
+						return;
+					}else{
+						showForm = true;						
+						formEditOption = true;	
+						reportColOrder.visible = true;
+						reportColOrder.includeInLayout = true;
+						viewReport(selectedReport);						
+					}					
+				}else if(strName == "Add"){
+					currentLable = "Add New";
+					showForm = true;
+					formAddOption = true;
+					formEditOption = false;
+					
+					reportName.text="";	
+					barChartName.text="";
+					columnChartName.text="";
+					profileList.selectedIndex = 0;
+					columnChart.selectedIndex = 0;
+					barChart.selectedIndex = 0;
+					reportStatus.selectedIndex = 0;
+					reportColList.selectedIndices=[];
+				}
+			}
+			private function viewReport(viewReportVo:Reports):void{
+				reportName.text = viewReportVo.reportName;				
+				profileList.selectedItem = Profiles(GetVOUtil.getProfileObject(viewReportVo.profileFk));
+				columnChart.selectedItem = Columns(getColumns(viewReportVo.pieChartCol.columnId));;
+				barChart.selectedItem = Columns(getColumns(viewReportVo.stackBarCol.columnId)); 
+				columnChartName.text = viewReportVo.pieChartName;				
+				barChartName.text = viewReportVo.stackBarName;				
+				reportStatus.selectedIndex = reportStatusArray.getItemIndex(viewReportVo.projectStatus);
+				for each (var columnsVo:Columns in viewReportVo.columnSet){									
+					var indexValue:int = getReportCollections(columnsVo);
+					localColumns.push(indexValue)
+				}					
+				reportColList.selectedIndices = localColumns;
+			}
+			
+			private function getReportCollections( columnIdRef:Columns ):int {
+				var lengthReport:int = model.totalColumnsColl.length;
+				for(var i:int=0;i<lengthReport;i++){
+					var items:Columns = model.totalColumnsColl[i] as Columns;
+					if(items.columnId == columnIdRef.columnId){
+						return i;
+					}
+				}
+				return 0;				
+			}
+				
+			private function getColumns( columnIdRef:int ):Columns {
+				for each (var items:Columns in model.totalColumnsColl){
+					if(items.columnId == columnIdRef){
+						return items;
+					}
+				}
+				return null;
+			}				
+			
+			public function deleteReport():void {
+	    		Alert.show( 'Do you want to delete this Report?', 'Confirmation', Alert.YES|Alert.NO, this, onDelete );
+	    	}
+	    	
+	    	private var removeIndex:int;
+	    	private function onDelete( event:CloseEvent ):void {
+	    		if( event.detail == Alert.YES ) {
+	    			var selectedReports:Reports = reportGrid.selectedItem as Reports;
+	    			
+	    			var handler:IResponder = new Callbacks(deleteReportResult,fault);
+					var reportEvent:ReportEvent = new ReportEvent(ReportEvent.EVENT_DELETE_REPORTS,handler);
+					reportEvent.reportentry = selectedReports;
+					reportEvent.dispatch();
+	    		} 
+	    	}
+	    	 private function deleteReportResult( rpcEvent:Object ):void {
+	    		var handler:IResponder = new Callbacks(removeDataGridReportResult,fault);
+				var reportAllEvent:ReportEvent = new ReportEvent( ReportEvent.EVENT_GET_ALL_REPORTS,handler);
+  				reportAllEvent.dispatch();
+	    	} 
+	    	
+	    	private function removeDataGridReportResult(removeIndex:int):void {
+	    		if( reportCollection.length > 0 ) {
+	    			if( reportCollection.length == removeIndex ) {
+						reportGrid.selectedItem = reportCollection.getItemAt( removeIndex - 1 );
+					}
+					else {
+						reportGrid.selectedItem = (reportCollection.getItemAt( 0 ) as Reports);
+					}
+				}	
+				reportCollection.refresh();
+					
+			}  
+			
+			private function clearAll() :void
+			{
+				reportName.text="";	
+				barChartName.text="";
+				columnChartName.text="";
+				profileList.selectedIndex = 0;
+				columnChart.selectedIndex = 0;
+				barChart.selectedIndex = 0;
+				reportStatus.selectedIndex = 0;
+				reportColList.selectedIndices=[];
+				
+			}
+			public function closeForm() :void
+			{
+				showForm = false;
+			}
+		]]>
+	</mx:Script>
+	 
+	<mx:DataGrid id="reportGrid" dataProvider="{ reportCollection }" width="100%" bottom="50"  top="0" >
+        <mx:columns>
+        	<mx:DataGridColumn headerText="ReportName"  dataField="reportName"/>
+        	<mx:DataGridColumn headerText="StackBarName" dataField="stackBarName"/>
+            <mx:DataGridColumn headerText="PieChartName" dataField="pieChartName"/>
+            <mx:DataGridColumn headerText="ProfileFk" dataField="profileFk" />
+            <mx:DataGridColumn headerText="ProjectStatus" dataField="projectStatus">
+            	<mx:itemRenderer>
+            		<mx:Component>
+            			<mx:Canvas horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%">
+            				<mx:Label text="{ data.projectStatus }" left="0" right="{ deleteButton.x - 4 }" paddingRight="20"/>
+            				<mx:Button id="deleteButton" styleName="deleteIcon" useHandCursor="true" 
+            						   buttonMode="true" mouseChildren="false" toolTip="Remove the report"
+								       click="outerDocument.deleteReport()" right="4"/>
+            			</mx:Canvas>
+            		</mx:Component>
+            	</mx:itemRenderer>
+            </mx:DataGridColumn>
+        </mx:columns>            
+    </mx:DataGrid>
+	<mx:Button id="_add" label="Add" click="showDetails(event)" top="{reportGrid.height+15}" horizontalCenter="-70"/>
+	<mx:Button id="_modify" label="Modify"  click="showDetails(event)" top="{reportGrid.height+15}" horizontalCenter="0"/>
+	<mx:TitleWindow id="_selectionForm" title="{currentLable}"  showCloseButton="true" horizontalCenter="0" verticalCenter="0"
+		close="closeForm()" visible="{showForm}" showEffect="Fade" hideEffect="Fade" resizeEffect="Resize">
+		<mx:Form>
+				<mx:FormItem label="Report Name" required="true">
+					<mx:TextInput id="reportName" maxChars="30" width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="Profile List">
+					<mx:ComboBox id="profileList" dataProvider="{model.teamProfileCollection}" 
+						width="200" labelField="profileLabel"    />
+				</mx:FormItem>
+				<mx:FormItem label="Pie Chart">
+					<mx:ComboBox id="columnChart" dataProvider="{model.totalColumnsColl}" 
+						width="200" labelField="columnName" />
+				</mx:FormItem>
+				<mx:FormItem label="Bar Chart">
+					<mx:ComboBox id="barChart" dataProvider="{model.totalColumnsColl}" 
+						width="200" labelField="columnName"/>
+				</mx:FormItem>
+				<mx:FormItem label="Report Status">
+					<mx:ComboBox id="reportStatus" dataProvider="{reportStatusArray}" 
+						width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="Pie Chart Name" required="true">
+					<mx:TextInput id="columnChartName"  width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="Bar Chart Name" required="true">
+					<mx:TextInput id="barChartName"  width="200"/>
+				</mx:FormItem>
+				<mx:FormItem label="Columns List" direction="horizontal">
+					<mx:List id="reportColList" dataProvider="{model.totalColumnsColl}" width="200"
+						itemRenderer="mx.controls.Label"
+						allowMultipleSelection="true"
+						verticalAlign="middle"
+						labelField="columnName"
+						dataTipField="columnName" toolTip="Ctrl+click to select more than one " />
+					<mx:HBox id="reportColOrder"  visible="false" includeInLayout="false" verticalAlign="top">
+						<mx:Label text="Columns Order" />
+						<mx:List id="reportColOrderList" dataProvider="{(reportGrid.selectedItem as Reports).columnSet}" width="200"
+						itemRenderer="mx.controls.Label" dragEnabled="true" dragMoveEnabled="true" dropEnabled="true" 
+						verticalAlign="middle"
+						labelField="columnName"
+						dataTipField="columnName" />  
+					</mx:HBox>	 
+				</mx:FormItem> 
+		</mx:Form >
+		<mx:ControlBar horizontalAlign="center" width="100%">
+				<mx:Button label="Create Report" click="createReport()" visible="{formAddOption}" includeInLayout="{formAddOption}"/>
+				<mx:Button label="Cancel" click="clearAll()" visible="{formAddOption}" includeInLayout="{formAddOption}"/>	
+				<mx:Button label="Modify Report" click="modifyReport(true,false)" visible="{formEditOption}" includeInLayout="{formEditOption}"/>
+				<mx:Button label="Duplicate Report" click="modifyReport(false,false)" visible="{formEditOption}" includeInLayout="{formEditOption}"/>
+				<mx:Button label="ReOrder Report" click="modifyReport(true,true)" visible="{formEditOption}" includeInLayout="{formEditOption}"/>
+				<mx:Button label="Close" click="closeForm()" />	
+		</mx:ControlBar>
+	</mx:TitleWindow>
+</mx:Canvas>

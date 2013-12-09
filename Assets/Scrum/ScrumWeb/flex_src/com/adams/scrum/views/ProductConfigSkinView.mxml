@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" xmlns:components="com.adams.scrum.views.components.*" xmlns:mediators="com.adams.scrum.views.mediators.*">	
+	<s:states>
+		<s:State name="BasicState" />
+		<s:State name="NewTheme" />
+		<s:State name="NewSprint" /> 
+		<s:State name="NewProduct" /> 
+		<s:State name="NewVersion" /> 
+	</s:states>
+	<fx:Metadata>
+		[HostComponent("com.adams.scrum.views.mediators.ProductConfigViewMediator")]
+	</fx:Metadata>  	
+	<components:NativePanel id="splPanel" width="100%" height="100%" horizontalCenter="0" skinClass="assets.skins.ClosePanelSkin" 
+			 verticalCenter="0" title="Product Configuration"  >
+		<s:Scroller top="4" bottom="4" left="4" right="4">
+		<s:Group  clipAndEnableScrolling="true" width="100%" height="100%"> 
+			<s:HGroup right="0">
+				<components:NativeButton id="productCreateBtn" styleName="NewIcon" label="New"/>
+				<components:NativeButton id="productDeleteBtn" styleName="DeleteSkin" label="Delete"/>
+				<components:NativeButton id="productOpenBtn" styleName="OpenIcon" label="Backlog"/>
+			</s:HGroup>
+			<mx:Form top="0" left="0" id="configForm">
+				<mx:FormItem label="Product Name">
+					<s:Label id="productNameTxt" styleName="headerStyle" />
+				</mx:FormItem>
+				<mx:FormItem label="Product Code">
+					<s:Label id="productCodeTxt" />
+				</mx:FormItem>
+				<mx:FormItem label="Task Types">
+					<components:TextArrInput id="taskArr" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+				</mx:FormItem>
+				<mx:FormItem label="Product Roles">
+					<components:TextArrInput id="roleArr" txtInputWidth="80" txtInputEditable="true" txtInputSelectable="true"/>
+				</mx:FormItem>
+				<mx:FormItem label="Description">
+					<s:TextArea id="productCommentsTxt" width="100%" heightInLines="5"/>
+				</mx:FormItem>
+			</mx:Form>
+			
+			<s:HGroup top="{configForm.height}" height="100%" width="100%">
+				<s:Panel height="100%" width="100%" title="Version">
+					<components:NativeList id="versionsList" width="100%" height="100%"
+							labelField="versionLbl"					
+							horizontalCenter="0" 
+							verticalCenter="0">
+					</components:NativeList>
+					<s:controlBarContent>
+						<components:NativeButton id="newVersionBtn" styleName="NewIcon" label="New"/>
+						<components:NativeButton id="editVersionBtn" styleName="EditIcon" label="Edit"/> 
+					</s:controlBarContent>
+				</s:Panel>
+				<s:Panel height="100%" width="100%" title="Theme">
+					<components:NativeList id="themesList" width="100%" height="100%"
+							labelField="themeLbl"					
+							horizontalCenter="0" 
+							verticalCenter="0">
+					</components:NativeList>
+					<s:controlBarContent>
+						<components:NativeButton id="newThemeBtn" styleName="NewIcon" label="New"/>
+						<components:NativeButton id="editThemeBtn" styleName="EditIcon" label="Edit"/>  
+					</s:controlBarContent>
+				</s:Panel>	
+				
+				<s:Panel height="100%" width="100%" title="Sprint">
+					<components:NativeList id="sprintList"  height="100%" width="100%"
+										   labelField="sprintLabel"					
+										   horizontalCenter="0" 
+										   verticalCenter="0">
+					</components:NativeList>
+					<s:controlBarContent>
+						<components:NativeButton id="createSprintBtn" styleName="NewIcon" label="New"/>
+						<components:NativeButton id="editSprintBtn" styleName="EditIcon" label="Edit"/> 
+					</s:controlBarContent>	
+				</s:Panel>
+			</s:HGroup>		
+		</s:Group> 
+		</s:Scroller>
+	</components:NativePanel>
+	<mediators:SprintViewMediator id="sprintMediator" skinClass="com.adams.scrum.views.SprintSkinView" width="100%" height="100%" includeIn="NewSprint"/>
+	<mediators:ProductViewMediator id="productMediator" skinClass="com.adams.scrum.views.ProductSkinView" width="100%" height="100%" includeIn="NewProduct"/>
+	<mediators:ThemeViewMediator id="themeMediator" skinClass="com.adams.scrum.views.ThemeSkinView" width="100%" height="100%" includeIn="NewTheme"/>
+	<mediators:VersionViewMediator id="versionMediator" skinClass="com.adams.scrum.views.VersionSkinView" width="100%" height="100%" includeIn="NewVersion"/>
+</s:Skin>

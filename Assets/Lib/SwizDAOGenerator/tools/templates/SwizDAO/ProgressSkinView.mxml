@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"> 
+	<fx:Script>
+		<![CDATA[ 
+			[Bindable]
+			[Embed(source="assets/swf/additionalAssetsReader.swf", symbol="preloader")]
+			private var img:Class;
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="landscape"/>
+		<s:State name="portrait"/>
+	</s:states>
+	<s:Rect width="100%" height="100%" alpha="0.3">
+		<s:fill>
+			<s:SolidColor color="0x000000"/>
+		</s:fill>
+	</s:Rect>
+	<s:VGroup horizontalCenter="0" verticalCenter="0">
+		<s:Image width="20" height="20" source="{ img }"/>
+		<s:Label text="Loading.."/>
+	</s:VGroup>
+</s:Skin>

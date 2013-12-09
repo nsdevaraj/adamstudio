@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+	xmlns:components="com.adams.dt.view.components.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.PDFTool.PDFInitEvent;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.view.PDFTool.MiniPDFReader;
+			import com.adams.dt.business.LocalFileDetailsDAODelegate;
+			import mx.events.ListEvent;
+			import com.adams.dt.view.filemanagement.DragUtils;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.fileManagement.RemoveFileEvent;
+			import com.adams.dt.view.filemanagement.DragContainer;
+			import mx.controls.Label;
+			import mx.controls.Alert;
+			import mx.collections.ArrayCollection;
+			private var _tasksFileCollection:ArrayCollection;
+			
+			private var model:ModelLocator = ModelLocator.getInstance();
+			private var fileDetailsCollection:ArrayCollection = new ArrayCollection();
+			private var generlViewCol:ArrayCollection = new ArrayCollection();
+			private var otherRelease:ArrayCollection = new ArrayCollection();
+		/**
+		 * set the tasks file collection
+		 */ 	
+		[Bindable(event="projectPropertyChange")]
+		public function set tasksFileCollection (value:ArrayCollection):void
+		{
+			fileDetailsCollection = new ArrayCollection();
+			generlViewCol = new ArrayCollection();
+			otherRelease = new ArrayCollection();
+			if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",classifyFiles,false,0,true);
+			if(value!=null){
+				_tasksFileCollection = value; 
+				dispatchEvent (new Event ("projectPropertyChange"));
+			}
+		}
+		
+		/**
+		 * get the tasks file collection
+		 */
+		public function get tasksFileCollection ():ArrayCollection
+		{
+			return _tasksFileCollection;
+		}
+		private var selectedValue:int;
+				
+		/**
+		 * calsify the files based on the release status
+		 */ 
+		public function classifyFiles(event:Event):void{			
+			var tempFileDetails:FileDetails;
+			for each(var item:FileDetails in tasksFileCollection){
+				if(item.visible){
+					generlViewCol.addItem(item);
+				}
+			}
+			if(otherRelease.length>0){
+				var sort:Sort = new Sort(); 
+	            sort.fields = [new SortField("taskId")];
+	            otherRelease.sort = sort;
+	            otherRelease.refresh();
+			}
+			updatefileDetailsCollection();
+		}
+		private var count:int = 0;
+		/**
+		 * create object with file collection and rlease label
+		 */ 
+		private function updatefileDetailsCollection():void{
+			if(generlViewCol.length>0){
+				var object:Object = new Object();
+				object.label = "Release V1";
+				object.fileCollection = generlViewCol;
+				fileDetailsCollection.addItem(object);
+			}
+			var tempId:int = 0;		
+			for each(var item:FileDetails in otherRelease){				
+				if(tempId!=item.taskId){
+					var arrc:ArrayCollection = new ArrayCollection();
+					arrc = getTasks(item.taskId);
+					var object:Object = new Object();
+					object.label = "Release";
+					object.fileCollection = arrc;
+					fileDetailsCollection.addItem(object);
+				}
+				tempId = item.taskId;
+			}
+			updateProperties();
+		}
+		/**
+		 * get release file obj base on the tasks id
+		 */
+		private function getTasks(id:int):ArrayCollection{
+			var sort:Sort = new Sort(); 
+	        sort.fields = [new SortField("taskId")];
+	        otherRelease.sort = sort;
+	        otherRelease.refresh();
+	        var arrc:ArrayCollection = new ArrayCollection();
+	        for each(var item:FileDetails in otherRelease){
+	        	if(item.taskId == id){
+	        		arrc.addItem(item);
+	        	} 
+	        }
+	        return arrc;
+		}
+		/**
+		 * add the label and release file collection
+		 */
+		private function updateFileColllection(arrc:ArrayCollection):void{
+			var object:Object = new Object();
+			object.label = "Release";
+			object.fileCollection = arrc;
+			fileDetailsCollection.addItem(object);
+		}
+		private var currentSWF:FileDetails = new FileDetails()
+		private var currentPDF:FileDetails = new FileDetails()
+		private function setSWFFile(event:ListEvent):void{
+			 
+		} 
+		private function onDoubleClick(event:ListEvent):void{
+			 var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+			 var selectedFile:FileDetails =	 event.itemRenderer.data as FileDetails
+			var result:SQLResult = delegate.getSwfFileDetails(selectedFile); 
+			
+			var array:Array = [];
+			array = result.data as Array;
+			var tempFilePath:String="";
+			currentSWF = new FileDetails()
+			if(array!=null){
+				currentSWF = array[0] as FileDetails
+				model.currentSwfFile = currentSWF
+				openPopup(currentSWF);
+			}else{
+				var fileEvents:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_SWFFILEDETAILS);
+				fileEvents.fileDetailsObj = selectedFile;
+				fileEvents.dispatch();
+				model.currentPDFFile = selectedFile;
+				model.loadMPVFiles = true;
+			}
+			
+		}
+		private function openPopup(currentSWF:FileDetails):void{
+			var pop1:MiniPDFReader = MiniPDFReader(PopUpManager.createPopUp(model.mainClass, MiniPDFReader, true));
+			pop1.pdfTool.imgURL =currentSWF.filePath;
+			var commentEvent : CommentEvent = new CommentEvent(CommentEvent.GET_COMMENT);
+			commentEvent.fileFk = currentSWF.remoteFileFk; 
+			commentEvent.dispatch()			  
+			pop1.x = (Capabilities.screenResolutionX/2) - ((Capabilities.screenResolutionX*0.9)/2);
+			pop1.y = (Capabilities.screenResolutionY/2) - ((Capabilities.screenResolutionY*0.9)/2);
+			model.workflowState = 0;
+		}
+		private function loadPDFFileCollection(fileobj:FileDetails):void{
+			var delegate : LocalFileDetailsDAODelegate = new LocalFileDetailsDAODelegate();
+			model.pdfFileCollection = new ArrayCollection(); 
+			var result:SQLResult = delegate.getSwfFileDetails(fileobj);
+			var array:Array = [];
+			array = result.data as Array;
+			if(array!=null){ 
+				model.pdfDetailVO.localeBool = true;	
+				var swfarr:Array = []	
+				for each(var fileDet:FileDetails in array){ 
+				 if(fileDet.extension =='swf')swfarr.push(fileDet)
+				}
+				model.pdfFileCollection = new ArrayCollection(array);  
+			}else{		
+				var fileEvents:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_SWFFILEDETAILS);
+				fileEvents.fileDetailsObj = fileobj;
+				fileEvents.dispatch();
+				model.loadSwfFiles = true;
+			}
+		}
+		
+		/**
+		 * create the containers based on the releases
+		 */ 
+		public function updateProperties():void{
+			this.removeAllChildren();
+			for(var i:int = 0;i<fileDetailsCollection.length;i++){
+			   
+
+			    var dragContainer:DragUtils = new DragUtils();
+			    dragContainer.percentHeight  =100
+			    dragContainer.percentWidth =100;
+			    dragContainer.fileCollection = fileDetailsCollection.getItemAt(i).fileCollection;
+                dragContainer.setStyle("borderStyle","solid");
+			    dragContainer.addEventListener(ListEvent.ITEM_ROLL_OVER,setSWFFile,false,0,true); 
+			    dragContainer.addEventListener(ListEvent.ITEM_CLICK,onDoubleClick,false,0,true); 
+				this.addChild(dragContainer); 
+	   }
+		}
+		]]>
+	</mx:Script>
+</mx:VBox>

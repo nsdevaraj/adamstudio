@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mediators="@namespace@.view.mediators.*" 
+		xmlns:components="@namespace@.view.components.*">	
+	<fx:Metadata>
+		[HostComponent("@namespace@.view.mediators.MainViewMediator")]
+	</fx:Metadata>   
+	<s:states>
+		<!-- // State Begin --> 
+		<!-- State End -->  
+	</s:states> 
+	<!-- // View Begin -->
+	<!-- View End -->  
+	<components:AlertView id="alert" visible="false" verticalCenter="0" horizontalCenter="0"/>
+	
+	<mediators:ProgressViewMediator id='progress' width="100%" height="100%" 
+									skinClass='@namespace@.view.ProgressSkinView' 
+									visible="false" includeInLayout="{ progress.visible }"/>
+</s:Skin>

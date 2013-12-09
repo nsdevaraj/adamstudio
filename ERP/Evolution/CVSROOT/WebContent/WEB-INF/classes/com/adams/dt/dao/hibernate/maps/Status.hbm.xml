@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Status" table="status">
+        <id name="statusId" type="integer" column="status_ID">
+            <generator class="increment" />
+        </id>
+        <property name="type">
+            <column name="type" />
+        </property>
+        <property name="statusLabel">
+            <column name="status_label" />
+        </property>
+        <property name="statusNumCode">
+            <column name="status_num_code" />
+        </property>
+    </class> 
+    <query name="Status.findById">
+        select u from Status u where u.statusId=?
+    </query>
+    <query name="Status.findByName">
+        select u from Status u where u.statusLabel = ?
+    </query>
+</hibernate-mapping>

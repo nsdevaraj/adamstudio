@@ -1,0 +1,4 @@
+Application { 
+   backgroundImage: Embed(source="assets/backgrounds.swf#retroFifties");
+   themeColor: #ff9900;
+}

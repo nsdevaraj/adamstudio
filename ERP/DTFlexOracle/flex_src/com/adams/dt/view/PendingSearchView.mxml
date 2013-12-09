@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+		   creationCompleteEffect="{ mx.effects.Fade }">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.view.scheduler.Scheduler;
+		import org.alivepdf.saving.Method;
+		import org.alivepdf.fonts.Style;
+		import org.alivepdf.fonts.FontFamily;
+		import org.alivepdf.colors.RGBColor;
+		import org.alivepdf.images.ImageFormat;
+		import org.alivepdf.layout.Orientation;
+		import org.alivepdf.layout.Size;
+		import org.alivepdf.layout.Unit;
+		import org.alivepdf.layout.Layout;
+		import org.alivepdf.display.Display;
+		import org.alivepdf.pdf.PDF;
+		import mx.controls.Label;
+		import com.adams.dt.business.util.Utils;
+		import com.adams.dt.model.mainView.ViewFactory;
+		import com.adams.dt.model.vo.Phases;
+		import com.adams.dt.model.vo.Tasks;
+		import com.adams.dt.model.vo.ProjectStatus;
+		import com.adams.dt.model.vo.Projects;
+		import mx.events.CollectionEventKind;
+		import mx.events.CollectionEvent;
+		import mx.binding.utils.BindingUtils;
+		import mx.containers.VBox;
+		import mx.collections.IViewCursor;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import mx.controls.Alert;
+		
+		import mx.effects.Fade;
+		import mx.events.ListEvent;
+		import mx.events.FlexEvent;
+		import mx.events.DropdownEvent;
+		import com.adams.dt.model.vo.Categories;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.ModelLocator;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		[Bindable]
+		public var domainProvider:ArrayCollection;
+		private var mainClientCategory:ArrayCollection;
+		private var cursor:IViewCursor;
+		[Bindable]
+		private var viewFactory:ViewFactory = ViewFactory.getInstance(); 
+		private var _domainCollection:ArrayCollection;
+		private var _categoryCollection:ArrayCollection;
+		private var _selectedProjectsSet:ArrayCollection;
+		public var inputStream:String;
+		private var _myPDF:PDF;
+		private var gBytes:ByteArray = new ByteArray();
+		
+		public function get selectedProjectsSet():ArrayCollection {
+			return _selectedProjectsSet;
+		}
+		
+		public function set selectedProjectsSet( value:ArrayCollection ):void {
+			_selectedProjectsSet = value;
+		}
+		
+		public function get domainCollection():ArrayCollection {
+			return _domainCollection;
+		}
+		
+		public function set domainCollection( value:ArrayCollection ):void {
+			_domainCollection = value;
+		}
+		
+		public function get categoryCollection():ArrayCollection {
+			return _categoryCollection;
+		}
+		
+		public function set categoryCollection( value:ArrayCollection ):void {
+			_categoryCollection = value;
+			globalSet( domainCollection, categoryCollection );
+		}
+		
+		public function globalSet( domain:ArrayCollection, category:ArrayCollection ):void {
+			if( model.clientCode == "CLT" && model.appDomain != 'Brennus' ) {
+				getClients( domain );
+			}
+			else {
+				getDomains( domain );
+			}
+		}
+		
+		private function getDomains( value:ArrayCollection ):void {
+			if( value ) {
+				var value_Len:int = value.length;
+				domainProvider = new ArrayCollection();
+				projectSelector.selectedIndex = 0;
+				for( var i:int = 0; i < value_Len; i++ ) {
+					var domainName:String = Categories( value.getItemAt( i ) ).categoryName;
+					domainProvider.addItem( domainName ); 
+				}
+				if( domainSelector.hasEventListener( ListEvent.CHANGE ) ) {
+					domainSelector.removeEventListener( ListEvent.CHANGE, onCategorySelection );
+					domainSelector.removeEventListener( ListEvent.CHANGE, onDomainSelection );
+					projectSelector.removeEventListener( ListEvent.CHANGE, onDomainSelection );
+					projectSelector.removeEventListener( ListEvent.CHANGE, onCategorySelection );
+				}
+				domainSelector.addEventListener( ListEvent.CHANGE, onDomainSelection,false,0,true );
+				projectSelector.addEventListener( ListEvent.CHANGE, onDomainSelection,false,0,true );
+				domainSelector.dispatchEvent( new ListEvent( ListEvent.CHANGE ) );
+			}
+		}
+		
+		private function onDomainSelection( event:ListEvent ):void {
+			var selectedDomain:Categories;
+			var domainCollection1_Len:int = domainCollection.length;
+			for( var i:int  = 0; i < domainCollection1_Len; i++ ) {
+				if( Categories( domainCollection.getItemAt( i ) ).categoryName == domainSelector.selectedItem ) {
+					selectedDomain = Categories( domainCollection.getItemAt( i ) );
+					break;
+				}
+			}
+			if( selectedDomain )	getCategories( selectedDomain );
+		}
+		
+		private function getCategories( domainObject:Categories ):void {
+			var mainCategory:ArrayCollection = new ArrayCollection();
+			var catagory2_Len:int = categoryCollection.length;
+			for( var i:int = 0; i < catagory2_Len; i++) {
+				if( Categories( categoryCollection.getItemAt( i ) ).domain.categoryName == domainObject.categoryName ) {
+					if( !Utils.checkDuplicateItem( Categories( categoryCollection.getItemAt( i ) ).categoryFK, mainCategory, "categoryId" ) )
+						mainCategory.addItem( Categories( categoryCollection.getItemAt( i ) ).categoryFK );
+				}
+			}
+			if( mainCategory.length > 0 ) {
+				mainCategory = makeSorting( mainCategory, "categoryId" ); 
+				createAccordComponent( mainCategory );
+			}
+		}
+		
+		private function makeSorting( value:ArrayCollection, sortString:String ):ArrayCollection {
+	    	var sort:Sort = new Sort(); 
+        	sort.fields = [ new SortField( sortString ) ];
+        	sort.reverse();
+        	value.sort = sort;
+        	value.refresh();
+        	return value;
+	    }
+		
+		private function createAccordComponent( value:ArrayCollection ):void {
+			scheduleAccord.removeAllChildren();
+			var value_Len:int=value.length;
+			for( var i:int = 0 ;i <  value_Len;i++ ) {
+				var con:VBox = new VBox();
+				con.label = Categories( value.getItemAt( i ) ).categoryName;
+				con.percentWidth = 100;
+				con.percentHeight = 100;
+				scheduleAccord.addChild( con );
+				var subCollection:ArrayCollection = Categories( value.getItemAt( i ) ).childCategorySet;
+				subCollection = makeSorting( subCollection, "categoryId" );
+				shedulerCreation( subCollection, con );
+			}
+		}
+		
+		private var _pendingProjectSet:ArrayCollection;
+		private var _archiveProjectSet:ArrayCollection;
+		private function shedulerCreation( collection:ArrayCollection, container:VBox ):void {
+			var projectSelectorName:String = projectSelector.selectedItem.toString();
+			for( var i:int = 0; i < collection.length; i++ ) {
+				if( Categories( collection.getItemAt( i ) ).projectSet.length != 0 ) {
+					var filteredSet:ArrayCollection = filterSet( getSelected( Categories( collection.getItemAt( i ) ).projectSet ) );
+					if( filteredSet.length != 0 ) {
+						filteredSet = makeSorting( filteredSet, "projectId" );
+						_pendingProjectSet = model.taskData.createPhases( filteredSet, inputStream );
+						_pendingProjectSet = doCaollection( _pendingProjectSet );
+						var schedule_pending:Scheduler = new Scheduler();
+						schedule_pending.percentWidth = 100;
+						schedule_pending.schedulerInput = _pendingProjectSet;
+						schedule_pending.rowHeight = 40;
+						schedule_pending.rowsToShow = 5;
+						container.addChild( schedule_pending );
+						schedule_pending.header.text = Categories( collection.getItemAt( i ) ).categoryName;
+					}
+					var archiveSet:ArrayCollection = filterArchiveSet( getSelected( Categories( collection.getItemAt( i ) ).projectSet ) );
+					if( archiveSet.length != 0 )  {
+						if( ( projectSelectorName == 'All' ) || ( projectSelectorName == 'Archive' ) ) {
+							archiveSet = makeSorting( archiveSet, "projectId" );
+							_archiveProjectSet = model.taskData.createPhases( archiveSet, inputStream );
+							_archiveProjectSet = doCaollection( _archiveProjectSet );
+							var schedule_archive:Scheduler = new Scheduler();
+							schedule_archive.percentWidth = 100;
+							schedule_archive.schedulerInput = _archiveProjectSet;
+							schedule_archive.rowHeight = 40;
+							schedule_archive.rowsToShow = 5;
+							container.addChild( schedule_archive );
+							schedule_archive.header.text = Categories( collection.getItemAt( i ) ).categoryName;
+						}
+					}
+				}
+			}
+			if( container.numChildren == 0 ) {
+				noItemDisplay( container );
+			}
+		}
+		
+		private function doCaollection( value:ArrayCollection ):ArrayCollection {
+			var returnValue:ArrayCollection = new ArrayCollection();
+			for( var i:int = 0; i < value.length; i++ ) {
+				var obj:Object = {};
+				obj.projectName = value.getItemAt( i )[ 0 ].projectName;
+				obj.selectable = true;
+				obj.phasesSet = new ArrayCollection();
+				for( var j:int = 0; j < value.getItemAt( i ).length; j++ ) {
+					obj.phasesSet.addItem( value.getItemAt( i )[ j ] );
+				}
+				returnValue.addItem( obj );
+			}
+			return returnValue;
+		}
+		
+		private function noItemDisplay( container:VBox ):void {
+			var displayLabel:Label = new Label();
+			displayLabel.text = 'No Items To Display';
+			container.setStyle( 'horizontalAlign', 'center' );
+			container.setStyle( 'verticalAlign', 'middle' );
+			displayLabel.setStyle('fontSize', 24 );
+			container.addChild( displayLabel );
+		}
+		
+		private function getSelected( value:ArrayCollection ):ArrayCollection {
+			var resultCollection:ArrayCollection = new ArrayCollection();
+			for each( var prj:Projects in value ) {
+				if( checkAvailability( prj ) )
+					resultCollection.addItem( prj );
+			}
+			return resultCollection;
+		}
+		
+		private function checkAvailability( prj:Projects ):Boolean {
+			var sort:Sort = new Sort(); 
+            sort.fields = [ new SortField( 'projectId' ) ];
+            selectedProjectsSet.sort = sort;
+            selectedProjectsSet.refresh(); 
+			var cursor:IViewCursor =  selectedProjectsSet.createCursor();
+			var found:Boolean = cursor.findAny( prj );
+			return found; 	
+		} 
+		
+		private function filterSet( projectSet:ArrayCollection ):ArrayCollection {
+			var projectSelectorName:String = projectSelector.selectedItem.toString();
+			var resultCollection:ArrayCollection = new ArrayCollection();
+			var loopLength:int = projectSet.length;
+			if( projectSelectorName == "All" ) {
+				for( var p:int = 0; p < loopLength; p++ ) {
+					if( Projects( projectSet.getItemAt( p ) ).projectDateEnd == null ) {
+						if( !Utils.checkDuplicateItem( Projects( projectSet.getItemAt( p ) ), resultCollection, "projectId" ) )
+							resultCollection.addItem( Projects( projectSet.getItemAt( p ) ) );
+					}
+				}
+			}
+			else if( projectSelectorName == "Current Projects" ) {
+				for( var i:int = 0; i < loopLength; i++ ) {
+					for( var j:int = 0; j < model.tasks.length; j++ ) {
+						if( Projects( projectSet.getItemAt( i ) ).projectId == Tasks( model.tasks.getItemAt( j ) ).projectObject.projectId ) {
+							if( Projects( projectSet.getItemAt( i ) ).projectDateEnd == null ) {
+								if( !Utils.checkDuplicateItem( Projects( projectSet.getItemAt( i ) ), resultCollection, "projectId" ) )
+									resultCollection.addItem( Projects( projectSet.getItemAt( i ) ) );
+							}
+						}
+					}
+				}
+			}
+			else if( projectSelectorName == "Standby" ) {
+				for( var k:int = 0; k < loopLength; k++ ) {
+					if( Projects( projectSet.getItemAt( k ) ).projectStatusFK == ProjectStatus.STANDBY ) {
+						if( Projects( projectSet.getItemAt( k ) ).projectDateEnd == null ) {
+							if( !Utils.checkDuplicateItem( Projects( projectSet.getItemAt( k ) ), resultCollection, "projectId" ) )
+								resultCollection.addItem( Projects( projectSet.getItemAt( k ) ) );
+						}	
+					}
+				}
+			}
+			else if( projectSelectorName == "Delayed" ) {
+				for( var m:int = 0; m < loopLength; m++ ) {
+					var phasesSet:ArrayCollection = Projects( projectSet.getItemAt( m ) ).phasesSet;
+					for( var n:int = 0; n < phasesSet.length; n++ ) {
+						var currentValue:Number = model.currentTime.getTime();
+						var currentPhase:Number = Phases( phasesSet.getItemAt( n ) ).phaseEndPlanified.getTime();
+						var phaseEnd:Date = Phases( phasesSet.getItemAt( n ) ).phaseEnd; 
+						if( ( currentValue > currentPhase ) && ( phaseEnd == null ) ) {
+							if( Projects( projectSet.getItemAt( m ) ).projectDateEnd == null ) {
+								if( !Utils.checkDuplicateItem( Projects( projectSet.getItemAt( m ) ), resultCollection, "projectId" ) )
+									resultCollection.addItem( Projects( projectSet.getItemAt( m ) ) );
+							}
+							break;
+						}
+					}
+				}
+			}
+			else if( projectSelectorName == "Urgent" ) {
+				for( var g:int = 0; g < loopLength; g++ ) {
+					if( Projects( projectSet.getItemAt( g ) ).projectStatusFK == ProjectStatus.URGENT ) {
+						if( Projects( projectSet.getItemAt( g ) ).projectDateEnd == null ) {
+							if( !Utils.checkDuplicateItem( Projects( projectSet.getItemAt( g ) ), resultCollection, "projectId" ) )
+								resultCollection.addItem( Projects( projectSet.getItemAt( g ) ) );
+						}	
+					}
+				}
+			}
+			return resultCollection;
+		}
+		
+		private function filterArchiveSet( value:ArrayCollection ):ArrayCollection {
+			var resultCollection:ArrayCollection = new ArrayCollection();
+			for each( var prj:Projects in value ) {
+				if( prj.projectDateEnd )
+					resultCollection.addItem( prj );
+			}
+			return resultCollection;
+		}
+		
+		/**
+		 * For Client Section
+		 * */
+		private function getClients( value:ArrayCollection ):void {
+			if( value ) {
+				if( value.length != 0 ) {
+					var domainObject:Categories = Categories( value.getItemAt( 0 ) );
+					var mainCategory:ArrayCollection = new ArrayCollection();
+					var catagory2_Len:int = categoryCollection.length;
+					for( var i:int = 0; i < catagory2_Len; i++) {
+						if( Categories( categoryCollection.getItemAt( i ) ).domain.categoryName == domainObject.categoryName ) {
+							if( !Utils.checkDuplicateItem( Categories( categoryCollection.getItemAt( i ) ).categoryFK, mainCategory, "categoryId" ) )
+								mainCategory.addItem( Categories( categoryCollection.getItemAt( i ) ).categoryFK );
+						}
+					}
+					mainClientCategory = mainCategory;
+					if( mainCategory.length > 0 ) {
+						mainCategory = makeSorting( mainCategory, "categoryId" ); 
+						updateProvider( mainCategory );
+					}
+				}
+			}
+		}
+		
+		private function updateProvider( mainCategory:ArrayCollection ):void {
+			domainProvider = new ArrayCollection();
+			for( var i:int = 0; i < mainCategory.length; i++ ) {
+				var domainName:String = Categories( mainCategory.getItemAt( i ) ).categoryName;
+				domainProvider.addItem( domainName ); 
+			}
+			if( domainSelector.hasEventListener( ListEvent.CHANGE ) ) {
+				domainSelector.removeEventListener( ListEvent.CHANGE, onCategorySelection );
+				domainSelector.removeEventListener( ListEvent.CHANGE, onDomainSelection );
+				projectSelector.removeEventListener( ListEvent.CHANGE, onDomainSelection );
+				projectSelector.removeEventListener( ListEvent.CHANGE, onCategorySelection );
+			}
+			domainSelector.addEventListener( ListEvent.CHANGE, onCategorySelection ,false,0,true);
+			projectSelector.addEventListener( ListEvent.CHANGE, onCategorySelection,false,0,true );
+			domainSelector.dispatchEvent( new ListEvent( ListEvent.CHANGE ) );
+		}
+		
+		private function onCategorySelection( event:ListEvent ):void {
+			var selectedCategory:Categories;
+			var mainLength:int = mainClientCategory.length;
+			for( var i:int = 0; i < mainLength;i++ ) {
+				if( Categories( mainClientCategory.getItemAt( i ) ).categoryName == domainSelector.selectedItem ) {
+					selectedCategory = Categories( mainClientCategory.getItemAt( i ) );
+				}
+			}
+			createCategoryAccord( selectedCategory );
+		}
+		
+		private function createCategoryAccord( selectedCategory:Categories ):void {
+			scheduleAccord.removeAllChildren();
+			var subCollection:ArrayCollection = selectedCategory.childCategorySet;
+			subCollection = makeSorting( subCollection, "categoryId" );
+			var subLength:int = subCollection.length;
+			for( var i:int = 0;i < subLength;i++ ) {
+				var con:VBox = new VBox();
+				var catSub:ArrayCollection = new ArrayCollection();
+				con.label = Categories( subCollection.getItemAt( i ) ).categoryName;
+				con.percentWidth = 100;
+				con.percentHeight = 100;
+				scheduleAccord.addChild( con );
+				catSub.addItem( subCollection[ i ] );
+				shedulerCreation( catSub, con );
+			}
+		}
+		
+		public function exportPDF():void {
+			_myPDF = new PDF( Orientation.LANDSCAPE, Unit.MM, Size.A4 );     
+	        _myPDF.setDisplayMode( Display.REAL, Layout.SINGLE_PAGE );
+	        _myPDF.addPage();
+	        _myPDF.textStyle( new RGBColor( 0 ), 1 );
+	        _myPDF.setFont( FontFamily.ARIAL, Style.NORMAL, 12 );
+	        _myPDF.addText( 'PendingView', 5, 10);
+	        var timeOfSave:Date = model.currentTime;
+	        _myPDF.addText( timeOfSave.toString(), 180, 28);
+	        _myPDF.setFont( FontFamily.ARIAL, Style.UNDERLINE, 10 );
+            _myPDF.addText( "Filters", 5, 20 );
+            _myPDF.setFont( FontFamily.ARIAL, Style.NORMAL, 10 );
+            _myPDF.addText( ( "Domain" + ' : ' + domainSelector.selectedItem.toString() ), 5, 24 );
+            _myPDF.addText( ( "ProjectSelector" + ' : ' + projectSelector.selectedItem.toString() ), 5, 28 );
+            
+	        var cYoffset:int = 24;
+	        _myPDF.addImage( scheduleAccord, 5, cYoffset + 5, 0, 200, ImageFormat.JPG );
+	        
+	        gBytes = _myPDF.save( Method.LOCAL );
+	
+            var cFile:File = new File();
+            cFile = File.userDirectory.resolvePath( "PendingProjectView.pdf" );
+            cFile.addEventListener( Event.SELECT, onSelectSave,false,0,true );
+            cFile.browseForSave( "Doctrack report" );
+		}
+		
+		private function onSelectSave( event:Event ):void {
+	        var cFile:File = event.target as File;
+	        var cFS:FileStream = new FileStream();
+	        cFile.removeEventListener( Event.SELECT, onSelectSave );
+	        cFS.open( cFile, FileMode.WRITE );
+	        cFS.writeBytes( gBytes );
+	        cFS.close();
+	        gBytes.length = 0;
+	    }
+		
+		
+	]]>
+</mx:Script>	
+<mx:HBox top="10" left="10" id="_filterCon">
+	<mx:Label text="Domain Selector"/>
+	<mx:ComboBox id="domainSelector"  dataProvider="{ domainProvider }" name="SelectDomain"/>
+	<mx:Label text="Project Selector"/>
+	<mx:ComboBox id="projectSelector"  dataProvider="{ [ 'All', 'Current Projects', 'Standby', 'Delayed', 'Urgent', 'Archive' ] }" />	
+</mx:HBox>
+<mx:Accordion id="scheduleAccord" top="{ _filterCon.y + _filterCon.height + 5 }" left="0" right="0"
+	          bottom="0">
+			
+</mx:Accordion>
+</mx:Canvas>

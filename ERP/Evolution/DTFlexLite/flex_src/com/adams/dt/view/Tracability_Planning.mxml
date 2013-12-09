@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:com="com.adams.dt.view.tracability.ui.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Profiles;
+			import flash.utils.getTimer;
+		import mx.events.FlexEvent;
+		import mx.collections.ArrayCollection;
+		import mx.controls.Label;
+		import com.adams.dt.model.tracability.TracPhase;
+		import com.adams.dt.model.vo.Phasestemplates;
+		import com.adams.dt.model.vo.Workflows;
+		import com.adams.dt.model.vo.Phases;
+		import com.adams.dt.event.tracability.DateSelectEvent;
+		import com.adams.dt.event.tracability.DrawingEvent;
+		import com.adams.dt.event.tracability.PeriodChangeEvent;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.view.tracability.ui.DrawingUI;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.view.tracability.ui.TaskDateField;
+		
+		
+		import mx.formatters.DateFormatter;
+		import mx.events.CalendarLayoutChangeEvent;
+		import mx.effects.easing.*;
+		import mx.controls.DateField;
+		import mx.events.DropdownEvent;
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private var _lineIndexes:Array = [];
+		private var _tempIndex:int;
+		private var _totalWidth:Number;
+		[Bindable]
+		private var _totalPeriod:Number = 0;
+		private var _differPeriod:Number;
+		private var _partPeriod:Number;
+		private var _enabledValue:Boolean;
+		
+		private static const millisecondsPerDay:int = 1000 * 60 * 60 * 24;
+		
+		private var _lineColor:Array = ["0x9C8F5F", "0x2A7C69","0xB91854","0x005DB3","0xD91B00","0x5BC236"];
+		private var _dateFormatter:DateFormatter = new DateFormatter();
+		private var _datesArray:Array;         
+		private var _dataReach:Boolean;
+		private var _finishArray:Array = [ 22, 30, 38, 46, 54 ];
+		
+		[Bindable]
+		public function get datesArray():Array {
+			return _datesArray;
+		}          
+		
+		public function set datesArray( value:Array ):void {
+			_datesArray = value;
+			createDateFields();
+			initialDispatch();
+		}
+		
+		private var _labelsArray:Array;
+		[Bindable]
+		public function get labelsArray():Array {
+			return _labelsArray;
+		}          
+		
+		public function set labelsArray( value:Array ):void {
+			_labelsArray = value;
+			labelCreation();
+		}
+		
+		[Bindable]
+		public function get enabledValue():Boolean {
+			return _enabledValue;
+		}
+		
+		public function set enabledValue( value:Boolean ):void {
+			_enabledValue = value
+		}
+		
+		private function onCreationComplete( event:FlexEvent ):void {
+			_dataReach = true;
+			initialDispatch();
+		}
+		
+		private function createDateFields():void {
+			var _lineIndexes_Len:int=_lineIndexes.length;
+			for( var j:int = 0; j <  _lineIndexes_Len;j++ ) {
+				if( _lineIndexes[ j ] != undefined ) {
+					_tempIndex = _lineIndexes[ j ];
+					_lineIndexes[ j ] = undefined;
+					_mainCon.removeChildAt( _tempIndex );
+					refreshLineIndex(_lineIndexes);
+				}
+			}
+			_dateContainer.removeAllChildren();
+			_labelContainer.removeAllChildren();
+			var progressDate:TaskDateField;
+			var _datesArray_Len:int=_datesArray.length;
+			for( var i:Number = 0; i < _datesArray_Len; i++ ) {
+				if( _datesArray[ i ] != null ) {
+					progressDate = new TaskDateField();
+					progressDate.selectedDate =  _datesArray[ i ];
+					progressDate.enabled = enabledValue;
+					progressDate.addEventListener( DateSelectEvent.DATE_SELECTED, onClose , false, 0,true);
+					progressDate.addEventListener( DrawingEvent.SET_SELECTDATE, onChange , false, 0,true);
+					progressDate.addEventListener( PeriodChangeEvent.PERIOD_CHANGE, onPeriodChange , false, 0,true);
+					_dateContainer.addChild( progressDate );
+				}
+				if( i == ( _datesArray.length - 1 ) )	progressDate.addEventListener(FlexEvent.CREATION_COMPLETE, onCreationComplete, false, 0,true);
+			}
+			_dateFormatter.formatString = "DD/MM/YYYY";
+			settingTotalPeriod();
+		}
+		
+		private function labelCreation():void {
+			for( var i:Number = 0; i < labelsArray.length; i++ ) {
+				if( labelsArray[ i ] != null ) {
+					var dateLabel:Label = new Label();
+					dateLabel.text = String( labelsArray[ i ] );
+					_labelContainer.addChild( dateLabel );
+				}
+			}	
+		}
+		
+		private function settingTotalPeriod():void {
+			var tempPeriod:Number;
+			tempPeriod = Math.ceil( ( TaskDateField( _dateContainer.getChildAt( _dateContainer.numChildren - 1 ) ).selectedDate.getTime() - TaskDateField( _dateContainer.getChildAt( 0 ) ).selectedDate.getTime() )/ millisecondsPerDay );
+			_totalPeriod = tempPeriod;//model.tracTaskContent.removingWeekends( new Date( TaskDateField( _dateContainer.getChildAt( 0 ) ).selectedDate.getTime() + millisecondsPerDay ), tempPeriod );
+			if( _totalPeriod == 0 )	_totalPeriod = 1;
+		}
+		
+		private function getTotalPeriod():Number {
+			var tempArray:Array = [];
+			var returnValue:Number;
+			for( var i:int = 0; i < datesArray.length; i++ ) {
+				tempArray.push( datesArray[ i ].getTime() );
+			}
+			tempArray.sort( Array.NUMERIC );
+			return returnValue = Math.ceil( ( tempArray[ tempArray.length - 1 ] - tempArray[ 0 ] )/ millisecondsPerDay );
+		}
+		
+		private function initialDispatch():void {
+			if( ( _dataReach ) && ( datesArray != null ) ) {
+				_totalWidth = (  _dateContainer.getChildAt( _dateContainer.numChildren - 1 ).x + ( _dateContainer.getChildAt( _dateContainer.numChildren - 1 ).width/2 ) ) - ( TaskDateField(_dateContainer.getChildAt( 0 ) ).x + TaskDateField(_dateContainer.getChildAt( 0 ) ).width/2 );
+				var _labelContainer_Len:int=_labelContainer.numChildren;
+				for( var i:int = 0;i < _labelContainer_Len; i++ ) {
+					_labelContainer.getChildAt( i ).x = _dateContainer.getChildAt( i ).x -2;
+				}
+				var _dateContainer_Len:int=_dateContainer.numChildren;
+				for( var j:int = 0; j < _dateContainer_Len; j++ ) {
+					TaskDateField(  _dateContainer.getChildAt( j ) ).onCreationComplete();
+				}
+				TaskDateField(_dateContainer.getChildAt( _dateContainer.numChildren - 1 ) ).dispatchEvent( new DateSelectEvent( DateSelectEvent.DATE_SELECTED ) );
+			}
+		}
+		
+		private function onChange( event:DrawingEvent ):void {
+			var currentIndex:int = _dateContainer.getChildIndex( DateField(event.currentTarget) );
+			settingTotalPeriod();
+			var tempPeriod:Number;
+			var _dateContainer_Len:int=( _dateContainer.numChildren -1 );
+			for(var i:int = 0; i <= _dateContainer_Len;i++) {
+				if( i == 0 ) {
+					_differPeriod = _totalPeriod;
+				}
+				else {	
+					tempPeriod = Math.ceil( (DateField(_dateContainer.getChildAt(i)).selectedDate.getTime() - DateField(_dateContainer.getChildAt(i-1)).selectedDate.getTime()) / millisecondsPerDay )
+					_differPeriod = tempPeriod;//model.tracTaskContent.removingWeekends( new Date( DateField(_dateContainer.getChildAt( i-1 ) ).selectedDate.getTime() + millisecondsPerDay ), tempPeriod );
+				}	
+				_partPeriod = (_totalWidth / _totalPeriod )*_differPeriod;
+				if( DateField(_dateContainer.getChildAt(i)).selectedDate != null) {
+					if( ( i == 0 ) ) {
+						var lastPeriod:Number = DateField(_dateContainer.getChildAt(i)).x + DateField(_dateContainer.getChildAt(i)).width/2;
+						lineDrawing( DateField(_dateContainer.getChildAt(i) ), _lineColor[i], i, lastPeriod, _lineColor[i] );
+					}
+					else {
+						_partPeriod = _partPeriod + DrawingUI( _mainCon.getChildAt( _lineIndexes[i-1])).middleEndPoint.x;
+						var rodColor:uint;
+						if( _differPeriod < 0 )	rodColor = 0xFF0000;
+						else	rodColor = _lineColor[i];
+						lineDrawing( DateField(_dateContainer.getChildAt(i) ), _lineColor[i], i, _partPeriod, rodColor );
+					}
+				}
+			}
+		}
+		
+		private function lineDrawing( currentItem:DateField, lineColor:uint, fieldIndex:int, middleStart:Number, rodColor:uint ):void {
+			var startPoint:Point = new Point(currentItem.x + currentItem.width/2, currentItem.y + currentItem.height+(_labelContainer.height+_labelContainer.y));
+			var startMiddlePoint:Point = new Point(currentItem.x + currentItem.width/2, currentItem.y + currentItem.height+(_labelContainer.height+_labelContainer.y)+_finishArray[ fieldIndex ]);
+			var endMiddlePoint:Point = new Point(middleStart, startMiddlePoint.y);
+			var finishPoint:Point = new Point(middleStart, _colorRod.y+_colorRod.height+40);
+			
+			var lineTool:DrawingUI = new DrawingUI();
+			lineTool.lineColor = lineColor;
+			lineTool.originPoint = startPoint;
+			lineTool.middleStartPoint = startMiddlePoint;
+			lineTool.middleEndPoint = endMiddlePoint;
+			lineTool.endPoint = finishPoint;
+			lineTool.solidRodColor = rodColor;
+			lineTool.solidRodHeight = 20; 
+			lineTool.solidRodY = _dateContainer.y+_dateContainer.height+70;
+			if( fieldIndex == 0 ) {
+				lineTool.differLabel =String( _totalPeriod );
+				lineTool.solidRodX = startMiddlePoint.x;
+				lineTool.solidRodWidth = _totalWidth;
+			}
+			else {
+				var inter_startX:Number = DrawingUI( _mainCon.getChildAt( _lineIndexes[fieldIndex-1] ) ).middleEndPoint.x;
+				var inter_endX:Number = endMiddlePoint.x;
+				
+				if( TaskDateField( _dateContainer.getChildAt( fieldIndex ) ).differencePeriod != 0 )
+					lineTool.differLabel = String( TaskDateField( _dateContainer.getChildAt( fieldIndex ) ).differencePeriod );
+				lineTool.solidRodX = inter_startX;
+				lineTool.solidRodWidth = inter_endX - inter_startX;
+			}	
+			
+			if(_lineIndexes[fieldIndex] != undefined) {
+				_tempIndex = _lineIndexes[fieldIndex];
+				_mainCon.removeChildAt(_lineIndexes[fieldIndex]);
+				refreshLineIndex(_lineIndexes);
+			}
+			_mainCon.addChild(lineTool);
+			_lineIndexes[fieldIndex] = _mainCon.getChildIndex(lineTool);
+			
+		}
+		
+		private function refreshLineIndex( lineIndexArray:Array ):void {
+			var lineIndexArray_Len:int=lineIndexArray.length;
+			for(var i:int = 0;i < lineIndexArray_Len;i++) {
+				if(( lineIndexArray[i] != undefined ) && ( lineIndexArray[i] > _tempIndex )) {
+					 lineIndexArray[i] =  lineIndexArray[i] - 1;
+				}
+			}
+		}
+		
+		
+		private function onPeriodChange( event:PeriodChangeEvent ):void {
+			var currentIndex:int = _dateContainer.getChildIndex( DateField( event.currentTarget ) );
+			var _dateContainer_Len:int=( _dateContainer.numChildren );
+			for( var i:int = currentIndex; i <  _dateContainer_Len;i++ ) {
+				var currentSelectedDate:Date = DateField( _dateContainer.getChildAt( i -1 ) ).selectedDate;
+				var currentDifference:Number = TaskDateField( _dateContainer.getChildAt( i ) ).differencePeriod;
+				if( currentSelectedDate ) { 
+					//var addPeriod:Number = model.tracTaskContent.addingWeekends( new Date( currentSelectedDate.getTime() + millisecondsPerDay ), currentDifference );
+					var tempSelectDate:Date = new Date( currentSelectedDate.getTime() + ( currentDifference * millisecondsPerDay ) );  
+					TaskDateField( _dateContainer.getChildAt( i ) ).selectedDate = tempSelectDate;
+					if( i != currentIndex )
+						TaskDateField( _dateContainer.getChildAt( i ) ).onChangeText = _dateFormatter.format(tempSelectDate.toDateString());
+					TaskDateField( _dateContainer.getChildAt( i ) ).selectableRange  = {rangeStart: currentSelectedDate};
+				} 
+			}
+			TaskDateField( _dateContainer.getChildAt( currentIndex ) ).dispatchEvent( new DrawingEvent( DrawingEvent.SET_SELECTDATE ) );
+		}
+					
+		private function onClose( event:DateSelectEvent ):void {
+			var currentIndex:int = _dateContainer.getChildIndex( DateField( event.currentTarget ) );
+			var currentIndex_Len:int = currentIndex;
+			for( var i:int = 1; i <= currentIndex_Len; i++ ) {
+				var currentSelectedDate:Date = DateField( _dateContainer.getChildAt( i -1 ) ).selectedDate;
+				var mutualPeriod:Number = Math.ceil( (DateField(_dateContainer.getChildAt(i)).selectedDate.getTime() - DateField(_dateContainer.getChildAt(i-1)).selectedDate.getTime()) / millisecondsPerDay );
+				TaskDateField( _dateContainer.getChildAt( i ) ).differencePeriod = mutualPeriod;//model.tracTaskContent.removingWeekends( new Date( currentSelectedDate.getTime() + millisecondsPerDay ), mutualPeriod );
+			}
+			TaskDateField(event.currentTarget).dispatchEvent( new PeriodChangeEvent( PeriodChangeEvent.PERIOD_CHANGE ) );
+		}
+				
+		]]>
+		</mx:Script>
+		<mx:Canvas id="_mainCon" horizontalCenter="0"
+			width="96%"
+			styleName="darkBorder" >
+			<mx:Canvas left="0"
+				right="0"
+				height="35" styleName="statusHeader">
+				<mx:Text id="labelTask" 
+					verticalCenter="0"
+					left="20"/>
+			</mx:Canvas>
+			<mx:Canvas id="_labelContainer"
+				x="0"
+				y="35">
+			</mx:Canvas>
+			<mx:HBox id="_dateContainer"
+				horizontalGap="50"
+				verticalAlign="middle"
+				x="0"
+				y="{_labelContainer.y+_labelContainer.height+5}">
+			</mx:HBox>
+			<mx:Canvas x="0"
+				horizontalScrollPolicy="off"
+				verticalScrollPolicy="off"
+				id="_colorRod"
+				y="{_dateContainer.y+_dateContainer.height+50}"
+				width="{_dateContainer.width}"
+				height="20">
+			</mx:Canvas>
+			<mx:TextInput editable="false"
+				id="_jours"
+				x="{_colorRod.x+_colorRod.width+10}"
+				top="45"
+				right="30"
+				height="30"
+				width="30"
+				text="{_totalPeriod.toString()}"/>
+			<mx:HBox id="commentsFrom"
+				left="10"
+				right="10"
+				height="80"
+				top="{ _colorRod.y+_colorRod.height+50 }"
+				verticalAlign="middle">
+				<mx:Text text="comments :"/>
+				<mx:TextArea id="commentArea"
+					selectable="false"
+					width="100%"
+					height="100%"/>
+				<mx:Canvas id="imgCont" width="300" height="61"
+					verticalScrollPolicy="off"
+					horizontalScrollPolicy="off"
+					right="0"
+					left="0"
+					bottom="0"
+					top="0" backgroundColor="{uint(Profiles(model.profilesCollection.getItemAt( 0 )).profileColor)}">
+					<!--<mx:Image id="bgImg"
+						height="55"
+						scaleContent="true"
+						/>-->
+					<mx:Canvas verticalScrollPolicy="off"
+						horizontalScrollPolicy="off"
+						right="5"
+						left="5"
+						bottom="3"
+						top="3">
+						<mx:Image id="pic"
+							width="50"
+							height="50"
+							left="5"/>
+						<mx:VBox right="5"
+							top="5"
+							left="{pic.width+15}"
+							verticalGap="0">
+							<mx:Text  id="personName" 
+								styleName="menuText"/>
+							<mx:Text fontSize="10" 
+								color="#ffffff"/>
+							<mx:Text id="personPosition"
+								color="#ffffff"
+								fontSize="10"/>
+						</mx:VBox>
+					</mx:Canvas>
+				</mx:Canvas>
+			</mx:HBox>
+		</mx:Canvas>
+	</mx:Canvas>

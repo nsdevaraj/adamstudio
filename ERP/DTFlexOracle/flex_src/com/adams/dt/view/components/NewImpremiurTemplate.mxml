@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" showCloseButton="true" 
+	close="{PopUpManager.removePopUp(this)}" layout="absolute" headerHeight="30"
+	 width="800" height="100%" xmlns:view="com.adams.dt.view.components.*"  
+	styleName="bgContainer" xmlns:renderer="com.adams.dt.view.components.impremiurRenderer.*" 
+	 xmlns:serchComp="com.adams.dt.view.components.personSearch.*">
+	 <mx:Metadata>
+		[Event(name="save", type="flash.events.Event")]
+	</mx:Metadata> 
+	 <mx:Script>
+	 	<![CDATA[
+	 		import com.adams.dt.model.vo.Presetstemplates;
+	 		import com.adams.dt.business.util.GetVOUtil;
+	 		import com.adams.dt.event.GroupPersonsEvent;
+	 		import com.adams.dt.model.vo.GroupPersons;
+	 		import com.adams.dt.event.GroupsEvent;
+	 		import com.adams.dt.model.vo.Groups;
+	 		import com.adams.dt.model.vo.Companies;
+	 		import com.adams.dt.event.CompaniesEvent;
+	 		import com.adams.dt.event.PersonsEvent;
+	 		import com.adams.dt.model.vo.Persons;
+	 		import mx.events.CloseEvent;
+	 		import com.adams.dt.view.components.impremiurRenderer.FieldLabelContent;
+	 		import mx.managers.PopUpManager;
+	 		import com.adams.dt.view.components.impremiurRenderer.ComboEditContent;
+	 		import com.adams.dt.view.components.impremiurRenderer.TextEditContent;
+	 		import mx.containers.Panel;
+	 		import com.adams.dt.event.ProjectsEvent;
+	 		import com.adams.dt.event.generator.SequenceGenerator;
+	 		import mx.collections.IViewCursor;
+	 		import mx.core.IUIComponent;
+	 		import mx.collections.SortField;
+	 		import mx.collections.Sort;
+	 		import mx.events.ListEvent;
+	 		import mx.collections.IList;
+	 		import mx.controls.DataGrid;
+	 		import mx.core.UIComponent;
+	 		import mx.events.DragEvent;
+	 		import mx.core.DragSource;
+	 		import mx.managers.DragManager;
+	 		import mx.controls.Image;
+	 		import com.adams.dt.event.PresetTemplateEvent;
+	 		import com.adams.dt.model.vo.Propertiespresets;
+	 		import com.adams.dt.model.vo.Proppresetstemplates;
+	 		import mx.controls.Button;
+	 		import mx.collections.ArrayCollection;
+	 		import com.adams.dt.event.PropPresetTemplateEvent;
+	 		import com.adams.dt.model.vo.Presetstemplates;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+	 		import com.universalmind.cairngorm.events.Callbacks;
+	 		import mx.rpc.IResponder;
+	 		import mx.controls.Alert;
+	 		import com.adams.dt.model.vo.Impremiur;
+	 		import com.adams.dt.model.ModelLocator;
+	 		import com.adams.dt.event.ImpremiurEvent;
+	 		[Bindable]
+	 		private var curPropPresetTemp:Presetstemplates 
+	 		private var cursor:IViewCursor;
+	 		
+	 		[Bindable]
+		 	public var model:ModelLocator = ModelLocator.getInstance();
+		 	[Bindable]
+		 	public var ImpComboCollection :ArrayCollection = new ArrayCollection();
+		 	[Bindable]
+		 	public var propertiesPresetsArr:ArrayCollection = new ArrayCollection();
+		 	[Bindable]	       
+		 	public var propPresetTempColl:ArrayCollection = new ArrayCollection();
+		 	[Bindable]	       
+		 	public var ImpArr:ArrayCollection = new ArrayCollection();
+		 	[Bindable]
+		 	[Bindable]
+		 	public var impInt:int;
+		 	[Bindable]
+		 	public var presetTempInt:int;
+		 	[Bindable]
+		 	public var createNew:Boolean
+		 	private var _tempRemoveIndex:int;
+		 	private var _tempPropresetIndex:int
+		 	[Bindable]
+		    public var imgSource:String;
+		 	
+		 	
+		 	//Added By Deepan for the purpose of Edit Panel
+		 	[Bindable]
+		 	private var isVisible:Boolean;
+		 	
+		 	
+	 		public function fault1(faultEvt:Object):void {
+	 			
+	    	}
+	 		private function ImpremiurResult() :void {
+	 			var handler:IResponder = new Callbacks(ImpremiurHandler,fault1);
+	 			var ImpEvt:ImpremiurEvent = new ImpremiurEvent(ImpremiurEvent.EVENT_GET_ALL_IMPREMIUR,handler);
+	            ImpEvt.dispatch();
+	 		}
+	 		// Fnction Used To Load the data(Impremiur) for the List  
+		 	private function ImpremiurHandler(data : Object) : void { 
+		 		var arr:ArrayCollection = new ArrayCollection();
+	 			var imp:Impremiur = new Impremiur();
+		 		imp.impremiurLabel = "";
+		 		ImpArr.addItem(imp);
+	 			arr = data.message.body as ArrayCollection;
+		 			for(var i:int =0;i<arr.length;i++){
+				 		imp = Impremiur(arr[i])
+				 		/* if(imp.impremiurId == getImpreColl()){
+				 			impInt = i+1;
+				 		} */
+				 			
+				 		ImpArr.addItem(imp);
+				 	}
+			 		ImpArr.refresh();
+			 		getSelectedItem();
+			 	} 
+			[Bindable]
+			private var presetTemp :Presetstemplates
+		 	private function  getSelectedItem():void {
+		 		newImpPOPUP.visible = false;
+		 		newImpPOPUP.includeInLayout= false;
+		 		perseonReset();
+		 		model.updateTemplateColl = new ArrayCollection();
+				propertiesPresetsArr = new ArrayCollection();
+				propPresetTempColl = new ArrayCollection();
+	 			var myImpArr:ArrayCollection  = new ArrayCollection();
+	 			var presetButton:Button;
+	 			PresetTable_txt.text = "";
+ 	 			
+	 			if(butHBox.numChildren>0){
+	 				butHBox.removeAllChildren();
+	 			} 
+		 			var tempIndex:int = getImpreColl()
+	 				myImpArr = Impremiur(ImpArr.getItemAt(tempIndex)).presetstemplateSet;
+		 			impInt = Impremiur(ImpArr.getItemAt(tempIndex)).impremiurId;
+		 			impHeader.text = Impremiur(ImpArr.getItemAt(tempIndex)).impremiurLabel 
+		 			var presetIndex:int = 0 //getPresetColl(myImpArr)
+		 			
+		 			curPropPresetTemp = myImpArr[presetIndex] as Presetstemplates;
+		 			//model.currentProjects.presetTemplateFK = curPropPresetTemp;
+		 			propresultArr(curPropPresetTemp.propertiesPresetSet)
+		 			datagrid1.visible = true;
+	 				datagrid1.includeInLayout = true; 
+	 				model.currentImpremiurLabel  = Impremiur(ImpArr.getItemAt(1)).impremiurLabel
+	 				PresetTable_txt.text = Presetstemplates(myImpArr[presetIndex]).presetTemplateLabel ;
+ 
+	 			if(myImpArr != null){
+	 				butHBox.visible = true;
+		 			for(var i:int =0;i<myImpArr.length;i++){
+		 				presetTemp = Presetstemplates(myImpArr[i])
+		 				presetButton = new Button();
+		 				butHBox.addChild(presetButton);
+		 				presetButton.toggle = true
+		 				presetButton.width = 150;
+		 				presetButton.height = 30; 
+		 				presetButton.label = presetTemp.presetTemplateLabel;
+		 				presetButton.name = String( presetTemp.presetstemplateId );
+		 				presetButton.data =presetTemp; 
+		 				presetButton.addEventListener(MouseEvent.CLICK,getPropPresetTemp,false,0,true);
+		 			}
+				 	presetButton = new Button();
+	 				//butHBox.addChild(presetButton);
+	 				presetButton.width = 150;
+	 				presetButton.height = 30;
+	 				presetButton.label = "Add New";
+	 				presetButton.name="Add"
+		 			presetButton.addEventListener(MouseEvent.CLICK,getPropPresetTemp,false,0,true);
+		 		}
+		 		else{
+		 			datagrid1.visible = false;
+	 				datagrid1.includeInLayout = false;
+	 				datagrid2.visible =  false;
+		 			datagrid2.includeInLayout =  false;
+		 			butHBox.visible = false;
+	 			}
+	 			
+ 
+	 		}
+	 		private function getPresetColl(impArr:ArrayCollection) :int {
+	 			for(var i:int =0;i<impArr.length;i++){
+	 			var tempPresetTempl:Presetstemplates = impArr[i] as Presetstemplates
+		 			if(tempPresetTempl.presetstemplateId ==  1){
+		 			break;
+		 			}
+	 			}
+	 			return i;
+	 		}
+	 		private function getImpreColl() :int {
+	  			return 1
+	 		}
+	 		private function getPropPresetTemp(evt:MouseEvent) :void {
+	 			for(var i:int=0;i<butHBox.numChildren;i++){
+	 				Button(butHBox.getChildAt(i)).selected = false;
+	 			}
+	 			Button(evt.currentTarget).selected = true;
+	 			if(evt.target.name != "Add" ){
+	 				datagrid1.visible = true;
+	 			    datagrid1.includeInLayout = true;
+	 				createNew = false;
+	 				//PresetTable_txt.editable= false
+	 				presetTempInt = int(evt.target.name)
+	 				PresetTable_txt.text = evt.target.label
+	 				//PresetTable_txt.styleName="disabledText"
+	 				curPropPresetTemp = evt.currentTarget.data as Presetstemplates;
+		 			model.currentPresetTemplates = curPropPresetTemp;
+		 			//model.currentProjects.presetTemplateFK  = presetTemp;
+	 				propresultArr(curPropPresetTemp.propertiesPresetSet)
+	 				
+	 				
+		 		} 	
+		 		else{
+		 			Button(evt.currentTarget).visible = false;
+		 			datagrid1.visible = true;
+	 			    datagrid1.includeInLayout = true;
+		 			createForNewEntries();
+		 			createNew = true
+		 			PresetTable_txt.editable=true
+		 			PresetTable_txt.styleName="TextInput" 
+				       var tempIndex:int = getImpreColl()
+				       PresetTable_txt.text = Impremiur(ImpArr.getItemAt(tempIndex)).impremiurLabel+"_ New Template ";
+		 		}
+	 		}
+			private function propresultArr(resultArr:ArrayCollection) : void {
+				model.updateTemplateColl = new ArrayCollection();
+				propertiesPresetsArr = new ArrayCollection();
+				propPresetTempColl = new ArrayCollection();
+				var arrc : ArrayCollection = resultArr
+	 			var removeArr:Array = [];
+	 			var proPresets:Propertiespresets
+	 			var propPresetTemp:Proppresetstemplates;
+	 			for(var i:int =0;i<model.propertiespresetsCollection.length;i++){
+	 				 proPresets = Propertiespresets( model.propertiespresetsCollection[i] )
+	 				 var newPropPresetTemp:Proppresetstemplates = new Proppresetstemplates();
+					 newPropPresetTemp.propertypresetFK = proPresets.propertyPresetId;
+					 newPropPresetTemp.presetstemplatesFk = curPropPresetTemp.presetstemplateId;
+					 newPropPresetTemp.fieldLabel = proPresets.fieldName
+					 newPropPresetTemp.fieldOptionsValue = proPresets.fieldOptionsValue;
+					 newPropPresetTemp.fieldLabel = proPresets.fieldLabel;
+					 propertiesPresetsArr.addItem( newPropPresetTemp );
+	 				 for(var j:int =0;j<arrc.length;j++){
+	 					propPresetTemp =  Proppresetstemplates(arrc[j])
+	 					if(propPresetTemp.propertypresetFK == proPresets.propertyPresetId){
+	 						propPresetTempColl.addItem(propPresetTemp);
+	 						removeArr.push(i);
+	 					}
+	 				}
+	 			}
+				for(var k:int =0;k<removeArr.length;k++){
+						var index:int = int(removeArr[k]);
+						_tempRemoveIndex = index;
+	 					propertiesPresetsArr.removeItemAt(index);
+	 					refreshLineIndex( removeArr );  
+	 			}
+	 	}
+		 private function doubleClickHandler(event:ListEvent):void {
+		 	var newObj:Object = {propertyPresetId:Proppresetstemplates(propPresetTempColl[event.rowIndex]).propertypresetFK}
+			setEnableEditBtn(newObj)
+		 }
+		 private function setEnableEditBtn(id:Object):void{ 
+			var cursor:IViewCursor =  model.propertiespresetsCollection.createCursor();
+			var found:Boolean = cursor.findAny( id );	
+			if( found ) {
+				if(editPanel.numChildren>0){
+		        	editPanel.removeAllChildren();
+		        	editConParent.visible = false;
+		        }
+			}
+		 }
+	 	 private function refreshLineIndex( lineIndexArray:Array ):void {
+				var lineIndexArray_Len:int=lineIndexArray.length;
+				for(var i:int = 0;i < lineIndexArray_Len;i++) {
+					if(( lineIndexArray[i] != undefined ) && ( lineIndexArray[i] > _tempRemoveIndex )) {
+						 lineIndexArray[i] =  lineIndexArray[i] - 1;
+					}
+				}
+			}
+		  private function getPropertyId(item:Object, column:DataGridColumn):String {
+	 		  var sLabel:String
+	 		  var sHeaderText:String = column.headerText;    
+				   	switch (sHeaderText)  {
+				     case "Id":
+				       sLabel = String(Proppresetstemplates(item).propertypresetFK);
+				       break;
+				    }
+				 return sLabel;	
+		  }
+		  public function getImageName( item:Object ):String {
+	 		  //var sLabel:String = "assets/category/skins/impremiur/"+item.field_type+".png";
+	 		  var sLabel:String = "assets/swf/MainInterface.swf#"+item.field_type;
+	 		  return sLabel;
+		  }
+		  
+		  private function createForNewEntries():void {
+		  	var handler:IResponder = new Callbacks(PresetTemplateResult,fault);
+	        var createEvt:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_CREATE_PRESET_TEMPLATE,handler);
+	        var preserTemp:Presetstemplates = new Presetstemplates();
+	        preserTemp.presetTemplateLabel = PresetTable_txt.text;
+	        createEvt.preTemplate = preserTemp;
+	        createEvt.dispatch();
+	        propPresetTempColl = new ArrayCollection();
+		  	propertiesPresetsArr  = new ArrayCollection();
+		  }
+		  private function PresetTemplateResult(data : Object) : void { 
+		  	curPropPresetTemp = data.result as Presetstemplates;
+		  	model.currentPresetTemplates = curPropPresetTemp;
+          	model.presetTemplatesId = Presetstemplates(data.message.body).presetstemplateId;
+          	for(var i:int =0;i<model.propertiespresetsCollection.length;i++){
+	 				 var proPresets:Propertiespresets = Propertiespresets( model.propertiespresetsCollection[i] )
+	 				 var newPropPresetTemp:Proppresetstemplates = new Proppresetstemplates();
+					 newPropPresetTemp.propertypresetFK = proPresets.propertyPresetId;
+					 newPropPresetTemp.presetstemplatesFk = model.presetTemplatesId;
+					 newPropPresetTemp.fieldLabel = proPresets.fieldName
+					 newPropPresetTemp.fieldOptionsValue = proPresets.fieldOptionsValue;
+					 newPropPresetTemp.fieldLabel = proPresets.fieldLabel;
+					 propPresetTempColl.addItem( newPropPresetTemp );
+			}
+			;
+         }
+         public function fault(faultEvt:Object):void {
+	 	 }
+		 private function onDoubleClick( event:MouseEvent=null ):void {
+		 	dragList1.includeInLayout =false;
+		 	dragList1.visible = false;
+          	if( editPanel.numChildren > 0 ) {
+          		editPanel.removeAllChildren();
+          		editConParent.visible = false;
+          	}
+           	editConParent.visible = true;
+          	editPanel.label = " ADD Optional Value "
+          	var Proppreset:Proppresetstemplates = Proppresetstemplates(dropList1.selectedItem)
+          	var selectedType:String = GetVOUtil.getPropertiesPresetFieldType(Proppreset.propertypresetFK);
+          	switch( selectedType ) {
+          		case "textfield":
+					textContentCreation( editPanel );
+				break;
+				case "radio":
+					comboContentCreation( editPanel );
+				break;
+				case "popup":
+					comboContentCreation( editPanel );
+				break;
+				case "checkbox":
+					comboContentCreation( editPanel );
+				break;
+				case "date":
+					fieldLabelCreation( editPanel );
+				break;
+				case "numstepper":
+					fieldLabelCreation( editPanel );
+				break;
+				default:
+				break;
+          	}
+         }
+
+		 private var textEditCon:TextEditContent
+         private function textContentCreation( con:UIComponent ):void {
+          	textEditCon = new TextEditContent();
+          	con.addChild( textEditCon );
+          	textEditCon.parenRef = dropList1.selectedItem;
+          	textEditCon.parenList = dropList1;
+          	textEditCon.addEventListener( Event.CLOSE, onClose,false,0,true );
+          	textEditCon.addEventListener( Event.CLEAR, onClear,false,0,true );
+         }
+         private var fieldLabel:FieldLabelContent; 
+         private function fieldLabelCreation(con:UIComponent ):void{
+         	fieldLabel = new FieldLabelContent();
+          	con.addChild( fieldLabel );
+          	fieldLabel.parenRef = dropList1.selectedItem;
+          	fieldLabel.parenList = dropList1;
+          	fieldLabel.addEventListener( Event.CLOSE, onClose ,false,0,true);
+          	fieldLabel.addEventListener( Event.CLEAR, onClear,false,0,true );
+         }
+		 private var comboEditCon:ComboEditContent;
+         private function comboContentCreation( con:UIComponent  ):void {
+          	comboEditCon = new ComboEditContent();
+          	con.addChild( comboEditCon );
+          	comboEditCon.parentObj = dropList1.selectedItem;
+          	comboEditCon.parentList = dropList1;
+          	var str:String = String( dropList1.selectedItem.fieldOptionsValue )
+          	var aValues:Array = str.split(",") 
+          	var arrayColl:ArrayCollection = new ArrayCollection(aValues) ;
+			comboEditCon.dp = arrayColl
+          	comboEditCon.addEventListener( Event.CLOSE, onClose ,false,0,true);
+          	comboEditCon.addEventListener( Event.CLEAR, onClear ,false,0,true);
+        }
+
+        private function UpdatePropPresetTemp(event:MouseEvent) :void {
+        	
+        	model.currentPresetTemplates = curPropPresetTemp;
+        	var handler:IResponder = new Callbacks(PresetUpdateResult,fault);
+        	var updateEvt:PropPresetTemplateEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_BULK_UPDATE_PROPPRESET_TEMPLATE,handler);
+        	model.updateTemplateColl =  propPresetTempColl;
+        	CairngormEventDispatcher.getInstance().dispatchEvent( updateEvt );
+        	PopUpManager.removePopUp(this)
+        	
+        }
+        private function PresetUpdateResult(data:Object):void {
+        	var createEvt:PresetTemplateEvent = new PresetTemplateEvent(PresetTemplateEvent.EVENT_UPDATE_PRESET_TEMPLATE);
+        	curPropPresetTemp.presetTemplateLabel = PresetTable_txt.text;
+        	curPropPresetTemp.propertiesPresetSet = data as ArrayCollection
+        	createEvt.preTemplate = curPropPresetTemp
+        	CairngormEventDispatcher.getInstance().dispatchEvent(createEvt);
+        }
+        public function onDelete() :void {
+        	Alert.show('Do U Really Want To Delete "'+dropList1.selectedItem.fieldLabel+'" ?', 'Delete Label', Alert.OK  | Alert.CANCEL, null, deleteCheck );
+            datagrid2.visible = false;
+        	datagrid2.includeInLayout= false
+        }
+		private function deleteCheck( event:CloseEvent ):void {
+				if( event.detail == Alert.OK ) {
+					datagrid2.visible = false;
+		        	datagrid2.includeInLayout= false
+		         	var index:int =  dropList1.selectedIndices.toString();
+		         	if(!createNew && dropList1.selectedItem != null) {
+			         	var Proppreset:Proppresetstemplates = getSelectedPropPresetTemp ( Proppresetstemplates(dropList1.selectedItem).propertypresetFK )
+			         	var deletEvt:PropPresetTemplateEvent = new PropPresetTemplateEvent(PropPresetTemplateEvent.EVENT_DELETE_PROPPRESET_TEMPLATE_BYID);
+			         	deletEvt.prop_PesetTemp = Proppreset
+						CairngormEventDispatcher.getInstance().dispatchEvent(deletEvt);
+						propPresetTempColl.removeItemAt(index);
+						var deleteProp:Proppresetstemplates = new Proppresetstemplates();
+						deleteProp.propertypresetFK = Proppreset.propertypresetFK;
+						deleteProp.presetstemplatesFk = Proppreset.presetstemplatesFk
+						deleteProp.fieldLabel = Proppreset.fieldLabel
+						deleteProp.fieldOptionsValue = Proppreset.fieldOptionsValue
+						propertiesPresetsArr.addItem(deleteProp);
+		         	}else if(createNew && dropList1.selectedItem != null) {
+		         		var temp:Proppresetstemplates = Proppresetstemplates(propPresetTempColl.getItemAt(index));
+		         		propPresetTempColl.removeItemAt(index);
+		         		propertiesPresetsArr.addItem(temp);
+
+		         	}
+				}
+		}
+		private function getSelectedPropPresetTemp(id:int) :Proppresetstemplates {
+        	var propPresetTemp:Proppresetstemplates;
+        	for(var i:int =0;i<propPresetTempColl.length;i++){
+	 			 propPresetTemp = Proppresetstemplates( propPresetTempColl[i] )
+	 			 if(propPresetTemp.propertypresetFK== id){
+	 			 	break
+	 			 }
+	 		}
+	 		return propPresetTemp;
+        }
+		public function myLabelFunc(item:Impremiur):String {
+         	return item.impremiurLabel; 
+        }
+        private function onClose( event:Event ):void {
+         }
+		private function onClear( event:Event ):void {
+        }
+        private function BackToMianStage( event:Event ):void {
+        	datagrid2.includeInLayout = false;
+        	datagrid2.visible = false;
+        	if(editPanel.numChildren>0){
+        		editPanel.removeAllChildren();
+        		editConParent.visible = false;
+        	}
+        	
+        }
+        private function createNewImp(event:MouseEvent) :void {
+        	    var createCompany:Companies = new Companies();
+				createCompany.companycode = String(ImpremiurLabel.text).toUpperCase().substr(0,5);
+				createCompany.companyname = ImpremiurLabel.text;
+				createCompany.companylogo = new ByteArray();
+				createCompany.companyCategory ="IMPRIMEUR"
+				createCompany.companyCountry = PersonCountry.text;
+				createCompany.companyAddress = PersonAddress.text
+				createCompany.companyPostalCode =  PersonPostalCode.text
+				createCompany.companyCity = PersonCity.text;
+				
+        	    
+        	    var handler:IResponder = new Callbacks(getPersonDetails,perfault);
+        	    var cmpEvent:CompaniesEvent = new CompaniesEvent(CompaniesEvent.EVENT_CREATE_COMPANIES,handler)
+				cmpEvent.companies = createCompany;
+				cmpEvent.dispatch();
+			}
+			private function getPersonDetails(data : Object) : void { 
+				var newCompany:Companies = Companies((data.message.body))
+				
+				var newPerson:Persons = new Persons();
+				newPerson.personFirstname =personFirst.text;
+				newPerson.personLastname =personLast.text;
+				newPerson.personEmail =personEmail.text;
+				newPerson.personLogin = PersonLogin.text;
+				newPerson.personPassword =PersonPassword.text;
+				newPerson.personMobile =PersonMobile.text;
+				newPerson.personPhone =PersonTele.text;
+				newPerson.personPosition = PersonPosition.text;
+				newPerson.personAddress = PersonAddress.text
+				newPerson.personPostalCode = PersonPostalCode.text
+				newPerson.personCity =PersonCity.text;
+				newPerson.personCountry = PersonCountry.text;
+				newPerson.companyFk = newCompany.companyid;
+				
+				var handler:IResponder = new Callbacks(personresult,perfault);
+				var createEvt:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CREATE_SINGLE_PERSONS,handler)
+				createEvt.persons = newPerson
+				createEvt.dispatch();
+				
+				var handlerGroup:IResponder = new Callbacks(createGroupPerson,perfault);
+				var newGroups :Groups = new Groups();
+				newGroups.groupLabel = newCompany.companyname;
+				newGroups.authLevel="ROLE_IMP";
+				var createGroups:GroupsEvent = new GroupsEvent(GroupsEvent.EVENT_CREATE_GROUPS,handlerGroup);
+				createGroups.groups = newGroups;
+				createGroups.dispatch();
+			}
+			private function createGroupPerson(data : Object) : void { 
+				var createdGroupPer:Groups =Groups(data.message.body);
+				var gEvent:GroupPersonsEvent = new GroupPersonsEvent(GroupPersonsEvent.EVENT_CREATE_GROUPPERSONS);
+				var newGroupPerson:GroupPersons = new GroupPersons();
+				newGroupPerson.groupFk = createdGroupPer.groupId
+				newGroupPerson.personFk = model.createdPerson.personId;
+				gEvent.groupPersons = newGroupPerson;
+				gEvent.dispatch();
+			}
+			private function personresult(data : Object) : void { 
+				var newImpremiur:Impremiur = new Impremiur();
+				newImpremiur.impremiurLabel = ImpremiurLabel.text;
+				var newImpHandler:IResponder = new Callbacks(newImpreResult,perfault);
+				var createImpEvt:ImpremiurEvent = new ImpremiurEvent(ImpremiurEvent.EVENT_CREATE_IMPREMIUR,newImpHandler);
+				createImpEvt.impremiur = newImpremiur;
+				createImpEvt.dispatch();
+				
+				
+			}
+			private function newImpreResult(data : Object) : void { 
+				var createdImpre:Impremiur =Impremiur(data.message.body);
+				createdImpre.presetstemplateSet = new ArrayCollection();
+				ImpArr.addItem(createdImpre);
+				model.ImpremiurCollection.addItem(createdImpre);
+				perseonReset();
+				
+				newImpPOPUP.visible = false;
+				newImpPOPUP.includeInLayout= false
+			}
+			public function perseonReset():void {
+				personFirst.text = "";
+				personLast.text = "";
+				personEmail.text = "";
+				PersonLogin.text = "";
+				PersonPassword.text = "";
+				PersonMobile.text = "";
+				PersonTele.text = "";
+				PersonPosition.text = "";
+				PersonAddress.text = "";
+				PersonPostalCode.text = "";
+				PersonCity.text = "";
+				PersonCountry.text = "";
+			}
+			public function perfault(faultEvt:Object):void {
+	 			
+	    	}
+	    	
+        ]]>
+	 </mx:Script>
+	 <mx:VBox width="100%" height="{parent.height-100}" top="0" creationComplete="ImpremiurResult()"> 
+	 	<mx:Canvas width="100%" height="100%">
+				<mx:VBox width="100%" height="100%" verticalGap="0">
+					<mx:HBox width="100%" height="30" id="header" styleName="technicalFormHeader">
+							<mx:Button toggle="true" styleName="chartViewerButton"/>
+							<mx:Label id="impHeader" styleName="menuText"  color="#959494" />
+							<mx:Spacer width="100%" />
+							<mx:Button id="savebt" label="Save" styleName="saveBtn"  click="UpdatePropPresetTemp(event)" />			
+					</mx:HBox>
+					
+		      		<mx:VBox width="100%" height="100%" id="avCont" styleName="technicalFormContainer" 
+		      			paddingBottom="0" paddingLeft="5" paddingRight="5" paddingTop="10">
+						<mx:HBox id="butHBox" styleName="bgBorderContainer"  
+							width="100%"  paddingBottom="17" verticalScrollPolicy="off" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+							
+							<mx:VBox styleName="bgBorderContainer" width="100%" height="100%"
+								paddingBottom="0" paddingLeft="5" paddingRight="5" paddingTop="10">
+									
+								 <mx:VBox id="datagrid1"    width="100%"  visible="false" includeInLayout="false">
+									   <mx:HBox width="100% ">
+										   	<mx:Label name="PresetTable" text="PresetTable" />
+										   	<mx:TextInput id="PresetTable_txt"  minWidth="200" />
+									   </mx:HBox>
+									   <mx:HBox id="editCon">
+											<mx:DataGrid 
+									        	dropEnabled="true" 
+									        	doubleClickEnabled="true"
+									            id="dropList1"   sortableColumns="false"
+									            dataProvider="{propPresetTempColl}" 
+									            width="{width-50}" itemClick="doubleClickHandler(event);">
+									            <mx:columns>
+									                <mx:DataGridColumn headerText="Id" dataField="propertiespresetsFk" width="30" labelFunction="getPropertyId"/>
+									                <mx:DataGridColumn headerText="Field Label" dataField="fieldLabel"/>
+									                <mx:DataGridColumn headerText="Default Value" dataField="fieldDefaultValue"/>
+									                <mx:DataGridColumn headerText="Options Value" dataField="fieldOptionsValue"/>
+									                <mx:DataGridColumn id="ItemRen" width="100" headerText="FieldType" dataField="fieldType">
+									                	<mx:itemRenderer>
+									                		<mx:Component>
+									                		<mx:HBox paddingLeft="10" paddingRight="10">
+									                			<mx:Script>
+									                				<![CDATA[
+									                					import com.adams.dt.business.util.GetVOUtil;
+									                					import com.adams.dt.model.vo.Proppresetstemplates;
+									                				]]>
+									                			</mx:Script>
+									                			<mx:Image left="0" source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(Proppresetstemplates( data ).propertypresetFK)]}"   width="50"/>
+									                			<mx:Button styleName="deleteIcon"  click="outerDocument.onDelete()" right="0"/>
+									                		</mx:HBox>
+									                		</mx:Component>
+									                	</mx:itemRenderer>
+									                </mx:DataGridColumn>
+												</mx:columns>            
+									        </mx:DataGrid>
+									   </mx:HBox>
+								        
+								        <mx:HBox>
+										  <mx:Button name="ButtAdd" label="Add"  enabled="{propertiesPresetsArr.length>0?true:false}" click="{datagrid2.visible = true,datagrid2.includeInLayout = true}"/>
+										  <mx:Button name="ButtEdit" id="BtnEdit" label="Edit" enabled="true" click="onDoubleClick(event)"/>
+										 <!-- <mx:Button name="ButtDel" label="Delete"  click="deletePropPresetTemp(event)"/>-->
+										</mx:HBox>
+							     </mx:VBox>
+						     	
+						     	<mx:VBox id="editConParent"  
+								     	paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" dropShadowEnabled="true"
+								 	   visible="false" includeInLayout="false"  verticalCenter="0" horizontalCenter="0"  
+								 	    height="{avCont.height-datagrid1.height-butHBox.height-40}" width="{width-50}" >
+						    		<mx:Canvas id="editPanel" top="0" bottom="0" width="{width-60}">
+						    		</mx:Canvas>
+						    	</mx:VBox>
+						    		
+					     		 <!--<mx:Canvas id="footer" width="100%" backgroundColor="#262626" height="50" bottom="0">
+									<mx:Button id="savebt" label="Save" right="15" verticalCenter="0"  click="UpdatePropPresetTemp(event)" />			
+								</mx:Canvas>-->
+			      		</mx:VBox>		      		
+					</mx:VBox>
+		      	</mx:VBox>		
+	 	</mx:Canvas>
+     </mx:VBox>
+     
+     	 <mx:Canvas id="datagrid2" styleName="bgBorderContainer" verticalCenter="0" horizontalCenter="100"
+		     	paddingBottom="5" paddingLeft="85" paddingRight="5" paddingTop="5" dropShadowEnabled="true"
+		 	   visible="false" includeInLayout="false" width="500" height="300">
+		 	   
+		 	 <mx:Box width="20" height="20" top="3" right="3" buttonMode="true"
+				  backgroundColor="black" horizontalAlign="center" verticalAlign="middle" >
+				<mx:Button id="closeBtn" styleName="closeButton"    click="{datagrid2.visible = false,datagrid2.includeInLayout= false}"/>
+			 </mx:Box>
+				<mx:DataGrid  top="20" 
+		 	   allowMultipleSelection="true" 
+	           dragEnabled="true" 
+	           dropEnabled="true" 
+	           dragMoveEnabled="true" 
+	           dataProvider="{propertiesPresetsArr}" 
+	           left="0" right="0" bottom="0"  sortableColumns="false"
+	           id="dragList1"  >
+	            <mx:columns>
+                <mx:DataGridColumn headerText="Field Label" dataField="fieldLabel"/>
+                <mx:DataGridColumn headerText="OptionsValue" dataField="fieldOptionsValue"/>
+                <mx:DataGridColumn id="ItemRen1" headerText="FieldType"  width="100" dataField="field_type">
+            	<mx:itemRenderer>
+            		<mx:Component>
+            		<mx:HBox paddingLeft="10" paddingRight="10">
+            			<mx:Script>
+            				<![CDATA[
+            					import com.adams.dt.business.util.GetVOUtil;
+            					import com.adams.dt.model.vo.Proppresetstemplates;
+            					
+            				]]>
+            			</mx:Script>
+            			<mx:Image source="{ ImageResourceEmbedClass[GetVOUtil.getPropertiesPresetFieldType(Proppresetstemplates( data ).propertypresetFK)]}" />
+            		</mx:HBox>
+            		</mx:Component>
+            	</mx:itemRenderer>
+            </mx:DataGridColumn>
+			</mx:columns>           
+	        	</mx:DataGrid>
+	     	</mx:Canvas>
+	     	
+	     	
+	     	<mx:Canvas id="newImpPOPUP" styleName="bgBorderContainer" verticalCenter="0" horizontalCenter="100"
+		     	paddingBottom="5" paddingLeft="85" paddingRight="5" paddingTop="5" dropShadowEnabled="true"
+		 	   visible="false" includeInLayout="false" width="500" height="500">
+		 	   
+		 	 <mx:Box width="20" height="20" top="3" right="3" buttonMode="true"
+				  backgroundColor="black" horizontalAlign="center" verticalAlign="middle" >
+				<mx:Button id="NewCloseBtn" styleName="closeButton" click="{newImpPOPUP.visible = false,newImpPOPUP.includeInLayout= false}"/>
+			 </mx:Box>
+			 
+		 <mx:Canvas width="100%" top="20" bottom="5" left="5" right="5" styleName="technicalFormHeader">
+		 	<mx:Label top="10" horizontalCenter="0" text="New Imprimeur" styleName="menuText" fontSize="14" /> 
+			<mx:Form  top="30" horizontalCenter="0"  bottom="0" >
+			<mx:FormItem label="ImpremiurLabel">
+				<mx:TextInput   id="ImpremiurLabel"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('firstName')}">
+				<mx:TextInput id="personFirst"   />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('lastName')}" >
+				<mx:TextInput id="personLast"  />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('emailAddress')}">
+				<mx:TextInput  id="personEmail" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personLogin')}">
+				<mx:TextInput  id="PersonLogin" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPassword')}">
+				<mx:TextInput  id="PersonPassword" displayAsPassword="true" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personMobile')}">
+				<mx:TextInput id="PersonMobile" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personTele')}">
+				<mx:TextInput id="PersonTele" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPosition')}">
+				<mx:TextInput id="PersonPosition" />
+			</mx:FormItem>
+		   <mx:FormItem label="{model.loc.getString('personAddress')}">
+				 <mx:TextInput id="PersonAddress" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPostalCode')}">
+				<mx:TextInput id="PersonPostalCode" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personCity')}">
+				<mx:TextInput id="PersonCity" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personCountry')}">
+				<mx:TextInput id="PersonCountry" />
+			</mx:FormItem> 
+			<mx:FormItem >
+				<mx:Button id="createImp" label="create" click="createNewImp(event)" />
+			</mx:FormItem> 
+			
+			</mx:Form>
+			
+			</mx:Canvas>
+	     	</mx:Canvas>
+</mx:TitleWindow>

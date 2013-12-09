@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:view="com.adams.dt.view.components.*"
+		xmlns:mediators="com.adams.dt.view.mediators.*" 
+		xmlns:components="com.adams.swizdao.views.components.*" 
+		xmlns:scheduler="com.adams.dt.view.components.scheduler.*"
+		xmlns:autocomplete="com.adams.dt.view.components.autocomplete.*" clipAndEnableScrolling="true">	
+	<s:states>
+		<s:State name='General' />
+		<s:State name='NavigateComment'/>
+		<s:State name='PersonSelection'/> 
+		<s:State name='DeadlineMessage'/>
+		<s:State name='ShowPlanning'/>
+	</s:states>
+	<s:Scroller height="100%" width="100%" >
+		<s:Group>
+			<s:Form id="genralForm" width="100%">
+				<s:layout>
+					<s:FormItemLayout>
+						<s:constraintColumns>
+							<s:ConstraintColumn id="col1" width="300"/>
+							<s:ConstraintColumn id="col2" width="270"/>
+							<s:ConstraintColumn id="col3" width="210"/>
+							<s:ConstraintColumn id="col4" width="210"/>
+						</s:constraintColumns>         
+						<s:constraintRows>
+							<s:ConstraintRow id="row1" baseline="maxAscent:10"/>
+							<s:ConstraintRow id="row2"/>
+							<s:ConstraintRow id="row3"/>
+							<s:ConstraintRow id="row4"/>
+							<s:ConstraintRow id="row5"/>
+							<s:ConstraintRow id="row6"/>
+						</s:constraintRows>  
+					</s:FormItemLayout>
+				</s:layout>    
+				<s:FormItem label="Department:" left="col1:0" right="col1:0" baseline="row1:0" styleName="stackedForm">
+					<s:Label id="domainLbl" width="180" />
+				</s:FormItem>
+				<s:FormItem label="Reference :" styleName="stackedForm" left="col1:0" right="col1:0" baseline="row2:0">
+					<autocomplete:PropertyCompleteView id="refId" width="180" labelField="projectName" enabled="false"
+													   skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<!--<s:FormItem label="Requested{'\n'}deadline :" textAlign="left" left="col1:-13" right="col1:0" baseline="row3:0">-->
+				<s:FormItem label="Requested deadline :" styleName="stackedForm" textAlign="left" left="col1:0" right="col1:0" baseline="row3:0">
+					<s:HGroup width="100%">
+						<view:TimeController  id="requestedDeadLine"/>
+						<s:VGroup>
+							<s:Button label="accepted" id="acceptBtn"  includeInLayout="{acceptBtn.visible}"/>
+							<components:NativeButton label="rejected"  id="rejectedBtn" includeInLayout="{rejectedBtn.visible}"/>
+						</s:VGroup>
+					</s:HGroup>
+				</s:FormItem>
+				
+				<s:FormItem label="Commentaire :" styleName="stackedForm"  left="col1:0" right="col3:0" top="row4:0" bottom="row5:0" baseline="row4:0">
+					<s:TextArea id="previousComments" width="520" heightInLines="4" selectable="false" editable="false"/>
+				</s:FormItem>
+				<s:Group width="100%" height="107" left="col1:0" right="col1:0" baseline="row6:0">
+					<s:HGroup width="100%" verticalAlign="middle"> 
+						<s:Label text="Status" styleName="headerLabel" fontSize="14" left="0" top="0"/>
+						<components:NativeButton id="standByBtn" styleName="standBy" top="0" left="54"/>
+						<s:Spacer width="100%" />
+						<components:NativeButton label="PreviousTask" id="previousNavigationId" toolTip="{previousNavigationId.label}" includeInLayout="{previousNavigationId.visible}"/>
+						<components:NativeButton label="NextTask" id="nextNavigationId" toolTip="{nextNavigationId.label}" includeInLayout="{nextNavigationId.visible}"/>
+					</s:HGroup>
+					<s:HGroup width="100%" top="35">
+						<s:HGroup id="statusGroup" width="100%" height="100%" gap="10" horizontalAlign="center" verticalAlign="middle"	>
+							<components:NativeButton label="WAITING" id="waiting" styleName="statusNormalIcon" toolTip="{waiting.label}"/>
+							<components:NativeButton label="IN PROGRESS" id="in_progress" styleName="statusNormalIcon" toolTip="{in_progress.label}"/>
+							<components:NativeButton label="IN CHECKING" id="in_checking" styleName="statusNormalIcon" toolTip="{in_checking.label}"/>
+							<components:NativeButton label="IN DELIVERY" id="in_delivery" styleName="statusNormalIcon" toolTip="{in_delivery.label}"/>
+						</s:HGroup>
+					</s:HGroup>
+					<s:VGroup left="117" bottom="0">
+						<components:NativeButton label="Photoshop" id="in_photoshop" styleName="statusNormalIcon" toolTip="{ in_photoshop.label }"/>
+						<components:NativeButton label="Illustrator" id="in_illustrator" styleName="statusNormalIcon" toolTip="{ in_illustrator.label }"/>
+					</s:VGroup>
+				</s:Group>
+				<!--Col 2-->
+				<s:FormItem label="Client :" styleName="stackedForm" left="col2:0" right="col2:0" baseline="row1:0" >
+					<autocomplete:PropertyCompleteView id="brand" width="180" labelField="fieldOptionsValue" enabled="false"
+													   skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<s:FormItem label="Task :" styleName="stackedForm" left="col2:0" right="col2:0" baseline="row2:0">
+					<autocomplete:PropertyCompleteView id="department" width="180" labelField="fieldOptionsValue" forceOpen="true"
+													   skinClass="com.adams.dt.view.PropertyCompleteSkin"/>
+				</s:FormItem>
+				<s:FormItem label="Validated deadline:" styleName="stackedForm"  
+							left="col2:0" right="col2:0" baseline="row3:0" 
+							visible="{validateDeadLine.visible}" includeInLayout="{validateDeadLine.visible}">
+					<view:TimeController id="validateDeadLine" />
+				</s:FormItem>
+				<s:FormItem visible="{!validateDeadLine.visible}" styleName="stackedForm"  left="col2:0" right="col2:0" baseline="row3:0" 
+							includeInLayout="{!validateDeadLine.visible}">
+					<s:Label text="Validated Deadline not accepted yet" color="red" verticalAlign="middle"/>
+				</s:FormItem>
+				
+				<!--Col 3-->
+				<s:FormHeading label="Shift 1" left="col3:0" right="col3:0" baseline="row1:0"/>
+				<s:FormItem label="Operator 1" id="label_commercial" left="col3:0" right="col3:0" baseline="row2:0" 
+							styleName="stackedForm">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="chp_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="chp"/>
+				</s:FormItem>
+				<s:FormItem label="Operator 2" id="label_commercial1" left="col3:0" right="col3:0" baseline="row3:0" 
+							styleName="stackedForm">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="industry_estimate" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="ind1"/>
+				</s:FormItem>
+				<s:FormItem label="Co Ordinator" id="label_product_manager" left="col3:0" right="col3:0" baseline="row4:0" 
+							styleName="stackedForm">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="cpp_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="cpp"/>
+				</s:FormItem>
+				<s:FormItem label="APM" id="label_chef_project_pack" styleName="stackedForm" left="col3:0" right="col3:0" baseline="row5:0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="agn_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="agn"/>
+				</s:FormItem>
+				<s:FormItem label="Files :" styleName="stackedForm" left="col3:0" right="col4:0" baseline="row6:0">
+					<s:Group id="fileTile" width="380" height="89" />	
+				</s:FormItem>
+				<!--Col 4-->
+				<s:FormHeading label="Shift 2" left="col4:0" right="col4:0" baseline="row1:0"/>
+				<s:FormItem label="Operator 1" id="label_creation_agency" styleName="stackedForm" left="col4:0" right="col4:0" baseline="row2:0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="comm_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="comm"/>
+				</s:FormItem>
+				<s:FormItem label="Operator 2" id="label_creation_agency1" styleName="stackedForm" left="col4:0" right="col4:0" baseline="row3:0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="industry_supplier" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="ind2"/>
+				</s:FormItem>
+				<s:FormItem label="Co Ordinator" id="label_industry_supplier" styleName="stackedForm" left="col4:0" right="col4:0" baseline="row4:0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="ind_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="ind"/>
+				</s:FormItem>
+				<s:FormItem label="APM" id="label_impremiur" styleName="stackedForm" left="col4:0" right="col4:0" baseline="row5:0">
+					<s:layout><s:HorizontalLayout /></s:layout>
+					<s:TextInput id="imp_validation" maxChars="250" styleName="disabledText"  
+								 bottom="0" left="0" width="100%" />
+					<components:NativeButton styleName="personSelection" id="imp"/>
+				</s:FormItem>
+			</s:Form>
+		</s:Group>
+	</s:Scroller>
+	<s:VGroup width="100%" gap="0" bottom="-155" bottom.ShowPlanning="0">
+		<s:BorderContainer styleName="projectHeaderBC" borderVisible="false" width="140" id="planningHeader" height="31" buttonMode="true">
+			<s:Label text="Planning" styleName="headerLabel" fontSize="14" verticalCenter="0" horizontalCenter="0"/>
+		</s:BorderContainer>
+		<s:BorderContainer width="100%" height="100%" >
+			<scheduler:Scheduler id="scheduler" left="10" right="10" top="10" bottom="10" rowsToShow="3" rowHeight="40" />	
+		</s:BorderContainer>
+	</s:VGroup>
+	<s:TitleWindow id="requestDeadline" title="Deadline Suggestion" includeIn="DeadlineMessage" verticalCenter="0" horizontalCenter="0"> 
+		<mediators:DeadlineMessageViewMediator id='deadline' genralDeadlineMessage="true" skinClass='com.adams.dt.view.DeadlineMessageSkinView' homeState="{ currentState }" includeIn='DeadlineMessage' width='100%' height='100%'/> 
+	</s:TitleWindow>
+	<mediators:PersonSelectionViewMediator id='personselection' includeIn="PersonSelection" 
+										   horizontalCenter="0" verticalCenter="0"
+										   skinClass='com.adams.dt.view.PersonSelectionSkinView' />
+	
+	<s:TitleWindow id="navigateCommentWindow" title="Confirmation" includeIn="NavigateComment" 
+				   horizontalCenter="0" verticalCenter="0"> 
+		<mediators:NavigateCommentViewMediator id='navigatecommentId' skinClass='com.adams.dt.view.NavigateCommentSkinView'/> 
+	</s:TitleWindow>
+</s:Skin>

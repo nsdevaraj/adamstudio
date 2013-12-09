@@ -1,0 +1,42 @@
+<html>
+	<head>
+		<title>Flex Book</title>
+		<script type="text/javascript" src="swfobject.js"></script>
+		<style type="text/css">
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+				background-color: #000000;
+			}
+		</style>
+	</head>
+	<body onLoad="window.focus();" scroll="no">
+
+		<table width='100%' border='0' cellpadding='0' cellspacing='0' height='100%'>
+		<tr >
+			<td colspan='2'height="98%" bgcolor="#000000"  style="vertical-align:top;" id="flashcontent" ><p align='center'><br><br><font color="#ffffff"><b>Flash Plugin has to be installed.<br> <a href='http://fpdownload.macromedia.com/get/flashplayer/current/install_flash_player.exe'>Click</a> here to install</b></font></p></td>
+		</tr>
+		<tr bgColor='#ffffff'>
+		<td style="vertical-align:top;">
+		<font face="Verdana, Arial, Helvetica, sans-serif" size="1">Copyright &copy; 2009, Brennus Inc. All rights reserved.</font>
+		</td>
+		<td align='right' style="vertical-align:top;"><font face="Verdana, Arial, Helvetica, sans-serif" size="1">
+		Powered by <font color='#0000ff'><a href='http://www.adams-studio.com/'>Brennus group Inc.</a></font></font>
+		</td>
+		</tr>
+		</table>
+		<script type="text/javascript">
+		var url = document.location.toString();
+			//var url = "http://localhost:8181/DTFlex/ExternalMail/flexexternalmail.html?msgId=10";
+			var rootFile = url.split(".html")[1];
+		    var taskId = url.split("msgId=")[1];
+			var htmltaskid = taskId;
+			//alert("htmltaskid :"+htmltaskid);
+		   var so = new SWFObject("flexexternalmail.swf", "FBook", "100%", "100%", "9", "#000000");
+		   so.addVariable("htmlTaskId", taskId);
+
+		   so.write("flashcontent");
+		</script>
+	</body>
+</html>

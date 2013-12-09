@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="100%" height="100%"
+		 dataChange="dataChangeAction( event )"
+		 creationComplete="onCreationComplete( event )"
+		 remove="onRemove( event )"
+		 removed="onRemoved( event )"
+		 toolTip="{ data.file.name }">
+	<fx:Declarations>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[			
+			import mx.events.FlexEvent;
+			
+			private function dataChangeAction( evt:Event ):void
+			{
+				test.setProgress(Number( data.uploadPercentage ), 100);
+			}
+			private function onClick( evt:MouseEvent ):void
+			{
+				if( evt.currentTarget is Image ){
+					Object(owner).renderSignal.dispatch( NativeTileList.SHOW_ITEM, data );
+				}
+				if( evt.currentTarget is Button ){
+					if( data.uploadStatus == "Done" ){
+						Object( owner ).renderSignal.dispatch( NativeTileList.DELETE_INNER_ITEM, data );
+					}
+					else{
+						Object( owner ).renderSignal.dispatch( NativeTileList.CANCEL_ITEM, data );
+					}
+				}
+			}
+			protected function onCreationComplete( event:FlexEvent ):void{
+			}
+			protected function onRemove( event:FlexEvent ):void{
+			}
+			protected function onRemoved( event:Event ):void{
+			}
+
+		]]>
+	</fx:Script>
+	<mx:Image id="fileImg" source="{ data.img }"
+			  top="0" bottom="15" 
+			  width="100%" maintainAspectRatio="true" 
+			  verticalAlign="middle" horizontalAlign="center"
+			  visible="{((data.uploadStatus == 'Done')?true:false)}" 
+			  click=" onClick( event )"/>
+	<mx:ProgressBar id="test" 
+					mode="manual"
+					minimum="0" maximum="100"
+					width="40" fontSize="9" fontWeight="bold"
+					labelPlacement="center" label="{data.uploadPercentage +'%'}"
+					verticalCenter="-5" horizontalCenter="0"
+					visible="{((data.uploadStatus == 'Not Done')?true:false)}" />
+		
+	<mx:Label text="{data.filename.substring(0,6)}" fontSize="10" 
+			  width="100%" height="15" bottom="0"/>
+	<mx:Button width="15" height="15" right="0"
+			   click="onClick( event )"
+			   toolTip="Remove File"/>
+</mx:Canvas>

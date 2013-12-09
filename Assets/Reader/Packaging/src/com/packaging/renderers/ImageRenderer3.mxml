@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+			  clipAndEnableScrolling="false"
+				depth="0" depth.hovered="1">
+	
+	<fx:Declarations>
+		<mx:CurrencyFormatter id="cf"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			private function downloadFiles(url:String):void{
+				//var urlReq:URLRequest = new URLRequest(url)
+				//navigateToURL(urlReq);
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="hovered" />
+		<s:State name="selected"/>
+	</s:states>
+ 
+	<s:Rect width="200" right="0" top="0" bottom="0" height="100%">
+		<s:fill>
+			<s:SolidColor color="#ffffff" color.hovered="#ffffff" />
+		</s:fill>
+	</s:Rect>
+	
+	<mx:Image id="img" source="{data.image}"   
+			  width="100%" height="100%"   />
+	
+	  
+ 
+
+</s:ItemRenderer>

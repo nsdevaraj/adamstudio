@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	width="100%"
+	height="100%"
+	xmlns:view="com.docktrack.view.*"
+	xmlns:comp="com.adams.dt.view.components.*" >
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.controls.Alert;
+			import com.adams.dt.business.util.Utils;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import com.adams.dt.model.vo.EventStatus;
+			
+			import com.adams.dt.event.WorkflowstemplatesEvent;
+			import com.adams.dt.model.vo.Status;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Profiles;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.ModelLocator;
+			 
+			
+			private var _eventName:Object;
+			public function set eventName (value:Object):void
+			{
+				_eventName = value;
+			}
+			[Bindable]
+			public function get eventName():Object
+			{
+				return _eventName;
+			} 		    
+			public function getTaskComment(eventName:Object):String
+			{
+				var taskdetails:String = '';
+				return taskdetails;
+			} 
+		]]>
+	</mx:Script>
+	<mx:Canvas top="10"	left="0" right="0" bottom="10"> 
+			<mx:VBox width="100%" height="100%">
+				<mx:Form width="100%" height="100%" >
+					<mx:FormItem label="Domain :">
+						<mx:Text text="{eventName.Domain}"/>	
+					</mx:FormItem> 
+					<mx:FormItem label="Project Name :">
+						<mx:Text text="{GetVOUtil.getProjectObject( eventName.ProjectId).projectName}"/>	
+					</mx:FormItem>
+					<mx:FormItem label="Category :">
+						<mx:Text text="{eventName.EventName}"/>	
+					</mx:FormItem> 				
+					<mx:FormItem label="Type/Task Label :">
+						<mx:Text text="{eventName.TaskLabel}"/>	
+					</mx:FormItem>
+					<mx:FormItem label="Date :">
+						<mx:Text text="{eventName.StartDate}"/>	
+					</mx:FormItem>	
+					<mx:FormItem label="Profile :">
+						<mx:Text text="{eventName.Profile}"/>	
+					</mx:FormItem>				
+					<mx:FormItem label="Person Name :">
+						<mx:Text text="{GetVOUtil.getPersonObject( eventName.PersonId).personFirstname+' , '+GetVOUtil.getPersonObject( eventName.PersonId).personLastname}"/>	
+					</mx:FormItem>
+					<mx:FormItem label="Information :" width="90%" height="100%">
+						<mx:TextArea width="100%" height="100%" text="{eventName.Details}"
+							styleName="textAreaReader" editable="false" wordWrap="true"/>
+					</mx:FormItem>					
+				</mx:Form>
+			</mx:VBox> 
+	</mx:Canvas>
+</mx:Canvas>

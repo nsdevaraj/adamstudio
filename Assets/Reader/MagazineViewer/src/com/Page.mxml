@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="100%" height="100%">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import spark.components.Button;
+			
+			public var assetsXML:XML = new XML();
+			
+			public var currentPageState:String = "";
+			
+			private var _source:String = "";
+			
+			public function get source():String
+			{
+				return _source;
+			}
+
+			public function set source(value:String):void
+			{
+				_source = value;
+				img.source = value;
+			}
+
+			public function createAssetsInterface():void
+			{
+				var i:int;
+				assetsLayer.removeAllElements();
+				for(i=0;i<assetsXML.length();i++)
+				{
+					var but:Button = new Button();
+					if(currentPageState == 'portrait'){
+						but.width = Number(assetsXML.Asset.portrait.@width);
+						but.height = Number(assetsXML.Asset.portrait.@height);
+						but.x = Number(assetsXML.Asset.portrait.@x);
+						but.y = Number(assetsXML.Asset.portrait.@y);
+					}
+					else if(currentPageState == 'landscape'){
+						but.width = Number(assetsXML.Asset.landscape.@width);
+						but.height = Number(assetsXML.Asset.landscape.@height);
+						but.x = Number(assetsXML.Asset.landscape.@x);
+						but.y = Number(assetsXML.Asset.landscape.@y);
+					}
+					but.useHandCursor = true;
+					but.buttonMode = true;
+					but.alpha = 0.2;
+					assetsLayer.addElement(but);
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:Image id="img"/>
+	<s:Group id="assetsLayer" width="50" height="50"/>
+</s:Group>

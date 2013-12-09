@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="100%"
+	xmlns:comp="com.adams.dt.view.filemanagement.*" 
+	horizontalScrollPolicy="off" 
+	xmlns:components="com.adams.dt.view.components.*" 
+	creationPolicy="all" creationCompleteEffect="{ mx.effects.Fade }">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.TileList;
+			import mx.core.UIComponent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.FileCategory;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.view.filemanagement.DragContainer;
+			import com.adams.dt.event.fileManagement.RemoveFileEvent;
+			import mx.effects.DefaultTileListEffect;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			private var _basicFileCollection:ArrayCollection;
+			
+			/**
+			 * set basic files 
+			 * classify the files based on the category
+			 */
+			
+			[Bindable(event="projectPropertyChange")]
+			public function set basicFileCollection (value:ArrayCollection):void
+			{
+				creation = new ArrayCollection();
+				uncate = new ArrayCollection();	
+				if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",updateContainer,false,0,true);
+					if(value!=null){
+						_basicFileCollection = value; 
+						dispatchEvent (new Event ("projectPropertyChange"));
+					}
+			}
+			/**
+			 * get basic files 
+			 */
+			public function get basicFileCollection ():ArrayCollection
+			{
+				return _basicFileCollection;
+			}
+			
+			
+			private var _refresh:Boolean;
+			public function set refresh (value:Boolean):void
+			{
+					if(value){
+						updateContainer(new Event(''))
+						model.bgDownloadFileRefresh = false
+					}
+			}
+			/**
+			 * get basic files 
+			 */
+			public function get refresh ():Boolean
+			{
+				return _refresh;
+			} 
+			[Bindable]
+			public var creation:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			public var uncate:ArrayCollection = new ArrayCollection();
+			[Bindable] 
+			public var reference:ArrayCollection = new ArrayCollection();
+			/**
+			 *  classify the files based on the category
+			 *  update file containers
+			 */
+			private function updateContainer(event:Event):void{
+				creation = new ArrayCollection();
+				uncate = new ArrayCollection();					
+				reference = new ArrayCollection();
+				for each( var item:FileDetails in basicFileCollection){				
+					switch(item.fileCategory){			 
+						case FileCategory.CREATION:
+							creation.addItem(item);
+							creation.refresh()
+						break;  
+						case FileCategory.REFERENCE:
+							reference.addItem(item);
+							reference.refresh()
+						break;
+						default:
+							uncate.addItem(item);
+							uncate.refresh();
+					}
+				}
+				
+				unorganized.dataProvider =  new ArrayCollection(); 
+				creationContainer.dataProvider =  new ArrayCollection();
+				referenceContainer.dataProvider =   new ArrayCollection();
+				
+				unorganized.fileCollection = uncate; 
+				creationContainer.fileCollection = creation; 
+				referenceContainer.fileCollection = reference;
+			} 
+		]]>
+	</mx:Script>
+	<!-- <mx:Model id="listData" source="xml/listData.xml"/>-->
+	<mx:Canvas width="100%" horizontalScrollPolicy="off">
+			<mx:VBox width="100%" paddingRight="25" height="100%" id="dragContainer" horizontalScrollPolicy="off">
+				<mx:Form id="dragUtilContainer" width="100%">
+					<mx:FormItem label="AGENCE CREATION" width="100%" >
+						 <comp:DragUtils fileCollection="{creation}" fileCategory="{FileCategory.CREATION}" id="creationContainer"  width="100%" height="100" borderStyle="solid"  
+												 columnCount="5" rowCount="1"/>
+					</mx:FormItem>  
+					<mx:FormItem label="UnOrganised Files" width="100%" >
+						<comp:DragUtils fileCollection="{uncate}" fileCategory="unOrganized"  id="unorganized" width="100%" height="100" borderStyle="solid"  
+												 columnCount="5" rowCount="1"/>
+					</mx:FormItem>
+					<mx:FormItem label="REFERENCE FILES" width="100%" includeInLayout="{reference.length!=0}" visible="{reference.length!=0}">
+						 <comp:DragUtils id="referenceContainer" fileCollection="{reference}" fileCategory="{FileCategory.REFERENCE}" 
+						  	includeInLayout="{reference.length!=0}" visible="{reference.length!=0}"
+						 	width="100%" height="100" borderStyle="solid" columnCount="5" rowCount="1"/>
+					</mx:FormItem> 
+				</mx:Form>	
+			</mx:VBox>
+	</mx:Canvas>
+</mx:VBox>

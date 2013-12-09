@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<catalog>
+    <product id="1">
+        <name>Cutout Tool</name>
+        <description>1 There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>true</enabled>
+        <description>Cutout Tool</description>
+        <image>assets/detaileImages/cutout.png</image>
+        <thumbnail>assets/thumbnail/cutout.png</thumbnail>
+        <launch>products/etussaudV2/eTussaudV2.html</launch>
+    </product>
+    <product id="2">
+        <name>Quiz Maker</name>
+        <description>2 There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>true</enabled>
+        <description>Quiz Maker</description>
+        <image>assets/detaileImages/quiz.png</image>
+        <thumbnail>assets/thumbnail/quiz.png</thumbnail>
+        <launch>products/quizmaker/launch.html</launch>
+    </product>
+    <product id="3">
+        <name>Online Scheduler</name>
+        <description>3 There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>true</enabled>
+        <description>Online Scheduler</description>
+       	<image>assets/detaileImages/scheduler.png</image>
+        <thumbnail>assets/thumbnail/scheduler.png</thumbnail>
+        <launch>products/calendar/launch.html</launch>
+    </product>
+    <product id="4">
+        <name>3D Demo</name>
+        <description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>true</enabled>
+        <description>3D Demo</description>
+     	<image>assets/detaileImages/3d.png</image>
+        <thumbnail>assets/thumbnail/3d.png</thumbnail>
+        <launch>products/3d/launch.html</launch>
+    </product>
+    <product id="5">
+        <name>Flex Reader</name>
+		<description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>	
+        <enabled>true</enabled>
+        <description>Flex Reader</description>
+     	<image>assets/detaileImages/book.png</image>
+        <thumbnail>assets/thumbnail/book.png</thumbnail>
+        <launch>products/flexreader/launch.html</launch>
+    </product>
+    <product id="6">
+        <name>eLearning Module</name>
+        <description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>true</enabled>
+        <description>eLearning Module</description>
+      	<image>assets/detaileImages/elearning.png</image>
+        <thumbnail>assets/thumbnail/elearning.png</thumbnail>
+        <launch>products/FlashBNP/launch.html</launch>
+    </product>
+    <product id="7">
+        <name>CMS Generator</name>
+        <description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>false</enabled>
+        <description>CMS Generator</description>
+       	<image>assets/detaileImages/cms.png</image>
+        <thumbnail>assets/thumbnail/cms.png</thumbnail>
+        <launch>products/Cutout/launch.html</launch>
+    </product>
+    <product id="8">
+        <name>Spell Checker</name>
+        <description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>false</enabled>
+        <description>Spell Checker</description>
+       	<image>assets/detaileImages/spellcheck.png</image>
+        <thumbnail>assets/thumbnail/spellcheck.png</thumbnail>
+        <launch>products/Cutout/launch.html</launch>
+    </product>
+    <product id="9">
+        <name>e-Tussauds</name>
+        <description>There are a mix of these issues in the last few version of the flash player 9. Some with one some with bith, and 9.0.15.0 was fine from memory. Just a heads up.</description>
+        <enabled>false</enabled>
+        <description>e-Tussauds</description>
+      	<image>assets/detaileImages/etussauds.png</image>
+        <thumbnail>assets/thumbnail/etussauds.png</thumbnail>
+        <launch>products/Cutout/launch.html</launch>
+    </product>
+</catalog>

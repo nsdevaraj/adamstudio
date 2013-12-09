@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+        layout="vertical"
+        verticalAlign="middle"
+        backgroundColor="white">
+
+    <mx:Script>
+        <![CDATA[
+            private function tree_labelFunc(item:XML):String {
+                var label:String = item.@label;
+                var dat:String = item.@data;
+                var sname:String = item.@secname;
+                
+                if (tree.dataDescriptor.hasChildren(item)) {
+                    var le:Number=tree.dataDescriptor.getChildren(item).length;
+                    label += " ( "+ le +" "+sname+((le>1)?"s":"")+" )";
+                }else{
+                    label += " => "+dat+"%";
+                }
+                
+                return label;
+            }
+        ]]>
+    </mx:Script>
+
+    <mx:XML id="treeDP">
+        <root>
+            <node label="i) First Task"  data="87"/>
+            <node label="ii) Second Task"  data="52"/>
+            <node label="iii) Third Task" secname="Module">
+                <node label="1. Module One" data="98"/>
+                <node label="2. Module Two" data="56"/>
+                <node label="3. Module Three" secname="Part">
+                    <node label="a) Part One" data="75"/>
+                    <node label="b) Part Two" data="48"/>
+                </node>
+                <node label="4. Module Four"  data="92" secname="Part">
+                    <node label="a) Part One" data="100"/>
+                </node>
+            </node>
+            <node label="iv) Four"  data="70"/>
+            <node label="v) Five"  data="52"/>
+            <node label="vi) Six"  data="99"/>
+        </root>
+    </mx:XML>
+
+    <mx:Tree id="tree"
+            dataProvider="{treeDP}"
+            labelFunction="tree_labelFunc"
+            showRoot="false"
+            width="350"  height="300"/>
+
+</mx:Application>  

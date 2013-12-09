@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:comp="components.checkboxdatagrid.*" width="80%" height="100%" 
+		creationComplete="{init(),Controller.getInstance().registerView = this}">
+
+<mx:Metadata>
+	[Event(name="loadSelectedTask", type="flash.events.Event")]
+	[Event(name="loadUserRegistration", type="flash.events.Event")]
+</mx:Metadata>
+
+<mx:Script>
+	<![CDATA[
+		import business.PrintFunc;
+		import mx.printing.PrintDataGrid;
+		import business.GenerateExcelData;
+		import mx.core.Application;
+		import data.Users;
+		import mx.controls.TextInput;
+		import mx.events.DataGridEvent;
+		import mx.controls.dataGridClasses.DataGridColumn;
+		import mx.events.ListEvent;
+		import mx.controls.DataGrid;
+		import mx.events.FlexEvent;
+		import mx.events.AdvancedDataGridEvent;
+		import components.checkboxdatagrid.CheckBoxRenderer;
+		import business.LoadDemoXml;
+		import controller.Controller;
+		import mx.collections.XMLListCollection;
+		import mx.controls.Alert;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.collections.SortField;
+		import mx.collections.Sort;
+		import mx.collections.ArrayCollection;
+		
+		
+		import business.org.alivepdf.pdf.PDF;
+		import business.org.alivepdf.image.ImageFormat;
+		import business.org.alivepdf.drawing.DashedLine;
+		import business.org.alivepdf.display.*;
+		import business.org.alivepdf.layout.*;
+		import business.org.alivepdf.colors.*;
+		import business.org.alivepdf.transitions.Transition;
+		import business.org.alivepdf.fonts.FontFamily;
+		import business.org.alivepdf.transitions.Dimension;
+		import business.org.alivepdf.display.PageMode;
+		import business.org.alivepdf.fonts.Style;
+		import business.org.alivepdf.viewing.*;
+		import business.org.alivepdf.saving.Download;
+		import business.org.alivepdf.saving.Method;
+		
+		
+		
+		
+		[Bindable]	
+        [Embed("../assets/icons/pdf.png")]
+        private var pdfIcon:Class;
+		[Bindable]
+		private var query:String;
+		[Bindable]
+        [Embed("../assets/icons/print.png")]
+        private var printIcon:Class;
+		
+		[Bindable]
+       	[Embed("../assets/icons/excel.png")]
+        private var excelIcon:Class;  
+        
+        [Bindable]
+       	[Embed("../assets/save.png")]
+        private var saveIcon:Class;  
+        [Bindable]
+       	[Embed("../assets/icons/Adduser.png")]
+        private var adduserIcon:Class; 
+        
+        
+        [Bindable]
+		private var loginAccounts:XMLList;
+		[Bindable]
+		private var history:XMLList;
+		[Bindable]		           
+		private var taskMgt:XMLList;
+		[Bindable]	
+		private var currentDataCollection:XMLList;
+		
+		private var currentView:DataGrid;
+		public function init():void{
+			Page.value = 1;
+			backOfficeDeatils.selectedIndex = 0
+			if(this.parentApplication.demoView){
+				var demoObj:LoadDemoXml = Controller.getInstance().demoObj;
+				loginAccounts = demoObj.backOfficeLogin.row;
+				history = demoObj.backOfficeHistory.row;
+				taskMgt = demoObj.backOfficeTask.row;
+				loadData(0)
+			}else{
+				 query = "select * from users"			
+				 backOffice.getOperation("xmldb").send();
+				 if(!backOffice.hasEventListener(ResultEvent.RESULT))
+				 backOffice.addEventListener(ResultEvent.RESULT,loginHandler);
+			}
+		}
+		public function garbageCollection():void{
+		}
+		public function loadData(index:int):void{ 
+			
+			if(index==1 && !this.parentApplication.demoView){
+					loadHistoryData();
+			}else if(index==2 && !this.parentApplication.demoView){
+					loadTaskData();
+			}else{
+				switch(index){
+					case 0:
+						currentDataCollection = loginAccounts;
+					break;
+					case 1:
+						currentDataCollection = history;
+					break;
+					case 2:
+						currentDataCollection = taskMgt;
+					break;
+					
+				}
+				paging();
+			}
+		}
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("Error:Could Not able to Connect");
+		}
+		private function loginHandler(event:ResultEvent):void{
+			var resultMsg:XML = XML(unescape(String(event.result)));
+			loginAccounts = new XMLList(resultMsg.row);
+			currentDataCollection = loginAccounts;
+			paging();
+			backOffice.removeEventListener(ResultEvent.RESULT,loginHandler);
+
+		}
+		private function loadHistoryData():void{
+			 query = "select h.*, u.firstname, t.label from history h, users u, tasks t where u.pk_user = h.author and h.task = t.pk_task order by date";		
+			 backOffice.getOperation("xmldb").send();
+			 if(!backOffice.hasEventListener(ResultEvent.RESULT))
+			 backOffice.addEventListener(ResultEvent.RESULT,historyHandler);
+		}
+		private function historyHandler(event:ResultEvent):void{
+			var resultMsg:XML = XML(unescape(String(event.result)));
+			history = new XMLList(resultMsg.row);
+			currentDataCollection = history;
+			paging();
+			backOffice.removeEventListener(ResultEvent.RESULT,historyHandler);
+		}
+		private function loadTaskData():void{
+			 query = "select t.*, u.firstname from tasks t,users u where u.pk_user = t.userid";			
+			 backOffice.getOperation("xmldb").send();
+			 if(!backOffice.hasEventListener(ResultEvent.RESULT))
+			 backOffice.addEventListener(ResultEvent.RESULT,taskHandler);
+		}
+		private function taskHandler(event:ResultEvent):void{
+			
+			var resultMsg:XML = XML(unescape(String(event.result)));
+			
+			taskMgt = new XMLList(resultMsg.row)
+			for(var i:int = 0;i<taskMgt.length();i++){
+				taskMgt[i].status = getStatus(taskMgt[i].status);
+			}
+			
+			
+			currentDataCollection = taskMgt ;
+			paging();
+			backOffice.removeEventListener(ResultEvent.RESULT,taskHandler);
+		}
+		/**
+		 * get the status 
+		 */
+		public function getStatus(_status:String):String{
+			var statusVal:String;
+			switch(_status){
+				case "1":
+					statusVal = "waiting";
+				break;
+				case "2":
+					statusVal = "inprogress";
+				break
+				case "3":
+					statusVal = "delivered";
+				break
+				case "4":
+					statusVal = "archived";
+				break
+			}
+			return statusVal;
+		}
+		/**
+	  	 * DataGrid Paging
+	  	 */ 
+	    private var pageSize:Number = 15;
+	    [Bindable]
+	    private var myData:XMLList;
+	    [Bindable]
+	    private var pageVal:Number=1;
+	    private function refreshDataProvider(start:Number):XMLList
+		{
+			start = start-1
+			myData = slice(currentDataCollection,(start * pageSize),((start * pageSize) + pageSize));
+			return myData;
+		}
+		private function paging():void{
+			Page.value = 1;
+			pageVal = currentDataCollection.length()/pageSize
+			pageVal =(currentDataCollection.length()%pageSize==0)?pageVal:(Math.floor(pageVal)+1);
+			refreshDataProvider(1);
+		} 
+		private function slice(dataCollection:XMLList,stratIndex:Number,endIndex:Number):XMLList{
+			var tempCollection:XMLListCollection = new XMLListCollection(dataCollection) 
+			var dataList:XMLListCollection = new XMLListCollection();
+			endIndex = (endIndex>tempCollection.length)?tempCollection.length:endIndex;
+			for(var i:int= stratIndex;i<endIndex;i++){
+				dataList.addItem(tempCollection.getItemAt(i));
+			}
+			return new XMLList(dataList);
+		}
+		private function getInfo(event:DataGridEvent):void{
+			var txtIn:TextInput =  TextInput(event.currentTarget.itemEditorInstance);
+			updateDataGrid(event.columnIndex,event.currentTarget as CheckBoxDataGrid,txtIn.text);
+			
+		}
+		private var updateDataObj:Object = new Object();
+		private var keyObj:Array = new Array();
+		private var key:Array = new Array();
+		private function updateDataGrid(column:int,dg:CheckBoxDataGrid,data:String):void{
+			keyObj = []
+			for(var i:int=0; i<checkBoxSelected.length;i++){ 
+				myData[checkBoxSelected[i]][dg.columns[column].dataField] = data;
+				keyObj.push(myData[checkBoxSelected[i]]["pk_user"]);
+			}
+			updateDataObj[dg.columns[column].dataField] = data;
+			updateUserData();
+		}
+		private var checkBoxSelected:Array = new Array(); 
+		private function onChange(event:ListEvent):void{
+			checkBoxSelected = DataGrid(event.currentTarget).selectedIndices;
+		}
+		public function editCell(event:ListEvent):void {
+            if (event.columnIndex != 0 && event.columnIndex != 1 && checkPermission(event.rowIndex)) {
+               event.currentTarget.editedItemPosition = {columnIndex:event.columnIndex, rowIndex:event.rowIndex};
+            }
+         }
+		 private function checkPermission(row:int):Boolean{
+		 	for(var i:int = 0;i<checkBoxSelected.length;i++){
+		 		if(checkBoxSelected[i] == row) return true;
+		 	}
+		 	return false;
+		 }
+		 [Bindable]
+		 private var updateQuery:String;
+		 private function updateUserData():void{
+		 	var queryStr:String = new String();
+		 	var where:String = ' where'
+		 	for(var i:String in updateDataObj){
+		 		queryStr+=i+' = "' + updateDataObj[i] + '",'
+		 	}
+		 	for(var j:int=0;j<keyObj.length;j++){
+		 		if(keyObj[j] == Controller.getInstance().userObj.pk_user){
+		 			updateCurrentUserObject()
+		 		}
+		 		if(j<keyObj.length-1)
+		 			where +=' pk_user = "'+keyObj[j]+'" or';
+		 		else
+		 			where +=' pk_user = "'+keyObj[j]+'"';	 			
+		 			
+		 	}
+		 	queryStr =  queryStr.substring(0,queryStr.length-1);
+		 	loginAccounts = myData;
+		 	updateQuery = 'update users set  '+queryStr + where;
+			backOffice.getOperation('updateTable').send();	
+		 }
+		 private function updateCurrentUserObject():void{
+		 	var usrObj:Users = Controller.getInstance().userObj;
+		 	for(var i:String in updateDataObj){
+		 		usrObj[i] =  updateDataObj[i];
+		 	}
+		 	dispatchEvent(new Event("userObjectUpdated"));
+		 }
+		 private function resultHandler(event:ResultEvent):void{
+		 }
+		private var myPDF:PDF;
+		private function generatePdf():void{
+			myPDF = new PDF( Orientation.LANDSCAPE, Unit.MM, Size.A4 );		
+			myPDF.setDisplayMode (Display.REAL, Layout.SINGLE_PAGE );
+			
+			for(var i:int=1;i<=pageVal;i++){
+				myPDF.addPage();  
+				switch(backOfficeDeatils.selectedIndex){
+					case 0:
+						myPDF.addImage (loginPage, 1, null, null, true, ImageFormat.JPG );
+					break;
+					case 1:
+						myPDF.addImage (historyDetails, 1, null, null, true, ImageFormat.JPG );
+					break;
+					case 2:
+						myPDF.addImage (taskMgtDeatils, 1, null, null, true, ImageFormat.JPG );
+					break;
+					
+				}  
+									
+			} 
+			var phpPath:String = Application.application.docRoot+"Cutouttool_Beta-debug/create.php"
+			//Security.allowDomain();
+			myPDF.savePDF(Method.REMOTE, phpPath, Download.ATTACHMENT, "myPDF.pdf");
+			myPDF.end();
+		}
+		private var excelData:GenerateExcelData = new GenerateExcelData();
+		private function generateExcel():void{
+			switch(backOfficeDeatils.selectedIndex){
+				case 0:
+						loginPage.dataProvider = loginAccounts 
+						excelData.loadDGInExcel(loginPage);
+				break;
+				case 1:
+						historyDetails.dataProvider = history;
+						excelData.loadDGInExcel(historyDetails);
+				break;
+				case 2:
+						taskMgtDeatils.dataProvider = taskMgt;
+						excelData.loadDGInExcel(taskMgtDeatils);
+				break;
+					
+			}  
+			refreshDataProvider(1);
+		}
+		
+		private var printFunc:PrintFunc = new PrintFunc()
+		private function printdata():void{
+			switch(backOfficeDeatils.selectedIndex){
+				case 0:
+						loginPage.dataProvider = loginAccounts 
+						printFunc.doprint(loginPage);
+				break;
+				case 1:
+						historyDetails.dataProvider = history;
+						printFunc.doprint(historyDetails);
+				break;
+				case 2:
+						taskMgtDeatils.dataProvider = taskMgt;
+						printFunc.doprint(taskMgtDeatils);
+				break;
+					
+			}  
+					
+			
+		}		
+		public var _id:String = '';
+    	private function loadSelectedTask(event:Event):void{
+			_id = event.currentTarget.selectedItem.pk_task;
+			dispatchEvent(new Event('loadSelectedTask'));
+		}
+	]]>
+</mx:Script>
+	<mx:RemoteObject id="backOffice" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+		<mx:method name="xmldb">
+			<mx:arguments>
+				<query>{query}</query>
+			</mx:arguments>
+		</mx:method>
+		<mx:method name="updateTable" result="resultHandler(event)">
+			<mx:arguments>
+				<query>{updateQuery}</query>
+			</mx:arguments>
+		</mx:method>
+	</mx:RemoteObject>
+<mx:Panel title="Back Office"  id="ntPanel" width="100%" height="100%" horizontalAlign="center"  paddingLeft="15" paddingRight="15"> 
+	<mx:TabNavigator id="backOfficeDeatils" width="100%" height="100%" change="loadData(backOfficeDeatils.selectedIndex)">
+		<mx:VBox label="logins accounts" width="100%" height="100%">
+			<comp:CheckBoxDataGrid id="loginPage" height="100%" dataProvider="{myData}" editable="true"
+        			allowMultipleSelection="true"
+        			change="onChange(event)" itemEditEnd="getInfo(event)" itemClick="editCell(event)">
+        		<comp:columns>
+        			<mx:DataGridColumn dataField="firstName" headerText=" " editable="false" width="20" sortable="false" itemRenderer="components.checkboxdatagrid.CheckBoxRenderer" > 
+					</mx:DataGridColumn>
+					<mx:DataGridColumn dataField="pk_user" headerText="key" width="60" editable="false"/>
+		        	<mx:DataGridColumn dataField="firstname" headerText="firstname" editable="false"/>
+		        	<mx:DataGridColumn dataField="lastname" headerText="lastname" editable="false"/>
+		        	<mx:DataGridColumn dataField="email" headerText="email" editable="false"/>
+		        	<mx:DataGridColumn dataField="userpswd" headerText="userpwd" editable="false"/>
+		        	<mx:DataGridColumn dataField="group_id" headerText="group" editable="false"/>
+		        	<mx:DataGridColumn dataField="registration_date" headerText="registration" editable="false"/>
+		        	<mx:DataGridColumn dataField="company" headerText="company" editable="false"/>
+		        	<mx:DataGridColumn dataField="type" headerText="type" editable="false"/>
+		        	<mx:DataGridColumn dataField="activated" headerText="activated" editable="false"/>
+        		</comp:columns>	
+			</comp:CheckBoxDataGrid>
+		</mx:VBox>
+		<mx:VBox label="history logs" width="100%" height="100%">
+			<mx:DataGrid id="historyDetails" height="100%"
+	        dataProvider="{myData}">
+	        	<mx:columns>
+	        		<mx:DataGridColumn dataField="type_of_event" headerText="type_of_event"/>
+	        		<mx:DataGridColumn dataField="label" headerText="key task"/>
+	        		<mx:DataGridColumn dataField="firstname" headerText="author"/>
+	        		<mx:DataGridColumn dataField="error" headerText="error"/>
+	        		<mx:DataGridColumn dataField="details_error" headerText="details_error"/>
+	        		<mx:DataGridColumn dataField="date" headerText="Date Time" width="150"/>
+	        	</mx:columns>
+	   		</mx:DataGrid>
+		</mx:VBox> 
+		<mx:VBox label="tasks management" width="100%" height="100%">
+			<mx:DataGrid id="taskMgtDeatils"  height="100%"
+	        	dataProvider="{myData}" doubleClickEnabled="true" itemDoubleClick ="{loadSelectedTask(event)}">
+		        <mx:columns>
+		        	<mx:DataGridColumn dataField="pk_task" headerText="key" width="60"/>
+		        	<mx:DataGridColumn dataField="label" headerText="label" width="60"/>
+		        	<mx:DataGridColumn dataField="comments" headerText="comments" width="90"/>
+		        	<mx:DataGridColumn dataField="status" headerText="status" width="80"/>
+		        	<mx:DataGridColumn dataField="firstname" headerText="creator" width="80"/>
+		        	<mx:DataGridColumn dataField="datetime_of_creation" headerText="creation" width="80"/>
+		        	<mx:DataGridColumn dataField="number_of_images" headerText="num_images"/>
+		        	<mx:DataGridColumn dataField="dedline" headerText="deadline" width="80"/>
+		        	<mx:DataGridColumn dataField="datetime_of_estimated" headerText="estimated"/>
+		        	<mx:DataGridColumn dataField="date_of_delivery" headerText="delivery" width="80"/>
+		        	<mx:DataGridColumn dataField="datetime_archive" headerText="Archive" width="80"/>
+		        	<mx:DataGridColumn dataField="time_spending" headerText="mins" width="60"/>
+		        	<mx:DataGridColumn dataField="activated" headerText="Activated" width="60"/>
+		        </mx:columns>	
+	   		</mx:DataGrid>	
+		</mx:VBox>		
+	</mx:TabNavigator>
+	<mx:ControlBar>
+		<mx:HBox horizontalAlign="left">
+				<mx:Label text="Page No: "/>
+				<mx:NumericStepper id="Page" minimum="1" maximum="{pageVal}" change="refreshDataProvider(Page.value)"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20%" horizontalAlign="right">			
+			<mx:LinkButton id="pdf" label="Pdf" icon="{pdfIcon}" click="generatePdf()"/>
+			<mx:LinkButton id="print" label="Print" icon="{printIcon}" click="printdata()"/>
+			<mx:LinkButton id="excel" label="Excel" icon="{excelIcon}" click="generateExcel()"/>
+			<mx:LinkButton id="newuser" label="Add New User" icon="{adduserIcon}" click="{dispatchEvent(new Event('loadUserRegistration'))}"/>
+		</mx:HBox>
+	</mx:ControlBar>
+	
+	</mx:Panel>					
+</mx:VBox>

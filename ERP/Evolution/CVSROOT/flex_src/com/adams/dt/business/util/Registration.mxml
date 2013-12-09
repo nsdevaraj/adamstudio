@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+    title="Register" verticalAlign="middle" horizontalAlign="center" width="100%" 
+    height="100%" >
+
+    <mx:Script>
+        <![CDATA[
+        	import com.adams.dt.model.vo.SMTPEmailVO;
+        	import com.adams.dt.event.SMTPEmailEvent;
+        	import com.adams.dt.model.vo.EventStatus;
+        	import com.adams.dt.model.vo.Events;
+        	import com.adams.dt.event.EventsEvent;
+        	import mx.controls.Alert;
+        	 
+        	import com.adams.dt.business.util.SMTPUtil;
+        	import com.adams.dt.model.ModelLocator;       
+            import mx.managers.PopUpManager;
+            import mx.controls.Text;
+            import flash.utils.ByteArray;
+	      	private var register :Register = new Register();
+            [Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			private function registerDT():void {
+				regForm.includeInLayout = true;
+				regForm.visible = true;
+				
+				if(productId.text!="" && userName.text!="" && iAgree.selected){
+					register.saveProductId(productId.text,userName.text);
+					if(register.validKey){
+						var newRegisterEntry:Events = new Events() 
+						var newEvent:EventsEvent= new EventsEvent( EventsEvent.EVENT_CREATE_EVENTS);
+						newRegisterEntry.eventDateStart = model.currentTime
+						newRegisterEntry.eventType = EventStatus.REGISTERED;
+						newRegisterEntry.personFk = model.person.personId;
+						newRegisterEntry.eventName = "Full Registration :"+model.licensedVersion;
+						//newRegisterEntry.details = "Product ID :"+productId.text +" Registered to: "+ userName.text;
+						var by:ByteArray = new ByteArray();
+						var str:String = "Product ID :"+productId.text +" Registered to: "+ userName.text;
+						by.writeUTFBytes(str);
+						newRegisterEntry.details = by;
+						
+						newEvent.events = newRegisterEntry;
+						//newEvent.dispatch();
+						regKey.text = "Registered Successfully";
+						clsBtn.label = "Close";
+					}else{
+						regKey.text = "Product Key Invalid";
+						clsBtn.label = "Close";
+					}
+				}else{
+					regKey.text = "Please Enter UserName and SystemID";
+				}
+            } 
+            private function requestProduct():void {
+            	//var smtp:SMTPUtil = new SMTPUtil(); 
+				
+				//-----------NEW SERVER EMAIL ADD START------------------------
+				//SMTPUtil.mail(model.SmtpfrmLbl,"DT ProductId","System ID: " +systemId.text);
+				
+				var eEvent:SMTPEmailEvent = new SMTPEmailEvent( SMTPEmailEvent.EVENT_CREATE_SMTPEMAIL );
+				var _smtpvo:SMTPEmailVO = new SMTPEmailVO();
+				_smtpvo.msgTo = model.SmtpfrmLbl;
+				_smtpvo.msgSubject = "DT ProductId"; 
+				_smtpvo.msgBody = "System ID: " +systemId.text;
+				eEvent.smtpvo = _smtpvo;
+				eEvent.dispatch();
+				//-----------END ------------------------
+				
+				Alert.show('Thanks, for your request. You will receive productID soon!!','Registration');
+            }
+            
+			private function closeRegisterPanel():void{
+				if(model.tillTime<model.evalMinutes){
+					PopUpManager.removePopUp(this);
+				}else{
+					NativeApplication.nativeApplication.exit();
+				}
+			}		
+								
+        ]]>
+    </mx:Script>
+    <mx:HBox width="100%" verticalAlign="middle" horizontalAlign="center" paddingTop="20" >  
+	<mx:Button id="logoBtn" styleName="innerCompanyLogo"/>	
+	</mx:HBox>
+    <mx:Form>
+	    <mx:FormItem label="Enter Name: ">
+	    	<mx:TextInput id="userName" width="100%"/>
+	    </mx:FormItem>
+	    <mx:FormItem label="Enter ProductId: ">
+	    	<mx:TextInput id="productId" width="100%" />
+	    </mx:FormItem>
+	    <mx:FormItem label="Your SystemId: ">
+	    	<mx:Label id="systemId" text="{model.systemID}" width="100%" selectable="true"/>
+	    </mx:FormItem>
+	    <mx:FormItem  >
+	    	<mx:CheckBox id="iAgree" label="I Accept the Brennus terms and condition"/>
+	    </mx:FormItem>
+	    <mx:FormItem  id="regForm" includeInLayout="false" visible="false"> 
+	    	<mx:Label id="regKey" width="100%" color="red" selectable="false"/>
+	    </mx:FormItem>
+    </mx:Form>
+
+    <mx:HBox>
+        <mx:Button label="Request ProductId" click="requestProduct();"/> 
+        <mx:Button label="Register" click="registerDT();"/> 
+        <mx:Button label="Cancel" id="clsBtn" click="closeRegisterPanel()"/>
+    </mx:HBox>
+
+</mx:TitleWindow>  

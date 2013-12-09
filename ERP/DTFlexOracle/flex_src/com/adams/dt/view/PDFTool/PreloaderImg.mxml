@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center"
+	verticalCenter="0" horizontalCenter="0">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			public var imgWidth:Number = 20;
+			[Bindable]
+			public var imgHeight:Number = 20;
+			[Bindable]
+			[Embed(source="assets/category/swf/additionalAssetsReader.swf", symbol="preloader")]
+			private var img:Class;
+		]]>
+	</mx:Script>
+	<mx:Image width="{imgWidth}" height="{imgHeight}" source="{img}"/>
+	<mx:Label text="Loading.." >
+	</mx:Label>
+</mx:VBox>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" showEffect="{ wipeDown }" hideEffect="{ wipeUp }" width="47" height="150"
+	               horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="#272727" initialize="rotateLabel()" >
+	 <mx:Script>
+	 	<![CDATA[
+	 		import com.adams.dt.model.ModelLocator;
+	 		[Bindable]
+		public var labelText:String = '';
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private function rotateLabel():void{
+			switch (model.CF){
+				case 1:
+				myLabel.rotation = 270;
+				break;
+				case 2:
+				myLabel.rotation = 0;
+				break;
+			}
+			
+		}
+	 	]]>
+	 </mx:Script>
+  <mx:WipeDown id="wipeDown"/>
+  <mx:WipeUp id="wipeUp"/>
+  <mx:Text selectable="false" id="myLabel" text="{model.loc.getString(labelText)}" styleName="menuText"  bottom="0" left="10"/>
+</mx:Canvas>  
+
+       

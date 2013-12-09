@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%"
+	xmlns:view="com.adams.dt.view.components.*"  creationComplete="onCreationComplete()" 
+	xmlns:serchComp="com.adams.dt.view.components.personSearch.*">
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.Persons;
+		 	import mx.controls.Alert;
+		]]>
+	</mx:Script>
+<mx:Script>
+	<![CDATA[
+		import mx.core.Application;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import com.adams.dt.business.util.Utils;
+		import mx.rpc.IResponder;
+		import com.adams.dt.event.TeamTemplatesEvent;
+		import com.adams.dt.event.catagoryselection.catagoryEvent;
+		import com.adams.dt.event.WorkflowsEvent;
+		import com.adams.dt.event.ProfilesEvent;
+		import com.adams.dt.event.generator.SequenceGenerator;
+		import mx.graphics.codec.JPEGEncoder;
+		import com.adams.dt.model.vo.GroupPersons;
+		import com.adams.dt.event.GroupPersonsEvent;
+		import com.adams.dt.event.GroupsEvent;
+		import com.adams.dt.model.vo.Groups;
+		import mx.controls.Label;
+		import com.adams.dt.model.vo.Workflows;
+		import com.adams.dt.event.DomainWorkFlowEvent;
+		import com.adams.dt.model.vo.DomainWorkflow;
+
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.event.PersonsEvent;
+		import com.adams.dt.model.vo.Teamlinestemplates;
+		import com.adams.dt.model.vo.TeamTemplates;
+		import com.adams.dt.event.TeamlineTemplatesEvent;
+		import com.adams.dt.model.vo.Persons;
+		import com.adams.dt.event.CategoriesEvent;
+		import mx.collections.ArrayCollection;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.CompaniesEvent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.vo.Categories;
+		import com.adams.dt.model.vo.Companies;
+		import mx.controls.Alert;
+		import flash.net.FileFilter;
+		import flash.net.FileReference; 
+		private var  fileRef:FileReference ;
+        private var byteImage:ByteArray
+        private var compImage:ByteArray
+        private var newFile:File
+		
+		[Bindable]
+		private var companyName:Array = ["Accord Valmy","Carrefour","Unicopa","Weighwatchers"];
+		[Bindable]
+		private var category1:Array = ["2007","2008","2009","2010","2011","2012","2013","2014","2015","2016",];
+		[Bindable]
+		private var category2:Array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+		[Bindable]
+		private var modelLocator:ModelLocator = ModelLocator.getInstance();
+    	[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		private var companySelected:Boolean;
+		[Bindable]
+		private var updatedCompanies:Companies
+		[Bindable]
+		private var updatedPersons:Persons
+		[Bindable]
+		private var updatedCatagories:Categories
+		[Bindable]
+		private var updatedGroups:Groups
+		[Bindable]
+		private var updatedGroupPersons:GroupPersons;
+		[Bindable]
+		private var GroupsString:String 
+		[Bindable]
+		private var selectedGroupsColl:ArrayCollection = new ArrayCollection();
+		[Bindable]
+		private var closeDetails:Boolean;
+		[Bindable]
+		private var updatedCompanyColl:ArrayCollection = new ArrayCollection();
+		private var fileReference:FileReference;
+		private var  personByte:ByteArray = new ByteArray();
+		[Bindable]
+		private var comboSelectedItem:int
+		[Bindable]
+		private var comboSelectedValue:String
+		[Bindable]
+		private var groupLabel:Boolean;
+		[Bindable]
+		private var selectedNotClient:Boolean =true;
+		[Bindable]
+		private var teamTemp:TeamTemplates
+		
+		[Bindable]
+		private var diademProfile:Boolean;
+		[Bindable]
+		private var categoryCompaniesArr:ArrayCollection = new ArrayCollection();
+		
+		
+		 private function onCreationComplete():void{
+			var workEvt:WorkflowsEvent = new WorkflowsEvent(WorkflowsEvent.EVENT_GET_ALL_WORKFLOWSS);
+			var groupPer:GroupsEvent = new GroupsEvent(GroupsEvent.EVENT_GET_ALL_GROUPSS);
+			var teamTempEvt:TeamTemplatesEvent = new TeamTemplatesEvent(TeamTemplatesEvent.EVENT_GET_ALL_TEAMTEMPLATESS);
+	 		var businesscardSeq:SequenceGenerator = new SequenceGenerator([workEvt,groupPer,
+	 																	   teamTempEvt])
+	  		businesscardSeq.dispatch();
+	  		var appXML:XML = NativeApplication.nativeApplication.applicationDescriptor;
+			var ns:Namespace = appXML.namespace();
+			if(appXML.ns::description=="DIADEM")
+			{
+				diademProfile = false;
+			}else{
+				diademProfile = true;
+			}
+				  		
+	  	}  
+	  	
+		private function fault(info:Object):void{
+			
+		}
+		private var tempObj:Object = {};
+		private function onDomainWFResult(info:Object):void{
+			for each(var domainWorkFlow:DomainWorkflow in model.getAllDomainWorkflows){
+				teamTemplate(domainWorkFlow)
+			} 
+			
+		}
+		/**
+		* Remove the Duplicate personPosition in th person Collection 
+		**/
+		private function removeDuplicatePersonCatagoty(item:Companies):Boolean {
+			var retVal:Boolean = false;
+			if (!tempObj.hasOwnProperty(item.companyCategory)) {
+					tempObj[item.companyCategory] = item;
+					retVal = true;
+			}
+			return retVal;
+		}
+		private function teamTemplate(domainWflow:DomainWorkflow): void {
+			model.selecteTeamlineTemplateArr.removeAll();
+			for each(var teamTemp1:TeamTemplates in model.getAllTeamTemplatesArr){
+				if(domainWflow.workflowFk ==  teamTemp1.workflowFk){
+					var teamEvent:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_CREATE_TEAMLINETEMPLATES)
+					var team:Teamlinestemplates = new Teamlinestemplates(); 
+					team.teamTemplateFk = teamTemp1.teamTemplateId;
+					team.profileFk =  2; 
+					model.selecteTeamlineTemplateArr.addItem(team);
+				}
+			} 
+			var bulkUpdateteam:TeamlineTemplatesEvent = new TeamlineTemplatesEvent(TeamlineTemplatesEvent.EVENT_BULK_UPDATE_TEAMLINETEMPLATES);
+			for each(var tmltmp:Teamlinestemplates in model.selecteTeamlineTemplateArr){
+				tmltmp.personFk =createdPer.personId;
+			} 
+			bulkUpdateteam.teamlinetemplateArr = model.selecteTeamlineTemplateArr;
+			bulkUpdateteam.dispatch()
+		}
+		/**
+		* Get the Selected groups based on the company selection. 
+		**/
+		private function getAllgroups():Groups {
+			var group:Groups;
+			if(companyCombo.selectedIndex == -1){
+				companyCombo.selectedIndex = 0 
+			} 
+			if(Client.selected && companyCombo.selectedIndex != -1){
+				var cmpStr:String = "ROLE_CLT_"+String(companyCombo.selectedItem.companyname).toUpperCase().substr(0,5).toString()
+				for(var i:int =0;i<model.CollectAllGroupsColl.length;i++){
+						group = Groups(model.CollectAllGroupsColl[i]);
+						selectedGroupsColl.addItem( group );
+						if(group.groupLabel == cmpStr ){
+							updatedGroups = group;
+						}
+				}
+			} else{
+				updatedGroups = null;
+			}
+			return updatedGroups;
+		}  
+		/**
+		* Reset all the text input and combo box. 
+		**/
+		private function removeAllFn():void{
+			personPhoto.source ="";
+			personFirst.text = "";
+			personLast.text = "";
+			personEmail.text = "";
+			PersonPassword.text = "";
+			PersonLogin.text = "";
+			PersonPosition.text="";
+			PersonAddress.text="";
+			PersonPostalCode.text="";
+			PersonCity.text="";
+			PersonCountry.text="";
+			PersonMobile.text="";
+			PersonTele.text="";
+			companyCombo.selectedIndex = 0; 
+			Client.selected = false
+			Imprimeur.selected = false
+			Traffic.selected = false
+			Fabricant.selected = false
+			Operateur.selected = false
+			Admin.selected = false
+			Company.text = "";
+			selectedNotClient = true
+			personPhoto.source ="assets/images/pic_icon.png";
+			unSelected();
+		}
+		/**
+		* Reset the work flow radio button ....
+		**/
+		private function unSelected ():void{
+			Company.text = "";
+			for(var i:int =0;i<myrep.dataProvider.length;i++){
+					CheckBox(workflowform.getChildAt(i)).selected = false 
+				}
+			selectCat.selected = false;
+			createNewCat.selected = false
+			textCatagory.text = "";
+			catagoryCode.text="";
+			avlLabel.text = "";
+		}
+		/**
+		* show the newly created company poanel
+		**/
+		private function showCompany():void{
+			tempObj = new Object();
+			if( model.totalCompaniesColl.filterFunction != null ) {
+				model.totalCompaniesColl.filterFunction = null;
+				model.totalCompaniesColl.refresh();
+				
+			} 
+	  		model.totalCompaniesColl.filterFunction =  removeDuplicatePersonCatagoty;
+			model.totalCompaniesColl.refresh();
+	  		newCompany.visible = true;
+			newCompany.includeInLayout = true;
+			comboCatagory.selectedIndex  = 0;
+ 	    }
+ 	    /**
+		* check all the mandatory text inout field are selected or not and selected personLogin is availbe or not ...
+		**/
+ 	    private function checkAllItems() :void {
+ 	    	if(getStrLen(personFirst.text).length>0 && 
+		  getStrLen(personLast.text).length>0 && getStrLen(personEmail.text).length>0 && 
+		  getStrLen(PersonLogin.text).length>0 && getStrLen(PersonPassword.text).length>0){
+		  			if(!Utils.checkPersonLogin(PersonLogin.text)) {
+		  				saveNewActor();
+		  			}else{
+		  			 Alert.show("person login is not available ");
+		  			}
+				}else{
+		  			Alert.show("Please fill all the details");
+		  		}
+ 	    }
+ 	    /**
+		* check whether all the catagory selected or not ....
+		**/
+		private var createdComapniesCat:String;
+		private var newCatgory:Boolean
+		private var newCompanyName:String;
+ 	    private function findSelectedItem() :void {
+ 	    	newCatgory = false
+ 	    	if(Company.text.length>0) {
+					if(selectCat.selected == true ){
+						    newCompanyName = Company.text;
+			          		createdComapniesCat = comboCatagory.selectedLabel;
+			          		(Client.selected)?closeCompany():newCloseCompany();
+			 		 }
+			         if(createNewCat.selected == true) {
+			          	   if(textCatagory.text.length>0){
+			          	   	    newCompanyName = textCatagory.text;
+			          	   		newCatgory = true;
+			          	   		createdComapniesCat = textCatagory.text;
+			          	   		(Client.selected)?closeCompany():newCloseCompany();
+			          	   }else{
+			          	   		Alert.show("Please fill new catagory");
+			          	   }
+			         }
+		     }else{
+		     	Alert.show("Please fill all the Items");
+		     }
+		     //categoryCompaniesArr.addItem( model.clientCompanies )
+        }
+		/**
+		*check the string whether space bar entered or not.....
+		**/
+ 	    private function getStrLen(str:String):String{
+			return str.split(" ").join("")
+		}
+		private function newCloseCompany():void {
+			if(!checkCompanyCode()){
+				updateDomainArr.removeAll();
+				companySelected = true;
+				companyUpdate();
+				newCompany.visible = false;
+				newCompany.includeInLayout = false; 
+				Company.text = '';
+				newCompanyName ='';
+				unSelected();
+			}else{
+				Alert.show("Company Code is already exists");
+				catagoryCode.enabled = true;
+			}
+			
+		}
+		/**
+		*	When new company is created ...
+		**/
+		private function closeCompany(): void{
+			updateDomainArr.removeAll();
+			//checkCompanyCode();
+			// check whether the domain work flow is selected or not....
+			for(var i:int =0;i<myrep.dataProvider.length;i++){
+				if(CheckBox(workflowform.getChildAt(i)).selected){ 
+						var newDomainFlow:DomainWorkflow = new DomainWorkflow();
+						newDomainFlow.workflowFk  =  model.workflowsCollection[i].workflowId;
+						updateDomainArr.addItem(newDomainFlow);
+				}   			 
+			}
+			if(updateDomainArr.length == 0 ){
+					Alert.show(model.loc.getString('selectOneWorkflow'));
+				 }else{ 
+				 	companySelected = true;
+					companyUpdate();
+					newCompany.visible = false;
+					newCompany.includeInLayout = false; 
+					Company.text = '';
+					unSelected();
+			}
+		}
+		/**
+		*	show the updated company in the combo box....
+		**/
+		private function selectCombo():void{
+			companyCombo.selectedIndex = model.totalCompaniesColl.length-1
+		}
+		/**
+		*	close the newly created company panel...
+		**/
+		private function closeButton(): void{
+			newCompany.visible = false;
+			newCompany.includeInLayout = false;
+			unSelected();
+		} 
+		/**
+		*	check the string whether space bar entered or not.....
+		**/
+		private function getUpdatedCompanies(event:Event):void {
+			var company:Companies
+			updatedCompanyColl.removeAll();
+			 for(var i:int =0;i<model.totalCompaniesColl.length;i++){
+					company = Companies(model.totalCompaniesColl[i])
+					updatedCompanyColl.addItem(company.companyname);
+					if((company.companyname == Company.text) || (company.companyname == companyCombo.selectedItem.companyname.toString().toUpperCase() )  ){
+							updatedCompanies = company;
+						}
+					}
+			companyCombo.selectedIndex = comboSelectedItem
+		}
+		/**
+		*	get the updated Groups 
+		**/
+		private function getUpdatedGroups(str:String):void {
+			var group:Groups
+			for(var i:int =0;i<model.CollectAllGroupsColl.length;i++){
+				group = Groups(model.CollectAllGroupsColl[i])
+				if(group.groupLabel == str){
+					updatedGroups = group;
+					break;
+				}
+			}
+		}
+		private function companyByCombo() :void {
+			var gp:Groups;
+			var cmp:CompaniesEvent = new CompaniesEvent(CompaniesEvent.EVENT_GET_ALL_COMPANIESS)
+			CairngormEventDispatcher.getInstance().dispatchEvent(cmp); 
+			comboSelectedItem = companyCombo.selectedIndex; 
+			var Comp:Event;
+			getUpdatedCompanies(Comp) 
+			gp = getAllgroups( ) 
+			if(gp == null ||  companyCombo.selectedIndex == -1){
+				groupLabel = false;
+			}else if( companyCombo.selectedIndex != -1){
+				groupLabel = true;
+			}
+		}
+		private var updateDomainArr:ArrayCollection = new ArrayCollection();
+		private function companyUpdate() :void {
+			var comp:Companies;
+			// new company
+			if(companySelected){
+				model.createCompanyEvents = [];
+				
+				// create a new Company.....
+				var cmpEvent:CompaniesEvent = new CompaniesEvent(CompaniesEvent.EVENT_CREATE_COMPANIES)
+				var createCompany:Companies = new Companies();
+				createCompany.companycode = (catagoryCode.text).length>0?catagoryCode.text:newCompanyName.toUpperCase().substr(0,5);
+				createCompany.companyname = newCompanyName.toUpperCase();
+				createCompany.companyCategory = createdComapniesCat;
+				cmpEvent.companies = createCompany;
+				model.createCompanyEvents.push(cmpEvent);
+				
+				// create the new catagories.....
+				var newCategories:Categories = new Categories();
+				newCategories.categoryName =  String(Company.text).toUpperCase();
+				newCategories.categoryCode =String(Company.text).substr(0,5).toUpperCase();
+				var createNewCategory:CategoriesEvent = new CategoriesEvent(CategoriesEvent.EVENT_CREATE_DOMAIN);
+				createNewCategory.categories = newCategories;
+				model.createCompanyEvents.push(createNewCategory);
+				
+				// create the new Groups 			
+				var newGroups :Groups = new Groups();
+				newGroups.groupLabel = "ROLE_CLT_"+String(Company.text).toUpperCase().substr(0,5) ;
+				GroupsString = "ROLE_CLT_"+String(Company.text).toUpperCase().substr(0,5) ;
+				newGroups.authLevel="ROLE_CLT";
+				var createGroups:GroupsEvent = new GroupsEvent(GroupsEvent.EVENT_CREATE_GROUPS);
+				createGroups.groups = newGroups;
+				model.createCompanyEvents.push(createGroups);
+				// Squence E  
+				model.selectedDomainWorkflows = updateDomainArr;
+				var cmpseq:CompaniesEvent = new CompaniesEvent(CompaniesEvent.EVENT_CREATE_COMPANIES_SEQ);
+				CairngormEventDispatcher.getInstance().dispatchEvent(cmpseq);
+				 
+			}
+			var compHandler :IResponder = new Callbacks( newCompanyCreated ,null)
+			var cmp:CompaniesEvent = new CompaniesEvent(CompaniesEvent.EVENT_GET_ALL_COMPANIESS)
+			cmp.callbacks = compHandler;
+			cmp.dispatch()
+		} 
+		private function newCompanyCreated( obj :Object ) :void
+		{
+			companyCombo.selectedIndex = model.totalCompaniesColl.length-1
+			
+		}
+		private var objValue:Array = ["0","ROLE_TRA_AV","ROLE_FAB_AV","ROLE_OPE_AV","ROLE_ADMIN","ROLE_IMP_AV"];
+		// result event after the person created 
+		private function onPersonResult(rpcEvent:Object):void{
+			 createdPer = model.createdPerson;
+			 model.personsArrCollection.addItem( createdPer );
+		}
+		private var createdPer:Persons
+		private function saveNewActor():void{
+			var profileSelected:Boolean = Traffic.selected  || Fabricant.selected|| Operateur.selected ||Admin.selected || Client.selected ||Imprimeur.selected;
+			// need to be selected atleast one profile.....
+			if(profileSelected){
+				companyByCombo();  
+				var per:Persons ; 
+				var callbacks : IResponder = new mx.rpc.Responder(onPersonResult, fault);
+				var Perevent:PersonsEvent = new PersonsEvent(PersonsEvent.EVENT_CREATE_PERSONS,callbacks);
+				per = new Persons();
+				per.personFirstname = personFirst.text;
+				per.personLastname= personLast.text;
+				per.personEmail = personEmail.text; 
+				per.personLogin = PersonLogin.text;
+				per.personPassword =  PersonPassword.text;
+				per.personPosition = PersonPosition.text;
+				per.personAddress = PersonAddress.text;
+				per.personCity = PersonCity.text;
+				per.personCountry = PersonCountry.text;
+				per.personPostalCode = PersonPostalCode.text;
+				per.personPosition = PersonPosition.text;
+				per.personDateentry = model.currentTime;
+				per.personMobile = PersonMobile.text;
+				per.personMobile = PersonTele.text;
+				per.activated = 1;
+				per.companyFk = updatedCompanies.companyid;
+				if(compImage == null){
+					personPhoto.source ="assets/images/pic_icon.png";
+					var image:Bitmap = Bitmap(personPhoto.content);
+					var encoder:JPEGEncoder = new JPEGEncoder();
+					compImage = encoder.encode(image.bitmapData);
+				}
+				per.personPict = compImage
+				updatedPersons = per; 		   
+			    var selectedArr:ArrayCollection = new ArrayCollection();
+			  	model.selecteTeamlineTemplateArr= new ArrayCollection();
+			    model.selectedGroupArr = new ArrayCollection();
+			    getUpdatedGroups(GroupsString);
+				var obj:Array = [];
+				obj[0] = [0]
+				obj[1] = [Traffic.selected && Traffic.enabled]
+				obj[2] = [Fabricant.selected && Fabricant.enabled]
+				obj[3] = [Operateur.selected && Operateur.enabled]
+				obj[4] = [Admin.selected && Admin.enabled]
+				obj[5] = [Imprimeur.selected && Imprimeur.enabled]
+				var objNames:Array = ["Client","Traffic","Fabricant","Operateur","Admin","Imprimeur"];
+				selectedArr.addItem(obj);
+				var profiles:Profiles 
+			    var newper:Persons = new Persons();
+			    var groupPersonClient:Boolean
+				for(var i:int =0;i<obj.length;i++){
+					if(obj[i]== 1 || obj[i]=="true"){
+						profiles = getProfile(objNames[i])
+						var teamLine:Teamlinestemplates = new Teamlinestemplates();
+						teamLine.teamTemplateFk = 1;
+						teamLine.profileFk =  profiles.profileId
+						model.selecteTeamlineTemplateArr.addItem(teamLine);
+						var gPerson:GroupPersons = new GroupPersons();
+						gPerson.groupFk = getGroupsFk(objValue[i]).groupId;
+						model.selectedGroupArr.addItem(gPerson); 
+					}
+				}
+				profiles ? per.defaultProfile = profiles.profileId : per.defaultProfile =2;
+				Perevent.persons = per;
+				Perevent.dispatch();
+				// when clent is selected
+				if(Client.selected)
+				{ 
+						model.selectedGroupArr.removeAll();
+						// create the Group person
+						if(groupLabel){
+							var gEvent:GroupPersonsEvent = new GroupPersonsEvent(GroupPersonsEvent.EVENT_CREATE_GROUPPERSONS);
+							var comboPerson:GroupPersons = new GroupPersons();
+							comboPerson.groupFk =updatedGroups.groupId;
+							model.selectedGroupArr.addItem(comboPerson);
+						}
+						else{
+							// find the groups 
+							var cmpStr:String = "ROLE_CLT_"+String(companyCombo.selectedItem.companyname).toUpperCase().substr(0,5).toString()
+							var found:Boolean
+							for each(var searchgroup:Groups in model.createdGroupColl){
+								if(searchgroup.groupLabel == cmpStr){
+									var grpid:int = searchgroup.groupId
+									found =true;
+								} 
+							}
+							if(found ){
+								// create the grooup person.....
+								var gEvent:GroupPersonsEvent = new GroupPersonsEvent(GroupPersonsEvent.EVENT_CREATE_GROUPPERSONS);
+								var comboPerson:GroupPersons = new GroupPersons();
+								comboPerson.groupFk = grpid;
+								model.selectedGroupArr.addItem(comboPerson);
+							}else{
+								Alert.show(model.loc.getString('groupNotAvailable'));
+							}
+						}
+						
+				}
+				Alert.show(model.loc.getString('aNewActor ')+" "+ personFirst.text.toString() +" "+model.loc.getString('createdSuccessfully ') );
+				removeAllFn();
+				
+			}
+			else{
+				Alert.show(model.loc.getString('selectOneProfile'));
+			} 
+		}
+		
+		/**
+		 * get the selected groups ....
+		**/
+		private function getGroupsFk(str:String):Groups{
+			var groupsFK:Groups = new Groups();
+			for(var j:int =0;j<model.CollectAllGroupsColl.length;j++){
+						groupsFK = Groups(model.CollectAllGroupsColl.getItemAt(j))
+						if(groupsFK.groupLabel == str){
+							return groupsFK;
+						}
+					}
+					return groupsFK;
+		}
+		/**
+		 * get the selected profiles....
+		**/
+		private function getProfile(str:String):Profiles {
+			var profile:Profiles;
+			for(var j:int =0;j<model.teamProfileCollection.length;j++){
+						profile = Profiles(model.teamProfileCollection.getItemAt(j))
+						if(str.toLocaleUpperCase() == profile.profileLabel){
+							break;
+						}
+					}
+					return profile;
+		}
+		
+		/**
+		 * Load the Images for the Person.....
+		**/
+		private function clickHandler(event: Event) :void {
+			var imageTypes:FileFilter = new FileFilter("Images (*.jpg, *.jpeg, *.gif, *.png)", "*.jpg; *.jpeg; *.gif; *.png");
+			var allTypes:Array = new Array(imageTypes);
+			fileRef = new FileReference();
+			newFile = new File();
+			newFile.addEventListener(Event.SELECT, selectHandler1,false,0,true);
+			newFile.browse(allTypes);
+		}
+		private function selectHandler1(event: Event) :void {
+			newFile = new File();
+			newFile = event.target as File;
+			personPhoto.source  = newFile.nativePath.toString();
+			var loader:Loader = new Loader();
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, handleCompanyPicture,false,0,true);
+			loader.load(new URLRequest(event.target.url));
+		}
+		private function handleCompanyPicture(event:Event):void {
+			compImage = new ByteArray();
+			var loader:Loader = Loader(event.target.loader);
+			var image:Bitmap = Bitmap(loader.content);
+			
+			var encoder:JPEGEncoder = new JPEGEncoder();
+			compImage = encoder.encode(image.bitmapData);
+		}
+		
+		private function getProfileDetails( profName:String ) :String
+		{
+			var profileLab:String;
+			for each( var profiles:Profiles in model.teamProfileCollection )
+			{
+				if(profiles.profileCode == profName ){
+					profileLab =  profiles.profileLabel;
+					break;
+				}
+			}
+			return profileLab;
+		}
+		/**
+		 * find the selected Item for the select catory or New Catagory....
+		**/
+		private function getSelectedItem() :void {
+			if (personCatagory.selectedValue) {
+                  switch(personCatagory.selectedValue)
+                  {
+                  	case "select"+ model.loc.getString('catagory'):
+                  	  	textCatagory.enabled = false;
+                  	  	textCatagory.styleName = 'textAreaReader'
+                  	  	textCatagory.alpha = 0.5;
+                  	  	comboCatagory.enabled = true;
+                  	break;
+                  	case "New"+ model.loc.getString('catagory') :
+                  		comboCatagory.enabled = false;
+                  		textCatagory.alpha = 1;
+                  	  	textCatagory.enabled = true;
+                  	  	
+                  	break;
+                  }
+                } 
+		}
+		/**
+		 * check the avilabilty for the person Login.......
+		**/
+		private function checkAvailability() :void{
+			var personAvl:Boolean = Utils.checkPersonLogin(PersonLogin.text);
+			if(personAvl){
+				avlLabel.text="( Not Available )";
+				avlLabel.setStyle("color", "Red")
+			}else{
+				avlLabel.text="( Available )";
+				avlLabel.setStyle("color", "Green")
+				
+			}
+		}
+		private function removeText() :void {
+			avlLabel.text = "";
+		}
+		private function getSelectedCompany() :void
+		{
+			if(textCatagory.length<=5){
+				catagoryCode.text = textCatagory.text;
+			}
+		}
+		private function checkCompanyCode() : Boolean
+		{
+			var cmpName:Companies
+			var returnVal:Boolean;
+			for( var i:int=0;i<model.totalCompaniesColl.length;i++)
+			{
+				cmpName = model.totalCompaniesColl.getItemAt(i) as Companies;
+				if(cmpName.companycode.toLowerCase() == catagoryCode.text.toLowerCase() ) {
+					returnVal = true;
+					break;
+				}
+			}
+			return returnVal;
+		}
+]]>
+</mx:Script>
+
+<mx:RadioButtonGroup id="personCatagory"  change="getSelectedItem()" />
+		<mx:Image id="personPhoto" right="25" top="25"  width="50" height="50" maintainAspectRatio="false" 
+			source="assets/images/pic_icon.png" click="clickHandler(event)" />
+		<mx:Button id="addPhotosBtn"  right="22" top="22" styleName="plusBTN"  click="clickHandler(event)" />	
+		<mx:Form id="actorForm">
+			<mx:FormItem label="{model.loc.getString('firstName')}" required="true">
+				<mx:TextInput id="personFirst" maxChars="30" restrict="A-Z,a-z"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('lastName')}" required="true">
+				<mx:TextInput id="personLast" maxChars="30" restrict="A-Z,a-z"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('emailAddress')}" required="true">
+				<mx:TextInput  id="personEmail" maxChars="30" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personLogin')}" direction="horizontal" required="true">
+					<mx:TextInput  id="PersonLogin" change="removeText()" maxChars="20" />
+					<mx:LinkButton label="Check Avilability" enabled="{PersonLogin.text.length>0?true:false}" 
+						 textDecoration="underline" disabledColor="0x666666" click="checkAvailability()" useHandCursor="{PersonLogin.text.length>0?true:false}"/>
+					<mx:Label id="avlLabel" fontWeight="bold" fontSize="12"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPassword')}" required="true">
+				<mx:TextInput  id="PersonPassword" maxChars="20" displayAsPassword="true" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personMobile')}"   >
+				<mx:TextInput id="PersonMobile" maxChars="20" restrict="0-9"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personTele')}" >
+				<mx:TextInput id="PersonTele" maxChars="20" restrict="0-9"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPosition')}">
+				<mx:TextInput id="PersonPosition" maxChars="20" restrict="A-Z,a-z"/>
+			</mx:FormItem>
+		   <mx:FormItem label="{model.loc.getString('personAddress')}">
+				 <mx:TextInput id="PersonAddress" maxChars="30" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personPostalCode')}">
+				<mx:TextInput id="PersonPostalCode" maxChars="20" />
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personCity')}">
+				<mx:TextInput id="PersonCity" maxChars="20" restrict="A-Z,a-z"/>
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('personCountry')}">
+				<mx:TextInput id="PersonCountry" maxChars="20" restrict="A-Z,a-z"/>
+			</mx:FormItem> 
+			<mx:FormItem label="{model.loc.getString('companyName')}" direction="horizontal">
+					<mx:ComboBox id="companyCombo" dataProvider="{model.totalCompaniesColl}"  labelField="companyname" />
+					<mx:Button id="compBtn"   styleName="plusBTN"  click="showCompany()" />	
+			</mx:FormItem>
+			<mx:FormItem label="{model.loc.getString('profile')}">
+			<mx:Box direction="horizontal">
+				<mx:CheckBox label="{getProfileDetails('CLT')}"   id="Client" change="{selectedNotClient=!selectedNotClient}"/>
+				<mx:CheckBox  label="{getProfileDetails('TRA')}" id="Traffic" enabled="{selectedNotClient}" visible="{diademProfile}"
+					includeInLayout="{diademProfile}"/>
+				<mx:CheckBox  label="{getProfileDetails('FAB')}" id="Fabricant" enabled="{selectedNotClient}" />
+			</mx:Box>
+			<mx:Box direction="horizontal"> 
+				<mx:CheckBox label="{getProfileDetails('OPE')}"   id="Operateur" enabled="{selectedNotClient}" />
+				<mx:CheckBox label="{getProfileDetails('ADM')}" id="Admin" enabled="{selectedNotClient}" />
+				<mx:CheckBox label="{getProfileDetails('EPR')}" id="Imprimeur" enabled="{selectedNotClient}" visible="{diademProfile}"
+					includeInLayout="{diademProfile}"/>
+			</mx:Box>
+			</mx:FormItem>
+		</mx:Form>
+		
+		<mx:Canvas left="0" right="0" backgroundColor="#262626" height="50" bottom="0">
+			<mx:Button label="{model.loc.getString('save')}" click="checkAllItems()" right="10" verticalCenter="0"/>			
+		</mx:Canvas>
+	<mx:TitleWindow id="newCompany" title="Company Selection" top="200"   
+		cornerRadius="0" borderThickness="2" left="{actorForm.width - newCompany.width/2}"
+		resizeEffect="Resize" 
+		showCloseButton="true" includeInLayout="false" visible="false" 
+		dropShadowEnabled="true" close="closeButton()" showEffect="Fade" 
+		hideEffect="Fade">
+		<mx:Form  horizontalCenter="0" top="20" >
+			<mx:FormItem label="{model.loc.getString('newCompanyName')}">
+				<mx:TextInput id="Company" />
+			</mx:FormItem>
+			<mx:FormItem label="Company Selection">
+			   		<mx:HBox>
+			   			<mx:RadioButton id="selectCat" group="{personCatagory}" label="select Category"  enabled="{Company.text.length>0?true:false}"/>
+			   	        <mx:ComboBox  id="comboCatagory"  width="150" dataProvider="{model.totalCompaniesColl}" labelField="companyCategory" enabled="{selectCat.selected?true:false}"/>
+			   		</mx:HBox>
+			   		<mx:RadioButton id="createNewCat" group="{personCatagory}" label="New Category" enabled="{Company.text.length>0?true:false}"/>
+			   	     <mx:HBox visible="{createNewCat.selected}" includeInLayout="{createNewCat.selected}">
+			   	     		<mx:Label text="Company Name" width="100"/>
+			   	            <mx:TextInput id="textCatagory" enabled="{createNewCat.selected?true:false}" change="getSelectedCompany()" />
+			   	     </mx:HBox>
+			   	     <mx:HBox visible="{createNewCat.selected}" includeInLayout="{createNewCat.selected}">
+			   	     		<mx:Label text="Company Code" width="100"/>
+			   	        	<mx:TextInput id="catagoryCode"  maxChars="5"/>
+			   	     </mx:HBox>
+            </mx:FormItem>
+            <mx:FormItem id="workflowform" visible="{Client.selected}" includeInLayout="{Client.selected}" label="{model.loc.getString('workflowSelection')}">
+			    <mx:Repeater id="myrep" dataProvider="{model.workflowsCollection}" >
+					<mx:CheckBox id="workFLowCheck" label="{Workflows(myrep.currentItem).workflowLabel}" />
+				</mx:Repeater>
+			</mx:FormItem>
+			<mx:FormItem>
+				<mx:Button label="{model.loc.getString('ok')}" click="findSelectedItem()" enabled="{createNewCat.selected || selectCat.selected }"/>
+			</mx:FormItem>
+		</mx:Form>
+	</mx:TitleWindow>
+</mx:Canvas>

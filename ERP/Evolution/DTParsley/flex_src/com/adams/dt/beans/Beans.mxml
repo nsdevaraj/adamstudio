@@ -1,0 +1,55 @@
+<mx:Object xmlns:mx="http://www.adobe.com/2006/mxml" xmlns="org.spicefactory.parsley.tag.core.*"
+	   		xmlns:control="com.adams.dt.controls.*"
+	        xmlns:vo="com.adams.dt.model.vo.*" 
+	        xmlns:dao="com.adams.dt.dao.*" 
+	        xmlns:collections="com.adams.dt.model.collections.*" 
+	        xmlns:delegate="com.adams.dt.delegates.*" >
+    <mx:Script>
+    	<![CDATA[
+    		import com.adams.dt.dao.CRUDObject;
+    		import com.adams.dt.dao.ServiceObject;
+    		import com.adams.dt.controls.DAOCommand;
+    		import com.adams.dt.utils.Destination;
+    		import com.adams.dt.utils.Action; 
+    		import com.adams.dt.model.collections.AbstractCollection;
+    	]]>
+    </mx:Script>
+    <!-- Service -->
+    <mx:RemoteObject 
+        id="_remoteService" channelSet="{auth}" 
+        showBusyCursor="true" />
+        
+    <mx:ChannelSet id="auth">
+    	<mx:AMFChannel uri="http://localhost:8080/DTParsley/spring/messagebroker/amf"/>
+    </mx:ChannelSet>
+
+	<delegate:AbstractDelegate id="delegate"/>
+   	<dao:ServiceObject/>
+
+    <!-- DAO -->
+    <MxmlObjectDefinitionFactoryTag id="personDao" type="{ CRUDObject }"> <!-- type="{ServiceObject}"--> 
+    	 <PropertyDecoratorTag name="valueObject" idRef="personsVO"/>
+    	 <PropertyDecoratorTag name="destination" value="{Destination.PERSON_DESTINATION}"/>
+	</MxmlObjectDefinitionFactoryTag>
+	  
+    <MxmlObjectDefinitionFactoryTag id="profileDao" type="{ CRUDObject }">  
+    	 <PropertyDecoratorTag name="valueObject" idRef="profilesVO"/>
+    	 <PropertyDecoratorTag name="destination" value="{Destination.PROFILE_DESTINATION}"/>
+	</MxmlObjectDefinitionFactoryTag>
+	
+	<!--  Sequences -->
+ 	<control:LoginControl id="login"/> 
+ 	
+ 	<!-- Model -->
+	<vo:Persons id ="personsVO" />
+	<vo:Profiles id ="profilesVO" />
+	
+    <MxmlObjectDefinitionFactoryTag id="personCollection" type="{ AbstractCollection }">
+    	 <PropertyDecoratorTag name="destination" value="{Destination.PERSON_DESTINATION}"/> 
+	</MxmlObjectDefinitionFactoryTag>
+	
+    <MxmlObjectDefinitionFactoryTag id="profileCollection" type="{ AbstractCollection }">
+    	 <PropertyDecoratorTag name="destination" value="{Destination.PROFILE_DESTINATION}"/> 
+	</MxmlObjectDefinitionFactoryTag>
+	
+</mx:Object>

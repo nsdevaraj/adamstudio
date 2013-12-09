@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:df="com.adams.dt.business.datafilter.data.*"
+	xmlns:f="com.adams.dt.business.datafilter.data.filters.*"
+	xmlns:searchView="com.adams.dt.view.*"
+	xmlns:view="com.adams.dt.view.components.*"
+	xmlns:comp="com.adams.dt.view.components.adminHistory.*"
+	styleName="contsWidth" creationComplete="setHistoryValue()"
+	height="100%" creationCompleteEffect = "{ mx.effects.Fade }" >
+	<mx:Script>
+		<![CDATA[
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.FileDetailsEvent;
+			import com.adams.dt.model.vo.FileDetails;
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.model.vo.Workflows;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.model.vo.Events;
+			import com.adams.dt.event.EventsEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import mx.binding.utils.BindingUtils;
+			import mx.effects.Fade;
+			
+			import mx.events.ListEvent;
+			import mx.events.ItemClickEvent;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import mx.collections.ArrayCollection;
+
+			import com.adams.dt.model.ModelLocator;			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+					
+			[Bindable]
+			public var dpTask:ArrayCollection;
+			[Bindable]
+			private var dpProject:ArrayCollection;
+			[Bindable]
+			private var dpMessage:ArrayCollection;
+			[Bindable]
+			private var dpFile:ArrayCollection;
+			[Bindable]
+			private var dpError:ArrayCollection;
+			private var cursor:IViewCursor;
+			
+			public var sep:String = "&#$%^!@";	
+			
+			private function getFromName( str:String ):String {
+				return str.split( sep )[ 0 ];
+			}
+			
+			private function getSubject(str:String):String {
+				return str.split( sep )[ 1 ];
+			}
+			
+			private function getBody( str:String ):String {
+				return str.split( sep )[ 2 ];
+			}			
+			
+			private function getReplyID( str:String ):String {
+				return str.split( sep )[ 3 ];
+			}
+			
+			private function getEventReplyID( str:String ):String {
+				return str.split( sep )[ 4 ];
+			}
+			
+			public function setHistoryValue():void {
+				model.modelAdminHistoryColl.addEventListener( CollectionEvent.COLLECTION_CHANGE, onCollectionChange,false,0,true ); 
+			}
+			
+			private function onCollectionChange ( event:CollectionEvent ):void {
+				if ( event.kind == CollectionEventKind.ADD ) {
+						setProvider( event.currentTarget as ArrayCollection );
+				}
+				else if ( event.kind == CollectionEventKind.REFRESH ) {
+						setProvider( event.currentTarget as ArrayCollection );
+				}
+			}
+					
+			public function setProvider( value:ArrayCollection ):void {
+				var loopLength:int = value.length;
+				var dataCollectionTask:ArrayCollection = new ArrayCollection();
+				var dataCollectionProject:ArrayCollection = new ArrayCollection();
+				var dataCollectionMessage:ArrayCollection = new ArrayCollection();
+				var dataCollectionFile:ArrayCollection = new ArrayCollection();
+				var dataCollectionError:ArrayCollection = new ArrayCollection();
+				for( var i:int = 0; i < loopLength; i++ ) {
+					var eventvo:Events = Events( value.getItemAt( i ) );
+					var obj:Object = {};	
+					obj.EventId = eventvo.eventId;
+					obj.StartDate = eventvo.eventDateStart;
+					obj.EventType = eventvo.eventType;
+					
+					if( eventvo.personFk != 0 )
+						obj.PersonId = eventvo.personFk;					
+					if( eventvo.taskFk != 0 )
+						obj.TaskId = eventvo.taskFk;
+					if( eventvo.taskFk != 0 )
+						obj.TaskLabel = GetVOUtil.getWorkflowTemplate( eventvo.taskFk ).taskLabel;
+					if( eventvo.projectFk != 0 )
+						obj.ProjectId = eventvo.projectFk;
+					if( eventvo.projectFk != 0 ) {
+						var projectsObj:Projects = GetVOUtil.getProjectObject( eventvo.projectFk );
+						var domain:Categories = Categories( Utils.getDomains( projectsObj.categories ) );
+						if( domain )
+							obj.Domain = domain.categoryName;
+						else
+							obj.Domain = '';
+					}
+					if( eventvo.projectFk != 0 )
+						obj.ProjectName = GetVOUtil.getProjectObject( eventvo.projectFk ).projectName;
+					if( eventvo.personFk != 0 ) {
+						var profileId:int = GetVOUtil.getPersonObject( eventvo.personFk ).defaultProfile;
+						if( profileId != 0 ) {
+							obj.Profile = GetVOUtil.getProfileObject( profileId ).profileCode;
+						}		
+					}	
+					if( eventvo.details )
+						obj.Types = ( eventvo.details ).toString();					
+					if( eventvo.details ) {
+						var toPersonId:String = getEventReplyID( String( eventvo.details ) );
+						var toProfile:String = '';
+						if( toPersonId ) {
+							var toProfileId:int = GetVOUtil.getPersonObject( int( toPersonId ) ).defaultProfile;
+							if( toProfileId != 0 ) {
+								toProfile = GetVOUtil.getProfileObject( toProfileId ).profileCode;
+							}
+						}
+						var fromMessage:String = getBody( String( eventvo.details ) );
+						var finalMessage:String = toProfile + ":" + fromMessage;
+						obj.Information = finalMessage;
+					}
+					if( eventvo.details )					
+						obj.Details = ( eventvo.details ).toString();
+					
+					obj.EventName = eventvo.eventName;
+					switch( eventvo.eventName ) {
+						case 'Project':	
+							dataCollectionProject.addItem( obj );													
+						break;									
+						case 'Task':
+							dataCollectionTask.addItem( obj );								
+						break;
+						case 'Message':	
+							dataCollectionMessage.addItem( obj );							
+						break;	
+						case 'File':	
+							dataCollectionFile.addItem( eventvo );							
+						break;
+						case 'SMTP Error':	
+							dataCollectionError.addItem( obj );							
+						break;	
+						case 'Chat':
+														
+						break;
+						default:
+						break;		
+					} 
+				}
+				dpTask = dataCollectionTask;
+				dpProject = dataCollectionProject;
+				dpMessage = dataCollectionMessage;
+				dpFile = dataCollectionFile;
+				dpError = dataCollectionError;
+			}
+			
+			[Bindable]
+			private var taskview:Object = new Object();
+			private function onTaskItemClick( event:ListEvent ):void {
+				var eventIds:int = int((dasboardGridTask.selectedItem).EventId);
+				for each(var item:Object in dpTask)
+				{
+					if(item.EventId == eventIds)
+					{
+						taskview = item;
+					}					
+				}				
+			}
+			
+			[Bindable]
+			private var projectview:Object = new Object();
+			private function onProjectsItemClick( event:ListEvent ):void {
+				var eventIds:int = int((dasboardGridProject.selectedItem).EventId);
+				for each(var item:Object in dpProject)
+				{
+					if(item.EventId == eventIds)
+					{
+						projectview = item;
+					}					
+				}				
+			}
+			
+			[Bindable]
+			private var messageview:Object = new Object();
+			private function onMessagesItemClick( event:ListEvent ):void {
+				var eventIds:int = int((dasboardGridMessage.selectedItem).EventId);
+				for each(var item:Object in dpMessage)
+				{
+					if(item.EventId == eventIds)
+					{
+						messageview = item;
+					}					
+				}				
+			}
+			
+			[Bindable]
+			private var fileview:Object;
+			public function onFilesItemClick( event:Event ):void {
+				if( event.type == MouseEvent.CLICK ) {
+					event.stopPropagation();
+					Alert.show( 'Do you wnat to replace the file?', 'Confirmation', Alert.YES|Alert.NO, this, onRestore );
+				}
+				else {
+					fileview = event.currentTarget.selectedItem;
+				}
+			}
+			
+			[Bindable]
+			private var errorview:Object = new Object();
+			private function onErrorsItemClick( event:ListEvent ):void {
+				var eventIds:int = int((dasboardGridErrors.selectedItem).EventId);
+				for each(var item:Object in dpError)
+				{
+					if(item.EventId == eventIds)
+					{
+						errorview = item;
+					}					
+				}				
+			}
+			
+			private function onRestore( event:CloseEvent ):void {
+				if( event.detail == Alert.YES ) {
+					model.preloaderVisibility = true;
+					var handler:IResponder = new Callbacks( getProjectAllFile, fault );
+					var fileEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_GETPROJECT_FILEDETAILS, handler );
+					fileEvent.projectId = dasboardGridFiles.selectedItem.projectFk;
+					fileEvent.dispatch();
+				}
+			}
+			
+			private function getProjectAllFile( rpcEvent:Object ):void {
+				var arrc:ArrayCollection = rpcEvent.result as ArrayCollection;
+				var fileItem:FileDetails;
+				for each( var item:FileDetails in arrc ) {
+					if( item.fileId == String( dasboardGridFiles.selectedItem.details ).split( sep )[ 1 ] ) {
+						fileItem = item;
+					}
+				}
+				if( fileItem ) {
+					fileItem.visible = true;
+					var handler:IResponder = new Callbacks( deleteEvent );
+					var updateFileEvent:FileDetailsEvent = new FileDetailsEvent( FileDetailsEvent.EVENT_UPDATE_DETAILS, handler );
+					updateFileEvent.fileDetailsObj = fileItem;
+					updateFileEvent.dispatch();
+				}	
+			}
+			
+			private function fault( rpcEvent:Object ):void {
+				model.preloaderVisibility = false;
+				Alert.show("File Details Could Not be Found");
+			}
+			
+			private function deleteEvent( rpcEvent:Object ):void {
+				var handler:IResponder = new Callbacks( afterDelete );
+				var removeEvent:EventsEvent = new EventsEvent( EventsEvent.EVENT_DELETE_EVENTS, handler );
+				removeEvent.events = dasboardGridFiles.selectedItem as Events;
+				removeEvent.dispatch();
+			}
+			
+			private function afterDelete( rpcEvent:Object ):void {
+				var removeIndex:int = dpFile.getItemIndex( dasboardGridFiles.selectedItem );
+				dpFile.removeItemAt( removeIndex );
+				dpFile.refresh();
+				if( dpFile.length > 0 ) {
+					if( dpFile.length == removeIndex ) {
+						dasboardGridFiles.selectedItem = dpFile.getItemAt( removeIndex - 1 );
+					}
+					else {
+						dasboardGridFiles.selectedItem = dpFile.getItemAt( removeIndex );
+					}
+					fileview = dasboardGridFiles.selectedItem;
+				}
+				else {
+					fileview = null;
+				}
+				model.preloaderVisibility = false;
+			}
+			
+			private function getDomain( obj:Object, dataField:DataGridColumn ):String {
+				var projectsObj:Projects = GetVOUtil.getProjectObject( obj.projectFk );
+				return Categories( Utils.getDomains( projectsObj.categories ) ).categoryName;
+			}
+			
+			private function getProject( obj:Object, dataField:DataGridColumn ):String {
+				return GetVOUtil.getProjectObject( obj.projectFk ).projectName;
+			}
+			
+			private function getProfile( obj:Object, dataField:DataGridColumn ):String {
+				var person:Persons = GetVOUtil.getPersonObject( obj.personFk );
+				return GetVOUtil.getProfileObject( person.defaultProfile ).profileLabel;
+			}
+			
+			
+			
+ 		]]>
+	</mx:Script>
+	<mx:Blur id="myEffect"/>
+		<mx:Text text="{model.loc.getString('History')}"  styleName="mainProjectHeader" />	
+					<mx:Accordion id="accordstack" styleName="bgBorderContainer" top="75" left="5" right="5" bottom="5" 
+						showEffect="{ myEffect }">
+						<comp:PersonsHistory label="Persons" width="100%" height="100%"/>
+						<mx:VBox width="100%" height="100%" label="Projects">
+							<mx:DataGrid id="dasboardGridProject" dataProvider="{ dpProject }" width="100%" itemClick="onProjectsItemClick(event)">
+								<mx:columns>
+							         <mx:DataGridColumn dataField="StartDate"/>
+							         <mx:DataGridColumn dataField="Domain"/>
+							         <mx:DataGridColumn dataField="ProjectName"/>
+							         <mx:DataGridColumn dataField="Types"/>
+							         <mx:DataGridColumn dataField="Profile"/>							         	
+				  				</mx:columns>
+							</mx:DataGrid>
+							<comp:AdminProjectHistory id="projectHistoryId" width="100%" height="300" 
+								eventName="{projectview}" top="0" left="0" right="0" bottom="0"  
+					            visible="{projectview.EventId}" includeInLayout="{visible}"/>
+						</mx:VBox>
+						<mx:VBox width="100%" height="100%" label="Tasks" >
+							<mx:DataGrid id="dasboardGridTask" dataProvider="{ dpTask }" width="100%" itemClick="onTaskItemClick(event)">
+								<mx:columns>
+							         <mx:DataGridColumn dataField="StartDate"/>
+							       	 <mx:DataGridColumn dataField="Domain"/>
+							         <mx:DataGridColumn dataField="ProjectName"/>
+							         <mx:DataGridColumn dataField="TaskLabel"/>	
+							         <mx:DataGridColumn dataField="Profile"/>					        
+				  				</mx:columns>
+							</mx:DataGrid>
+							<comp:AdminTaskHistory id="taskHistoryId" width="100%" height="300" 
+								eventName="{taskview}" top="0" left="0" right="0" bottom="0"  
+					            visible="{taskview.EventId}" includeInLayout="{visible}"/>
+						</mx:VBox>
+						<mx:VBox width="100%" height="100%" label="Messages" >
+							<mx:DataGrid id="dasboardGridMessage" dataProvider="{ dpMessage }" width="100%" itemClick="onMessagesItemClick(event)">
+								<mx:columns>
+							         <mx:DataGridColumn dataField="StartDate"/>
+							         <mx:DataGridColumn dataField="Domain"/>
+							         <mx:DataGridColumn dataField="ProjectName"/>
+							         <mx:DataGridColumn dataField="Profile"/>
+							         <mx:DataGridColumn dataField="Information"/>	
+				  				</mx:columns>
+							</mx:DataGrid>
+							<comp:AdminMessageHistory id="messageHistoryId" width="100%" height="300" 
+								eventName="{messageview}" top="0" left="0" right="0" bottom="0"  
+					            visible="{messageview.EventId}" includeInLayout="{visible}"/>
+						</mx:VBox>
+						<mx:VBox width="100%" height="100%" label="Files" >
+							<mx:DataGrid id="dasboardGridFiles" dataProvider="{ dpFile }" width="100%" itemClick="onFilesItemClick( event )">
+								<mx:columns>
+				     				 <mx:DataGridColumn dataField="eventDateStart" headerText="Event Time"/>
+							         <mx:DataGridColumn labelFunction="getDomain" headerText="Domain"/>
+							         <mx:DataGridColumn labelFunction="getProject" headerText="Reference Name"/>
+							         <mx:DataGridColumn labelFunction="getProfile" headerText="Profile"/>
+							         <mx:DataGridColumn headerText="File Name">
+							         	<mx:itemRenderer>
+							         		<mx:Component>
+								         		<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off"
+								         			     verticalScrollPolicy="off" width="100%">
+							         				<mx:Script>
+									         			<![CDATA[
+									         				import mx.controls.Alert;
+									         				import mx.resources.ResourceBundle;
+									         				
+									         				private function getFile( obj:Object ):String {
+																return String( obj.details ).split( outerDocument.sep )[ 0 ];
+															}
+														]]>
+									         		</mx:Script>
+							         				<mx:Label text="{ getFile( data ) }" left="0" right="{ restore.x - 4 }"/>
+							         				<mx:Image id="restore" source="{ ImageResourceEmbedClass.DELIVERED }" right="4"
+							         					      useHandCursor="true" buttonMode="true" mouseChildren="false"
+							         					      toolTip="Restore The File" click="outerDocument.onFilesItemClick( event )"/>
+							         			</mx:Canvas>
+							         		</mx:Component>
+							         	</mx:itemRenderer>
+							         </mx:DataGridColumn>	
+				  				</mx:columns>
+							</mx:DataGrid>
+							<comp:AdminFilesHistory id="filesHistoryId" width="100%" height="300" 
+													eventName="{ fileview }" top="0" left="0" right="0" bottom="0"  
+					            					visible="{ fileview }" includeInLayout="{ visible }"/>
+						</mx:VBox>
+						<mx:VBox width="100%" height="100%" label="Errors" >
+							<mx:DataGrid id="dasboardGridErrors" dataProvider="{ dpError }" width="100%" itemClick="onErrorsItemClick(event)">
+								<mx:columns>
+				     				 <mx:DataGridColumn dataField="StartDate"/>
+							         <mx:DataGridColumn dataField="Profile"/>
+							         <mx:DataGridColumn dataField="EventName"/>	
+				  				</mx:columns>
+							</mx:DataGrid>
+							<comp:AdminErrorsHistory id="errorHistoryId" width="100%" height="300" 
+								eventName="{errorview}" top="0" left="0" right="0" bottom="0"  
+					            visible="{errorview.EventId}" includeInLayout="{visible}"/>
+						</mx:VBox>
+					</mx:Accordion>					
+		<view:bussinessCard right="5" id="buzCard" width="300" height="61" top="10"/>
+</mx:Canvas>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.DefaultTemplate" table="default_template">
+        <id name="defaultTemplateId" type="integer" column="default_template_id">
+            <generator class="increment" />
+        </id> 
+        <property name="defaultTemplateLabel">
+            <column name="default_template_label" />
+        </property>
+		
+        <property name="companyFK">
+            <column name="company_fk" />
+        </property>
+       	
+    </class>   
+    
+     <query name="DefaultTemplate.findById">
+        select u from DefaultTemplate u where u.companyFK=?
+    </query>  
+</hibernate-mapping>

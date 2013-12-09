@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	backgroundAlpha="0"
+	top="5"
+	bottom="20"
+	left="20"
+	right="20"
+	xmlns:viewset="com.adams.dt.view.*"
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:comp="com.adams.dt.view.filemanagement.*"
+	creationPolicy="all">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.events.CloseEvent;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Persons;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.PersonsEvent;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.event.TasksEvent;
+			import mx.events.CollectionEvent;
+			import mx.core.UIComponent;
+			import com.adams.dt.model.ModelLocator;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import com.adams.dt.view.ImageRenderer;
+			import flash.net.FileReference;
+			import flash.net.FileFilter;
+	        import flash.utils.ByteArray;
+			
+			private var fileReferenceimp:FileReference;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			[Bindable]
+            [Embed(source="assets/images/pdfdownload.png")]
+            public var pdfDownload:Class;
+
+			
+			/* private var _fileList:ArrayCollection;
+			public function set FileListCollection (value:ArrayCollection):void
+			{
+				_fileList = value;
+				//model.modelTileFileCollection = value;
+				Alert.show("FileView :"+model.modelTileFileCollection.length);
+			}
+			[Bindable]
+			public function get FileListCollection():ArrayCollection
+			{
+				return _fileList;
+			} */
+			
+			private var _basicFileCollection:ArrayCollection;
+			[Bindable(event="projectPropertyChange")]
+			public function set tileFileCollection (value:ArrayCollection):void
+			{
+				if(!hasEventListener("projectPropertyChange")) addEventListener("projectPropertyChange",updateContainer,false,0,true);
+					if(value!=null){
+						_basicFileCollection = value; 
+						dispatchEvent (new Event ("projectPropertyChange"));
+					}
+			}	
+			public function get tileFileCollection ():ArrayCollection
+			{
+				return _basicFileCollection;
+			}
+			[Bindable]
+			public var creation:ArrayCollection;
+			private function updateContainer(event:Event):void
+			{
+				//Alert.show("tileFileCollection :"+tileFileCollection.length);
+				/* creation = new ArrayCollection()	
+				for each( var item:FileDetails in tileFileCollection)
+				{		
+					creation.addItem(item);
+					creation.refresh();
+				}
+				tileFileId.dataProvider = creation; */
+				
+				//tileFileId.dataProvider = tileFileCollection;
+				repTileFileId.dataProvider = tileFileCollection;
+			}
+			/* private function downloadAttechments(event:MouseEvent):void
+			{
+				downloadFilePaths(int(event.currentTarget.name));
+			} */	
+			private function downloadAttechments(event:MouseEvent):void
+			{
+				
+				//downloadFilePaths(int(event.currentTarget.name));
+				
+				downloadFilePaths(int(event.currentTarget.fileId));
+				
+			
+			}
+			private function downloadFilePaths(fileLocalId:Number):void
+			{
+				//var event:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_FILEDETAILS);
+				// replace for (EVENT_GET_FILEDETAILS to EVENT_GET_IMPFILEDETAILS)
+				/* var event:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_GET_IMPFILEDETAILS);
+				event.filedetailsVo = new FileDetails();
+				event.filedetailsVo.fileId = fileLocalId;
+          		CairngormEventDispatcher.getInstance().dispatchEvent( event ); */
+          		          		
+          		for each(var item:FileDetails in tileFileCollection)
+				{	
+					if(item.fileId == fileLocalId)
+					{		
+						model.saveRefFilename = item.fileName;				
+						var events:FileDetailsEvent = new FileDetailsEvent(FileDetailsEvent.EVENT_IMPSAVEAS_FILE);
+						events.impFileVo = new FileDetails();
+						events.impFileVo.filePath = item.filePath;
+						CairngormEventDispatcher.getInstance().dispatchEvent( events );
+						/* var evtArr:Array = [events]
+					 	var handler:IResponder = new Callbacks(impSeparateFileSave);
+						var seq:SequenceGenerator = new SequenceGenerator(evtArr,handler)
+			          	seq.dispatch(); */
+					}
+				}
+			}	
+			private function impSeparateFileSave(rpcEvent : Object):void
+			{
+				fileReferenceimp = new FileReference();
+				fileReferenceimp.save(model.modelIMPByteArrray,model.saveRefFilename);		
+	        }
+			
+			public function impSaveMessage(event:MouseEvent):void
+			{	
+          		fileReferenceimp = new FileReference();          		
+				fileReferenceimp.save(model.modelIMPByteArrray,model.saveRefFilename);
+			} 	
+            				
+		]]>
+	</mx:Script>
+	<mx:VBox width="100%" height="100%"	verticalGap="0" horizontalCenter="0" backgroundAlpha="0" styleName="technicalFormContainer">
+		<mx:Canvas width="100%" height="100%" id="maincan" backgroundAlpha="0">	
+			<mx:Tile id="tileFileId" backgroundColor="#363636" direction="horizontal" width="100%" height="100%">				
+				<mx:Repeater id="repTileFileId">
+					<mx:VBox width="200" height="200">
+						<viewset:ImageRenderer id="imagRend" fileId="{repTileFileId.currentItem.fileId}" fileName="{repTileFileId.currentItem.fileName}" checkClick="downloadAttechments(event);" buttonClick="impSaveMessage(event);"/>
+					</mx:VBox>
+				</mx:Repeater>
+			</mx:Tile>
+
+		</mx:Canvas>
+	</mx:VBox>		
+</mx:Canvas>

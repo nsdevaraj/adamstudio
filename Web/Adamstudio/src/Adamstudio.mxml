@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" width="100%" minHeight="500"
+			   xmlns:mx="library://ns.adobe.com/flex/halo" 
+			   xmlns:local="*" xmlns:view="view.*" backgroundColor="#262626"  creationComplete="init()">
+	<fx:Script> 
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import view.*;
+			[Bindable]
+			private var footerLinkData:ArrayCollection = new ArrayCollection(["Home","RIA","showcase","Methodology","Reference","Blog","Contact"]);
+			private var contactView:Contact = new Contact();
+			private var homeView:HomeView = new HomeView();
+			private var stageView:StageView = new StageView();
+			private var eventsView:Events= new Events();
+			private var blog:BlogReader = new BlogReader();
+			private var reference:Reference= new Reference();
+			
+			private var ria:RIA= new RIA();
+			private var methodology:Methodology= new Methodology();
+			private var myMenuBtns:Array = [];
+			
+			private function init():void{
+				viewer.addElement(homeView);
+				myMenuBtns = [homeBtn,riaBtn,showcaseBtn,methBtn,refBtn,blogBtn,contactBtn];
+			}
+			private function setTabMenu(event:Event):void{
+				
+				for each (var but:Button in myMenuBtns) 
+				{
+					but.selected = false;
+					trace(but.selected);
+				}
+				
+				viewer.removeAllElements();
+				switch(event.currentTarget.id){
+				 case "homeBtn":
+					 homeView.setStyle("addEffect",fadeIn);
+					 viewer.addElement(homeView);
+					break;
+				 case "riaBtn":
+					 ria.setStyle("addedEffect",fadeIn);
+					 viewer.addElement(ria);
+					 break;
+				 case "showcaseBtn":
+					 stageView.setStyle("addedEffect",fadeIn);
+					 viewer.addElement(stageView);
+					 break;
+				 case "methBtn":
+					 methodology.setStyle("addedEffect",fadeIn);
+					 viewer.addElement(methodology);
+					 break;
+				 case "refBtn":
+					 reference.setStyle("addedEffect",fadeIn);
+					 viewer.addElement(reference);
+					 break;
+				 case "blogBtn": viewer.addElement(blog);
+					 break;
+				 case "contactBtn":
+					 contactView.setStyle("addedEffect",fadeIn);
+					 viewer.addElement(contactView);
+					 break;
+				}
+				event.currentTarget.selected = true;
+				/* var uiCom:UIComponent = new UIComponent();
+				uiCom = UIComponent(myPages[myArray.indexOf(event.currentTarget)]);
+				uiCom.width = 980; */
+				//viewer.addChild(uiCom);
+				
+				/* event.currentTarget.selected = true;
+				viewer.selectedIndex = myArray.indexOf(event.currentTarget) 
+				if(event.currentTarget.id == "homeBtn"){
+					mainView.pageViewer.selectedIndex = 0;	
+				} */ 
+			}
+			private function navPage(event:Event):void{
+				 
+			//trace(Button(myMenuBtns[footMenu.selectedIndex]))
+				myMenuBtns[footMenu.selectedIndex].dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:Fade id="fadeOut"
+				duration="500"
+				/>
+		<s:Fade id="fadeIn"
+				duration="1000"
+				/>
+	</fx:Declarations> 
+	
+	<fx:Style source="assets/css/MainStyle.css"/>
+	<!--HEADER-->
+	<s:Scroller width="100%" height="{this.height}">
+	<s:Group width="100%" height="100%"  >
+	<s:SkinnableContainer id="headerCanvas" skinClass="assets.HeaderBgImg"  
+						   width="100%" height="95">
+		<mx:Canvas height="100%" width="980" horizontalCenter="0">
+			<mx:Canvas width="285" height="100%">
+				<mx:Image left="0" verticalCenter="0" source="{ImageResourceExample.brennusLogo}"/>
+			</mx:Canvas>
+			<mx:HBox top="5" right="10" verticalAlign="middle">
+				<mx:Image source="{ImageResourceExample.smallMap}"/>
+				<mx:Label text="DUBLIN - LONDON - PARIS - CHENNAI - PONDICHERRY" styleName="locationText"/>
+			</mx:HBox>
+			<mx:HBox bottom="9" horizontalGap="2" right="10" verticalAlign="bottom" horizontalAlign="right">
+				<mx:Button styleName="MenuBtn" selected="true" id="homeBtn" label="Home" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="riaBtn" label="RIA" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="showcaseBtn" label="showcase" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="methBtn" label="Methodology" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="refBtn" label="Reference" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="blogBtn" label="Blog" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+				<mx:Button styleName="MenuBtn" id="contactBtn" label="Contact" toggle="true" click="setTabMenu(event)" useHandCursor="true" buttonMode="true"/>
+			</mx:HBox>		
+		</mx:Canvas>
+	</s:SkinnableContainer>
+	
+	<!--BODY-->
+		<s:Group id="viewer" width="980"   top="{headerCanvas.height-1}" horizontalCenter="0">
+		</s:Group>
+		<!--<mx:Canvas includeInLayout="false" visible="false" >
+				<view:Home id="mainView" includeInLayout="false" visible="false" width="980" height="100%"/>
+				<view:stageView id="headerView" width="980" height="100%" includeInLayout="false" visible="false"/>
+				<view:about id="aboutView" styleName="transparentBackground" width="980" height="100%" includeInLayout="false" visible="false"/>
+				<view:Events id="eventsView" styleName="transparentBackground" width="980" height="100%" includeInLayout="false" visible="false"/>	
+		</mx:Canvas>-->
+		
+		<!--<mx:ViewStack id="viewer" height="100%"  top="{headerCanvas.height-1}" horizontalCenter="0">
+			<view:Home id="mainView" width="980" height="100%"/>
+			<view:stageView id="headerView" width="980" height="100%"/>
+			<view:about styleName="transparentBackground" width="980" height="100%"/>
+			<view:Events styleName="transparentBackground" width="980" height="100%"/>
+		</mx:ViewStack>-->
+		<!--<local:BlogReader id="blogReaderView" width="980"/>-->
+		<!--FOOTER-->
+		<mx:Canvas id="footerCanvas" top="{headerCanvas.height+viewer.height+10}" backgroundColor="#eeeeee"
+				   borderColor="#cfcfcf" borderStyle="solid" horizontalCenter="0" width="980" height="40">
+			<mx:Label selectable="true" text="Copyrights © 2009 Brennus SA" left="10" 
+					  verticalCenter="0" color="#666666"/>
+			<mx:LinkBar id="footMenu" styleName="footerLinkBar" verticalCenter="0" right="10" itemClick="navPage(event)"
+						dataProvider="{footerLinkData}"/>
+		</mx:Canvas>
+	</s:Group>
+	</s:Scroller>
+	
+</s:Application>

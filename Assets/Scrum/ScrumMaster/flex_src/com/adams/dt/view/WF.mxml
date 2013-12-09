@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox  xmlns:mx="http://www.adobe.com/2006/mxml"
+	  borderStyle="solid" borderColor="#232323"  >
+		<mx:Script>
+			<![CDATA[
+				import com.adams.dt.model.vo.Profiles;
+				import com.adams.dt.model.vo.WorkFlowset;
+				import com.adams.dt.utils.GetVOUtil;
+				[Bindable] 
+				private var _selectedWFTemp:WorkFlowset; 
+				
+				public function get selectedWFTemp():WorkFlowset {
+					return _selectedWFTemp
+				}
+				public function set selectedWFTemp( value:WorkFlowset):void {
+					_selectedWFTemp = value; 
+				} 
+				
+			]]>
+		</mx:Script>
+		<mx:Box width="100%" backgroundColor="{Profiles(GetVOUtil.getVOObject(_selectedWFTemp.frontWFTask.profileFK,GetVOUtil.profileList,'profileId',Profiles)).profileColor}">
+			<mx:Label text="{Profiles(GetVOUtil.getVOObject(_selectedWFTemp.frontWFTask.profileFK,GetVOUtil.profileList,'profileId',Profiles)).profileLabel}"/>
+		</mx:Box>
+		
+		<mx:Label id="titleTxt"   text="{_selectedWFTemp.frontWFTask.taskLabel}" top="10" width="120"/>
+		<mx:HBox width="100%" horizontalGap="5"   id="box"  >
+			<mx:Button width="50" id="aBox" styleName="nextBtn" alpha="{GetVOUtil.selectedWFTemplateID == WorkFlowset(aBox.data).frontWorkFlowId ? 1 : 0.5}"  visible="{_selectedWFTemp.frontWFTask != null}"/>
+			<mx:Spacer width="100%"/>
+			<mx:Button width="50" id="bBox" styleName="previousBtn"  alpha="{GetVOUtil.selectedWFTemplateID == WorkFlowset(bBox.data).backWorkFlowId ? 1 : 0.5}" visible="{_selectedWFTemp.backWFTask != null}"/>
+		</mx:HBox>
+</mx:VBox>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" >
+	
+	<fx:Script>
+		<![CDATA[
+			import assets.skins.ButtonCloseSkin;
+			
+			import spark.components.List;
+			
+			protected function personBtn_clickHandler(event:MouseEvent):void
+			{
+				List(owner).dataProvider.removeItemAt( List(owner).dataProvider.getItemIndex( data ) );
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Button label="{data.personFirstname}" id="personBtn"  
+			  skinClass="assets.skins.ButtonCloseSkin" click="personBtn_clickHandler(event)"/>
+	
+</s:ItemRenderer>

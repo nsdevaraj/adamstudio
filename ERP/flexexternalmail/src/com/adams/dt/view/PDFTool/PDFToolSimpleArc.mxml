@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="noteUpdater()" 
+	xmlns:PDFTool="com.adams.dt.view.PDFTool.*" width="100%" height="100%" verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" creationPolicy="all" >
+
+	<mx:Script>
+		<![CDATA[ 
+			import com.adams.dt.event.FileDetailsEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.model.vo.Tasks;
+		 
+			import mx.effects.easing.Circular;
+			import mx.effects.Resize;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.FileDetails;
+			import com.adams.dt.event.PDFTool.CommentEvent;
+			import mx.events.ListEvent;
+			import mx.events.CollectionEventKind;
+			import mx.events.CollectionEvent;
+			import com.adams.dt.model.ModelLocator;
+			import mx.events.ResizeEvent;
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var mainArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var tempArrayCol:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var model : ModelLocator = ModelLocator.getInstance();
+			
+			 private var shadow:DropShadowFilter = new DropShadowFilter();
+			private function noteUpdater():void{
+				 shadow.distance = 4;
+				 shadow.blurX=shadow.blurY=6;
+				 shadow.alpha=0.8;
+				 shadow.angle = -90;
+				 dataProvideFunction();
+				/*  menubar.filters=[shadow];
+				 commentList.filters=[shadow];
+				 
+				 pdf2Btn.selected=true;
+				 commentList.pdffile=PDFMainContainer.PDF2;
+				 RegionPointerBtn.visible=true;
+	       		 RegionCompareBtn.visible=false;
+				 RegionResetBtn.visible=false; */ 
+			} 
+			[Bindable]
+			private var rowCo:Number=1;
+			[Bindable]
+			private var columnCo:Number=1;
+			private var _dataProvider:ArrayCollection = new ArrayCollection();
+			[Bindable(event="dataProviderChange")]
+			public function set dataProvider (value:ArrayCollection):void
+			{
+				if (value != _dataProvider)
+				{
+					if (_dataProvider)
+					{
+						_dataProvider.removeEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange);
+					}
+					
+					_dataProvider = value;
+					if (_dataProvider)
+					{
+						_dataProvider.addEventListener
+							(CollectionEvent.COLLECTION_CHANGE, onDataProviderChange);
+					}
+					dispatchEvent (new Event ("dataProviderChange"));
+				} 
+				dataProvideFunction()
+			}
+			
+						
+			public function get dataProvider ():ArrayCollection
+			{
+				return _dataProvider;
+			}
+			private function onDataProviderChange (event:CollectionEvent):void
+			{
+				if ((event.kind == CollectionEventKind.ADD) ||
+					(event.kind == CollectionEventKind.REMOVE) ||
+					(event.kind == CollectionEventKind.REPLACE) ||
+					(event.kind == CollectionEventKind.RESET))
+				{
+					dispatchEvent (new Event ("dataProviderChange"));
+					dataProvideFunction()
+				}
+			}
+			
+			
+			
+			[Bindable(event="dataProviderChange")]
+			private function dataProvideFunction():void{
+				model.pdfTileList = true;
+				BackBtn.visible = true;
+				trace("dataProvider.length : "+dataProvider.length)
+			    if(dataProvider.length==1){			    	
+			    	if(!model.pdfDetailVO.localeBool){
+			    		model.pdfDetailVO.localeBool = true;
+			    		tileList.selectedItem = dataProvider.getItemAt(0);
+			    		tileList.selectedIndex = 0;
+			    		
+			    	}
+			    	tileList.rowCount=1;tileList.columnCount=1;
+			    	model.pdfTileList = false;
+			    	BackBtn.visible = false;
+			    }
+                if(dataProvider.length==2){tileList.rowCount=1;tileList.columnCount=2;}
+                if(dataProvider.length>2 && dataProvider.length<=4){tileList.rowCount=2;tileList.columnCount=2;}
+                if(dataProvider.length>4 && dataProvider.length<=6){tileList.rowCount=2;tileList.columnCount=3;}
+                if(dataProvider.length>6 && dataProvider.length<=9){tileList.rowCount=3;tileList.columnCount=3;}
+                if(dataProvider.length>9 && dataProvider.length<=12){tileList.rowCount=3;tileList.columnCount=4;}
+                if(dataProvider.length>12){tileList.rowCount=3;tileList.columnCount=5;}
+                if(dataProvider.length>0){
+                	model.pdfloader = false;
+                }else{                	
+                	model.pdfloader = true;
+                }
+                dataProvider.refresh();
+			} 
+			private function tileList_itemClick(evt:ListEvent):void {
+				model.pdfTileList = false;
+				var event : CommentEvent = new CommentEvent(CommentEvent.GET_COMMENT);
+				if(model.compareTask.taskId != 0&&model.comaparePdfFileCollection.length>0){					
+					model.compareTask.taskFilesPath = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).filePath//TileList(evt.currentTarget).selectedItem.filePath;
+					event.compareFileFk = FileDetails(model.comaparePdfFileCollection.getItemAt(TileList(evt.currentTarget).selectedIndex)).remoteFileFk;
+				}
+				model.currentTasks.previousTask.taskFilesPath = TileList(evt.currentTarget).selectedItem.filePath;
+				model.currentSwfFile = FileDetails(TileList(evt.currentTarget).selectedItem);
+				event.fileFk = model.currentSwfFile.remoteFileFk;	
+				CairngormEventDispatcher.getInstance().dispatchEvent( event );
+			}  
+	       	private function onComparePdfChange():void{
+	       		 
+	       	}
+	       
+	       	[Bindable]
+	       	public var displayINDScreen:Boolean;
+		]]>
+	</mx:Script>
+	<!--<PDFTool:PDFTool id="pdfTool" img1URL="{model.compareTask.taskFilesPath}" 
+		img2URL="{displayINDScreen ? model.currentTasks.taskFilesPath : model.currentTasks.previousTask.taskFilesPath}"
+		dataProvider="{model.pdfDetailVO.commentListArrayCollection}"/>-->
+		<PDFTool:PDFTool id="pdfTool" dataProvider="{model.pdfDetailVO.commentListArrayCollection}"/>
+	<mx:ComboBox visible="{model.compareTasksCollection.length>2?true:false}" includeInLayout="{visible}" id="comparePdf" width="120" left="10" top="10" dataProvider="{model.compareTasksCollection}" change="onComparePdfChange()" labelField="label" selectedIndex="{model.compareTasksCollection.length-1}"/>	
+	<mx:Button id="BackBtn"
+			useHandCursor="true"
+			buttonMode="true" x="10" y="10"
+			label="Back"
+			click="{model.pdfTileList = true}"/>
+	<mx:TileList id="tileList" visible="{model.pdfTileList}" includeInLayout="{tileList.visible}"
+		itemRenderer="{new ClassFactory(PDFTileItemRenderer)}"
+		liveScrolling="true"
+		themeColor="haloSilver"
+		verticalScrollPolicy="auto" dataProvider="{dataProvider}"
+		width="{this.width}" height="{this.height}" backgroundColor="#333333" color="#FFFFFF" textRollOverColor="#000000" textSelectedColor="#000000"
+		itemClick="tileList_itemClick(event);"  selectionColor="#CCCCCC" rollOverColor="#D6D6D6"/>
+</mx:Canvas>

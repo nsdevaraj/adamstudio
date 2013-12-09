@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"  
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+		 initialize="init()" xmlns:components="com.adams.suite.views.components.*" 
+		 >
+	<fx:Script>
+		<![CDATA[
+			import com.adams.suite.models.vo.CurrentInstance;
+			import com.adams.suite.utils.Utils;
+			
+			import mx.collections.XMLListCollection;
+			import mx.events.IndexChangedEvent;
+			import mx.events.ResizeEvent;
+			
+			[Bindable]
+			[Inject]
+			public var currentInstance:CurrentInstance;   
+			//XML Change Event
+			private static const XMLCHANGE_EVENT:String = "questionXMLChange";
+			//Question answered correctly
+			private var _isAnswerCorrect:Boolean;
+			//Question XML 
+			private var _questionXML:XML;
+			[Bindable(event=XMLCHANGE_EVENT)]
+			public function set questionXML (value:XML):void
+			{
+				if (value != _questionXML)
+				{
+					_questionXML = value;
+					dispatchEvent (new Event (XMLCHANGE_EVENT));					
+				}
+			}		
+			public function get questionXML ():XML
+			{
+				return _questionXML;
+			} 
+			// XML change event on navigation
+			private function onXMLChange(event:Event):void{
+				initQuestionType(questionXML.question.@type); 
+			}
+			//initialize
+			private function init():void{
+				addEventListener(XMLCHANGE_EVENT,onXMLChange,false,0,true);
+				broswer.htmlLoader.addEventListener(Event.COMPLETE, onHtmlLoadComplete);
+				broswer.addEventListener(Event.LOCATION_CHANGE, onHtmlLocationChange);
+			}
+			private function onHtmlLocationChange(e:Event):void
+			{
+				loaderTxt.visible=true
+			}
+			private function onHtmlLoadComplete(e:Event):void
+			{
+				loaderTxt.visible=false
+			}
+			// Select Question Type and change Display
+			private function initQuestionType(qType:String):void{
+				var parentXML:XMLList = Utils.treeData..node.(@qid ==questionXML.@id);
+				//questionNumber.text = 'Question: '+questionXML.@label;
+				questionNumber.text = '/'+ currentInstance.questions.length();
+				
+				questionArea.text = questionXML.question;
+				var chapIndex:int = int(String(parentXML.@arrayName).substr(8,1));
+				chapterName.text =Utils[Utils.CHAPTITLE+int(chapIndex)]; 
+				for( var j:int=0; j< questionXML.answer.length(); j++){
+					if(questionXML.answer[j].@correct!='y')
+						questionXML.answer[j].@correct= 'n';
+				} 
+				dgp.curData =questionXML
+				dgp.updateSelectionSignal.add(updateSelection); 
+				solutionHeader.visible = false;
+			} 
+			
+			// On selection, update the status array and evaluate
+			private function updateSelection(qStat:Array):void{
+				var parentXML:XMLList = Utils.treeData..node.(@qid ==questionXML.@id);
+				var chapIndex:int = int(parentXML.@index);
+				currentInstance[parentXML.@arrayName][chapIndex] = qStat;
+				var qStatSolution:Number; 
+				feedBack.text="Solution: "+"\r"+questionXML.question.@feedback;
+				broswer.location=questionXML.question.@link;
+				Object(parent.parent.parent.parent.parent).genResult(false); 
+				changeHandler();
+			} 
+			private function changeHandler():void { 
+				if(currentInstance.isLearnMode){
+					feedBack.visible = true;
+					solutionHeader.visible = true;
+					feedBack.text=questionXML.question.@feedback;
+					broswer.visible = true;
+					broswer.location=questionXML.question.@link;
+				}else{
+					solutionHeader.visible = false;
+					feedBack.visible = false;
+					broswer.visible = false;
+				}
+			}  
+			
+		]]>
+	</fx:Script>  
+		 
+		<s:HGroup width="100%" top="0" verticalAlign="middle">
+			<s:Label id="chapterName" styleName="headerStyle" />
+			<mx:Spacer width="100%" />
+			<s:Label id="questionLbl"  text="Question" styleName="headerStyle"/>
+			<s:TextInput fontSize="20" id="gotoTxt" maxChars="2" restrict="0-9" widthInChars="2" paddingBottom="0"
+						 height="22"  width="30" paddingTop="2"  />
+			<s:Label id="questionNumber" styleName="headerStyle"/>
+			<s:ToggleButton id="flagreviewBtn" toolTip="Flag For review" includeInLayout="{flagreviewBtn.visible}"/>
+		</s:HGroup>
+		<s:Scroller left="0" right="0" top="38" height="100%">	
+			<s:VGroup id="qgroup" gap="10" paddingTop="10">
+				<s:Label id="questionArea" styleName="headerStyle" width="100%" />
+				<components:DataComp  width="100%" id="dgp" left="25" enabled="{currentInstance.isResultReviewMode}" />
+				<mx:Spacer width="12"/>
+				<s:Label text="Solution :" id="solutionHeader" styleName="headerStyle"/>
+				<s:Label id="feedBack" width="100%"  />
+				<mx:Spacer width="6"/>
+				
+				<s:Group width="100%"  height="400" includeInLayout="{broswer.visible}">
+					<mx:HTML id="broswer" horizontalScrollPolicy="off"
+							 width="100%" height="100%" visible="false" />
+					<s:Group id="waitBrowser" y="{broswer.y}" width="100%" height="100%" visible="{broswer.visible}">
+						<mx:ProgressBar indeterminate="true" label="Loading Help..." id="loaderTxt" horizontalCenter="0" verticalCenter="0"/>
+					</s:Group>	
+				</s:Group>
+			</s:VGroup>
+		</s:Scroller>
+
+</s:Group>

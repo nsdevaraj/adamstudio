@@ -1,0 +1,371 @@
+<?xml version="1.0" ?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	left="0"
+	right="0"
+	height="25"> 
+	<mx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.controls.Text;
+			import com.adams.dt.model.vo.Workflowstemplates;
+			import mx.collections.ArrayCollection;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import mx.rpc.events.ResultEvent;
+			import com.adams.dt.event.TasksEvent;
+			import mx.events.ToolTipEvent;
+			import mx.controls.TextArea;
+			import mx.controls.HTML;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.business.util.GetVOUtil;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.ProjectStatus;
+    		import com.adams.dt.model.vo.Tasks;
+    		import com.adams.dt.model.vo.TaskStatus;
+    		import com.adams.dt.model.vo.Profiles;
+    		import com.adams.dt.model.ModelLocator;
+    		import mx.controls.Alert;
+    		import mx.utils.ObjectUtil; 
+    		[Bindable]
+   			private var mouseoverComment:String='';
+   			[Bindable]
+   			private var color:String='redButton';
+   			[Bindable]
+   			private var model:ModelLocator = ModelLocator.getInstance();
+   			[Bindable]
+			private var toolTipText:TextArea = new TextArea();
+   			private var profile:String =  Profiles(model.profilesCollection.getItemAt(0)).profileCode;
+   			
+   			private var sep:String = "&#$%^!@";	
+			private function getFromName(str:String):String{
+				return str.split(sep)[0];
+			}
+			private function getSubject(str:String):String{
+				return str.split(sep)[1];
+			}
+			private function getBody(str:String):String{
+				return str.split(sep)[2];
+			}
+   			private function getReplyID(str:String):String{
+				return str.split(sep)[3];
+			}
+   			
+   			/**
+   			 *  set status icon based on task status
+   			 */
+    		private function getImage(dataStr:int):Class{
+    			if(Tasks(data).projectObject.projectStatusFK == ProjectStatus.URGENT){
+    				return getUrgentImage(dataStr);
+    			}else{
+	    			switch(dataStr){
+	    				case TaskStatus.WAITING:
+	    					return ImageResourceEmbedClass.WAITING;
+	    				break ;
+	    				case TaskStatus.INPROGRESS:
+	    					return ImageResourceEmbedClass.INPROGRESS;
+	    				break;
+	    				case TaskStatus.STANDBY:
+	    					return ImageResourceEmbedClass.STANDBY;
+	    				break;
+	    				case TaskStatus.NOTSTARTED:
+	    					return ImageResourceEmbedClass.DELIVERED;
+	    				break;
+	    				case TaskStatus.FINISHED:
+	    					return ImageResourceEmbedClass.FINISHED;
+	    				break;
+	    			}
+	    		}
+    			return new Class();
+    		}
+    		/**
+   			 *  set the urgent icons
+   			 */
+    		private function getUrgentImage(dataStr:int):Class{
+    				switch(dataStr){
+	    				case TaskStatus.WAITING:
+	    					return ImageResourceEmbedClass.URGENTWAITING;
+	    				break ;
+	    				case TaskStatus.INPROGRESS:
+	    					return ImageResourceEmbedClass.URGENTINPROGRESS;
+	    				break;
+	    				case TaskStatus.STANDBY:
+	    					return ImageResourceEmbedClass.STANDBY;
+	    				break;
+	    				case TaskStatus.NOTSTARTED:
+	    					return ImageResourceEmbedClass.DELIVERED;
+	    				break;
+	    				case TaskStatus.FINISHED:
+	    					return ImageResourceEmbedClass.FINISHED;
+	    				break;
+	    			}
+    			return new Class();
+    		}
+    		/**
+   			 *  set the color for button based on task status
+   			 */
+    		private function TaskStatusColor(startDate:Date,endDate:Date):String{
+    			
+    			var DiffDay:Number=ObjectUtil.dateCompare(startDate,endDate);
+    			
+    			if(DiffDay==0){
+    				color="todoGreenBTN";
+    			}else if(DiffDay==1){
+    				color="todoBlueBTN";
+    			}else if(DiffDay==-1){
+    				color="todoRedBTN";
+    			}else{
+    				color="todoRedBTN";
+    			}
+    			return color;
+    		} 
+    		
+    		public static var monthDisplay:Array =  ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","sep",
+		 								"Oct","Nov","Dec"];
+		 	/**
+   			 *  set the creation date in following format
+   			 * 	Eg: 4-feb-2009 09:30'
+   			 */
+    		public function getDate(date:Date):String{
+    			var str:String = Utils.dateFormat( date ) + " "+ date.hours + ":" + date.minutes;
+    			return str;
+    		}
+    		
+    		/**
+   			 *  set category visiblity
+   			 */
+   			public function get visibility():Boolean{
+    			if(profile == 'CLT'){
+    				return false;
+    			}
+    			return true;
+    		}
+    		
+    		private function getFromText( task:Tasks ):String {
+    			var resultStr:String;
+    			if( task.previousTask ) {
+    				//resultStr = task.previousTask.workflowtemplateFK.profileObject.profileCode;
+    				var strProfileLabel:String = task.previousTask.workflowtemplateFK.profileObject.profileLabel;    				
+    				resultStr = strProfileLabel.substr(0,3);
+    			}
+    			else {
+    				var proint:String = getReplyID(String(task.taskComment)).split(",")[1];    				
+    				//resultStr = getProfileId(int(proint));
+    				var strProfileLabels:String = getProfileId(int(proint));
+    				resultStr = strProfileLabels.substr(0,3);
+    			}
+    			return resultStr;
+    		}
+    		private function getProfileId(profileIdstr:int):String{
+    			var resultProfileStr:String = '';
+				for each(var pro:Profiles in model.teamProfileCollection){
+					if(pro.profileId == profileIdstr){
+						resultProfileStr = pro.profileLabel;
+					}
+				}
+				return resultProfileStr;
+			}			    
+		    
+		    private function getValidationImage(dataValidation:String):Class{
+				switch(dataValidation){
+    				case "0":
+    					return ImageResourceEmbedClass.maybeLabel;
+    				break ;
+    				case "1":
+    					return ImageResourceEmbedClass.noLabel;
+    				break;
+    				case "2":
+    					return ImageResourceEmbedClass.yesLabel;
+    				break;
+    				default:
+    					return ImageResourceEmbedClass.maybeLabel;
+					break;				
+    			}
+    			return new Class();
+    		}
+		    private function commonStatusDisply(validationName:String,tasks:Tasks):Class{
+		    	var dynamicPropertyPj:Propertiespj = initializeValidation(validationName);
+		    	var tempproject:Projects = GetVOUtil.getProjectObject( tasks.projectFk );		    	
+		    	dynamicPropertyPj = Utils.getPropertyPj(dynamicPropertyPj.propertyPresetFk,tempproject.propertiespjSet);
+				var classimage:Class = getValidationImage(dynamicPropertyPj.fieldValue);
+				return classimage;
+		    }
+		    private function initializeValidation(validationName:String):Propertiespj
+			{
+				var cppvalidPropertyPj:Propertiespj = new Propertiespj();
+				var propPreset:Propertiespresets = getPropPreset( validationName );
+				cppvalidPropertyPj.propertyPreset = propPreset;
+				cppvalidPropertyPj.propertyPreset.propertyPresetId = propPreset.propertyPresetId;
+				return cppvalidPropertyPj;
+			}		
+			private function getPropPreset( value:String ):Propertiespresets {
+				for each( var item:Propertiespresets in model.propertiespresetsCollection ) {
+					if( item.fieldName == value ) {
+						return item;
+					}
+				}
+				return null;
+			}			
+			private function toolTipProjectTasks():void {
+				var handler:IResponder = new Callbacks( dynamicLastTasks );
+				var tasksEvent:TasksEvent = new TasksEvent( TasksEvent.EVENT_TODO_LASTTASKSCOMMENTS, handler );
+				tasksEvent.lastTaskProjectId = data.projectObject.projectId;
+				tasksEvent.dispatch();
+			}
+			
+			private function dynamicLastTasks( rpcEvent:ResultEvent ):void {
+				var arrc : ArrayCollection = rpcEvent.result as ArrayCollection;
+				var comment:String = getLastComments( arrc );
+				if(comment){
+					var valueint:int = comment.search("TEXTFORMAT LEADING");
+					if(valueint == 1){
+						toolTipText.includeInLayout = false;
+						toolTipText.visible = false;
+						this.addChild(toolTipText);
+						toolTipText.htmlText = comment;
+						toolTipText.addEventListener(FlexEvent.CREATION_COMPLETE,toolTipHandler,false,0,true);						
+					}
+					else{
+						if(comment.length == 0 )
+							mouseoverComment = "No Comments";
+						else
+							mouseoverComment = comment;
+					}
+				}else{
+					mouseoverComment = "No Comments";
+				}
+			}
+			private function toolTipHandler(eve:Event):void{
+				mouseoverComment = toolTipText.text;
+			}
+			private function getLastComments(arrc:ArrayCollection):String
+			{
+				var len:int = arrc.length;
+				var entryComment:String = '';
+				for( var j:int = 0; j < len; j++ ) {
+					if(Tasks( arrc.getItemAt( j ) )){
+						var taskStatus:int = Tasks( arrc.getItemAt( j ) ).taskStatusFK;
+						if( taskStatus != TaskStatus.FINISHED ) {
+							if( Tasks( arrc.getItemAt( j ) ).workflowtemplateFK != null ){
+								var workflowsstemp:Workflowstemplates = GetVOUtil.getWorkflowTemplate(Tasks( arrc.getItemAt( j ) ).wftFK);
+								if((workflowsstemp.taskLabel!="New Message") && (workflowsstemp.taskLabel!="VALIDATION CREA"))
+								{	
+									if(Tasks( arrc.getItemAt( j ) ).previousTask!=null){
+										var tempTask:Tasks = preTaskComment(Tasks( arrc.getItemAt( j ) ).previousTask.taskId,arrc);
+										var prof:Profiles = GetVOUtil.getProfileObject(tempTask.workflowtemplateFK.profileFK);
+										if(tempTask.taskComment) entryComment = tempTask.taskComment.toString();
+										return entryComment;
+									}
+								}
+							}
+						}
+					}
+				}
+				return null;
+			}
+			
+			private function traverseThroughXMLStr( myXML:XML ):String {
+				var returnValue:String = '';
+				for( var i:int = 0 ; i < myXML.children().length(); i++ ) {
+					if( String( myXML.children()[ i ].children()[ 0 ].FONT ).length != 0 ) {
+						if( returnValue.length == 0 ) {
+							returnValue = String( myXML.children()[ i ].children()[ 0 ].FONT );
+						}
+						else {
+							returnValue = returnValue + '\n' + String( myXML.children()[ i ].children()[ 0 ].FONT );
+						}
+					}
+				}
+				return returnValue;
+			}
+			
+			private function preTaskComment(taskId:int,arr:ArrayCollection):Tasks{
+				for each( var item:Tasks in arr ) {
+					if( item.taskId == taskId ) {
+						return item;
+					}
+				}
+				return null;
+			}
+			
+			private function mouseOverComments():void{
+				if( mouseoverComment.length==0 ) {
+					toolTipProjectTasks();
+				}				
+
+			} 
+    	]]>
+	</mx:Script>
+	<mx:HBox styleName="todoListBg" horizontalGap="0" verticalAlign="middle" left="0"
+		mouseOver="mouseOverComments()"
+		toolTip="{mouseoverComment}"  paddingLeft="0" paddingRight="0"
+		right="0" top="0" bottom="0" >
+		<mx:Canvas width="35"
+			height="100%">
+			<mx:Image id="image" 
+				verticalCenter="0"
+				left="15" 
+				source="{getImage(data.taskStatusFK)}"
+				/>
+		</mx:Canvas>
+		<mx:Canvas width="100%" id="cont"
+			height="100%">
+			<mx:Label  
+				text="{data.projectObject.projectName}" truncateToFit="true"
+				verticalCenter="0"
+				left="0"
+				styleName="todoListItemText"
+				fontSize="11" 
+				width="{cont.width}"/>			
+		</mx:Canvas>
+	 		
+		<mx:Button label="{data.workflowtemplateFK.taskLabelTodo}"
+			height="22" paddingLeft="0" textIndent="0"
+			width="{(this.width-298)/2.9}"
+			styleName="{TaskStatusColor(data.tDateEnd,data.tDateDeadline)}"/>
+			
+		<mx:Canvas width="161" id="datePan" height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Label verticalCenter="0" truncateToFit="true" left="0" text="{ 'From ' + getFromText( Tasks( data ) ) + ': ' + getDate( data.tDateCreation ) }" 
+				             width="{ datePan.width }" 	styleName="todoListItemText" />
+		</mx:Canvas>
+		
+		<!--<mx:Canvas width="70" id="catPan"
+			height="100%" verticalScrollPolicy="off" horizontalScrollPolicy="off">
+			<mx:Label verticalCenter="0"
+				left="0" truncateToFit="true"
+				styleName="todoListItemText"
+				fontSize="11"
+				text="{data.projectObject.categories.categoryName}"
+				width="{catPan.width}"
+				visible="{visibility}"/> 
+		</mx:Canvas>
+		-->
+		<mx:HBox width="102" verticalAlign="middle"  
+			horizontalGap="0" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0"
+			height="100%">
+			<mx:Spacer width="2"/>
+			<mx:Image id="imagechp"  
+				source="{commonStatusDisply('chp_validation',Tasks(data))}" toolTip="CHEFPRODUIT"
+				height="16" width="20"/>
+			<mx:Spacer width="5"/>
+			<mx:Image id="imagecpp" 				
+				source="{commonStatusDisply('cpp_validation',Tasks(data))}" toolTip="CHEFPROJECTPACK"
+				height="16" width="20"/>
+			<mx:Spacer width="5"/>	
+			<mx:Image id="imageind" 
+				source="{commonStatusDisply('ind_validation',Tasks(data))}" toolTip="INDUSTRIEL"
+				height="16" width="20"/>
+			<mx:Spacer width="5"/>		
+			<mx:Image id="imageimp" 
+				source="{commonStatusDisply('imp_validation',Tasks(data))}" toolTip="IMPRIMEUR"
+				height="16" width="20"/>	
+			<mx:Spacer width="5"/>	
+		</mx:HBox>
+		
+		<!--<mx:Canvas width="55"
+			height="100%">			 
+		</mx:Canvas>-->
+				
+	</mx:HBox>
+</mx:Canvas>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" verticalAlign="middle" gap="0"
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="com.adams.dt.view.components.*">
+	<fx:Metadata>
+		[Event(name="change", type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			[Bindable] private var _currentDate:Date = new Date();
+			[Bindable] 
+			[Inspectable(defaultValue='5', category="Other", enumeration="1,5,10,15,30")] 
+			public var minuteIncrement:int = 5;
+			
+			private var _img:Object;
+			public function get img():Object
+			{
+				return _img;
+			}
+			[Bindable]
+			public function set img(value:Object):void
+			{
+				_img = value;
+			}
+			
+			public function get currentDate():Date
+			{
+				this.validateNow();
+				return this._currentDate;
+			}
+			
+			[Bindable]
+			public function set currentDate(value:Date):void
+			{
+				this._currentDate = value;
+				this.hours.value = value.getHours(); 
+				this.minutes.value = value.getMinutes();
+				this.validateNow();
+			}
+			override public function validateProperties():void
+			{
+				super.validateProperties();
+				
+			}
+			public function handleChange():void{
+				var militaryHours:int = hours.value; 
+				militaryHours = hours.value
+				var selDate:Date = this.currentDate;
+				var date:Date = new Date(selDate.getFullYear(),selDate.getMonth(),selDate.getDate(),militaryHours,minutes.value)
+				this.currentDate = date;
+				
+				this.invalidateProperties();
+				this.validateNow();
+				this.dispatchEvent(new Event("change"));
+			}
+		]]>
+	</fx:Script>
+	<s:BitmapImage source="{img}" />	
+	<s:NumericStepper styleName="dateStepper" id="hours" minimum="0" maximum="23" stepSize="1" 
+					  change="handleChange()"  textAlign="center"/>
+	<s:Label text=":" textAlign="center"/>
+	<s:NumericStepper styleName="dateStepper" id="minutes" minimum="0"   maximum="55" stepSize="{minuteIncrement}" 
+					  change="handleChange()"  textAlign="center"/>
+</s:HGroup>

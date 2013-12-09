@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Companies" table="companies">
+        <id name="companyid" type="integer" column="Company_ID">
+            <generator class="increment" />
+        </id>
+        <property name="companyname">
+            <column name="Company_Name" />
+        </property>
+        <property name="companycode">
+            <column name="Company_Code" />
+        </property>
+        <property name="companyLogoBlob">
+            <column name="Company_Logo" />
+        </property>
+        <property name="companyCategory">
+            <column name="Company_Category" />
+        </property>
+          <property name="companyAddress">
+            <column name="Company_Address" />
+        </property>
+          <property name="companyPostalCode">
+            <column name="Company_Postal_Code" />
+        </property>
+          <property name="companyCity">
+            <column name="Company_City" />
+        </property>
+          <property name="companyCountry">
+            <column name="Company_Country" />
+        </property>
+          <property name="companyPhone">
+            <column name="Company_Phone" />
+        </property>
+    </class> 
+    <query name="Companies.findById">
+        select u from Companies u where u.companyid = ?
+    </query>
+    <query name="Companies.findByName">
+        select u from Companies u where u.companyname = ?
+    </query>
+</hibernate-mapping>

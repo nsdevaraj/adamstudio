@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center"
+		creationComplete="{init()}" xmlns:cmp="components.textInput.*" xmlns:val="components.validatorsClass.*">
+	<mx:Script>
+	<![CDATA[
+		import mx.managers.FocusManager;
+		import controller.SessionManager;
+		import business.LoadXml;
+		import events.DemoEvents;
+		import controller.Controller;
+		import data.Users;
+		import business.XmlParser;
+		import events.LoginEvents;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.events.FlexEvent;
+		import mx.core.Application;
+		[Bindable]
+   		[Embed("assets/icons/task.gif")]
+   		private var demoIcon:Class;
+		[Bindable]
+		private var query:String = ""
+		public var keyId:String = ""
+		public var userData:Users = new Users();
+		private var initBool:Boolean = false;
+		private var _currentFocus:String = '';
+		public function init():void{
+			initBool = true
+			query = '';
+			keyId = '';
+			username.text = 'you@yourDomain.com';
+			password.text = '';
+			Application.application.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+		}
+		public function handleKeyDown(event:KeyboardEvent) :void
+		{
+			if(event.keyCode == 13){
+				checkUserAuthentication();
+			}
+		}
+		private function ligin(event:MouseEvent):void{
+			if(emailValidator.validate().type == 'invalid'){
+				Alert.show("Enter Valid Email Address");
+			}else{
+				checkUserAuthentication();
+			}
+		}
+		private function loginProceed(event:Event):void{
+			checkUserAuthentication();
+		}
+		private function checkUserAuthentication():void{
+			query = "select * from users where email='"+username.text+"' and userpswd = '"+password.text+"'  and activated = '1'";
+			dbconnect.showBusyCursor = true;
+			dbconnect.getOperation('xmldb').send();
+		}
+		private function displayError(event:Event):void{
+			Alert.show("Error:Enter the valid Email Address");
+		}
+	
+		private function faultHandler(event:FaultEvent):void{
+			Alert.show("Error:"+event.message);
+		}
+		private function resultHandler(event:ResultEvent):void{
+			dbconnect.showBusyCursor = false;
+			updateUserDate(XML(event.result),false);
+		}
+		private function updateUserDate(_xml:XML,demo:Boolean):void{
+			Controller.getInstance().userObj = userData;
+			var resultMsg:XML = XML(_xml);	
+			keyId = resultMsg.row.group_id;
+			var checkStr:Number = Number(resultMsg.num);			
+			if(checkStr>0){	
+				new XmlParser(XML(resultMsg.row),userData);	
+				trace("=====+==========="+Controller.getInstance().userObj.sessionid)
+				if(Controller.getInstance().userObj.sessionid=='0'){
+					changeStatus(Controller.getInstance().userObj.pk_user);				
+				}else{
+					checkTheTimings()
+				}			
+				
+			}else{
+				Alert.show("InCorrect UserName and Password");
+			}
+		}
+		public function updateTimeStamp(event:MouseEvent):void{
+			setTimeStamp(); 	
+		}
+		private function updateActiveTime():void{
+			var curDate:Date = new Date();
+			var userId:String = Controller.getInstance().userObj.pk_user;
+			updateQuery = "update users set activetime ='"+curDate.time+"' where pk_user = '"+userId+"'"
+			dbconnect.showBusyCursor = false;
+			dbconnect.getOperation('updateTable').send();
+		}
+		private function checkTheTimings():void{
+			var curDate:Date = new Date();
+			var timeDiff:Number = curDate.time -  Number(Controller.getInstance().userObj.activetime);
+			updateSessionTable(curDate.time)
+			/* if(timeDiff>300000){
+				updateSessionTable(curDate.time)
+			}else{
+				Alert.show("Please logout from Another session or the session was closed inappropriatly please login after some time");
+			} */
+		}
+		public function setTimeStamp():void{
+			var curDate:Date = new Date();
+			//SessionManager.getInstance().timeStamp = curDate.time;
+		}
+		private function updateSessionTable(time:Number):void{
+			var userId:String = Controller.getInstance().userObj.pk_user;
+			updateQuery = "update users set logintime ='"+time+"', activetime ='"+time+"' where pk_user = '"+userId+"'"
+			dbconnect.addEventListener(ResultEvent.RESULT,updateResulthandler);
+			dbconnect.showBusyCursor = false;
+			dbconnect.getOperation('updateTable').send();
+		
+		};
+		[Bindable]
+		private var updateQuery:String = '';
+		private function changeStatus(userId:String):void{
+			var curDate:Date = new Date();
+			var time:Number = curDate.time;
+			updateQuery = "update users set sessionid = 1, logintime ='"+time+"', activetime ='"+time+"' where pk_user = '"+userId+"'";
+			dbconnect.addEventListener(ResultEvent.RESULT,updateResulthandler);
+			dbconnect.showBusyCursor = false;
+			dbconnect.getOperation('updateTable').send();
+		}
+		private function demoView():void{
+			Application.application.demoView = true;
+			var loadXmlData:LoadXml = new LoadXml();
+			loadXmlData.loadXmlData("assets/demoxml/users.xml",'',false);
+			loadXmlData.addEventListener(Event.COMPLETE,userDemoXml);
+		}
+		private function updateResulthandler(event:ResultEvent):void{
+			dbconnect.removeEventListener(ResultEvent.RESULT,updateResulthandler);
+			if(Application.application.demoView){
+				dispatchEvent(new DemoEvents(DemoEvents.DEMO))
+			}
+			else{
+				setTimeStamp();
+				Application.application.addEventListener(MouseEvent.CLICK,updateTimeStamp);
+				dispatchEvent(new LoginEvents(LoginEvents.LOGINSUCCESS));
+				Application.application.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+			}
+		}
+		public function removeEvents():void{
+			updateActiveTime();
+			Application.application.removeEventListener(MouseEvent.CLICK,updateTimeStamp);
+		}
+		private function userDemoXml(event:Event):void{
+			updateUserDate(event.currentTarget.xmlData,true);
+		}		
+	]]>
+</mx:Script>
+		<mx:RemoteObject id="dbconnect" showBusyCursor="false" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="xmldb" result="resultHandler(event)">
+				<mx:arguments>
+					<query>{query}</query>
+				</mx:arguments>
+			</mx:method>
+			<mx:method name="updateTable">
+				<mx:arguments>
+					<query>{updateQuery}</query>
+				</mx:arguments>
+			</mx:method>
+		</mx:RemoteObject>
+		<!--<mx:Validator id="ss" source="{username}" property="text" required="true"/>
+		<mx:Validator source="{password}" property="text" required="true"/>-->
+		<val:EmailChecker id="emailValidator" source="{username}" property="text" />
+		<mx:VBox horizontalAlign="center" >
+			<mx:Spacer height="50"/>
+			<mx:Panel title="Login" width="300"  horizontalAlign="center"  verticalAlign="middle" >
+					<mx:Form id="myForm" >
+				        <mx:FormItem label="Email id" labelStyleName="labelStyleName">
+				            <cmp:PTTextInputWmode width="100%" id="username" focusAlpha="0" text="ks@g.com"/>
+				            
+				        </mx:FormItem>
+				        <mx:FormItem label="Password" labelStyleName="labelStyleName">
+				            <cmp:PTTextInputWmode id="password" focusAlpha="0"  displayAsPassword="true" text="s"/>
+				        </mx:FormItem>
+				    </mx:Form>
+				    <mx:ControlBar verticalAlign="middle" horizontalAlign="center">
+				    <mx:LinkButton icon="{demoIcon}" color="black" id="demo" label="Demo" click="demoView()"/>
+					<mx:Button label="Login" styleName="loginButton" click="ligin(event)" />    	
+				    </mx:ControlBar>
+				    <mx:HBox horizontalAlign="center" width="100%" height="100%">
+						<mx:Label text="support"/>
+						<mx:Label text="techsupport@brennus.com" textDecoration="underline" color="#4556F2"/>
+					</mx:HBox>				  
+				</mx:Panel>				
+		</mx:VBox>
+</mx:VBox>

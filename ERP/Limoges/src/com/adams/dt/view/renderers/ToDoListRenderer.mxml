@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="true" width="100%" height="23" 
+				addedEffect="Fade"
+				click="rendererClickHandler( event )" contentBackgroundAlpha=".3"> 
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+			import com.adams.dt.model.vo.Projects;
+			import com.adams.dt.util.DateUtil;
+			import com.adams.dt.util.ProcessUtil;
+			import com.adams.dt.util.Utils;
+			import com.adams.dt.view.components.toDo.ToDoListComponent;
+			import com.adams.swizdao.views.components.NativeList;
+			
+			import mx.core.UIComponent;
+			
+			import spark.utils.TextFlowUtil;
+			
+			private var statusIndex:int;
+			
+			[Bindable]
+			private var statusVisible:Boolean;
+			
+			[Bindable]
+			private var statusEnabled:Boolean;
+			
+			[Bindable]
+			private var isTaskRead:Boolean;
+			
+			private var dDate:String;
+			protected function rendererClickHandler( event:MouseEvent ):void {
+				 if( ToDoListComponent( owner ).removeRefreshIndex( data ) ) {
+					rect.visible = false;
+				} 
+				NativeList( owner ).renderSignal.dispatch( data );
+			}
+			
+			override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value; 
+					statusVisible = true;
+					setDeadLineDate();
+					setPrimaryStatus( value.projectObject.projectStatusFK );
+				}
+			}
+			
+			private function setDeadLineDate():void{
+				var dateString:String = Utils.reportLabelFuction( data.projectObject, 'bat_date' );
+				if( dateString == 'NULL' ) {
+					dDateLbl.text = Utils.reportLabelFuction(  data.projectObject, 'clt_date' );
+					dDateLbl.setStyle( 'color', 0xFFFF00 );
+				}
+				else {
+					dDateLbl.text = dateString;
+					dDateLbl.setStyle( 'color', 0xBDBDBD );
+				}
+			}
+			
+			protected function statusClickHandler( event:MouseEvent ):void {
+				event.stopImmediatePropagation();
+				if(!ProcessUtil.isCLT){
+					var currentObj:UIComponent = event.currentTarget as UIComponent;
+					
+					if( currentObj.styleName != 'statusSelected' ) {
+						switch( currentObj ) {
+							case waiting:
+								data.projectObject.projectStatusFK = ProjectStatus.WAITING;
+								statusIndex = statusGroup.getElementIndex( waiting );
+								break;
+							case in_progress:
+								data.projectObject.projectStatusFK = ProjectStatus.INPROGRESS;
+								statusIndex = statusGroup.getElementIndex( in_progress );
+								break;
+							case in_checking:
+								data.projectObject.projectStatusFK = ProjectStatus.INCHECKING;
+								statusIndex = statusGroup.getElementIndex( in_checking );
+								break;
+							case in_delivery:
+								data.projectObject.projectStatusFK = ProjectStatus.INDELIVERY;
+								statusIndex = statusGroup.getElementIndex( in_delivery );
+								break;
+							default:
+								break;
+						}
+						setPrimaryStatus( data.projectObject.projectStatusFK );
+						NativeList( owner ).renderSignal.dispatch( data.projectObject );
+					}
+				}
+			}
+			
+			protected function setPrimaryStatus( statusFk:int ):void {
+				switch( statusFk ) {
+					case ProjectStatus.WAITING:
+						waiting.styleName = "statusSelected";
+						statusIndex = statusGroup.getElementIndex( waiting );
+						waiting.buttonMode = false;
+						break;
+					case ProjectStatus.INPROGRESS:
+					case ProjectStatus.INPROGRESS_ILLUSTRATOR:	
+						in_progress.styleName = "statusSelected";
+						statusIndex = statusGroup.getElementIndex( in_progress );
+						in_progress.buttonMode = false;
+						break;
+					case ProjectStatus.INCHECKING:
+						in_checking.styleName = "statusSelected";
+						statusIndex = statusGroup.getElementIndex( in_checking );
+						in_checking.buttonMode = false;
+						break;
+					case ProjectStatus.INDELIVERY:
+						in_delivery.styleName = "statusSelected";
+						statusIndex = statusGroup.getElementIndex( in_delivery );
+						in_delivery.buttonMode = false;
+						break;
+					case ProjectStatus.ARCHIVED: 
+					case ProjectStatus.ABORTED: 
+					case ProjectStatus.STANDBY: 
+					case ProjectStatus.URGENT:
+						statusVisible = false;
+						statusLabel.text = Utils.getStatusLabel( statusFk );
+						break;
+					default:
+						break;
+				}
+				setOtherStatus();
+			}
+			
+			protected function setOtherStatus():void {
+				for( var i:int = 0; i < statusGroup.numElements; i++ ) {
+					if( i != statusIndex ) {
+						if( i < statusIndex ) {
+							UIComponent( statusGroup.getElementAt( i ) ).styleName = "statusNormal";		
+						}
+						else {
+							UIComponent( statusGroup.getElementAt( i ) ).styleName = "statusPreSelect";
+						} 
+						UIComponent( statusGroup.getElementAt( i ) ).buttonMode = true;
+					}
+				}
+			}
+			
+			protected function mpvClickHandler( event:MouseEvent ):void {
+				event.stopImmediatePropagation();
+				data.projectObject.projectCommentBlob = true;
+				NativeList( owner ).renderSignal.dispatch( [data.projectObject, true ] );
+			}
+			
+			private function onNoteClickHandler(event:MouseEvent):void{
+				var obj:Object = new Object();
+				var point:Point = new Point( event.stageX, event.stageY );
+				obj.point = point;
+				obj.data = data.projectObject.projectId;
+				NativeList( owner ).renderSignal.dispatch( obj );
+				event.stopImmediatePropagation();
+			}
+			
+			private function  getRectColor( value:Object ):Boolean {
+				var returnValue:Boolean;
+				returnValue = ToDoListComponent( owner ).getBackgroundColor( value );
+				return returnValue;
+			}
+			
+			private function getDomain( prj:Projects ):String {
+				var domain:String = Utils.reportLabelFuction( prj, 'brand' );
+				return domain;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect blendMode="color" left="0" right="0" top="0" bottom="0" 
+			visible="{ getRectColor( data ) }" id="rect">
+		<s:fill>
+			<s:SolidColor color="0x88a8bf"/>
+		</s:fill>
+	</s:Rect>
+	<s:HGroup verticalAlign="middle" paddingLeft="0" paddingRight="0" width="100%" height="100%">
+		<s:Button id="openIcon" styleName="mpvIcon" width="17" click="mpvClickHandler(event)"/>
+		<s:Label text="{ data.projectObject.projectName }" width="100%"/>
+		<s:Label width="100" id="domainText" text="{ getDomain( data.projectObject ) }"/>
+		<s:Label text="{ data.workflowtemplateFK.taskLabelTodo }" width="238"/>
+		<s:RichText id="dDateLbl" width="140"/>
+		<s:HGroup id="statusGroup" width="103" height="100%" gap="10" horizontalAlign="center" verticalAlign="middle"
+				  visible="{ statusVisible }" includeInLayout="{ statusVisible }">
+			<s:Button id="waiting" click="statusClickHandler( event )" />
+			<s:Button id="in_progress" click="statusClickHandler( event )" />
+			<s:Button id="in_checking" click="statusClickHandler( event )" />
+			<s:Button id="in_delivery" click="statusClickHandler( event )" />
+		</s:HGroup>
+		<s:Label id="statusLabel" width="103" textAlign="center" visible="{!statusVisible}" includeInLayout="{!statusVisible}"/>
+		<s:Group width="35" height="100%">
+			<s:Button styleName="noteBtn" verticalCenter="0" horizontalCenter="0" click="onNoteClickHandler(event)"/>
+		</s:Group>
+	</s:HGroup>
+</s:ItemRenderer>

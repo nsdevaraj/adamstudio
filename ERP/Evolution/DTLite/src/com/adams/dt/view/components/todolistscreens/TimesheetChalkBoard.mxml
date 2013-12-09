@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	backgroundAlpha="0"
+	width="100%"
+	height="100%"
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:comp="com.adams.dt.view.components.*"
+	xmlns:template="com.adams.dt.view.components.impremiurTemplate.*"
+	creationComplete="updateProperties()"
+	creationCompleteEffect="{ mx.effects.Fade }">
+	<mx:Metadata>
+		[Event(name="mapDeparture", type="com.adams.dt.event.departure.DepartureMapEvent")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.model.vo.ProjectStatus;
+			import mx.events.CollectionEventKind;
+			import com.adams.dt.event.departure.DepartureMapEvent;
+			import com.adams.dt.view.components.WindowShade;
+			import mx.effects.Fade;
+			import com.adams.dt.view.components.AccordionHeader;
+			import com.adams.dt.event.DefaultTemplateValueEvent;
+			import com.adams.dt.model.vo.Persons;
+			import com.adams.dt.model.vo.Teamlines;
+			import com.adams.dt.event.PropertiespjEvent;
+			import com.adams.dt.model.vo.DefaultTemplateValue;
+			import com.adams.dt.view.components.impremiurTemplate.ImpremiurTemplate;
+			import mx.managers.PopUpManager;
+			import com.adams.dt.business.util.GetVOUtil;
+			import mx.collections.IViewCursor;
+			import mx.collections.SortField;
+			import mx.collections.Sort;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.event.generator.SequenceGenerator;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import mx.rpc.IResponder;
+			import com.adams.dt.event.PersonsEvent;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.model.vo.Proppresetstemplates;
+			import mx.events.CollectionEvent;
+			import mx.core.UIComponent;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Propertiespj;
+			import com.adams.dt.model.vo.Propertiespresets;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			public var saveVisible:Boolean;
+			private var _glow:GlowFilter = new GlowFilter( 0x00FFFF, .56, 16, 16, 1, 1, false, false );
+			
+			/**
+			* Removing Highlighter on go back to the ToDoList View or DashBoard View
+			*/
+			private var _toRemoveHighlight:int = -1;
+			[Bindable]
+			public function get toRemoveHighlight():int {
+				return _toRemoveHighlight;
+			}
+			public function set toRemoveHighlight( value:int ):void {
+				if( value == 0 ) {
+					removingHighlighter();
+				}
+			}
+			
+			/**
+			* Update Properties on Applying Default Template
+			*/
+			private var _getUpdated:Boolean; 
+			[Bindable]
+			public function get getUpdated():Boolean {
+				return _getUpdated;
+			}
+			public function set getUpdated( value:Boolean ):void {
+				if( value ) {
+					updateProperties();
+				}
+			} 
+			
+			/**
+			* Applying Glow Filter( Highlighter ) on Save and Initial
+			*/
+			private var _currentDefaultTemplateValue:ArrayCollection;
+			[Bindable]
+			public function get currentDefaultTemplateValue():ArrayCollection {
+				return _currentDefaultTemplateValue;
+			}
+			public function set currentDefaultTemplateValue( value:ArrayCollection ):void {
+				_currentDefaultTemplateValue = value;
+				if( value ) {
+					removingHighlighter();
+					checkAfterHighlight( value );
+				}
+			} 
+			
+			/**
+			* Applying Glow Filter( Highlighter ) on Applying Default Template
+			*/
+			private var _applyDefaultTemplateValue:ArrayCollection;
+			[Bindable]
+			public function get applyDefaultTemplateValue():ArrayCollection {
+				return _applyDefaultTemplateValue;
+			}
+			public function set applyDefaultTemplateValue( value:ArrayCollection ):void {
+				_applyDefaultTemplateValue = value;
+				if( value ) {
+					removingHighlighter();
+					closeEyeHighlight( value );
+				}
+			}
+			
+			/**
+			* Total PresetsCollection Binded with model.propertiespresetCollection
+			*/
+	        private var _projectProperty:ArrayCollection;
+	        [Bindable]
+	        public function get projectProperty ():ArrayCollection {
+				return _projectProperty;
+			}
+			public function set projectProperty( value:ArrayCollection ):void {
+				_projectProperty = value;
+			}
+		
+			/**
+			 * create the propertypj values based on the filed present in the screen 
+			 */
+			public function getPropertiespjSet():ArrayCollection {
+				var arrC:ArrayCollection = new ArrayCollection();
+				for( var i:int = 0; i < projectProperty.length; i++ ) {				
+					var item:Propertiespresets = Propertiespresets( projectProperty.getItemAt( i ) );
+					var propertySets:Propertiespj;
+					if( hasOwnProperty( "text_" + item.fieldName ) ) {
+						propertySets = checkItemExist( item );
+						propertySets.projectFk = model.currentProjects.projectId;
+						propertySets.propertyPreset = item;
+						propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+						propertySets.fieldValue = this[ "text_"+item.fieldName ].text;
+						propertySets.accordeon = getAccordianHeader( "text_"+item.fieldName );
+						arrC.addItem( propertySets );	
+					}
+					if( this.hasOwnProperty( "popup_" + item.fieldName ) ) {
+						propertySets = checkItemExist(item); 
+						propertySets.projectFk= model.currentProjects.projectId;
+						propertySets.propertyPreset = item;
+						propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+						propertySets.fieldValue = this[ "popup_"+item.fieldName ].selectedIndex;
+						propertySets.accordeon = getAccordianHeader( "popup_"+item.fieldName );
+						arrC.addItem( propertySets );	
+					}  
+					if( this.hasOwnProperty( "checkbox_" + item.fieldName ) ) {
+						propertySets = checkItemExist( item );
+						propertySets.projectFk= model.currentProjects.projectId;
+						propertySets.propertyPreset = item;
+						propertySets.propertyPreset.propertyPresetId = item.propertyPresetId;
+						propertySets.fieldValue = this[ "checkbox_" + item.fieldName ].selected;
+						propertySets.accordeon = getAccordianHeader( "checkbox_" + item.fieldName );
+						arrC.addItem( propertySets );	
+					}  
+				}
+				//my added for new
+				exportTechPropPjList(arrC);
+				
+				return arrC;			
+			}
+			
+			/**
+			 * For the View of Technical Properties During Popup
+			 */
+			public function exportTechPropPjList( techPropertiesCollection:ArrayCollection ):void {
+				model.techCollection.removeAll();
+				for each( var pjProperty:Propertiespj in techPropertiesCollection ) {
+					var techObject:Object = new Object(); 
+					techObject.Field = pjProperty.propertyPreset.fieldLabel;	
+					techObject.Category = pjProperty.accordeon;	
+					if( pjProperty.propertyPreset.fieldType == 'textfield' || pjProperty.propertyPreset.fieldType == 'numstepper' ) {		
+						techObject.Value = pjProperty.fieldValue;
+					}
+					else if( pjProperty.propertyPreset.fieldType == 'checkbox' ) {
+						var selected:Boolean = ( pjProperty.fieldValue == 'true' ) ? true : false;
+						var popStr:String = String( pjProperty.propertyPreset.fieldOptionsValue );
+						var popArr:Array = popStr.split( "," );
+						if( selected )	techObject.Value = popArr[ 0 ];
+					}
+					else {
+						var popStr:String = String( pjProperty.propertyPreset.fieldOptionsValue );
+						var popArr:Array = popStr.split( "," );
+						techObject.Value =  popArr[ pjProperty.fieldValue ];
+					}
+					if( ( techObject.Value != 'null' ) && ( techObject.Value ) && ( techObject.Value != '' ) ) {
+						model.techCollection.addItem( techObject );
+					}
+				}
+				var catSort:Sort = new Sort();
+				catSort.fields =  [ new SortField( 'Category' ) ];
+				model.techCollection.sort = catSort;			
+				model.techCollection.refresh(); 
+			} 
+			/**
+			 * Check the property existence on propertiespj
+			 * IF EXIST return the corresponding object
+			 * ELSE create new propertiesPj object
+			 */
+			public function checkItemExist( item:Propertiespresets ):Propertiespj {
+				for( var i:int = 0; i < model.currentProjects.propertiespjSet.length; i++ ) {
+					var chekProperty:Propertiespj = model.currentProjects.propertiespjSet.getItemAt( i ) as Propertiespj;
+						if( chekProperty.propertyPreset.propertyPresetId == item.propertyPresetId ) {
+								return chekProperty;
+						}
+				}
+				return new Propertiespj();
+			}
+		
+			/**
+			 * update the project property value
+			 * set the component visibilty based on propertypresetTemplate values
+			 * set the edit rights based on the profile
+			 */
+			private var imp:Boolean;
+			public function updateProperties():void { 
+							
+
+				model.technicalPropertyChanged = false;
+				model.updatedPresetId = [];
+				if( model.currentTasks ) {				
+					if( model.currentTasks.workflowtemplateFK.profileObject.profileCode == "EPR" ) {
+						imp = true;
+						if( model.currentProjects.projectStatusFK != ProjectStatus.STANDBY 
+							&& model.currentProjects.projectStatusFK != ProjectStatus.ABORTED
+							&& !model.currentProjects.projectDateEnd ) {
+							model.editForm = true;
+						}
+					}
+					else {
+						imp = false;
+					}
+				}
+				updateChanges( projectProperty );
+				
+				//my added for new
+				getPropertiespjSet();
+				
+			}
+			
+			/**
+			 * check the property existence in Proppresetstemplates
+			 */	
+			public function checkTemplate( preset:Propertiespresets ):Proppresetstemplates {
+				if( preset ) {
+					for each( var item:Proppresetstemplates in model.currentProjects.presetTemplateFK.propertiesPresetSet ) {
+						if( preset.propertyPresetId == item.propertypresetFK ) {
+							return item;
+						} 
+					}
+				}
+				return null;
+			}	
+			/**
+			 * get the property value from projects
+			 */
+			public function getPropertyValue( id:int ):String {
+				for each( var item:Propertiespj in model.currentProjects.propertiespjSet ) {
+					if( item.propertyPreset.propertyPresetId == id ) {
+						return item.fieldValue;
+					}
+				}
+				return '';
+			}
+			 /**
+			 * @param id:String, input propertyPj id
+			 * get changed field name and property
+			 */ 
+			private function getChangedFields( id:String ):void {
+				var object:Object = new Object();
+				var propertiesPj:Propertiespj = Utils.getPropertyPj( Number( id ), model.currentProjects.propertiespjSet );
+				var propertyPresetTemplate:Proppresetstemplates = Utils.getPropertyPresetTemp( Number( id ), model.currentProjects.presetTemplateFK.propertiesPresetSet );
+				if( propertiesPj != null && propertyPresetTemplate != null ) {
+					object[ "propertiesPj" ] = propertiesPj;
+					object[ "propertyPresetTemplate" ] = propertyPresetTemplate;
+					model.updatedFieldCollection.addItem( object );
+				}
+			}
+			/**
+			 * get the changed field name and property to update events
+			 * IF changes made by client send message with updated property to traffic
+			 * refer propertypjcommand for sending message
+			 */ 
+			private function onFieldChange( event:FocusEvent ):void {
+				model.technicalPropertyChanged = true;
+				if( model.updatedPresetId.indexOf( event.currentTarget.name ) == -1 ) {
+					model.updatedPresetId.push( event.currentTarget.name );
+					getChangedFields( event.currentTarget.name );
+				}
+			}
+			/**
+			 * synchronize the depature fields with the similar properties in timesheet chalkboard
+			 */
+			
+			private function resetForm():void{ 
+				
+			}
+			
+			private function getVisibility( str:String, editValue:Boolean ):Boolean {
+				if( str.length != 0 && editValue && model.currentUserProfileCode == 'FAB' ) {
+					return true;
+				}
+				return false;
+			}
+			
+			private function removingHighlighter():void {
+				if( projectProperty ) {
+					for each( var propPreset:Propertiespresets in projectProperty ) {
+						removeHighLighter( propPreset.fieldType, propPreset.fieldName );
+					}
+				}
+			}
+			
+			private function checkAfterHighlight( value:ArrayCollection ):void {
+				for each( var defaultValueTemp:DefaultTemplateValue in value ) {
+					var propPreset:Propertiespresets = GetVOUtil.getPropertiesPresetObject( defaultValueTemp.propertiesPresetFK );
+					var selectedType:String =  propPreset.fieldType;
+					var proPj:Propertiespj = Utils.getPropertyPj( propPreset.propertyPresetId, model.currentProjects.propertiespjSet );
+					if( proPj ) {
+						var propPjValue:String = proPj.fieldValue;
+						if( ( propPjValue.length == 0 ) && ( !defaultValueTemp.defaultTemplateValue ) ) {	
+							defaultValueTemp.defaultTemplateValue = propPjValue; 
+						}
+						else if( ( propPjValue == '-1' ) && ( !defaultValueTemp.defaultTemplateValue ) ) {
+							defaultValueTemp.defaultTemplateValue = propPjValue; 
+						}
+						else if( ( propPjValue == 'false' ) && ( !defaultValueTemp.defaultTemplateValue ) ) {
+							defaultValueTemp.defaultTemplateValue = propPjValue; 
+						}
+						if( defaultValueTemp.defaultTemplateValue == propPjValue ) {
+							highLighter( propPreset.fieldType, propPreset.fieldName );
+						} 
+					}
+				}
+			}
+			
+			private function closeEyeHighlight( value:ArrayCollection ):void {
+				for each( var defaultValueTemp:DefaultTemplateValue in value ) {
+					var propertyPreset:Propertiespresets = GetVOUtil.getPropertiesPresetObject( defaultValueTemp.propertiesPresetFK );
+					highLighter( propertyPreset.fieldType, propertyPreset.fieldName );
+				}
+			} 
+			
+			private function highLighter( fieldType:String, fieldName:String ):void {
+		   		switch( fieldType ) {
+	          		case "textfield":
+	          			if( ( hasOwnProperty( "text_"+fieldName ) )&& ( this[ "text_"+fieldName ] ) ) {	
+	          				this["text_"+fieldName].filters = [ _glow ];
+	          			}	
+					break;
+					case "radio":
+						if( ( hasOwnProperty( "label_"+fieldName ) )&& ( this[ "label_"+fieldName ] ) ) {	
+							this["popup_"+fieldName].filters = [ _glow ];
+						}
+					break;  
+					case "popup":
+						if( ( hasOwnProperty( "popup_"+fieldName ) )&& ( this[ "popup_"+fieldName ] ) ) {	
+							this["popup_"+fieldName].filters = [ _glow ];
+						}	
+					break;
+					case "checkbox":
+						if( ( hasOwnProperty( "checkbox_"+fieldName ) )&& ( this[ "checkbox_"+fieldName ] ) ) {	
+							this["checkbox_"+fieldName].filters = [ _glow ];
+						}	
+					break; 
+					case "numstepper":
+						if( ( hasOwnProperty( "text_"+fieldName ) )&& ( this[ "text_"+fieldName ] ) ) {
+							this["text_"+fieldName].filters = [ _glow ];
+						}	
+					break;
+					default:
+					break;
+	          	} 
+		    }
+		   
+		    private function removeHighLighter( fieldType:String, fieldName:String ):void {
+		   		switch( fieldType ) {
+	          		case "textfield":
+	          			if( ( hasOwnProperty( "text_"+fieldName ) )&& ( this[ "text_"+fieldName ] ) ) {
+	          				this["text_"+fieldName].filters = [];
+	          			}	
+					break;
+					case "radio":
+						if( ( hasOwnProperty( "label_"+fieldName ) )&& ( this[ "label_"+fieldName ] ) ) {
+							this["popup_"+fieldName].filters = [];
+						}
+					break;  
+					case "popup":
+						if( ( hasOwnProperty( "popup_"+fieldName ) )&& ( this[ "popup_"+fieldName ] ) ) {
+							this["popup_"+fieldName].filters = [];
+						}	
+					break;
+					case "checkbox":
+						if( ( hasOwnProperty( "checkbox_"+fieldName ) )&& ( this[ "checkbox_"+fieldName ] ) ) {
+							this["checkbox_"+fieldName].filters = [];
+						}
+					break; 
+					case "numstepper":
+						if( ( hasOwnProperty( "text_"+fieldName ) )&& ( this[ "text_"+fieldName ] ) ) {
+							this["text_"+fieldName].filters = [];
+						}	
+					break;
+					default:
+					break;
+	          	}
+	        }	 
+			
+			private function updateChanges( requiredCollection:ArrayCollection ):void {
+				for ( var i:int = 0; i < requiredCollection.length; i++ ) {				
+					var item:Propertiespresets = Propertiespresets( requiredCollection.getItemAt( i ) );				
+					var visible:Proppresetstemplates = checkTemplate( item );
+					if( this.hasOwnProperty( "label_" + item.fieldName ) && ( this[ "label_" + item.fieldName ] ) ) {
+						if( visible ) {	
+							this[ "label_" + item.fieldName ].visible = true;
+							this[ "label_" + item.fieldName ].label = visible.fieldLabel;
+							
+						}
+						else {
+							this[ "label_" + item.fieldName ].visible = false;
+						}
+					} 
+					if( this.hasOwnProperty( "checkbox_" + item.fieldName ) && ( this[ "checkbox_" + item.fieldName ] ) ) {
+						if( visible ) {
+							var selectedValue:String = getPropertyValue( item.propertyPresetId );
+							this[ "checkbox_" + item.fieldName ].visible = true;
+							this[ "checkbox_" + item.fieldName ].label = visible.fieldOptionsValue;
+							if( selectedValue == 'true' ) {
+								this[ "checkbox_" + item.fieldName ].selected = true;
+							}		
+							else {
+								this[ "checkbox_" + item.fieldName ].selected = false;
+							}	
+							if( !model.editForm ) {
+									if( this[ "checkbox_" + item.fieldName ] is CheckBox ) {
+										this[ "checkbox_" + item.fieldName ].enabled = false;
+									}
+									else {
+										this[ "checkbox_" + item.fieldName ].enabled = true;									
+									}
+							}  
+						}
+						else {
+							this[ "checkbox_" + item.fieldName ].visible = false;
+						}
+					}
+					if( this.hasOwnProperty( "popup_" + item.fieldName ) && ( this[ "popup_" + item.fieldName ] ) ) {
+						if( visible ) {
+							var popStr:String = String( visible.fieldOptionsValue );
+							var popArr:Array = popStr.split( "," );
+							var value:String = getPropertyValue( item.propertyPresetId );
+							this[ "popup_"+item.fieldName ].name = item.propertyPresetId;
+							this[ "popup_"+item.fieldName ].dataProvider = popArr;
+							this[ "popup_"+item.fieldName ].visible = true;
+							
+							if( value == '' || ( !value ) ) {
+								this[ "popup_" + item.fieldName ].selectedIndex = ( item.fieldDefaultValue ) ? item.fieldDefaultValue : 0;
+								if( this[ "popup_" + item.fieldName ] is RadioGropus ) {
+									this[ "popup_" + item.fieldName ].selectedIndex = ( item.fieldDefaultValue ) ? item.fieldDefaultValue : -1;
+								}
+								else {
+		                            ComboBox( this[ "popup_" + item.fieldName ] ).selectedIndex = Number( value );
+								}
+							}
+							else{
+								this[ "popup_" + item.fieldName ].selectedIndex = Number( value );
+							}
+							 
+							if( !model.editForm ) {
+								if( this[ "popup_" + item.fieldName ] is RadioGropus ) {
+								}
+								else {
+									this[ "popup_" + item.fieldName ].enabled = false;
+								}
+							}
+							else {
+								if( this[ "popup_" + item.fieldName ] is RadioGropus ) {
+								}
+								else {
+									this[ "popup_" + item.fieldName ].enabled = true;
+								}
+							}
+						}
+						else {
+							this[ "popup_" + item.fieldName ].visible = false;
+						}
+						this[ "popup_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+						this[ "popup_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true );
+					}  
+					if( hasOwnProperty( "text_" + item.fieldName ) && ( this[ "text_" + item.fieldName ] ) ) {	
+						var propvalue:String = getPropertyValue( item.propertyPresetId );
+						this[ "text_" + item.fieldName ].name = item.propertyPresetId;
+						if( visible ) {
+							this[ "text_" + item.fieldName ].visible = true;
+							if( propvalue == '' ) {
+								this[ "text_" + item.fieldName ].text = ( item.fieldDefaultValue ) ? item.fieldDefaultValue : '';
+							}
+							else {		
+								this[ "text_" + item.fieldName ].text = propvalue;
+							}
+							if( !model.editForm ) {
+								this[ "text_" + item.fieldName ].styleName = 'disabledText';
+								this[ "text_" + item.fieldName ].enabled = false;
+							}
+							else {
+								this[ "text_" + item.fieldName ].styleName = 'TextArea';
+								this[ "text_" + item.fieldName ].enabled = true;
+							}
+						}
+						else {
+							this[ "text_" + item.fieldName ].visible = false;
+						}
+						this[ "text_" + item.fieldName ].removeEventListener( FocusEvent.FOCUS_OUT, onFieldChange );	
+						this[ "text_" + item.fieldName ].addEventListener( FocusEvent.FOCUS_OUT, onFieldChange, false, 0, true);
+					}
+				}
+				//exportTechPropPjList( this.getPropertiespjSet() );
+			}
+			
+			private function getFilledEntries(): void {
+				_templateScreen.filledPresetCollection = this.getPropertiespjSet();
+			}
+			
+			private function getAccordianHeader( fieldName:String ):String {
+				var myObject:Object;
+				var returnValue:String = '';
+				if( ( this.hasOwnProperty( fieldName ) ) && ( this[ fieldName ] ) ) {
+					myObject = this[ fieldName ].parent;
+					while( !myObject.hasOwnProperty( 'isHaveProperty' ) ) {
+						myObject = myObject.parent;
+					}	
+					returnValue = WindowShade( myObject ).label;
+				}
+				return returnValue;
+			}
+			
+			private function getCompanyName( impremiur:Persons ):String {
+				return GetVOUtil.getCompanyObject( impremiur.companyFk ).companyname;
+			}
+			
+			private function onOpenEnd():void {
+				callLater( makeScrollPosition );
+			}
+			
+			private function makeScrollPosition():void {
+				maincan.verticalScrollPosition = maincan.maxVerticalScrollPosition;
+			}
+			public function onView():void {
+				var register:TechReport = TechReport( PopUpManager.createPopUp( model.mainClass, TechReport, true ) );
+				var point1:Point = new Point();
+				point1.x = Capabilities.screenResolutionX / 2;
+	        	point1.y = Capabilities.screenResolutionY / 2;                
+	        	register.x = point1.x - register.width / 2;
+	        	register.y = point1.y - register.height / 2;
+			}
+		
+		private function getColorLabel( item:Object ):String {
+			if( item == 'HELIO' ) {
+				_colorItem.visible = true;
+				_colorItem.includeInLayout = true;
+				return 'Clichés communs';
+			}
+			else if( item == 'OFFSET' ) {
+				_colorItem.visible = false;
+				_colorItem.includeInLayout = false;
+				return '';
+			}
+			else {
+				_colorItem.visible = true;
+				_colorItem.includeInLayout = true;
+				return 'Cylindres communs';
+			}
+		}
+		private function onDepartFieldsChange( event:Event ):void {
+			var mapEvent:DepartureMapEvent = new DepartureMapEvent( DepartureMapEvent.MAP_DEPARTURE );
+			mapEvent.changedField = event.currentTarget.id;
+			dispatchEvent( mapEvent );
+		}
+		
+		private function onSave():void {
+			
+			model.propertiespjCollection = getPropertiespjSet();
+			var pjresult:String = Utils.pjParameters(model.propertiespjCollection );
+					
+			trace("TimeSheetChalkboard propertiesprojectId :"+model.currentProjects.projectId);
+			trace("TimeSheetChalkboard propertiespresetId :"+String(pjresult.split("#&#")[0]).slice(0,-1));
+			trace("TimeSheetChalkboard propertiesfieldvalue :"+String(pjresult.split("#&#")[1]).slice(0,-1)); 
+			
+			var handler:IResponder = new Callbacks( onPropertiesSave ); 		
+			var bulkupdatepropPjEvent:PropertiespjEvent = new PropertiespjEvent( PropertiespjEvent.EVENT_ORACLE_BULKUPDATE_PROPERTIESPJ );
+			bulkupdatepropPjEvent.prop_projectId = String(model.currentProjects.projectId);
+			bulkupdatepropPjEvent.prop_presetId = String(pjresult.split("#&#")[1]).slice(0,-1);
+			bulkupdatepropPjEvent.prop_prefieldvalue = String(pjresult.split("#&#")[0]).slice(0,-1);
+			bulkupdatepropPjEvent.dispatch();		
+			
+		}
+		
+		private function onPropertiesSave( rpcEvent:Object ):void {
+			if( model.mainProjectState == 1 ) {
+				if( model.updateMPV )	model.updateMPV = false;
+				else	model.updateMPV = true;
+			}
+		}
+		
+		private function makeItVisible( saveValue:Boolean, editValue:Boolean ):Boolean {
+			if( saveValue && editValue ) {
+				return true;
+			}
+			return false;
+		}
+		
+		private function selectedTemplateVisible( value:String ):Boolean {
+			if( value && value != '' ) {
+				return true;
+			}
+			return false;
+		}		
+			
+		]]>
+	</mx:Script>
+	<mx:Button id="viewProperty" click="onView()" label="Export View" right="20" top="10"/>
+	<mx:Button id="saveButton" click="onSave()" label="Save" right="{ 30 + viewProperty.width }" top="10" visible="{ makeItVisible( saveVisible, model.editForm ) }"/> 
+		<mx:Canvas width="100%" 
+			height="100%" top="40"
+			id="maincan"
+			backgroundAlpha="0">
+			<mx:VBox id="formaccord" width="95%" horizontalCenter="0">				 
+				<!--<comp:WindowShade label="IMPRIMEUR" layout="absolute" width="100%" opened="true" openEnd="onOpenEnd()">-->
+				<comp:WindowShade label="APM" layout="absolute" width="100%" opened="true" openEnd="onOpenEnd()">
+						<mx:Form id="imprimeur" height="100%" width="50%" >
+							<mx:FormItem label="{model.loc.getString('companyName')}">
+								 <mx:TextInput id="impLabel" enabled="false" styleName="disabledText" maxChars="250" text="{ getCompanyName( model.impPerson ) }" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('firstName')}">
+									<mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personFirstname}" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('lastName')}">
+									<mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personLastname}" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('personPosition')}">
+									<mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personPosition}" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('emailAddress')}">
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personEmail}" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('personTele')}">
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personMobile}" fontWeight="bold" />
+							</mx:FormItem>
+						    <mx:FormItem label="{model.loc.getString('personAddress')}" >
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personAddress}" fontWeight="bold" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('personPostalCode')}" visible="false" includeInLayout="false">
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personPostalCode}" fontWeight="bold" visible="false" includeInLayout="false" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('personCity')}" visible="false" includeInLayout="false">
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personCity}" fontWeight="bold" visible="false" includeInLayout="false" />
+							</mx:FormItem>
+							<mx:FormItem label="{model.loc.getString('personCountry')}" visible="false" includeInLayout="false">
+								 <mx:TextInput enabled="false" styleName="disabledText" maxChars="250" text="{model.impPerson.personCountry}" fontWeight="bold" visible="false" includeInLayout="false" />
+							</mx:FormItem>
+						</mx:Form>
+						<template:ImpremiurTemplate width="50%" height="175" id="_templateScreen" 
+													x="{ imprimeur.x + imprimeur.width + 10 }"
+													y="{ appliedtemplate.y + appliedtemplate.height + 10 }"
+							                        timesheetChalk="{ this }" visible="{ getVisibility( impLabel.text, model.editForm ) }" 																	
+									                includeInLayout="{  _templateScreen.visible }"  
+						                            addDefaultTemplate="getFilledEntries()"/>
+						<mx:HBox id="appliedtemplate" x="{ imprimeur.x + imprimeur.width + 10 }" y="10" horizontalGap="3"
+										visible="{ selectedTemplateVisible( model.selectedDefaultTemplate ) }"
+										includeInLayout="{ appliedtemplate.visible }">
+							<mx:Label text="Applied Template:" fontSize="12" fontWeight="bold"/>
+							<mx:Label text="{ model.selectedDefaultTemplate }" fontSize="12"/>
+						</mx:HBox>	                            
+				</comp:WindowShade>	
+				
+				<comp:WindowShade label="Procede D’IMPRESSION" width="100%" opened="false" openEnd="onOpenEnd()"> 
+						<mx:Form id="procedeForm" width="100%" height="100%" >			
+							<mx:FormItem id="label_print_process">
+								<mx:ComboBox id="popup_print_process" width="150"/>
+							</mx:FormItem> 
+							<mx:FormItem id="label_print_sens">
+								<mx:CheckBox id="checkbox_print_sens"/> 
+							</mx:FormItem>
+							<mx:FormItem id="label_print_support" >
+								<mx:ComboBox id="popup_print_support" selectedIndex="1" width="150" />
+							</mx:FormItem>
+							<mx:FormItem id="label_vernis" label="Vernis">
+								 <mx:TextInput id="text_vernis" maxChars="250" width="150"/>
+							</mx:FormItem> 
+							<mx:FormItem id="label_format" >
+								<mx:ComboBox id="popup_format" selectedIndex="1"/>
+							</mx:FormItem>
+							<mx:FormItem id="label_width" >
+								<mx:TextInput id="text_width" width="40" maxChars="250"/>
+							</mx:FormItem> 
+							<mx:FormItem id="label_height" >
+								<mx:TextInput id="text_height" width="40" maxChars="250"/>
+							</mx:FormItem>
+						</mx:Form>		
+				</comp:WindowShade>	 
+				
+				<comp:WindowShade label="PLAN DE DÉCOUPE" width="100%" opened="false" openEnd="onOpenEnd()">
+						<mx:Form id="plandedecoupeForm" width="100%" height="100%" >
+							<mx:FormItem id="label_cuttingplan"  label="VALIDATION"> 								
+								<view:RadioGropus id="popup_cuttingplan"
+									              groupName="Plan de découpe"  
+									              numOfColumns="1"  vGap="70" />												
+							</mx:FormItem> 
+						</mx:Form>		
+				</comp:WindowShade>	
+				
+				<comp:WindowShade label="TRAME, RECOUVREMENT, POINT MINIMUM" width="100%" opened="false" openEnd="onOpenEnd()">
+					<mx:Form id="trameForm" width="100%" height="100%" >
+						<mx:FormItem id="label_trame" label="Trame">
+							<mx:TextInput id="text_trame" width="150" maxChars="250"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_point_type" label="Type de points">
+							<mx:ComboBox id="popup_point_type" width="150"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_trapping" label="Trapping">
+							<mx:TextInput id="text_trapping" maxChars="250" width="150"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_white_takeoff" label="Retrait du blanc">
+							<mx:TextInput id="text_white_takeoff" maxChars="250" width="150"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_minimum_point" label="point minimim sur fichier">
+							 <mx:TextInput id="text_minimum_point" maxChars="250" width="46"/>
+						</mx:FormItem> 
+						<mx:FormItem id="label_point_minimum_sur_imprime" label="Point minimum sur imprimé">
+							<mx:TextInput id="text_point_minimum_sur_imprime" width="46" maxChars="250" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_max_point_gradient" label="point maximum dans les dégradés">
+							<mx:TextInput id="text_max_point_gradient" width="46" maxChars="250" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_proof_curve" label="courbe d'engraissement épreuve">
+							<mx:TextInput id="text_proof_curve"	width="46" text="0" maxChars="250" />
+						</mx:FormItem>
+						<mx:FormItem id="label_ink_pourcentage" label="Taux de superposition (% encrage)">
+							<mx:TextInput id="text_ink_pourcentage"	maxChars="250" width="46" text="0"/>  
+						</mx:FormItem>
+						<mx:FormItem id="label_bleed" label="debord de matiere">
+							<mx:TextInput id="text_bleed" width="46" text="0" maxChars="250"/>  
+						</mx:FormItem>	
+						<mx:FormItem id="label_paste_zone" label="Réserve de collage">
+							<view:RadioGropus id="popup_paste_zone" groupName="Cercle de repérage par couleur" numOfColumns="2" vGap="70"/>
+						</mx:FormItem>	
+						<mx:FormItem id="label_text_security_zone" label="Sécurité des textes par rapport à la coupe et au rainage" toolTip="Sécurité des textes par rapport à la coupe et au rainage">
+							<mx:TextInput id="text_text_security_zone" width="46" text="0" maxChars="250"/>  
+						</mx:FormItem>
+						<mx:FormItem id="label_color_bleed_laize" label="Débord Couleur">
+							<view:TextNumericStepper id="text_color_bleed_laize" minimum="0" maximum="40" text="20" stepSize="1" width="65"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_color_bleed_dev" label="Débord couleur Développement">
+							<mx:TextInput id="text_color_bleed_dev" width="46" maxChars="250" text="0"/>
+						</mx:FormItem>
+					</mx:Form>
+				</comp:WindowShade> 
+				
+				<comp:WindowShade label="COULEURS" width="100%" opened="false" openEnd="onOpenEnd()">
+					<mx:Form id="montageForm" width="100%" height="100%" >
+						<mx:FormItem id="label_color_number" label="nombre de couleurs">
+							<view:TextNumericStepper id="text_color_number" minimum="0"	maximum="40" stepSize="1" text="20" width="65"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_color_detail" label="détail des couleurs">
+							<mx:TextArea id="text_color_detail" width="500" text="0" height="60" maxChars="250"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_color_order" label="Ordre de passage des couleurs Clichés commun">
+							<mx:TextArea id="text_color_order" width="500" text="0" height="100" maxChars="250" />
+						</mx:FormItem> 
+						<mx:FormItem label="{ getColorLabel( popup_print_process.selectedItem ) }" id="_colorItem">
+							<mx:TextInput id="text_common_cylinders" width="142" text="0" maxChars="250"/>
+						</mx:FormItem>
+					</mx:Form>
+				</comp:WindowShade> 
+				
+				<comp:WindowShade label="GENCOD et SPOT" width="100%" opened="false" openEnd="onOpenEnd()">				 
+					<mx:Form id="gencodForm" width="100%" height="100%" >
+						<mx:FormItem id="label_gencod_color" label="Couleur">
+							<mx:TextInput id="text_gencod_color" maxChars="250" width="142" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_gencod_direction" label="Sens">
+							<mx:TextInput id="text_gencod_direction" maxChars="250" width="142" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_gencod_size" direction="horizontal" label="Taille" visible="{text_gencod_size.visible}">
+								<mx:TextInput id="text_gencod_size" maxChars="250" width="67" toolTip="Size" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_width_bar_reduction" label="Réduction largeur de barre">
+							<mx:TextInput id="text_width_bar_reduction"  maxChars="250" width="142" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_color_spot" label="Couleur spot">
+							<mx:TextInput id="text_color_spot" maxChars="250" width="142" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_color_reading_zone" label="Zone de lecture de spot">
+							<mx:TextInput id="text_color_reading_zone" maxChars="250" width="142" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem id="label_spotsize" width="100%" >   
+							<view:RadioGropus id="popup_spotsize" 
+								              groupName="Dimension du spot"  
+								              numOfColumns="2" vGap="70" />
+						</mx:FormItem>
+					</mx:Form>
+				</comp:WindowShade> 
+				
+				<comp:WindowShade label="TEXTES et FILETS" width="100%" opened="false" openEnd="onOpenEnd()">
+					<mx:Form width="100%" height="100%">
+						<mx:FormItem  id="label_positive_text_min" label="textes positifs">
+					 		<mx:TextInput id="text_positive_text_min" width="142" text="0" maxChars="250"/> 
+						</mx:FormItem>
+						<mx:FormItem  id="label_negative_text_min" label="textes negatifs">
+							<mx:TextInput id="text_negative_text_min" width="142" maxChars="250" text="0"/>
+						</mx:FormItem>
+						<mx:FormItem  id="label_positive_line_min" label="filets négatifs">
+							<mx:TextInput id="text_positive_line_min" width="142" text="0" maxChars="250"/>
+						</mx:FormItem>
+						<mx:FormItem  id="label_negative_line_min" label="filets positifs">
+							<mx:TextInput id="text_negative_line_min" width="142" text="0" maxChars="250"/>
+						</mx:FormItem>
+						<mx:FormItem  id="label_croix_de_reperage"  label="Croix de repérage par couleur">
+							<view:RadioGropus id="popup_croix_de_reperage"  groupName="Croix de repérage par couleur"
+											  numOfColumns="2" vGap="70"/>
+						</mx:FormItem>
+					</mx:Form> 
+				</comp:WindowShade> 
+				
+				<comp:WindowShade label="REPERAGE-PRESSION" width="100%" opened="false" openEnd="onOpenEnd()">
+					<mx:Form width="100%" height="100%">
+						<mx:FormItem  id="label_pressure_square_spot"  label="Carré de pression par couleur">
+							<view:RadioGropus id="popup_pressure_square_spot" groupName="Carré de pression par couleur" 
+							                  numOfColumns="2" vGap="70"/>
+						</mx:FormItem>
+						<mx:FormItem  id="label_color_guide_spot" label="label_color_guide_spot">
+							<view:RadioGropus id="popup_color_guide_spot" groupName="Cercle de repérage par couleur"
+									          numOfColumns="2" vGap="70"/>
+						</mx:FormItem>
+					</mx:Form>
+				</comp:WindowShade>
+				
+				<comp:WindowShade label="FOURNITURES" width="100%" layout="horizontal" opened="false" openEnd="onOpenEnd()">
+					<mx:Form>
+						<mx:FormHeading label="Epreuve" fontWeight="bold" fontSize="12" />
+						<mx:FormItem  id="label_approval" label="Approval">
+							<view:TextNumericStepper id="text_approval"
+									minimum="0"
+									maximum="40"
+									stepSize="1" 
+									width="65" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>						
+						<mx:FormItem id="label_support_speciaux" label="Support speciaux">
+							<mx:TextArea id="text_support_speciaux" width="300" text="0" height="50" maxChars="250" change="onDepartFieldsChange( event )"/>									
+						</mx:FormItem>						
+						<mx:FormItem  id="label_epson" label="Epson">
+							<view:TextNumericStepper id="text_epson"
+							minimum="0"
+							maximum="40"
+							stepSize="1" 
+							width="65" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>						
+						<mx:FormItem  id="label_jeuxsepa_laser" label="Jeux Sépa. Laser">
+							<view:TextNumericStepper id="text_jeuxsepa_laser"
+							minimum="0"
+							maximum="40"
+							stepSize="1" 
+							width="65" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>						
+						<mx:FormItem  id="label_traceurhp" label="Traceur HP">
+							<view:TextNumericStepper id="text_traceurhp" 
+								minimum="0"
+								maximum="40"
+								stepSize="1"
+								width="65" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>						
+						<mx:FormItem  id="label_laser" label="Laser">
+							<view:TextNumericStepper id="text_laser"
+							minimum="0"
+							maximum="40"
+							stepSize="1" 
+							width="65" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>	
+						<!--<mx:FormItem id="label_support" label="Support" visible="false" includeInLayout="false">
+							<mx:ComboBox id="popup_support" width="150" change="onDepartFieldsChange( event )" visible="false" includeInLayout="false"/>
+						</mx:FormItem>-->		
+					</mx:Form>					
+					<mx:Form>
+						<mx:FormHeading label="CD / DVD" fontWeight="bold" fontSize="12"/>
+						<mx:FormItem id="label_artpro">
+							<mx:CheckBox id="checkbox_artpro" change="onDepartFieldsChange( event )"/> 
+						</mx:FormItem>
+						<mx:FormItem id="label_artpro_version" label="ArtPro version">
+						 	<mx:TextInput id="text_artpro_version" maxChars="250" width="56" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem> 
+						<mx:FormItem id="label_illustrator">
+							<mx:CheckBox id="checkbox_illustrator" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>							
+						<mx:FormItem id="label_illustrator_version" label="Illustrator version">
+						 	<mx:TextInput id="text_illustrator_version" maxChars="250" width="56" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem> 
+						<mx:FormItem id="label_pdf_hd">
+							<mx:CheckBox id="checkbox_pdf_hd" change="onDepartFieldsChange( event )"/>
+						</mx:FormItem>							
+					</mx:Form>
+				</comp:WindowShade>						
+			</mx:VBox>					
+		</mx:Canvas>
+</mx:Canvas>

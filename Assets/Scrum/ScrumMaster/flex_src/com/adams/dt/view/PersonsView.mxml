@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="100%" height="100%"  initialize="{model.currentInstance.currentWorkflow = workflowSelector.selectedItem as Workflows;
+		 model.currentInstance.currentDomain =domainSelector.selectedItem as Categories;}"  > 
+	<fx:Script>
+		<![CDATA[ 
+			import com.adams.dt.model.vo.Categories;
+			import com.adams.dt.model.vo.Workflows;
+			import com.adams.dt.view.models.IPersonPresentationModel;
+			
+			import mx.events.FlexEvent;
+			
+			private var _model:IPersonPresentationModel;
+			
+			public function get model():IPersonPresentationModel
+			{
+				return _model;
+			}
+
+			[Inject]
+			[Bindable] 
+			public function set model(value:IPersonPresentationModel):void
+			{
+				_model = value;
+			} 
+			 
+		]]>
+	</fx:Script> 
+ 	<s:layout>
+		<s:VerticalLayout>
+			
+		</s:VerticalLayout>
+	</s:layout>
+	<s:Label text="workflow"/>
+	<mx:ComboBox id="workflowSelector" dataProvider="{model.currentInstance.currentWorkFlowCollection}" 
+				 labelField="workflowLabel"
+				 change="{model.currentInstance.currentWorkflow= workflowSelector.selectedItem as Workflows}" />
+	<s:Label text="domain"/>
+	<mx:ComboBox id="domainSelector" dataProvider="{model.currentInstance.currentDomainCollection}" 
+				 labelField="categoryName" 
+				 change="{model.currentInstance.currentDomain= domainSelector.selectedItem as Categories}"  
+				 visible="{model.currentInstance.currentDomainCollection.length>1}" 
+				 includeInLayout="{model.currentInstance.currentDomainCollection.length>1}" />
+	<s:Label text="projectName"/>
+	<s:TextInput id="prjName" change="{model.projectName =prjName.text}"/>
+	<s:Button click="model.clickHandler(event)"/>
+	<mx:DataGrid id="dataGrid" dataProvider="{model.persons}" width="500" height="400" />
+	
+</s:Group>

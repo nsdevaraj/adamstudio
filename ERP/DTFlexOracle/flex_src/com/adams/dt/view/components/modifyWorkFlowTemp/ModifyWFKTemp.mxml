@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()" horizontalScrollPolicy="off"
+	  currentState="newState" xmlns:controls="com.adams.dt.view.components.modifyWorkFlowTemp.qs.controls.*" 
+	  xmlns:modifyWorkFlowTemp="com.adams.dt.view.components.modifyWorkFlowTemp.*">
+<mx:Style>
+	 
+	.panelStyle{
+		border-style:solid;
+		border-thickness:1;
+		border-skin: ClassReference('mx.skins.halo.PanelSkin');
+		padding-bottom:10;
+		padding-left:10;
+		padding-right:10;
+		padding-top:10;
+		title-style-name:header;
+		header-height:25;
+		corner-radius: 0;
+	}
+	.header{
+		fontFamily: myFont;
+		font-weight:bold;
+		text-align:left;
+		font-size: 12;
+	}
+		
+</mx:Style>
+<mx:Script>
+	<![CDATA[
+		import mx.controls.Label;
+		import com.adams.dt.event.WorkflowsEvent;
+		import mx.core.IUIComponent;
+		import flash.profiler.profile;
+		import mx.controls.Alert;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import com.adams.dt.event.WorkflowstemplatesEvent;
+		import mx.rpc.IResponder;
+		import com.adams.dt.business.util.GetVOUtil;
+		import com.adams.dt.model.vo.Profiles;
+		import com.adams.dt.model.vo.Status;
+		import com.adams.dt.event.workFlowEvent.WorkflowDropEvent;
+		import mx.controls.Button;
+		import mx.controls.Image;
+		import mx.core.DragSource;
+		import mx.managers.DragManager;
+		import mx.events.DragEvent;
+		import mx.core.Container;
+		import com.adams.dt.view.components.modifyWorkFlowTemp.qs.controls.DragTile;
+		import mx.containers.TitleWindow;
+		import mx.containers.Panel;
+		import com.adams.dt.model.vo.Phasestemplates;
+		import com.adams.dt.model.vo.Phases;
+		import mx.core.UIComponent;
+		import com.adams.dt.model.ModelLocator;
+		import com.adams.dt.model.vo.WorkFlowset;
+		import com.adams.dt.model.vo.Workflowstemplates;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.business.util.Utils;
+		import mx.managers.PopUpManager;
+		import mx.core.IFlexDisplayObject;
+		import mx.events.CloseEvent;
+		import mx.events.FlexEvent;
+		import mx.effects.Resize;
+		import mx.containers.HBox;
+		import com.adams.dt.model.vo.Workflows;
+		
+		
+		[Bindable]
+		public var currentWFTemp:Workflowstemplates;
+		private var wf:WF; 
+		private var wfView:WFTempViewer;
+		private var workFlowArr:ArrayCollection= new ArrayCollection();
+		private var cloneWorkFlowArr:ArrayCollection;
+		[Bindable]
+		private var clickedFrontWFTask:WorkFlowset 
+		[Bindable]
+		public var model:ModelLocator = ModelLocator.getInstance();
+		[Bindable]
+		private var workFlowId:int = 1;
+		[Bindable]
+		private var workFlowHolder:DragTile;
+		
+		 
+		private var tempObj:Object = {};
+		
+		// embeded Icon
+		[Embed ( source = 'assets/images/WfImage.png' )]
+		private var _draggedImage:Class
+		
+		private function init():void{ 
+			workFlowArr = Utils.getAllWorkflowTemplatesSet(workFlowId);
+			WFContainer.removeAllChildren()
+			for each(var phasetemp:Phasestemplates in model.allPhasestemplatesCollection){
+				if (phasetemp.workflowId == workFlowId){
+					workFlowHolder = new DragTile();
+					workFlowHolder.addEventListener('workFlowDropped' , addNew ,false,0,true );
+					workFlowHolder.itemRenderer = new ClassFactory ( WF );
+					workFlowHolder.title =  phasetemp.phaseName+" PHASE";
+					workFlowHolder.styleName = 'panelStyle';
+					workFlowHolder.layout = "horizontal" 
+					workFlowHolder.addEventListener(DragEvent.DRAG_OVER , OnDragOver,false,0,true)
+					workFlowHolder.addEventListener(DragEvent.DRAG_ENTER , doDragEnter,false,0,true)
+			      	workFlowHolder.data = phasetemp.phaseTemplateId;
+					workFlowHolder.percentWidth = 100;
+					workFlowHolder.height = 150;
+					workFlowHolder.dataProvider = getWorkflowSet( phasetemp.phaseTemplateId ) 
+					WFContainer.addChild(workFlowHolder)
+					currentWFTemp = WorkFlowset(workFlowArr.getItemAt(0)).frontWFTask;
+					model.selectedWFTemplateID =  currentWFTemp.workflowTemplateId
+				}
+			} 
+		} 
+		private function OnDragOver ( event :DragEvent ) : void {
+			event.target.showDragFeedback(event,event.shiftKey? "copy":"move");
+		}
+		private function doDragEnter(evt:DragEvent):void{  
+	        	DragManager.acceptDragDrop(UIComponent(evt.target));	
+	        }
+		private function getWorkflowSet( id : int ) : Array {
+			var retArray:Array = new Array();
+			for each ( var workFlowTempSet:WorkFlowset in workFlowArr) {
+				if( id  == workFlowTempSet.phasesId ) {
+					retArray.push(workFlowTempSet);
+				}
+			}
+			return retArray
+		}
+ 		private function loadWorkFlowTemp(con:Container) :void {
+			for each ( var workFlowTempSet:WorkFlowset in workFlowArr) {
+				if(con.data == workFlowTempSet.phasesId ) {
+					DragTile(con).itemRenderer =  new ClassFactory(WF)
+				}
+			}
+			
+		}
+		private function getWindow(event:Event):void {
+			var front:Boolean 
+			(event.target.name) == 'aBox' ? front = true : front =false
+			front ? model.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).frontWorkFlowId : model.selectedWFTemplateID = WorkFlowset(event.currentTarget.data).backWorkFlowId;
+			getWFTWindow( WorkFlowset(event.currentTarget.data) ,front);
+		}
+		private function getWFTWindow(clickedFrontWFTask:WorkFlowset,frontTask:Boolean):void { 
+			WFViewer.removeAllChildren();
+			currentState = 'newClsState' 
+			wfView = new WFTempViewer();
+			wfView.clickedWFTemp = clickedFrontWFTask;
+			wfView.data = workFlowArr;
+			wfView.styleName = 'panelStyle';
+			WFViewer.addChild(wfView); 
+            frontTask ? wfView.aBtn.alpha = 1.0 :  wfView.bBtn.alpha = 1.0
+			wfView.addEventListener(CloseEvent.CLOSE,removeViewer,false,0,true);
+		}
+		 
+		private function removeViewer(event:CloseEvent):void{
+			currentState = 'newState'
+		}
+		 
+		private function getSelectedItem() :void {
+			var wfk:Workflows = model.workflowsCollection.getItemAt( comboContainer.selectedIndex ) as Workflows
+			workFlowId = wfk.workflowId ;
+			model.setWorkFlowId = workFlowId
+			WFContainer.removeAllChildren();
+			init(); 
+		}
+		[Bindable]
+		private var newWFKTemp:NewWorkFlowTemp ;
+		[Bindable]
+		private var _selectedWFTemp :WorkFlowset
+		[Bindable]
+		private var frontWFKPrevious : Workflowstemplates ;
+		[Bindable]
+		private var frontWFKNext : Workflowstemplates ;
+		[Bindable]
+		private var backWFKNext  : Workflowstemplates ;
+		[Bindable]
+		private var backWFKPrevious : Workflowstemplates ;
+		[Bindable]
+		private var droppedUI : IUIComponent ;
+		private function addNew ( event : Event = null ) : void {
+			_selectedWFTemp = WorkflowDropEvent(event).selectedWFKSet
+			if( WorkflowDropEvent(event).backWFKNext != null ) {
+				backWFKNext = WorkflowDropEvent(event).backWFKNext
+				backWFKPrevious = WorkflowDropEvent(event).backWFKPrevious
+				frontWFKNext = WorkflowDropEvent(event).frontWFKNext
+				frontWFKPrevious = WorkflowDropEvent(event).frontWFKPrevious
+				droppedUI = WorkflowDropEvent(event).doppedWorkFlowUI
+				newWFKTemp = new NewWorkFlowTemp();
+				newWFKTemp.statusColl = checkWorkFlowStatus()
+				PopUpManager.addPopUp(newWFKTemp, model.mainClass, true);
+				PopUpManager.centerPopUp(newWFKTemp);
+				newWFKTemp.saveBtn.addEventListener(MouseEvent.CLICK,onSave,false,0,true);
+			}else {
+				Alert.show(" You cannot add in first template")
+				var wfk:Workflows = model.workflowsCollection.getItemAt( comboContainer.selectedIndex ) as Workflows
+				workFlowId = wfk.workflowId ;
+				WFContainer.removeAllChildren();
+				init();
+			}
+			
+		}
+		/**
+		 * Function to Add the new Work Flow Template
+		 * */
+		[Bindable]
+		private var fillCount:int
+		private function onSave( event:MouseEvent ) : void {
+			fillCount++
+			 var createNewWorkFlowTempEvent:WorkflowstemplatesEvent;
+			 if( fillCount == 1) {
+				var newFrontWfktemplate:Workflowstemplates = new Workflowstemplates();
+				newFrontWfktemplate.workflowFK = 1;
+				newFrontWfktemplate.phaseTemplateFK = _selectedWFTemp.phasesId;
+				newFrontWfktemplate.profileFK = Profiles( newWFKTemp.Profiles.selectedItem ).profileId
+				newFrontWfktemplate.taskCode = "P1T0"+(taskCount+1)+"A";
+				newFrontWfktemplate.taskLabel = newWFKTemp.taskLabelTxt.text;
+				newFrontWfktemplate.prevTaskFk = backWFKNext !=null?GetVOUtil.getWorkflowTemplate(backWFKNext.workflowTemplateId):null;
+				newFrontWfktemplate.nextTaskFk = GetVOUtil.getWorkflowTemplate(frontWFKPrevious.workflowTemplateId)
+				newFrontWfktemplate.taskLabelTodo = newWFKTemp.taskLabelToDoTxt.text;
+				newFrontWfktemplate.optionPrevLabel = newWFKTemp.backOptionLabelPrevTxt.text;
+				newFrontWfktemplate.optionNextLabel = newWFKTemp.backOptionLabelNextTxt.text;
+				newFrontWfktemplate.optionStopLabel = getStatusId();
+				newFrontWfktemplate.defaultEstimatedTime = 100; 
+				var handler:IResponder = new Callbacks( createNewFrontResult , null )
+				createNewWorkFlowTempEvent = new WorkflowstemplatesEvent( WorkflowstemplatesEvent.EVENT_CREATE_WORKFLOWSTEMPLATES , handler)
+				createNewWorkFlowTempEvent.workflowstemplates = newFrontWfktemplate;
+				createNewWorkFlowTempEvent.callbacks = handler
+				createNewWorkFlowTempEvent.dispatch();
+				newWFKTemp.title = " New WorkFLow Template For BackTask";
+				Alert.show("please fill the Items for Back task Also ")
+				fillCount = -1;
+				newWFKTemp.clearAll();
+				newWFKTemp.statusColl = checkWorkFlowStatus()
+				newWFKTemp.Profiles.enabled = false
+			}else if( fillCount == 0 ) {
+				var newBackWfktemplate:Workflowstemplates = new Workflowstemplates();
+				newBackWfktemplate.workflowFK = 1;
+				newBackWfktemplate.phaseTemplateFK = _selectedWFTemp.phasesId;
+				newBackWfktemplate.profileFK = Profiles( newWFKTemp.Profiles.selectedItem ).profileId
+				newBackWfktemplate.taskCode = "P1T0"+(taskCount+1)+"B";
+				newBackWfktemplate.taskLabel = newWFKTemp.taskLabelTxt.text;
+				newBackWfktemplate.taskLabelTodo = newWFKTemp.taskLabelToDoTxt.text;
+				newBackWfktemplate.optionPrevLabel = newWFKTemp.backOptionLabelPrevTxt.text;
+				newBackWfktemplate.optionNextLabel = newWFKTemp.backOptionLabelNextTxt.text;
+				newBackWfktemplate.optionStopLabel = getStatusId();
+				newBackWfktemplate.prevTaskFk = backWFKNext !=null?GetVOUtil.getWorkflowTemplate(backWFKNext.workflowTemplateId):null;
+				newBackWfktemplate.nextTaskFk = GetVOUtil.getWorkflowTemplate(frontWFKPrevious.workflowTemplateId)
+				newBackWfktemplate.defaultEstimatedTime = 100; 
+				var nextHandler:IResponder = new Callbacks( createBackResult , null );
+				createNewWorkFlowTempEvent = new WorkflowstemplatesEvent( WorkflowstemplatesEvent.EVENT_CREATE_WORKFLOWSTEMPLATES , nextHandler )
+				createNewWorkFlowTempEvent.workflowstemplates = newBackWfktemplate;
+				createNewWorkFlowTempEvent.callbacks = nextHandler;
+				createNewWorkFlowTempEvent.dispatch();
+				PopUpManager.removePopUp(newWFKTemp);
+			}   
+		}
+		[Bindable]
+		private var newFrontWfktemplate:Workflowstemplates
+		private function createNewFrontResult ( data : Object ) : void {
+			newFrontWfktemplate = data.result as Workflowstemplates;
+		}
+		[Bindable]
+		private var newBackWfktemplate:Workflowstemplates
+		private function createBackResult ( data : Object ) : void {
+			newBackWfktemplate = data.result as Workflowstemplates;
+			var profDetails:Profiles = Profiles( GetVOUtil.getProfileObject( newFrontWfktemplate.profileFK ) ) 
+			WF(droppedUI).workFlowColor.setStyle( "backgroundColor" , profDetails.profileColor );
+			WF(droppedUI).workflowLabel.text = profDetails.profileLabel;
+			WF(droppedUI).titleTxt.text = newFrontWfktemplate.taskLabel;
+			/* WF(droppedUI).aBox.data = newFrontWfktemplate
+			WF(droppedUI).bBox.data = newBackWfktemplate */
+			afterAdded();
+		}
+		/**
+		 * Function to Find the Available task for the Selected phase....
+		 * */
+		 [Bindable]
+		 private var taskCount:int;
+		 private function taskAvailability ( ) : void {
+		 	taskCount = 0;
+		 	var worflowColl:ArrayCollection = Utils.getAllWorkflowTemplatesSet(1);
+		 	for each ( var tempWorkFlow:WorkFlowset in worflowColl ) {
+		 		if(tempWorkFlow.phasesId == _selectedWFTemp.phasesId ){
+		 			taskCount++;
+		 		}
+		 	} 
+		 }
+		/**
+		 * Function to get the Status for the WorkFlow Status....
+		 * */
+		private function checkWorkFlowStatus( ) : ArrayCollection {
+			var tempArr:ArrayCollection = new ArrayCollection();
+			for each( var tempStatus:Status in model.getAllStatusColl ){
+				if( tempStatus.type == "workflowtemplate_permissionlabel"){
+					tempArr.addItem(tempStatus)
+				}
+			}
+			return 	tempArr;
+		}
+		private function getStatusId( ) : String {
+			var tempString:String ;
+			for each( var storedStatus : Status in newWFKTemp.createdStatusColl ){
+				for each( var tempStatus : Status in model.getAllStatusColl ){
+					if( storedStatus.statusLabel == tempStatus.statusLabel ) {
+						tempString = tempString+tempStatus.statusId+","
+					}
+				}
+			}
+			return tempString;
+		}
+		private function afterAdded(  ) : void {
+			// update the back work flow template ...
+			var addColl:ArrayCollection = new ArrayCollection();
+			if( backWFKNext != null) {
+				backWFKNext.nextTaskFk = newFrontWfktemplate;
+				backWFKPrevious.nextTaskFk = 	newFrontWfktemplate;
+				addColl.addItem(backWFKNext);
+				addColl.addItem(backWFKPrevious);
+			}
+			
+			
+			// update the Front work flow template ...
+			frontWFKPrevious.prevTaskFk = newBackWfktemplate
+			frontWFKNext.prevTaskFk	= newBackWfktemplate
+			addColl.addItem(frontWFKPrevious);
+			addColl.addItem(frontWFKNext);
+			var updateHandler:IResponder = new Callbacks(updateResult , null )  
+			var updateEvt:WorkflowstemplatesEvent = new WorkflowstemplatesEvent ( WorkflowstemplatesEvent.EVENT_BULK_UPDATE_WORKFLOWSTEMPLATES , updateHandler );
+			updateEvt.workflowstemplatesColl = addColl;
+			updateEvt.callbacks = updateHandler
+			updateEvt.dispatch(); 
+			
+		}
+		private function updateResult ( data : Object ) : void {
+			var showResultHandler:IResponder = new Callbacks (  showResult , null ) 
+			var getAllworkflowTemplate:WorkflowstemplatesEvent = new WorkflowstemplatesEvent(WorkflowstemplatesEvent.EVENT_GET_ALL_WORKFLOWSTEMPLATESS ,  showResultHandler);
+			getAllworkflowTemplate.callbacks = showResultHandler
+			getAllworkflowTemplate.dispatch() 
+		}
+		private function showResult ( data : Object ) : void {
+			/* workFlowArr.removeAll();
+			workFlowArr = Utils.getAllWorkflowTemplatesSet(workFlowId);
+			WFContainer.removeAllChildren() */
+			
+			var wfk:Workflows = model.workflowsCollection.getItemAt( comboContainer.selectedIndex ) as Workflows
+			workFlowId = wfk.workflowId ;
+			WFContainer.removeAllChildren();
+			init();
+		}
+		private function mouseMoveHandler(event:MouseEvent):void{
+			var itemsArr:Array = new Array();
+			var workflow:WorkFlowset = new WorkFlowset();
+			itemsArr.push ( workflow );
+			
+			var dragInitiator : Image = Image( event.currentTarget );
+			var ds : DragSource = new DragSource ();
+			ds.addData( itemsArr ,'items');
+			// for the draggging BackGround Image.....
+			var proxyImage:Image = new Image();
+			proxyImage.source = _draggedImage;
+			proxyImage.height = 100;
+			proxyImage.width = 100;
+			DragManager.doDrag(dragInitiator, ds, event , proxyImage , -15 , -15 , 1.00 );
+		}
+		
+	]]>
+</mx:Script>
+<mx:Fade id="myFadeIn" alphaFrom="0" alphaTo="1" duration="500" target="{WFViewer}" />
+<mx:states>
+		<mx:State name="newState">
+			<mx:SetProperty target="{WFContainer}" name="visible" value="true"/>
+			<mx:SetProperty target="{WFContainer}" name="includeInLayout" value="true"/>
+			<mx:SetProperty target="{WFViewer}" name="visible" value="false"/>
+			<mx:SetProperty target="{WFViewer}" name="includeInLayout" value="false"/>
+			
+		</mx:State>
+		<mx:State name="newClsState"> 
+			<mx:SetProperty target="{WFViewer}" name="visible" value="true"/>
+			<mx:SetProperty target="{WFViewer}" name="includeInLayout" value="true"/> 
+		</mx:State>
+</mx:states>
+		<mx:VBox  id="WFContainer" left="20" right="20" width="100%" horizontalScrollPolicy="off"  verticalAlign="middle"
+		top="{headerBox.height+headerBox.y + 5}"  height="{this.height-70}" styleName="darkBorder" 
+		paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" />
+	 
+		<mx:HBox width="100%" paddingLeft="14" paddingRight="14" styleName="statusHeader" 
+			 id="headerBox"  horizontalCenter="0" verticalAlign="middle" paddingTop="5" paddingBottom="5"  > 
+		
+			<mx:Image source="assets/images/drogIcon.gif" 
+				mouseMove="mouseMoveHandler(event)" toolTip="drag and drop"/>
+			<mx:Spacer width="100%" />	
+			<!--<mx:Label left="200" styleName="menuText" width="200" height="30" fontSize="14" text="Drag and Drop Workflow" toolTip="drag and drop"
+				mouseMove="mouseMoveHandler(event)" />-->
+			<mx:Label text="Selected Workflow :" />
+			<mx:ComboBox  id="comboContainer" dataProvider="{ model.workflowsCollection}"  
+				change="getSelectedItem()" labelField="workflowLabel"/>		
+		</mx:HBox>	
+		
+		<mx:HBox id="WFViewer" width="95%" height="100%" backgroundAlpha=".01" styleName="bgContainer"
+		 horizontalAlign="right" verticalAlign="middle"/>
+	
+</mx:Canvas>

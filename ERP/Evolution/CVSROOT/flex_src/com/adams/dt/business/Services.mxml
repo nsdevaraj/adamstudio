@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cairngorm:ServiceLocator xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:cairngorm="com.universalmind.cairngorm.business.*">
+	<mx:Script>
+		<![CDATA[
+			import mx.messaging.events.MessageEvent;
+			import mx.messaging.messages.AsyncMessage;
+			import mx.messaging.messages.IMessage;
+			import com.adams.dt.model.managers.SharedObjectManager;
+			import mx.core.Application;
+			import mx.core.WindowedApplication;
+			import mx.events.CloseEvent;
+			import mx.controls.Alert;
+			import com.adams.dt.event.TasksEvent;
+			import mx.rpc.IResponder;
+			import com.universalmind.cairngorm.events.Callbacks;
+			import com.adams.dt.event.TeamlineEvent;
+			import com.adams.dt.view.components.chatscreen.asfile.MessageWindow;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.business.util.Register;
+    		import com.adams.dt.model.ModelLocator; 
+    		import mx.rpc.events.InvokeEvent;
+    		import air.net.SocketMonitor;
+	    	import flash.net.URLRequest;
+	    	import flash.events.StatusEvent;
+	    	private var monitor:SocketMonitor;
+	    	public static const DEFAULT_SERVICE:String = 'defaultTemplate';
+	    	public static const DEFAULT_VALUE_SERVICE:String = 'defaultTemplateValue';
+    		public static const GROUP_SERVICE:String = 'groups';
+    		public static const GROUPPERSON_SERVICE:String = 'groupPersons';
+    		public static const PERSON_SERVICE:String = 'person';
+    		public static const UPLOAD_SERVICE:String = 'remoteUpload';
+    		public static const LANG_SERVICE:String = 'lang';
+    		public static const CHAT_SERVICE:String = 'chat';
+    		public static const PROJECT_SERVICE:String = 'project';
+    		public static const CATEGORY_SERVICE:String = 'category';
+    		public static const COMPANY_SERVICE:String = 'companies';
+    		public static const COLUMN_SERVICE:String = 'columns';
+    		public static const REPORT_SERVICE:String = 'reports';
+    		public static const REPORT_COL_SERVICE:String = 'reportcolumns';
+    		public static const EVENT_SERVICE:String = 'events';
+    		public static const PHASE_SERVICE:String = 'phases';
+    		public static const MODULE_SERVICE:String = 'module';
+    		public static const PHASE_TEMPLATE_SERVICE:String = 'phasestemplate';
+    		public static const PROPERTIES_PJ_SERVICE:String = 'propertiespj';
+    		public static const PROPERTY_PRESET_SERVICE:String = 'propertiespresets';
+    		public static const PROFILE_SERVICE:String = 'profiles';
+    		public static const STATUS_SERVICE:String = 'status';
+    		public static const TASK_SERVICE:String = 'task';
+    		public static const WORKFLOW_SERVICE:String = 'workflows';
+    		public static const WORKFLOW_TEMPLATE_SERVICE:String = 'workflowstemplates';
+    		public static const NOTE_SERVICE:String = 'note';
+    		public static const FILE_DETAIL_SERVICE:String = 'fileDetail';
+    		public static const TAG_SERVICE:String = 'tag';
+    		public static const TEAM_TEMPLATE_SERVICE:String = 'teamtemplate';
+    		public static const TEAMLINE_TEMPLATE_SERVICE:String = 'teamlinestemplate';
+    		public static const TEAMLINE_SERVICE:String = 'teamline';
+    		public static const DIRECTORY_SERVICE:String = 'directory';
+    		public static const TRANSLATE_SERVICE:String = 'translate';
+    		public static const DOMAIN_SERVICE:String = 'domainworkflow';
+    		public static const PAGE_SERVICE:String = 'paging';
+    		public static const IMPREMIUR_SERVICE:String = 'impremiur';
+    		public static const PROP_PRESET_TEMPLATE_SERVICE:String = 'PropPresetTemplate';
+    		public static const PRESETTEMPLATE_SERVICE:String = 'presetTemplate' ;
+    		public static const SPRINTS_SERVICE:String = 'sprints' ;
+    		
+    		public static const SMTP_EMAIL_SERVICE:String = 'remoteSmtpEmail'; 
+    		
+    		
+    		[Bindable]
+    		private var serverDisConnectedSec:int;
+    		private var register :Register = new Register();
+    		private var SoM:SharedObjectManager = SharedObjectManager.instance;
+    		[Bindable]
+    		private var model : ModelLocator = ModelLocator.getInstance();
+			private function serviceInvoked(event:mx.rpc.events.InvokeEvent):void{
+				serverMonitoring(model.serverLocation);
+				var timeStamp:Date = model.currentTime;
+				var diffmillisecs:int =  -(model.serverLastAccessedAt.time - timeStamp.time);
+				var diffmins:int = diffmillisecs/60000;
+ 				model.serverLastAccessedAt = timeStamp;
+ 				(diffmins>1)? model.bgUploadFile.idle=true:model.bgUploadFile.idle=false;
+ 				serverDisConnectedSec = diffmillisecs 
+				model.tillTime = (model.currentTime.valueOf()- SoM.data.installedTime)/60000;
+				if(model.tillTime>model.evalMinutes)register.checkRegistration();
+			}  
+		private function serverMonitoring(path:String):void {
+			var serverArr:Array = path.split("//");
+	    	var hostField1:String =serverArr[1] ;
+	    	serverArr = hostField1.split("/");
+	    	var finalPath:String = serverArr[0];
+	    	serverArr = finalPath.split(":");
+	    	monitor = new SocketMonitor(String(serverArr[0]), int(serverArr[1]));
+	    	if(!monitor.hasEventListener(StatusEvent.STATUS))
+				monitor.addEventListener(StatusEvent.STATUS, checkStatus,false,0,true);
+	    	monitor.start(); 
+		}
+		
+		private function checkStatus(e:StatusEvent):void {
+			consumer.subscribed? null:consumer.subscribe() ;
+		    if( !monitor.available && ((serverDisConnectedSec/1000 >20 )) ){
+				Alert.show("Server is not Running, Contact Admin", model.appName, Alert.OK , model.mainClass,alertListener, null, Alert.OK);
+			}
+			monitor.stop();
+			if(monitor.hasEventListener(StatusEvent.STATUS)) 
+				monitor.removeEventListener(StatusEvent.STATUS, checkStatus);
+		}
+		private function alertListener(eventObj:CloseEvent):void {
+	        if (eventObj.detail==Alert.OK) {
+	            var app:WindowedApplication = WindowedApplication(Application.application);
+	            app.close();
+	        }
+	    } 
+		 public function messageHandler( event:MessageEvent ) : void
+		{	
+			var message:IMessage = event.message as IMessage;
+			if(event.message.headers["action"]=='CHAT')	{
+				if(message.body.userIdArr.indexOf(model.person.personId)!=-1){
+					trace(message.body.userIdArr + ": " + message.body.chatMessage + ":"+message.body.projectId+":"+message.body.senderId+"\n");	
+				}
+			}		 
+		}
+		]]>
+	</mx:Script> 
+	<mx:Producer id="personchatstatus" destination="chatmessage" channelSet="{model.pushchannelset}" />
+	<mx:Consumer id="personchatinstatus" destination="chatmessage" channelSet="{model.pushchannelset}" />
+	
+	<!--<mx:Producer id="producer" destination="chatmessage" channelSet="{model.chatChannelset}"/>
+	<mx:Consumer id="consumer" destination="chatmessage" channelSet="{model.chatChannelset}" message="messageHandler(event)" />-->
+	
+	<mx:Producer id="producer" destination="chatonline" channelSet="{model.chatChannelset}"/>
+	<mx:Consumer id="consumer" destination="chatonline" channelSet="{model.chatChannelset}" message="messageHandler(event)" />
+	
+	<mx:Producer id="adminchannelpushin" destination="adminmessage" channelSet="{model.pushadminchannelset}" />
+	<mx:Consumer id="adminchannelpushout" destination="adminmessage" channelSet="{model.pushadminchannelset}" />
+	
+	<mx:RemoteObject id="remoteSmtpEmail" showBusyCursor="true"
+		destination="smtpEmailSender" channelSet="{model.channelSet}"/>
+	
+	<mx:RemoteObject showBusyCursor="true"
+		id="paging" invoke="serviceInvoked(event)"
+		destination="pagingDAO" concurrency="single"
+		channelSet="{model.channelSet}"/> 
+	<mx:RemoteObject showBusyCursor="true"
+		id="groups" invoke="serviceInvoked(event)"
+		destination="group" concurrency="single"
+		channelSet="{model.channelSet}"/> 
+	<mx:RemoteObject showBusyCursor="true"
+		id="reports" invoke="serviceInvoked(event)"
+		destination="reports" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="reportcolumns" invoke="serviceInvoked(event)"
+		destination="reportcolumn" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="person" invoke="serviceInvoked(event)"
+		destination="person" concurrency="single"
+		channelSet="{model.channelSet}"/> 
+	<mx:RemoteObject id="remoteUpload" showBusyCursor="true"
+		destination="fileIO" channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="lang"
+		destination="lang" concurrency="single"
+		channelSet="{model.langChannelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="chat" invoke="serviceInvoked(event)"
+		destination="chat" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="project" invoke="serviceInvoked(event)"
+		destination="project" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="category" invoke="serviceInvoked(event)"
+		destination="category" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="columns" invoke="serviceInvoked(event)"
+		destination="column" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="companies" invoke="serviceInvoked(event)"
+		destination="company" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="events" invoke="serviceInvoked(event)"
+		destination="event" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="phases" invoke="serviceInvoked(event)"
+		destination="phase" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="sprints" invoke="serviceInvoked(event)"
+		destination="sprints" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+		
+	<mx:RemoteObject showBusyCursor="true"
+		id="phasestemplate" invoke="serviceInvoked(event)"
+		destination="phasestemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="propertiespj" invoke="serviceInvoked(event)"
+		destination="propertiespj" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="propertiespresets" invoke="serviceInvoked(event)"
+		destination="propertiespreset" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="profiles" invoke="serviceInvoked(event)"
+		destination="profile" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="status" invoke="serviceInvoked(event)"
+		destination="status" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="task" invoke="serviceInvoked(event)"
+		destination="task" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="workflows" invoke="serviceInvoked(event)"
+		destination="workflow" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="workflowstemplates" invoke="serviceInvoked(event)"
+		destination="workflowstemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="note" invoke="serviceInvoked(event)"
+		destination="note" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="fileDetail"	destination="fileDetail" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="tag" invoke="serviceInvoked(event)"
+		destination="tags" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="defaultTemplateValue" invoke="serviceInvoked(event)"
+		destination="defaultTemplateValue" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="defaultTemplate" invoke="serviceInvoked(event)"
+		destination="defaultTemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>	
+	<mx:RemoteObject showBusyCursor="true"
+		id="teamtemplate" invoke="serviceInvoked(event)"
+		destination="teamtemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="teamlinestemplate" invoke="serviceInvoked(event)"
+		destination="teamlinestemplate" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="domainworkflow" invoke="serviceInvoked(event)"
+		destination="domainworkflow" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	<mx:RemoteObject showBusyCursor="true"
+		id="teamline" invoke="serviceInvoked(event)"
+		destination="teamline" concurrency="single"
+		channelSet="{model.channelSet}"/>
+		
+	<mx:RemoteObject showBusyCursor="true"
+		id="groupPersons" invoke="serviceInvoked(event)"
+		destination="groupperson" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	
+	<mx:RemoteObject showBusyCursor="true"
+		id="module" invoke="serviceInvoked(event)"
+		destination="module" concurrency="single"
+		channelSet="{model.channelSet}"/>
+		
+	<mx:RemoteObject showBusyCursor="true"
+		id="impremiur" invoke="serviceInvoked(event)"
+		destination="impremiur" concurrency="single"
+		channelSet="{model.channelSet}"/>
+	
+	<mx:RemoteObject showBusyCursor="true"
+		id="preset_Template" invoke="serviceInvoked(event)"
+		destination="preset_Template" concurrency="single"
+		channelSet="{model.channelSet}"/>
+		
+	<mx:RemoteObject showBusyCursor="true"
+		id="PropPresetTemplate" invoke="serviceInvoked(event)"
+		destination="proppresetstemplates" concurrency="single"
+		channelSet="{model.channelSet}"/>
+		
+	<mx:RemoteObject showBusyCursor="true"
+		id="presetTemplate" invoke="serviceInvoked(event)"
+		destination="presetstemplates" concurrency="single"
+		channelSet="{model.channelSet}"/>
+				
+		
+	 <mx:RemoteObject id="directory" destination="fileIO" channelSet="{ModelLocator.getInstance().channelSet}"/>
+	<mx:HTTPService id="translate" invoke="serviceInvoked(event)"
+		url="{model.GOOGLETEXT + model.TSOURCE+model.textSource + model.LANPAIR + model.currentTranslation.sourceLanguage+model.PAIRCODE+model.destLanguage}"
+		useProxy="false" concurrency="single"
+		showBusyCursor="true"
+		resultFormat="text"/>
+</cairngorm:ServiceLocator>

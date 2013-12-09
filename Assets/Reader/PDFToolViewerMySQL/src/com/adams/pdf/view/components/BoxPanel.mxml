@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="72"> 
+		<s:Group width="50%" height="100%">
+			<s:Line height="100%" top="17" bottom="17" left="17" >
+				<s:stroke><s:SolidColorStroke color="{getStyle('lineColor')}" caps="square" pixelHinting="false" weight="1"/></s:stroke>
+			</s:Line>
+			<s:Line left="17" bottom="17" right="0">
+				<s:stroke><s:SolidColorStroke color="{getStyle('lineColor')}" caps="square" pixelHinting="false" weight="1"/></s:stroke>
+			</s:Line>
+			<s:Line left="17" top="17" right="0">
+				<s:stroke><s:SolidColorStroke color="{getStyle('lineColor')}" caps="square" pixelHinting="false" weight="1"/></s:stroke>
+			</s:Line>
+			<s:Group width="35" height="35" verticalCenter="0">
+				<s:Rect width="100%" height="100%"><s:fill><s:SolidColor color="{getStyle('lineColor')}"/></s:fill></s:Rect>
+				<s:Image source="@Embed('assets/images/hallimages/box_s.png')" verticalCenter="0" horizontalCenter="0"/>
+			</s:Group>
+		</s:Group>
+</s:Group>

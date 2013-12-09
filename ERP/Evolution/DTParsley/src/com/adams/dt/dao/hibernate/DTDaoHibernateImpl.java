@@ -1,0 +1,177 @@
+package com.adams.dt.dao.hibernate;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.type.Type;
+
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+
+import com.adams.dt.dao.IGenericDAO;
+import com.adams.dt.dao.hibernate.finder.FinderArgumentTypeFactory;
+import com.adams.dt.dao.hibernate.finder.FinderExecutor;
+import com.adams.dt.dao.hibernate.finder.FinderNamingStrategy;
+import com.adams.dt.dao.hibernate.finder.impl.SimpleFinderArgumentTypeFactory;
+import com.adams.dt.dao.hibernate.finder.impl.SimpleFinderNamingStrategy;
+
+public class DTDaoHibernateImpl<T, PK extends Serializable> extends HibernateDaoSupport implements
+		IGenericDAO<T, PK>, FinderExecutor {
+	private SessionFactory sessionFactory;
+	private FinderNamingStrategy namingStrategy = new SimpleFinderNamingStrategy(); // Default. Can override in config
+	private FinderArgumentTypeFactory argumentTypeFactory = new SimpleFinderArgumentTypeFactory(); // Default. Can override in config
+	HibernateTemplate hibernateTemplate;
+	private Class<T> type;
+	private String cacheKeyValue;
+	
+
+	public String getCacheKeyValue() {
+		return cacheKeyValue;
+	}
+
+	public DTDaoHibernateImpl(Class<T> type) {
+		this.type = type;
+		this.cacheKeyValue=type.getName();
+	}
+
+	public T create(T o)  {
+ 		 try {
+ 			 getSession().saveOrUpdate(o);
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			return (T) o;
+ 		}
+	}
+
+	public T read(PK id) {
+  		return (T) getSession().get(type, id);
+	}
+
+	public T readWithRefresh(PK id,T o){
+		getSession().refresh(o);
+		return (T) getSession().get(type, id);
+	}
+	
+	public List<?> bulkUpdate(List<?> objList){
+		getHibernateTemplate().saveOrUpdateAll(objList);
+		return objList;
+	}
+	
+	public List<?> getList() {
+        return (getHibernateTemplate().find("from " + type.getName() + " x"));
+    }
+	
+	public void deleteAll() {
+        getHibernateTemplate().execute(new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+                String hqlDelete = "delete " + type.getName();
+                int deletedEntities = session.createQuery(hqlDelete).executeUpdate();
+                return null;
+            }
+ 
+        });
+    }
+	public Long count() {
+        List list = getHibernateTemplate().find(
+                "select count(*) from " + type.getName() + " x");
+        Long count = (Long) list.get(0);
+        return count;
+    }
+	
+	public T update(T o) {
+		getSession().merge(o);
+		return (T) o;
+	}
+
+
+	public void deleteById(T o) {
+		getSession().delete(o);
+	}
+
+	public List<T> executeFinder(Method method, final Object[] queryArgs) {
+		final Query namedQuery = prepareQuery(method, queryArgs);
+		return (List<T>) namedQuery.list();
+	}
+
+	public Iterator<T> iterateFinder(Method method, final Object[] queryArgs) {
+		final Query namedQuery = prepareQuery(method, queryArgs);
+		return (Iterator<T>) namedQuery.iterate();
+	} 
+
+	private Query prepareQuery(Method method, Object[] queryArgs) {
+		final String queryName = getNamingStrategy().queryNameFromMethod(type,
+				method);
+		final Query namedQuery = getSession().getNamedQuery(queryName);
+		String[] namedParameters = namedQuery.getNamedParameters();
+		if (namedParameters.length == 0) {
+			setPositionalParams(queryArgs, namedQuery);
+		} else {
+			setNamedParams(namedParameters, queryArgs, namedQuery);
+		}
+		return namedQuery;
+	}
+
+	private void setPositionalParams(Object[] queryArgs, Query namedQuery) {
+		// Set parameter. Use custom Hibernate Type if necessary
+		if (queryArgs != null) {
+			for (int i = 0; i < queryArgs.length; i++) {
+				Object arg = queryArgs[i];
+				Type argType = getArgumentTypeFactory().getArgumentType(arg);
+				if (argType != null) {
+					namedQuery.setParameter(i, arg, argType);
+				} else {
+					namedQuery.setParameter(i, arg);
+				}
+			}
+		}
+	}
+
+	private void setNamedParams(String[] namedParameters, Object[] queryArgs,
+			Query namedQuery) {
+		// Set parameter. Use custom Hibernate Type if necessary
+		if (queryArgs != null) {
+			for (int i = 0; i < queryArgs.length; i++) {
+				Object arg = queryArgs[i];
+				Type argType = getArgumentTypeFactory().getArgumentType(arg);
+				if (argType != null) {
+					namedQuery.setParameter(namedParameters[i], arg, argType);
+				} else {
+					if (arg instanceof Collection) {
+						namedQuery.setParameterList(namedParameters[i],
+								(Collection) arg);
+					} else {
+						namedQuery.setParameter(namedParameters[i], arg);
+					}
+				}
+			}
+		}
+	}
+ 
+
+	public FinderNamingStrategy getNamingStrategy() {
+		return namingStrategy;
+	}
+
+	public void setNamingStrategy(FinderNamingStrategy namingStrategy) {
+		this.namingStrategy = namingStrategy;
+	}
+
+	public FinderArgumentTypeFactory getArgumentTypeFactory() {
+		return argumentTypeFactory;
+	}
+
+	public void setArgumentTypeFactory(
+			FinderArgumentTypeFactory argumentTypeFactory) {
+		this.argumentTypeFactory = argumentTypeFactory;
+	}
+}

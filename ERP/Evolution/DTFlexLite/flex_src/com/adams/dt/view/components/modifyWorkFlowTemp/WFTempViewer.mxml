@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow  xmlns:mx="http://www.adobe.com/2006/mxml"
+ width="450"  borderStyle="solid"  showCloseButton="true"
+ headerColors="{[GetVOUtil.getProfileObject(_clickedWFTemp.frontWFTask.profileFK).profileColor,GetVOUtil.getProfileObject(_clickedWFTemp.frontWFTask.profileFK).profileColor]}" 
+ title="{GetVOUtil.getProfileObject(_clickedWFTemp.frontWFTask.profileFK).profileLabel}" styleName="darkBorder">
+	
+	 
+		<mx:Script>
+			<![CDATA[
+				import com.adams.dt.model.ModelLocator;
+				import com.adams.dt.model.vo.Status;
+				import com.adams.dt.business.util.GetVOUtil;
+				import mx.collections.ArrayCollection;
+				import com.adams.dt.model.vo.WorkFlowset;
+				import mx.events.CloseEvent;
+				
+				import mx.collections.IViewCursor;
+				import mx.collections.SortField;
+				import mx.collections.Sort;
+				[Bindable]
+				private var _clickedWFTemp:WorkFlowset;
+				
+				[Bindable]
+				private var currStatusArr:ArrayCollection = new ArrayCollection();
+				[Bindable]
+		 		public var model:ModelLocator = ModelLocator.getInstance();
+				public function get clickedWFTemp():WorkFlowset {
+					return _clickedWFTemp
+				}
+				public function set clickedWFTemp( value:WorkFlowset):void {
+					_clickedWFTemp = value; 
+					setListProvider()
+				}
+				
+				private function setListProvider() :void {
+					var aValues:Array = new Array();
+					currStatusArr.removeAll();
+					for each( var currStatus:Status in model.getAllStatusColl){
+						var str:String = String( _clickedWFTemp.frontWFTask.optionStopLabel )
+						aValues = str.split(",") 
+	          			var arrayColl:ArrayCollection = new ArrayCollection(aValues) ;
+	          			for( var i:int = 0;i<arrayColl.length;i++){
+	          				if(arrayColl[i] == currStatus.statusId ){
+	          					currStatusArr.addItem(currStatus);
+	          				}
+	          			}
+					}
+					
+				}
+				private function btnClick(evt:Event):void{
+					setListProvider();
+					var totalColl:ArrayCollection = ArrayCollection(this.data );
+					var selectedWfID:int = evt.target.data;
+					var sort:Sort = new Sort(); 
+					var item:WorkFlowset = new WorkFlowset();
+					aBtn.alpha = 0.5;
+					bBtn.alpha = 0.5;
+					var front:Boolean
+					switch(evt.target.name){
+						case "aBtnPrevious": 
+						case "bBtnPrevious":
+							    sort.fields = [ new SortField( 'backWorkFlowId' ) ];
+							    totalColl.sort = sort; 
+							    item.backWorkFlowId = selectedWfID;
+							    bBtn.alpha = 1.0;
+							    front = false;
+						break;
+						case "aBtnNext": 
+						case "bBtnNext":
+						case "aBtnJmp":
+						case "aBtnLoop":
+								front = true;
+						 		sort.fields = [ new SortField( 'frontWorkFlowId' ) ];
+							    totalColl.sort = sort;
+							    item.frontWorkFlowId = selectedWfID;
+							    aBtn.alpha = 1.0;
+						break;
+					}
+					totalColl.refresh(); 
+					var cursor:IViewCursor = totalColl.createCursor();
+					var found:Boolean = cursor.findAny( item );	
+					if( found ) {
+						_clickedWFTemp = ( cursor.current ) as WorkFlowset;
+						/* front ? ModifyWFKTemp(this.parent.parent).currentWFTemp = _clickedWFTemp.frontWFTask :ModifyWFKTemp(this.parent.parent).currentWFTemp = _clickedWFTemp.backWFTask;
+						model.selectedWFTemplateID = ModifyWFKTemp(this.parent.parent).currentWFTemp.workflowTemplateId */
+					} 	
+				}
+			]]>
+		</mx:Script>
+		<mx:VBox  width="100%" height="150"  verticalGap="1">
+		<mx:Label fontWeight="bold"  text="{_clickedWFTemp.frontWFTask.taskLabel}, {GetVOUtil.getPhaseTemplateObject(_clickedWFTemp.frontWFTask.phaseTemplateFK).phaseName} PHASE" />
+		<mx:List id="statusProvider"  dataProvider="{currStatusArr}" labelField="statusLabel" height="100%" visible="false" includeInLayout="false" width="250"/>
+			<mx:HBox width="100%" height="100%" id="aBtn" horizontalAlign="center" verticalAlign="middle" alpha="0.5" backgroundColor="#232323" visible="{_clickedWFTemp.frontWFTask!=null}">
+					<mx:Button id="aBtnPrevious"  width="180" styleName="previousBtn" click="btnClick(event)" label="{_clickedWFTemp.frontWFTask.optionPrevLabel}" data="{_clickedWFTemp.frontWFTask.prevTaskFk.workflowTemplateId}" visible="{Boolean(aBtnPrevious.label.length)}" includeInLayout="{Boolean(aBtnPrevious.label.length)}"/>
+					<mx:Button id="aBtnNext" width="180" styleName="nextBtn" click="btnClick(event)" label="{_clickedWFTemp.frontWFTask.optionNextLabel}" data="{_clickedWFTemp.frontWFTask.nextTaskFk.workflowTemplateId}"  visible="{Boolean(aBtnNext.label.length)}" includeInLayout="{Boolean(aBtnNext.label.length)}"/>
+					<mx:Button id="aBtnJmp" width="180" styleName="loopIcon" click="btnClick(event)" label="{_clickedWFTemp.frontWFTask.optionJumpLabel}" data="{_clickedWFTemp.frontWFTask.jumpToTaskFk.workflowTemplateId}" visible="{Boolean(aBtnJmp.label.length)}" includeInLayout="{Boolean(aBtnJmp.label.length)}" />
+					<mx:Button id="aBtnLoop" width="180" styleName="jumbBtn" click="btnClick(event)" label="{_clickedWFTemp.frontWFTask.optionLoopLabel}" data="{_clickedWFTemp.frontWFTask.loopFk.workflowTemplateId}"  visible="{Boolean(aBtnLoop.label.length)}" includeInLayout="{Boolean(aBtnLoop.label.length)}"/>
+			</mx:HBox>
+			<mx:HBox width="100%" id="bBtn" horizontalAlign="center" verticalAlign="middle" height="100%" alpha="0.5" backgroundColor="#232323" visible="{_clickedWFTemp.backWFTask!=null}">
+					<mx:Button id="bBtnPrevious" width="180" styleName="previousBtn" click="btnClick(event)"  label="{_clickedWFTemp.backWFTask.optionPrevLabel}" data="{_clickedWFTemp.backWFTask.prevTaskFk.workflowTemplateId}" visible="{Boolean(bBtnPrevious.label.length)}" />
+					<mx:Button id="bBtnNext" width="180" styleName="nextBtn" click="btnClick(event)" label="{_clickedWFTemp.backWFTask.optionNextLabel}" data="{_clickedWFTemp.backWFTask.nextTaskFk.workflowTemplateId}" visible="{Boolean(bBtnNext.label.length)}"/>
+			</mx:HBox>
+		</mx:VBox>
+</mx:TitleWindow>

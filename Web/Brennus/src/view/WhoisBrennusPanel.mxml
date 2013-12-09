@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" styleName="transparentBackground"
+	 width="100%"  >
+	 <mx:Script>
+	 	<![CDATA[
+			import mx.core.FlexGlobals;
+	 	]]>
+	 </mx:Script>
+	
+
+     	<mx:Button styleName="closeBtn" top="15" right="20" useHandCursor="true" buttonMode="true" 
+				   click="{parentDocument.backtoHome()}"/>
+     <mx:VBox top="15" left="15" right="20" bottom="30" paddingLeft="6"  verticalGap="8">
+		<mx:Text text="Who is Brennus?" styleName="introTitle" fontSize="24"/>
+	 	<mx:HRule width="100%" />
+	</mx:VBox>
+	
+		 <mx:Canvas bottom="0" top="65" left="0" right="0">
+		 <mx:VBox left="25">
+			  
+			<mx:Text width="100%">
+			<mx:htmlText>
+				<![CDATA[<b>The group :</b><ul><li>Stable and experienced management team</li><li>€m revenue (2009 est.)</li><li>82 employees</li><li>Global presence in: London, Paris, Dublin , Pondicherry and Chennai</li><li>Adobe Partner</li><li>Cross-technolgy partnerships with industry leaders and Flex labs</li></ul>]]>
+		     </mx:htmlText>
+			</mx:Text>
+			 <mx:Text width="100%"  selectable="false" >
+				 <mx:htmlText><![CDATA[<b>The management team:</b><li>14 years of experience in application design and delivery</li><li>innovative leaders in most successful web based technologies</li>]]>
+				 </mx:htmlText>
+			 </mx:Text>
+			 
+			<mx:Text width="100%" height="120" id="teamText" selectable="false" >
+				<mx:htmlText><![CDATA[<b>Teams organization and distribution :</b><li>architects</li><li>dev-designers</li><li>Java engineers</li><li>Flex engineers</li>]]>
+		     </mx:htmlText>
+			</mx:Text>
+		</mx:VBox>	 
+		</mx:Canvas>
+		<mx:VBox  right="10" top="75" horizontalAlign="center">
+			<mx:Image source="@Embed('assets/images/richard.png')"/>
+			<mx:Text text="Richard Pool-Jones Chairman" width="125"  textAlign="center"/>
+		</mx:VBox>
+</mx:Canvas>

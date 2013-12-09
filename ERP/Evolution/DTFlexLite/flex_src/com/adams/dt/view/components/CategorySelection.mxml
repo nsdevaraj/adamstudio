@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	width="100%"
+	height="350"
+	horizontalScrollPolicy="off"
+	verticalScrollPolicy="off"
+	creationComplete="init()"
+	xmlns:breadCrumb="com.adams.dt.view.components.*"
+	xmlns:viewer="com.adams.dt.view.projectselection.viewer.*"
+	addedEffect="eff">
+	<!--<mx:Style source="main.css"/>-->
+	<mx:Script>
+		<![CDATA[
+			import com.adams.dt.business.util.Utils;
+			import mx.events.CollectionEvent;
+			import com.adobe.cairngorm.control.CairngormEvent;
+			import com.adams.dt.event.CategoriesEvent;
+			import com.adams.dt.event.ProjectsEvent;
+			import com.adams.dt.model.vo.Projects;
+			import com.adobe.cairngorm.control.CairngormEventDispatcher;
+			import com.adams.dt.event.catagoryselection.catagoryEvent;
+			
+			import com.adams.dt.model.vo.Categories;
+			import mx.effects.easing.Elastic;
+			import flash.utils.setTimeout;
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			import mx.controls.Alert;
+			import mx.utils.ObjectUtil;
+			import flash.events.MouseEvent;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			[Bindable]
+			private var modelLocator:ModelLocator = ModelLocator.getInstance();
+			import com.adams.dt.view.components.todolistscreens.imagePop;
+			private var catBreadCrumbArr:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var catagory1Arr:ArrayCollection = new ArrayCollection();
+			public static var myArray:Array = [];
+			
+			[Bindable] public var speed:uint=1;
+            private var myTimer:Timer;
+            private var imgLoader:imagePop;
+            private var imgWidth:int = 107;
+            private var imgHeight:int = 119;
+			public var resultAr:ArrayCollection = new ArrayCollection();
+			public var catarr:ArrayCollection = new ArrayCollection();
+			
+			private var StyleName:String="category1Icon";
+			private var StyleName2:String="category2Icon";
+			
+			
+			private function init():void{
+				catagoryDetails = model.catagory1;
+				model.catagory1.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateCategory,false,0,true);
+				model.catagory2.addEventListener(CollectionEvent.COLLECTION_CHANGE,updateCategory2,false,0,true);
+			}
+			private function updateCategory(event:CollectionEvent):void{
+				//catagoryDetails = model.catagory1;
+				if(model.selectedCategory2==null){
+					getCatagoryItems(event)
+				}		
+			}
+			private function updateCategory2(event:CollectionEvent):void{
+				//catagoryDetails = model.catagory2;
+				if(model.selectedCategory1!=null){
+				if(model.selectedCategory1.childCategorySet==null){
+					model.selectedCategory1.childCategorySet = new ArrayCollection();
+					model.selectedCategory1.childCategorySet.addItem(model.selectedCategory2);
+				}else{
+					model.selectedCategory1.childCategorySet.addItem(model.selectedCategory2);
+				}
+				createItems(model.selectedCategory1.childCategorySet)}
+			}
+			
+			private var _catagoryDetails:ArrayCollection;
+			[Bindable(event="catagoryChange")]
+			public function set catagoryDetails (value:ArrayCollection):void
+			{
+				if(!hasEventListener("catagoryChange")) addEventListener("catagoryChange",getCatagoryItems,false,0,true);
+				if (value != _catagoryDetails)
+				{
+					_catagoryDetails = value; 
+					dispatchEvent (new Event ("catagoryChange"));
+				} 
+			}
+	
+			public function get catagoryDetails ():ArrayCollection
+			{
+				return _catagoryDetails;
+			}
+			public function getCatagoryItems(event:Event):void{
+				if(model.domainCollection1!=null){
+				var domainCollection1_Len:int=model.domainCollection1.length;
+				 for(var i:int = 0;i<domainCollection1_Len;i++){
+					var cat1:Categories = model.domainCollection1[i] as Categories;
+					var children:ArrayCollection = cat1.childCategorySet
+					createItems(children)
+					Back.visible = false;
+				}
+				} 
+			}
+			public function createItems( itemCol:ArrayCollection  ):void{
+				reset();
+				catagory1Arr= itemCol;
+				loadCan.removeAllChildren();
+				var itemCol_Len:int=itemCol.length;
+				for(var i:int = 0;i<itemCol_Len;i++){
+					var imgLoader:imagePop = new imagePop();
+					var cat:Categories = itemCol[i] as Categories
+					
+					if(Back.visible==true){
+						imgLoader.iconStyle = StyleName2;
+						model.selectedCategory2 = null;
+					}else{
+						imgLoader.iconStyle = StyleName;	
+						model.selectedCategory1 = null;
+					}
+					
+					StyleName2
+					imgLoader.imgTitle = cat.categoryName
+					imgLoader.name = String( cat.categoryId );
+					imgLoader.imgW = imgWidth
+					imgLoader.imgH = imgHeight;
+					imgLoader.y = 80;
+					imgLoader.addEventListener(MouseEvent.CLICK,getIn,false,0,true);
+					imgLoader.addEventListener(MouseEvent.MOUSE_OVER,overItem,false,0,true);
+					imgLoader.addEventListener(MouseEvent.MOUSE_OUT,outItem,false,0,true);
+					if( i == 0 ) imgLoader.x = 0;
+					else imgLoader.x = loadCan.getChildAt( i - 1 ).x + imgWidth + 50;
+					loadCan.addChild(imgLoader);
+				}
+			}
+			
+			
+			private function getIn(event:MouseEvent):void{
+				   if(Back.visible!=true){
+				    event.currentTarget.setStyle("removedEffect",HE)
+					loadCan.removeAllChildren();
+					var evt:int =  event.currentTarget.name;
+					var cat2:Categories = checkCatgory2(evt)
+					Back.visible = true;
+					createItems(cat2.childCategorySet)
+				    }else{
+				    	var eventid:int =  event.currentTarget.name;
+				    	getCatagoryName(eventid)
+						productBox.visible = true;
+					}
+			}
+			
+			
+		    private function getCatagoryName(categoryid:int) :Categories {
+				var cat1:Categories 
+				var catagory1Arr_Len:int=catagory1Arr.length;
+				for(var i:int = 0;i<catagory1Arr_Len;i++){
+					cat1 = catagory1Arr[i] as Categories
+					if(cat1.categoryId == categoryid){
+						model.selectedCategory2 = cat1;
+						break;
+					} 
+				} 
+				return cat1;
+			}  
+
+			private function checkCatgory2(categoryid:int) :Categories {
+				var cat1:Categories 
+				var catagory1Arr_Len:int=catagory1Arr.length;
+				for(var i:int = 0;i<catagory1Arr_Len;i++){
+					cat1 = catagory1Arr[i] as Categories
+					if(cat1.categoryId == categoryid){
+							model.selectedCategory1 = cat1;
+						break;
+					} 
+				} 
+				return cat1;
+			}  
+				
+			
+			private function checksameValue(str:int):void {
+				catBreadCrumbArr.addItem(str);
+				removeDulicateName(catBreadCrumbArr)
+			}
+			private function removeDulicateName(ac:ArrayCollection) : void {
+	           var arrBool:Boolean = false;
+	           var ac_Len:int=(ac.length-1);
+	           for(var i:int=0; i <ac_Len; i++){
+	   				var item:* = ac.getItemAt(i);
+	   					var ac_inner_Len:int=ac.length;
+	   					for(var j:uint = (i+1); j <ac_inner_Len; j++){
+	   						
+	   						var compareItem:* = ac.getItemAt(j);
+							   var result:int = ObjectUtil.compare(item, compareItem);
+							               if(result == 0){
+							                     ac.source.splice(j, 1);
+							                      j-=1;
+							                      arrBool = true;
+							                  }
+							              }
+							          }
+		        if(arrBool == true ){
+		          		ac.removeItemAt((ac.length-1));
+		          		myArray = ac.toArray()
+		          } else {
+		          		myArray = ac.toArray()
+		          } 
+		          var catEvent : catagoryEvent = new catagoryEvent (catagoryEvent.CATAGORYBREAD_DATA);
+		          catEvent.data = myArray;
+		          CairngormEventDispatcher.getInstance().dispatchEvent( catEvent );  
+	 		}
+			private function moveImage(event:MouseEvent):void{
+				if(event.currentTarget.name == "leftBtn"){
+					myTimer = new Timer(speed);
+	                myTimer.addEventListener(TimerEvent.TIMER,moveLeft,false,0,true);
+					start();
+				}else{
+					myTimer = new Timer(speed);
+	                myTimer.addEventListener(TimerEvent.TIMER,moveRight,false,0,true);
+					start();
+				}	
+				
+			}
+			private function moveRight(event:TimerEvent):void {
+				leftBtn.alpha = 1;
+                if(loadCan.x < (0-loadCan.width+imgContainer.width)-60){
+                	rightBtn.alpha = .2;
+                } else {
+                    loadCan.x = loadCan.x-30;
+                }
+            }
+            
+            private function moveLeft(event:TimerEvent):void {
+            	rightBtn.alpha = 1;;
+              	if(loadCan.x >= 0){
+                	leftBtn.alpha = 0.2;
+                } else {
+                    loadCan.x = loadCan.x+30;
+                }
+		      }
+						public function start():void {
+			                myTimer.start();
+			            }
+			            public function stop():void {
+			                myTimer.stop();
+			            }
+			            private function overItem(eve:MouseEvent):void{
+							eve.currentTarget.alpha = 0.5;
+						}
+						private function outItem(eve:MouseEvent):void{
+							eve.currentTarget.alpha = 1;
+						}
+						private function updateProjectTable():void{
+							productBoxCreated.visible = true;
+							var updateProjectEvent:ProjectsEvent = new ProjectsEvent(ProjectsEvent.EVENT_UPDATE_PROJECTS);
+			  			 	var projects:Projects = model.currentProjects;
+			  			 	projects.projectName = projectName.text;
+			  			 	projects.categories = model.selectedCategory2;
+							updateProjectEvent.projects = projects;
+							CairngormEventDispatcher.getInstance().dispatchEvent( updateProjectEvent );
+						}
+						
+						private function createCategory():void{
+							var newCategories:Categories = new Categories();
+							newCategories.categoryName =  newCategory.text;
+							if(model.selectedCategory1==null){
+								newCategories.categoryFK = Utils.getDomains(model.currentProjects.categories);
+							}else if(model.selectedCategory2==null){
+								newCategories.categoryFK = model.selectedCategory1;					
+							}
+							var createNewCategory:CategoriesEvent = new CategoriesEvent(CategoriesEvent.EVENT_CREATE_CATEGORIES);
+							createNewCategory.categories = newCategories;
+							CairngormEventDispatcher.getInstance().dispatchEvent(createNewCategory);
+						} 
+				 		private function reset():void{
+				 			
+				 			loadCan.x=0;
+				 		}    		
+					]]>
+	</mx:Script>
+	<mx:Parallel id="eff">
+		<mx:Fade duration="500"/>
+		<mx:Move yFrom="0"
+			easingFunction="Elastic.easeOut"
+			duration="1000"/>
+	</mx:Parallel>
+	<mx:Parallel id="HE">
+		<mx:Zoom zoomHeightTo="2"
+			zoomWidthTo="2"
+			duration="100"/>
+		<mx:Fade />
+	</mx:Parallel>
+	<mx:VBox width="100%"
+		height="100%"
+		styleName="bgBorderContainer"
+		verticalGap="10"
+		paddingBottom="10"
+		paddingTop="10">
+		<mx:HBox width="100%">
+			<mx:Spacer width="35"/>
+			<mx:Text text="Select Category"
+				styleName="mainProjectHeader"
+				fontSize="14"/>
+		</mx:HBox>
+		<mx:Canvas width="100%"
+			height="250">
+			<mx:Canvas left="35"
+				right="35"
+				top="0"
+				height="250"
+				styleName="categoryPanel"
+				id="imgContainer"
+				verticalScrollPolicy="off"
+				horizontalScrollPolicy="off">
+				<mx:Canvas left="30"
+					right="30"
+					top="0"
+					bottom="0"
+					verticalScrollPolicy="off"
+					horizontalScrollPolicy="off">
+					<mx:Button id="Back"
+						click="getCatagoryItems(event)"
+						styleName="categoryBackBTN"
+						top="10"
+						right="30"
+						mouseOver="Back.alpha=.5"
+						mouseOut="Back.alpha=1"/>
+					<mx:Canvas id="loadCan">
+					</mx:Canvas>
+				</mx:Canvas>
+			</mx:Canvas>
+			<mx:Button id="leftBtn"
+				left="0"
+				verticalCenter="0"
+				styleName="categoryLeft"
+				mouseOver="moveImage(event)"
+				mouseOut="stop()"/>
+			<mx:Button id="rightBtn"
+				right="0"
+				verticalCenter="0"
+				styleName="categoryRight"
+				mouseOver="moveImage(event)"
+				mouseOut="stop()"/>
+		</mx:Canvas>
+		<mx:HBox right="20"
+			bottom="20"
+			width="100%">
+			<mx:Spacer width="100%"/>
+			<mx:TextInput id="newCategory"/>
+			<mx:Button label="Create New"
+				click="{createCategory()}"/>
+			<mx:Button label="Cancel"
+				click="{(modelLocator.categoryState='noState')}"/>
+			<mx:Spacer width="35"/>
+		</mx:HBox>
+	</mx:VBox>
+	<mx:HBox width="100%"
+		height="100%"
+		backgroundAlpha=".9"
+		styleName="bgBorderContainer" 
+		verticalGap="10"
+		paddingBottom="10"
+		verticalAlign="middle"
+		horizontalAlign="center"
+		paddingTop="10"
+		visible="false"
+		id="productBox">
+		<mx:TextInput id="projectName"
+			text="Enter New Product Name Here"/>
+		<mx:Button label="Create"
+			click="updateProjectTable()"/>
+		<mx:Button label="Cancel"
+			click="productBox.visible = false"/>
+	</mx:HBox>
+	<mx:VBox width="100%"
+		height="100%"
+		backgroundAlpha=".9"
+		styleName="bgBorderContainer"
+		verticalGap="10"
+		paddingBottom="10"
+		verticalAlign="middle"
+		horizontalAlign="center"
+		paddingTop="10"
+		visible="false"
+		id="productBoxCreated"
+		>
+		<mx:Text text="A new project has been successfuly created"/>
+		<mx:Text text="The new project is:"/>
+		<mx:Text text="{projectName.text}"
+			styleName="mainProjectHeader"
+			color="#46a12a"/>
+		<mx:Text text="and it has been filed in"/>
+		<mx:Text text="{'CAREFOUR'+'-'+'ELECTRICTE'}"/>
+		<mx:Button label="ok"
+			click="{(modelLocator.categoryState='noState')}"/>
+	</mx:VBox>
+	<!--<breadCrumb:CatagoryBreadCrumb  catagoryBreadArray="{model.catagoryBread}" />-->
+</mx:Canvas>

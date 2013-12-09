@@ -1,0 +1,226 @@
+/* CSS file */
+
+ @font-face {
+    fontFamily: myFont;
+    src: url("assets/fonts/verdana.TTF"); 
+} 
+
+  @font-face {
+    fontFamily:myFont;
+    font-weight:bold;
+    src: url("assets/fonts/Verdana_Bold.TTF");
+    advancedAntiAliasing: true; 
+} 
+ 
+@font-face {
+    fontFamily: myGothic;
+    src: url("assets/fonts/GOTHIC.TTF"); 
+     advancedAntiAliasing: true;
+}
+
+/* global{
+modalTransparency: 0.5;
+modalTransparencyBlur: 5;
+modalTransparencyColor: #272727;
+modalTransparencyDuration: 100;
+} */
+.GoButton {
+	upSkin:Embed(source='assets/skins.swf',symbol='goButton_up');
+	overSkin:Embed(source='assets/skins.swf',symbol='goButton_over');
+	downSkin:Embed(source='assets/skins.swf',symbol='goButton_down');
+}
+ApplicationControlBar {
+   fillAlphas: 0.64, 1;
+   fillColors: #cae3f5, #4a83bc;
+   backgroundAlpha: 1;
+   cornerRadius: 14;
+   dropShadowEnabled: true;
+   shadowDistance: 3;
+}
+Application
+{
+	padding-bottom:0;
+	padding-left:0;
+	padding-right:0;
+	padding-top:0;
+	fontFamily:myFont;
+	color: #4c4c4c;
+	fontSize: 11;
+	corner-radius: 0;
+	border-style:solid;
+	border-thickness: 0;
+	border-color: black;
+	background-alpha:1;
+	background-image:Embed(source='assets/images/background.png');
+	background-size:"100%";
+	background-color:#ffffff;
+}
+.headerText{
+color:#6a6a6a;
+fontFamily:myFont;
+fontSize:18;
+}
+
+.introTitle{
+	color: #2066ca;
+	fontFamily: myGothic;
+	font-size: 16;
+}
+.introContent{
+   	borderStyle: none;
+	font-family: Verdana;
+	font-size: 12;
+	background-alpha:0;
+	text-align:left;
+	color:#4c4c4c;
+}
+.rollOverText{
+color:#fffc00;
+font-size:18;	
+}
+
+TextArea{
+borderStyle: none;
+font-family: Verdana;
+font-size: 12;
+text-align:left;
+color:#4c4c4c;
+border-alpha:0;
+border-style:none;
+background-alpha:0;	
+}
+ .launchBtn{
+	upSkin:Embed(source='assets/images/launch.png');
+	overSkin:Embed(source='assets/images/launch_over.png');
+	downSkin:Embed(source='assets/images/launch.png');
+}
+
+.slideItem{
+	background-color:#151515;
+	vertical-align:middle;
+	padding-left:12;
+	horizontal-gap:30;
+}
+.footerLinkBar{
+	font-family:myFont;
+	borderStyle: none;
+   horizontalGap: 14;
+   separatorWidth: 1;
+   letterSpacing: 0;
+   cornerRadius: 0;
+   separatorColor: #959494;
+   rollOverColor: #999999;
+   selectionColor: #999999;
+   color: #959494;
+   font-size:10;
+   font-weight:normal;
+   disabledColor: #000000;
+}
+
+.prevBtn{
+	upSkin:Embed(source='assets/images/prev.png');
+	overSkin:Embed(source='assets/images/prev_over.png');
+	downSkin:Embed(source='assets/images/prev.png');
+}
+.nextBtn{
+	upSkin:Embed(source='assets/images/next.png');
+	overSkin:Embed(source='assets/images/next_over.png');
+	downSkin:Embed(source='assets/images/next.png');
+}
+.locationText{
+	color: #000000;
+	fontFamily: Verdana;
+	font-size: 10;
+}
+.transparentBackground{
+	border-style:solid;
+	border-thickness:1;
+	border-color:#dfdfdf;	
+	background-color:#f6f6f6;
+	background-alpha:0.5;
+	paddingBottom:15;
+	paddingLeft:15;
+	paddingRight:15;
+	paddingTop:15;
+	vertical-gap:15;
+}
+
+.newsContent{
+   	borderStyle: none;
+	font-family: Verdana;
+	color: #666666;
+	font-weight:bold;
+	font-size: 10;
+	background-alpha:0;
+	text-align:left;
+}
+.latestNews {
+	font-family: Verdana;
+	title-style-name: latestNewsTilte;
+	borderColor: #cccccc;
+	borderAlpha: 0.5;
+	cornerRadius: 0;
+	headerHeight: 33;
+	backgroundAlpha: 0.7;
+	backgroundColor: #ffffff;
+}
+.latestNewsTilte{
+	font-size: 12;
+	font-weight:bold;
+	color: #00577F;
+}
+.MenuBtn{
+	color: #d6d6d6;
+	text-roll-over-color: #FFFFFF;
+	text-selected-color: #C5F0F0; 
+	font-weight:normal;
+	font-size: 10;
+
+	upSkin: Embed(source="assets/css/interface.swf", symbol="btn");  
+	overSkin: Embed(source="assets/css/interface.swf", symbol="btn_over"); 
+	downSkin: Embed(source="assets/css/interface.swf", symbol="btn"); 
+	disabledSkin: Embed(source="assets/css/interface.swf", symbol="btn");
+	
+	selectedUpSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected");
+	selectedOverSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected");  
+	selectedDownSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected");
+	selectedDisabledSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected");
+}
+.closeBtn
+{
+	 up-skin : Embed(source='assets/images/upBtn.png');
+	down-skin: Embed(source='assets/images/upBtn.png');
+	over-skin :Embed(source='assets/images/overBtn.png');
+	disabled-skin:Embed(source='assets/images/upBtn.png');
+	selected-over-skin:Embed(source='assets/images/overBtn.png');
+	selected-up-skin:Embed(source='assets/images/upBtn.png');
+	selected-down-skin:Embed(source='assets/images/upBtn.png');
+	selected-disabled-skin:Embed(source='assets/images/upBtn.png');
+}
+ScrollBar {
+    downArrowUpSkin: Embed(source="assets/images/downArrow.png");
+    downArrowOverSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowDownSkin: Embed(source="/assets/images/downArrow.png");
+    upArrowUpSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowOverSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowDownSkin: Embed(source="/assets/images/upArrow.png");
+    thumbDownSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbUpSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbOverSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    trackSkin: 
+    	Embed(source="/assets/images/scrolltrack.png",
+        scaleGridLeft="7", scaleGridTop="4", 
+        scaleGridRight="8", scaleGridBottom="6" );       
+} 

@@ -1,0 +1,56 @@
+<root title="Demo Book" >
+	<page id="0" background="FrontCover.jpg">
+		<Page>Front Cover</Page>
+		<Description>Demo Book by brennus group v1.0 (Alpha)</Description>
+	</page>
+	<page id="1" background="page1.jpg">
+		<Page>Page 1</Page>	
+		<Description>Blank Page</Description>
+	</page>
+	<page id="2" background="page2.jpg">
+		<Page>Page 2</Page>
+		<Description>The Book component is a feature-rich container class that creates an animated, interactive book from its contents.</Description>
+	</page>
+	<page id="3" background="page3.jpg">
+		<Page>Page 3</Page>
+		<Description>Glow is something that comes from within-a feeling of balance, well-being, and inner peace.</Description>
+	</page>
+	<page id="4" background="page4.jpg">
+		<Page>Page 4</Page>
+		<Description>The Book component supports transparent pages. Flip over the next two pages and notice that they only carry the color of the above image.</Description>
+	</page>
+	<page id="5" background="page5.jpg"><Page>Page 5</Page><Description/></page>
+	<page id="6" background="page6.jpg"><Page>Page 6</Page><Description/></page>
+	<page id="7" background="page7.jpg"><Page>Page 7</Page><Description/></page>
+	<page id="8" background="page8.jpg"><Page>Page 8</Page><Description/></page>
+	<page id="9" background="page9.jpg"><Page>Page 9</Page><Description/></page>
+	<page id="10" background="page10.jpg">
+		<Page>Page 10</Page>	
+		<Description>Every page has a tear-property which can be set to true.  Tear off this page by dragging the outer top corner to the bottom, or the outer bottom corner to the top.</Description>
+	</page>
+	<page id="11" background="page11.jpg"><Page>Page 11</Page><Description/></page>
+	<page id="12" background="page12.jpg">
+		<Page>Page 12</Page>
+		<Description>The gotoPage method lets you trigger a page-flip sequence by setting a target-page.</Description>
+	</page>
+	<page id="13" background="page13.jpg"><Page>Page 13</Page><Description/></page>
+	<page id="14" background="page14.jpg">
+		<Page>Page 14</Page>
+		<Description>The hard-property of a page can be set to true to make that page hard-back. Furthermore, the Book component has a hardCover-property which can be set to true to make the first and last pages hard-back.</Description>
+	</page>
+	<page id="15" background="page15.jpg"><Page>Page 15</Page><Description/></page>
+	<page id="16" background="page16.jpg">
+		<Page>Page 16</Page>
+		<Description>Each page has a liveBitmapping feature that (when enabled) continuously updates its cached bitmap during pageflips. Notice how the animation on this page keeps playing during a pageflip.</Description>
+	</page>
+	<page id="17" background="page17.jpg"><Page>Page 17</Page><Description/></page>
+	<page id="18" background="page18.jpg"><Page>Page 18</Page><Description/></page>
+	<page id="19" background="page19.jpg"><Page>Page 19</Page><Description/></page>
+	<page id="20" background="page20.jpg">
+		<Page>Page 20</Page>
+		<Description>-- Comments --</Description>
+	</page>
+	<page id="21" background="page21.jpg"><Page>Page 21</Page><Description/></page>
+	<page id="22" background="page22.jpg"><Page>Page 22</Page><Description/></page>
+	<page id="23" background="BackCover.jpg"><Page>Back Cover</Page><Description/></page>
+</root>

@@ -1,0 +1,138 @@
+<html>
+<head> 
+<style>
+body { margin: 0px;}
+</style>
+<style>
+body {	
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+				margin: 0px; 
+				overflow:hidden;
+				background-color: #000000;
+			}
+</style>
+
+<script language="javascript">
+//<!--
+function getFlexApp(appName) {
+  if (navigator.appName.indexOf ("Microsoft") !=-1) {
+    return window[appName];
+  } else {
+    return document[appName];
+  }
+}
+
+var txtFile;
+var txtSize;
+function FileNameDetails(sFile)
+{
+	alert("ssss");
+	txtFile = escape(sFile);
+	var filepathname = txtFile;
+  	getFlexApp("CutOutTool").addFileNameDetails(filepathname);
+}
+
+function getUrl()
+{
+	var url = document.location.toString();
+	return url;
+}
+
+function moveIFrame(x,y,w,h) {
+	//alert("Move");
+    var frameRef=document.getElementById("myFrame");
+    frameRef.style.left=x;
+    frameRef.style.top=y;
+    var iFrameRef=document.getElementById("myIFrame");	
+	iFrameRef.width=w;
+	iFrameRef.height=h;
+}
+
+function hideIFrame(){
+	//alert('Hidden');
+    document.getElementById("myFrame").style.visibility="hidden";
+}
+	
+function showIFrame(){
+    //alert('Show'); 
+    document.getElementById("myFrame").style.visibility="visible";
+}
+
+function loadIFrame(){			
+	//document.getElementById("myFrame").innerHTML = "<iframe id='myIFrame' src='" + url + "'frameborder='0'></iframe>";
+	document.getElementById("myFrame").innerHTML = "<applet id='myIFrame' code='DNDApplet.class' archive='DNDApplet.jar' mayscript='true' scriptable='true' width='200' height='200'><param name='funcNameHandleCurrentUpload' value='handleCurrentUpload'><param name='funcAcceptBoolean' value='handleProgressStatus'><param name='uploadPath' value='appletupload.php'><param name='ImagePath' value='top.png'><param name='ColorName' value='#ffffff'></applet>";
+}
+var txtUpdone;
+//File upload complete
+function handleCurrentUpload( filenameStatus )
+{
+	//alert(filenameStatus);
+	txtUpdone = escape(filenameStatus);
+	var fileupDone = txtUpdone;
+	
+  	getFlexApp("CutOutTool").addUploadConfirmation(filenameStatus);
+}
+//All File upload complete
+var txtbool;
+function ConfirmationUpload(sFileConfirm)
+{
+	//alert(sFileConfirm);
+	txtbool = escape(sFileConfirm);
+	var fileupbool = txtbool;
+  	//getFlexApp("CutOutTool").confirmationUpload(fileupbool);
+}
+//already upload progress
+function handleProgressStatus ( str )
+{
+	//alert(str)
+  	getFlexApp("CutOutTool").inProgressError(str);
+}
+//Flex to Applet communications
+function flexHandlePurpose( boolStatus )
+{
+	//alert(boolStatus);
+	document.getElementById('myIFrame').setEnabledStatus(boolStatus);
+	
+}
+
+//-->
+</script>
+</head>
+<body onload="loadIFrame();hideIFrame();" scroll='no'>
+
+
+ <div>
+	 <table width="100%" height="100%">
+		 <tr>
+			 <td>
+				<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+					id="CutOutTool" width="100%" height="100%"
+					codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+					<param name="movie" value="CutOutTool.swf" />
+					<param name="quality" value="high" />
+					<param name="bgcolor" value="#869ca7" />
+					<param name="allowScriptAccess" value="always" />
+					<param name="wmode" value="transparent">
+					<param name="menu" value="false">
+					<embed src="CutOutTool.swf" quality="high" bgcolor="#869ca7"
+						width="100%" height="100%" name="FlexJSTutorial" align="middle"
+						play="true"
+						loop="false"
+						quality="high"
+						allowScriptAccess="always"
+						type="application/x-shockwave-flash"
+						pluginspage="http://www.adobe.com/go/getflashplayer" wmode="transparent" menu="false">
+					</embed>
+				 </object>
+				 <div id="myFrame" style="position:absolute;background-color:transparent;"></div>
+			 </td>
+		 </tr>
+	 </table>
+</div>
+
+</body>
+</html>
+

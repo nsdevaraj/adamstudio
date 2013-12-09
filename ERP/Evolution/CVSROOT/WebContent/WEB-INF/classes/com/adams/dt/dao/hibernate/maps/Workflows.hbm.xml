@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="com.adams.dt.pojo.Workflows" table="workflows">
+        <id name="workflowId" type="integer" column="workflow_ID">
+            <generator class="increment" />
+        </id>
+        <property name="workflowLabel">
+            <column name="workflow_label" />
+        </property>
+        <property name="workflowCode">
+            <column name="workflow_code" />
+        </property>
+    </class> 
+    <query name="Workflows.findByDomainWorkFlow">
+        select t from Teamlinestemplates t, Workflows w, TeamTemplates p 
+                        where p.workflowFk = w.workflowId and p.teamTemplateId = t.teamTemplateFk and w.workflowId =?
+    </query>
+    <query name="Workflows.findWorkflow">
+        select u from Workflows u where u.workflowId in (select distinct w.workflowId from Categories c, Workflows w, Domainworkflows d 
+                        where d.workflowFk=w.workflowId and d.domainFk=?)
+    </query>
+    <query name="Workflows.findById">
+        select u from Workflows u where u.workflowId=?
+    </query>
+    <query name="Workflows.findByName">
+        select u from Workflows u where u.workflowLabel = ?
+    </query>
+</hibernate-mapping>

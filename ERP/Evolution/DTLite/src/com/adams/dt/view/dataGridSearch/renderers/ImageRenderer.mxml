@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Image xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.dataGridClasses.DataGridListData;
+			
+			override public function set data( value:Object ):void {
+				if( value ) {
+					super.data = value;
+					var myListData:DataGridListData = DataGridListData( listData );
+    				var fieldName:String = myListData.dataField;
+    				source = getValidationImage( data[ fieldName ] );
+    			}
+    		}
+			
+			private function getValidationImage( dataValidation:String ):Class {
+				switch( dataValidation ) {
+    				case "0":
+    					return ImageResourceEmbedClass.maybeLabel;
+    				break ;
+    				case "1":
+    					return ImageResourceEmbedClass.noLabel;
+    				break;
+    				case "2":
+    					return ImageResourceEmbedClass.yesLabel;
+    				break;
+    				default:
+    					ImageResourceEmbedClass.maybeLabel;
+    				break;				
+    			}
+    			return ImageResourceEmbedClass.maybeLabel;
+    		}
+			
+		]]>
+	</mx:Script>
+</mx:Image>

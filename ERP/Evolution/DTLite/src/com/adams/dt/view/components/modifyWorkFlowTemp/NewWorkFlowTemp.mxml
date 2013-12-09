@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
+	 width="100%" height="100%" showCloseButton="true" close="closeWindow( event )" title="New WorkFLow Template For FrontTask"
+	 layout="vertical">
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			import mx.events.CloseEvent;
+			import com.adams.dt.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance();
+			
+			public var createdStatusColl:ArrayCollection = new ArrayCollection();
+			private function closeWindow( event:CloseEvent ) :void {
+		 		PopUpManager.removePopUp(this);
+		 	}
+		 	
+		 	[Bindable]
+		 	private var _statusColl:ArrayCollection;
+		 	public function get statusColl (  ) : ArrayCollection {
+		 		return _statusColl;
+		 	}
+		 	public function set statusColl ( value :ArrayCollection ) : void {
+		 		_statusColl = value;
+		 		
+		 	}
+		 	public function clearAll( ) : void {
+		 		taskLabelTxt.text = ""
+		 		taskLabelToDoTxt.text = ""
+		 		backOptionLabelPrevTxt.text = ""
+		 		backOptionLabelNextTxt.text = "";
+		 		createdStatusColl.removeAll()
+		 		_statusColl.removeAll()
+		 	}
+		 	public function checkItemsFilled ( ) : Boolean {
+		 		var retVal:Boolean;
+		 		if(taskLabelTxt.length >0 && taskLabelToDoTxt.length >0 && backOptionLabelPrevTxt.length >0 && 
+		 			backOptionLabelNextTxt.length >0 && createdStatusColl.length >0 ){
+		 				retVal = true;
+		 			}else{
+		 				retVal = false;
+		 			}
+		 		return retVal;
+		 	}
+		 
+		]]>
+	</mx:Script>
+	<mx:Form>
+		<mx:FormItem label="TaskLabel" required="true">
+			<mx:TextInput id="taskLabelTxt" />
+		</mx:FormItem>
+		
+		<mx:FormItem label="TaskLabelToDo" required="true">
+			<mx:TextInput id="taskLabelToDoTxt" />
+		</mx:FormItem>	
+		
+		<mx:FormItem label="Profile" required="true">
+			<mx:ComboBox id="Profiles"  dataProvider="{model.teamProfileCollection}"  labelField="profileLabel"/>  
+		</mx:FormItem>
+		
+		<mx:FormItem label="Back WorkFlow Label " required="true">
+			<mx:HBox id="backWorkFlowLabelCon" >
+				<mx:TextInput id="backOptionLabelPrevTxt"/>
+				<mx:TextInput id="backOptionLabelNextTxt"/>
+			</mx:HBox>
+		</mx:FormItem>
+		<mx:FormItem label="Status">
+			<mx:HBox id="statusDGCon" >
+				<mx:DataGrid id="statusDG" dataProvider="{_statusColl}"
+					doubleClickEnabled="true"
+					dragMoveEnabled="true"   
+            		dragEnabled="true"  >
+					<mx:columns>
+						<mx:DataGridColumn headerText="Type" dataField="type"/>
+						<mx:DataGridColumn headerText="Label" dataField="statusLabel"/>
+					</mx:columns>
+				</mx:DataGrid>
+				<mx:DataGrid id="createdStatusDG" dataProvider="{createdStatusColl}" allowMultipleSelection="true" dropEnabled="true">
+					<mx:columns>
+						<mx:DataGridColumn headerText="Type" dataField="type"/>
+						<mx:DataGridColumn headerText="Label" dataField="statusLabel"/>
+					</mx:columns>
+				</mx:DataGrid>
+			</mx:HBox>
+		</mx:FormItem>
+		 
+	</mx:Form>	
+	<mx:ControlBar width="100%" horizontalAlign="right">
+				<mx:Button id="saveBtn" label="Save"  />
+				<mx:Button id="closeBtn" label="Close"  click="{PopUpManager.removePopUp(this);}" left="0"/>
+		</mx:ControlBar>
+</mx:TitleWindow>

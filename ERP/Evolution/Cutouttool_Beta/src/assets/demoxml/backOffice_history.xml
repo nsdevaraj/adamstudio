@@ -1,0 +1,19 @@
+<data>
+  <num>2</num>
+  <row>
+    <date>2008-08-15 09:12:00</date>
+    <type_of_event>CLOSE</type_of_event>
+    <task>1</task>
+    <author>1</author>
+    <error>54</error>
+    <details_error>bla bla</details_error>
+  </row>
+  <row>
+    <date>2008-08-12 09:12:00</date>
+    <type_of_event>CLOSE</type_of_event>
+    <task>2</task>
+    <author>1</author>
+    <error>54</error>
+    <details_error>bla bla</details_error>
+  </row>
+</data>

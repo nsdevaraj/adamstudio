@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+    ADOBE SYSTEMS INCORPORATED
+    Copyright 2008 Adobe Systems Incorporated
+    All Rights Reserved.
+
+    NOTICE: Adobe permits you to use, modify, and distribute this file
+    in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for the Spark VideoPlayer component.  
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:controls="com.ra.view.controls.*">
+    <!-- base color of undefined in the normal states means we inherit the baseColor property, and 
+         a base color of 0xCCCCCC in the fullScreenStates means we ignore the baseColor property 
+         all together as 0xCCCCCC is essentially just a no-op color transform -->
+
+    <!-- host component -->
+    <fx:Metadata>
+        [HostComponent("com.ra.view.mediaplayer.AudioControlBar")]
+    </fx:Metadata>
+    
+    <fx:Script>
+        <![CDATA[
+            /* Define the skin elements that should not be colorized. */
+                static private const exclusions:Array = ["playPauseButton", "scrubBar",  "volumeBar","playheadTimeDisplay","timeDivider", "totalTimeDisplay"];
+            
+            override public function get colorizeExclusions():Array 
+            {
+            	trace(this.getStyle('baseColor'));
+                return exclusions;
+            }
+        ]]>
+
+    </fx:Script>
+	<s:HGroup width="100%" id="controlBar" gap="0">
+		             
+	<s:ToggleButton id="playPauseButton"
+    skinClass="spark.skins.spark.mediaClasses.normal.PlayPauseButtonSkin" 
+   height="100%"  color="0xffffff" width="30"
+    focusIn="event.target.depth=1" focusOut="event.target.depth=0" /><!--   click="group1_clickHandler(event)" -->
+		<s:Group height="100%" width="100%">  
+			    <!-- background for scrubbar + the playHeadTime/totalTime -->
+	                <s:Rect left="0" right="0" top="0" bottom="0">
+	                    <s:fill>
+	                        <s:LinearGradient rotation="90">
+	                            <s:GradientEntry color="0xFFFFFF" />
+	                            <s:GradientEntry color="0xDCDCDC" />
+	                        </s:LinearGradient>
+	                    </s:fill>
+	                </s:Rect>
+	
+	                <!-- fill highlight  (exclude in fullScreen) -->
+	                <s:Rect left="1" right="1" top="1" height="11" >
+	                    <s:fill>
+	                        <s:SolidColor color="0xFFFFFF" alpha="0.3" />
+	                    </s:fill>
+	                </s:Rect>
+	                
+	                <!-- one pixel border -->
+	                <s:Rect left="1" right="1" top="1" bottom="1">
+	                    <s:stroke>
+	                        <s:LinearGradientStroke weight="1" rotation="90">
+	                            <s:GradientEntry color="0xFEFEFE"  />
+	                            <s:GradientEntry color="0xEAEAEA"/>
+	                        </s:LinearGradientStroke>
+	                    </s:stroke>
+	                </s:Rect>
+	                
+	                <!-- border for the scrubbar/time label controls -->
+	                <s:Rect left="-1" right="0" top="0" bottom="0">
+	                    <s:stroke>
+	                        <s:SolidColorStroke color="0x131313" />
+	                    </s:stroke>
+	                </s:Rect>
+	                
+	                <!-- scrub bar + playHeadTime/totalTime in a HorizontalLayout -->
+	          <s:Group left="0" right="0" verticalCenter="0" width="100%" bottom="0">
+				  <s:layout>
+					  <s:HorizontalLayout verticalAlign="middle" gap="1"  />
+				  </s:layout>				  
+				<controls:ScrubBar id="scrubBar" height="100%" width="100%" 
+				skinClass="com.ra.view.skins.videoSkins.normal.ScrubBarSkin"
+				baseColor="0x101010" bufferedStart="0" minimum="0" maximum="100" />
+				  <s:Rect width="8" height="1" />
+				  <s:Label id="playheadTimeDisplay" color="0xFFFFFF" styleName="regular" />
+				  <s:Label id="timeDivider" text="/" color="0xFFFFFF"  styleName="regular" />
+				  <s:Label id="totalTimeDisplay" color="0xFFFFFF"  styleName="regular" />
+				  <s:Rect width="8" height="1" />
+				<!-- thumbPress="scrub_thumbPressHandler(event)" 
+				thumbRelease="scrub_thumbReleaseHandler(event)" 
+				change="scrubbar1_changeHandler(event)"  value="{player.progress}" bufferedEnd="{player.bytesLoaded}"-->
+	        </s:Group>
+	       </s:Group>
+	    <controls:VolumeBar id="volumeBar" snapInterval=".01" stepSize=".01" liveDragging="true"
+	    skinClass="com.ra.view.skins.audioSkins.VolumeBarSkin" maximum="1" 
+	     direction="rtl" height="100%"  width="30" popUpPosition="below"
+	    focusIn="event.target.depth=1" focusOut="event.target.depth=0" /> <!--change="volumeBar_changeHandler(event)"   mutedChange="volumeBar_mutedChangeHandler(event)"-->
+	</s:HGroup>  
+</s:SparkSkin>

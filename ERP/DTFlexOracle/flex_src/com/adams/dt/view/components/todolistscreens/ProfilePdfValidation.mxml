@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:trac='com.adams.dt.view.tracability.*'
+	width="100%" creationComplete="updateProperties()"
+	height="100%"
+	xmlns:viewpdf="com.adams.dt.view.PDFTool.*"
+	xmlns:view="com.adams.dt.view.components.todolistscreens.*"
+	xmlns:components="com.adams.dt.view.PDFTool.components.*" >
+	<mx:Script>
+		<![CDATA[
+		import com.adams.dt.event.ProjectsEvent;
+		import com.universalmind.cairngorm.events.Callbacks;
+		import mx.rpc.IResponder;
+		import com.adams.dt.event.TasksEvent;
+		import mx.events.FlexEvent;
+		import mx.binding.utils.BindingUtils;
+		import com.adams.dt.model.vo.Propertiespj;
+		import com.adams.dt.model.vo.Projects;
+		import mx.controls.Alert;
+		import com.adobe.cairngorm.control.CairngormEventDispatcher;
+		import com.adams.dt.event.FileDetailsEvent;
+		import mx.collections.ArrayCollection;
+		import com.adams.dt.model.ModelLocator;
+		
+		import com.adams.dt.view.components.FileManagement;
+		import com.adams.dt.view.components.todolistscreens.Depart;
+		import com.adams.dt.view.components.todolistscreens.TimesheetChalkBoard;
+		import com.adams.dt.view.components.todolistscreens.TrafficView;
+			
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance(); 
+		
+		/**
+		 * get the updated properties 
+		 */
+		public function getPropertiespjSet():ArrayCollection{			
+			var arrayCollect:ArrayCollection;
+			if( timeSheet ) {						
+				return arrayCollect = timeSheet.getPropertiespjSet();
+			}				
+			return null;
+		}
+		/**
+		 * Remove duplicated items
+		 */
+		private function filterCollection(filterBtnCol:ArrayCollection):ArrayCollection {
+			filterBtnCol.filterFunction = deDupe;
+			filterBtnCol.refresh();
+			return filterBtnCol;
+		}
+		private var tempObj:Object;
+		private var removeCollection:ArrayCollection;
+		/**
+		 * Check the item exist or not
+		 */
+		private function deDupe( item:Propertiespj ):Boolean {
+			var retVal:Boolean = true;
+			if( !tempObj.hasOwnProperty(item.propertyPreset.propertyPresetId ) ) {
+				tempObj[ item.propertyPreset.propertyPresetId ] = item.propertyPreset.propertyPresetId;
+				retVal = true;
+			}
+			else {
+				removeCollection.addItem( item );
+			}
+			return retVal;
+		}
+		
+		/**
+		 * set the selected index of tabnavigator
+		 */ 		
+		private function getIndex( number:Number ):Number {
+			return 0;
+		}
+		
+		/**
+		 * load the screens in tabnavigtor
+		 */ 
+		private function onTabNavigatorChange( event:Event ):void {
+			if( TabNavigator( event.currentTarget ).selectedIndex == 1 ) {
+				
+			}
+		}
+		
+		public function updateProperties():void {
+			var event:Event;
+			if( timeSheet ) timeSheet.updateProperties();
+		}
+				
+		]]>
+	</mx:Script>
+	
+	<mx:Canvas   top="0" left="0" right="0" bottom="0">
+ 		<mx:TabNavigator selectedIndex="{getIndex(model.workflowState)}" id="tab" 
+				 change="{onTabNavigatorChange(event)}"  
+				 paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0" horizontalGap="0"
+				 top="0" left="0" right="0" bottom="0" >
+				
+				<mx:Canvas label="PDF Preview" width="100%" id="pdfpreview" height="100%">
+					<components:FSDisplay id="fsScreen" width="100%" height="100%" styleName="fullscreenBgColor"
+						verticalScrollPolicy="off" horizontalScrollPolicy="off">
+						<mx:Canvas width="100%" height="100%" styleName="bgContainer">
+							<viewpdf:PDFToolSimpleArc id="pdfTool" width="100%" height="100%" dataProvider="{model.pdfFileCollection}" displayINDScreen="{true}"/>
+							<mx:Button click="{fsScreen.fullScreen()}" bottom="15" left="10" 
+								styleName="fullScreenBtnSkin" 								 
+								visible="{!pdfTool.tileList.visible}" includeInLayout="{!pdfTool.tileList.visible}"/>				
+						</mx:Canvas>		
+					</components:FSDisplay>
+				</mx:Canvas>				
+				<mx:Canvas label="{model.loc.getString('technicalProperties')}" width="100%" id="technical" height="100%">
+					<view:TimesheetChalkBoard id="timeSheet" name="TimeSheet" projectProperty="{model.propertiespresetsCollection}" 
+	                      toRemoveHighlight="{ model.workflowState }" currentDefaultTemplateValue="{ model.projectDefaultValue }"
+	                      applyDefaultTemplateValue="{ model.applyProjectDftValue }"
+	                      getUpdated="{ model.getPropertiesUpdated }" />										                     
+				</mx:Canvas>				
+		</mx:TabNavigator>
+	</mx:Canvas>
+	
+</mx:Canvas>

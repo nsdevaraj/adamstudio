@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Home"
+		actionBarVisible="false" 
+		currentStateChange="currentStateChangeHandler(event)"
+		creationComplete="srv.send();">
+	<fx:Script>
+		<![CDATA[
+			import com.PageView;
+			
+			import model.StaticModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection; 
+			import mx.events.FlexEvent;
+			import mx.events.StateChangeEvent;
+			import mx.rpc.events.ResultEvent;
+			private var xmlBook:XML = new XML();
+			[Bindable]
+			public var xmlBookListCollection:XMLListCollection = new XMLListCollection();
+			 
+			protected function currentStateChangeHandler(event:StateChangeEvent):void
+			{
+				if(srv.lastResult){
+					
+					xmlBook = XML(srv.lastResult);
+					for each(var i:XML in xmlBook.page)
+					{
+						i.@state = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+					}
+					xmlBookListCollection.source = xmlBook.page;
+					test.dataProvider = xmlBookListCollection;
+				}
+			}
+
+			protected function resultHandler(event:ResultEvent):void
+			{
+				if(srv.lastResult){
+					if(StaticModel.firstTime)
+					{
+						StaticModel.firstTime = false;
+						StaticModel.isPortraitWide = (stage.width >	stage.height);
+					}
+					xmlBook = XML(srv.lastResult);
+					for each(var i:XML in xmlBook.page)
+					{
+						i.@state = (!StaticModel.isPortraitWide)?this.currentState:((this.currentState == 'portrait')?'landscape':'portrait');
+					}
+					xmlBookListCollection.source = xmlBook.page;
+					
+					StaticModel.pagesList = xmlBook;
+					
+					StaticModel.mobileWidth = stage.width;
+					StaticModel.mobileHeight = stage.height;
+					
+					test.dataProvider = xmlBookListCollection;
+					
+				}
+			}
+ 
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="portrait"/>
+		<s:State name="landscape"/>
+	</s:states>
+	<fx:Declarations>
+		<s:HTTPService id="srv" url="data/data.xml" resultFormat="xml" result="resultHandler(event)"/>
+	</fx:Declarations>
+	<s:VGroup width="100%" height="100%">
+		<s:List id="test" width="100%" height="100%"
+				itemRenderer="com.ThumbImage"  
+				change="navigator.pushView(PageView, test.selectedItem);">
+			<s:layout>
+				<s:TileLayout columnWidth="{test.width/2 - 10}"/>
+			</s:layout>
+		</s:List>	
+	</s:VGroup>
+</s:View>

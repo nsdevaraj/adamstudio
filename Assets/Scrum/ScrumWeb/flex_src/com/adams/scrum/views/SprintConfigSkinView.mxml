@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" xmlns:components="com.adams.scrum.views.components.*" xmlns:mediators="com.adams.scrum.views.mediators.*">	
+	<s:states>
+		<s:State name="BasicState" />
+		<s:State name="NewTeam" />
+		<s:State name="NewTeamMember" />
+	</s:states>
+	<fx:Metadata>
+		[HostComponent("com.adams.scrum.views.mediators.SprintConfigViewMediator")]
+	</fx:Metadata> 
+	<components:NativePanel id="splPanel" width="100%" height="100%" horizontalCenter="0" verticalCenter="0" title="Sprint Configuration" 
+			 skinClass="assets.skins.ClosePanelSkin"> 
+		<s:Scroller top="4" bottom="4" left="4" right="4">
+		<s:Group width="100%" height="100%">
+			<s:Label id="sprintNameTxt" left="0" top="0" styleName="headerStyle" />
+			<components:NativeButton top="0" right="0" 
+				id="sprintBacklog" styleName="OpenIcon" label="Backlog"/>
+			<mx:TabNavigator width="100%" height="100%" creationPolicy="all" top="30">
+				<s:NavigatorContent label="Planning" width="100%">
+						<mx:Form id="sprintForm" width="100%" height="100%">
+							<mx:FormItem label="Start">
+								<mx:DateField id="SDateCreation"/>								
+							</mx:FormItem>
+							<mx:FormItem label="End">
+								<mx:DateField id="SDateEnd"/>								
+							</mx:FormItem>
+							<mx:FormItem label="Preparation">
+								<mx:DateField id="SDatePreparation"/>								
+							</mx:FormItem>
+							<mx:FormItem label="Note">
+								<s:TextArea id="preparationComments"/>								
+							</mx:FormItem>
+							<mx:FormItem label="Demo">
+								<mx:DateField id="SDateDemo"/>								
+							</mx:FormItem>
+							<mx:FormItem label="Note">
+								<s:TextArea id="demoComments"/>								
+							</mx:FormItem>
+						</mx:Form>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="Populate With Stories" width="100%"  height="100%">
+					<s:Scroller width="100%" height="100%">
+					<s:VGroup width="100%" height="100%">
+						<s:HGroup width="100%" verticalAlign="middle">
+							<components:NativeButton id="gotoProductConfig" label="Goto"/>
+							<s:Label text="Version"/>
+							<s:DropDownList id="productVersionSet" labelField="versionLbl"/>
+							<components:NativeButton id="addStories" styleName="NewIcon" label="Stories to Sprint"/>
+							<components:NativeButton id="resetSprint" label="Reset Sprint"/>
+						</s:HGroup>
+						<components:NativeList id="storyList" width="100%" height="100%"/>
+						
+					</s:VGroup></s:Scroller>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="Team" width="100%">
+					<s:VGroup width="100%" height="100%">
+						<s:HGroup width="100%" verticalAlign="middle">
+							<s:DropDownList id="teamSelector" labelField="teamLabel" selectedIndex="0"/>
+							<components:NativeButton id="createTeam" styleName="NewIcon"  label="Team"/>	
+						</s:HGroup>
+						<components:NativeList id="teamMembersList" width="100%" height="100%"/>
+						<components:NativeButton id="addTeamMember" styleName="NewIcon" label="TeamMember"/>
+					</s:VGroup>
+				</s:NavigatorContent>
+			</mx:TabNavigator>
+		</s:Group>
+	</s:Scroller>
+	</components:NativePanel>
+	<mediators:TeamMemberViewMediator id="teamMemberMediator" skinClass="com.adams.scrum.views.TeamMemberSkinView" width="100%" height="100%" includeIn="NewTeamMember"/>
+	<mediators:TeamViewMediator id="teamMediator" skinClass="com.adams.scrum.views.TeamSkinView" width="100%" height="100%" includeIn="NewTeam"/>
+</s:Skin>

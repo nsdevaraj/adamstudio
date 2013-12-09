@@ -1,0 +1,241 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/halo";
+ 
+ 
+@font-face {
+	embedAsCFF:true;
+    fontFamily: myGothic;
+    src: url("assets/fonts/GOTHIC.TTF"); 
+     advancedAntiAliasing: true;
+}
+@font-face {
+	embedAsCFF:false;
+	fontFamily: goth;
+	src: url("assets/fonts/GOTHIC.TTF"); 
+	advancedAntiAliasing: true;
+}
+s|List{
+	border-visible: false;
+	content-background-alpha:0;
+	roll-over-color:#ffffff;
+}
+
+/* global{
+modalTransparency: 0.5;
+modalTransparencyBlur: 5;
+modalTransparencyColor: #272727;
+modalTransparencyDuration: 100;
+} */
+ 
+ 
+s|Application
+{
+	skinClass: ClassReference('assets.adamAppSkin');
+	padding-bottom:0;
+	padding-left:0;
+	padding-right:0;
+	padding-top:0;
+	color: #4c4c4c;
+	fontSize: 11;
+	corner-radius: 0;
+	border-style:solid;
+	border-thickness: 0;
+	border-color: black;
+	background-alpha:1;
+	background-size:"100%";
+	background-color:#ffffff;
+}
+.linksSt{
+	color: #2066ca;
+	fontFamily: myGothic;
+	font-size: 14;
+}
+
+.headerText{
+color:#6a6a6a;
+fontFamily: goth;
+fontSize:18;
+}
+.introTitle{
+	color: #2066ca;
+	fontFamily: goth;
+	font-size: 16;
+}
+.introContent{
+   	borderStyle: none;
+	font-family: Verdana;
+	font-size: 12;
+	background-alpha:0;
+	text-align:left;
+	color:#4c4c4c;
+}
+.spNameSt{
+	color: #2066ca;
+	fontFamily: myGothic;
+	font-size: 12;
+	
+}
+.rollOverText{
+color:#fffc00;
+font-size:18;	
+}
+mx|Label{
+	
+}
+mx|Text{
+	font-size: 13;
+}
+mx|TextArea{
+padding-bottom:5;
+padding-left:5;
+padding-right:5;
+padding-top:5;
+border-style: none;
+font-size: 13;
+
+/*borderSkin: ClassReference("skin.CustomHaloTextAreaBorderSkin");*/
+text-align:left;
+color:#6a6a6a;
+content-background-alpha:0;
+}
+  
+.slideItem{
+	background-color:#151515;
+	vertical-align:middle;
+	padding-left:12;
+	horizontal-gap:30;
+}
+.footerLinkBar{
+	borderStyle: none;
+   horizontalGap: 14;
+   separatorWidth: 1;
+   letterSpacing: 0;
+   cornerRadius: 0;
+   separatorColor: #959494;
+   rollOverColor: #999999;
+   selectionColor: #999999;
+   color: #959494;
+   font-size:11;
+   font-weight:normal;
+   disabledColor: #000000;
+}
+
+ 
+ 
+.locationText{
+	color: #000000;
+	fontFamily: Verdana;
+	font-size: 10;
+}
+.transparentBackground{
+	border-style:solid;
+	border-thickness:1;
+	border-color:#dfdfdf;	
+	background-color:#f6f6f6;
+/*	background-color:#f6f6f6;*/
+	background-alpha:0.98;
+	paddingBottom:15;
+	paddingLeft:15;
+	paddingRight:15;
+	paddingTop:15;
+	vertical-gap:15;
+}
+
+.newsContent{
+   	borderStyle: none;
+	font-family: Verdana;
+	color: #666666;
+	font-weight:bold;
+	font-size: 10;
+	background-alpha:0;
+	text-align:left;
+}
+.latestNews {
+	font-family: Verdana;
+	title-style-name: latestNewsTilte;
+	borderColor: #cccccc;
+	borderAlpha: 0.5;
+	cornerRadius: 0;
+	headerHeight: 33;
+	backgroundAlpha: 0.7;
+	backgroundColor: #ffffff;
+}
+.latestNewsTilte{
+	font-size: 12;
+	font-weight:bold;
+	color: #00577F;
+}
+.MenuBtn{
+	color: #d6d6d6;
+	text-roll-over-color: #FFFFFF;
+	text-selected-color: #C5F0F0; 
+	font-weight:normal;
+	font-size: 11;
+	padding-left:20;
+	padding-right:20;
+
+	upSkin: Embed(source="assets/css/interface.swf", symbol="btn",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");  
+	overSkin: Embed(source="assets/css/interface.swf", symbol="btn_over",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20"); 
+	downSkin: Embed(source="assets/css/interface.swf", symbol="btn",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20"); 
+	disabledSkin: Embed(source="assets/css/interface.swf",symbol="btn",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");   
+	
+	selectedUpSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");   
+	selectedOverSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");     
+	selectedDownSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");   
+	selectedDisabledSkin: Embed(source="assets/css/interface.swf", symbol="btn_selected",
+		scaleGridLeft="30", scaleGridTop="15", 
+		scaleGridRight="35", scaleGridBottom="20");   
+}
+.closeBtn
+{
+	 up-skin : Embed(source='assets/images/upBtn.png');
+	down-skin: Embed(source='assets/images/upBtn.png');
+	over-skin :Embed(source='assets/images/overBtn.png');
+	disabled-skin:Embed(source='assets/images/upBtn.png');
+	selected-over-skin:Embed(source='assets/images/overBtn.png');
+	selected-up-skin:Embed(source='assets/images/upBtn.png');
+	selected-down-skin:Embed(source='assets/images/upBtn.png');
+	selected-disabled-skin:Embed(source='assets/images/upBtn.png');
+}
+mx|ScrollBar {
+    downArrowUpSkin: Embed(source="assets/images/downArrow.png");
+    downArrowOverSkin: Embed(source="/assets/images/downArrow.png");
+    downArrowDownSkin: Embed(source="/assets/images/downArrow.png");
+    upArrowUpSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowOverSkin: Embed(source="/assets/images/upArrow.png");
+    upArrowDownSkin: Embed(source="/assets/images/upArrow.png");
+    thumbDownSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbUpSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    thumbOverSkin: 
+    	Embed(source="/assets/images/thumb.png",
+        scaleGridLeft="7", scaleGridTop="5", 
+        scaleGridRight="8", scaleGridBottom="7");
+        
+    trackSkin: 
+    	Embed(source="/assets/images/scrolltrack.png",
+        scaleGridLeft="7", scaleGridTop="4", 
+        scaleGridRight="8", scaleGridBottom="6" );       
+} 

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+			 xmlns:s="library://ns.adobe.com/flex/spark" 
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+			 minWidth="21" minHeight="21"
+			 alpha.disabled="0.5">
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" />
+		<s:State name="down" />
+		<s:State name="disabled" />
+	</s:states>
+	
+	<!-- host component -->
+	<fx:Metadata>
+		<![CDATA[
+		[HostComponent("spark.components.Button")]
+		]]>
+	</fx:Metadata>
+	
+	<fx:Script fb:purpose="styling">
+		<![CDATA[
+			/* Define the skin elements that should not be colorized. 
+			For button, the graphics are colorized but the label is not. */
+			static private const exclusions:Array = ["labelDisplay"];
+			
+			override public function get colorizeExclusions():Array {
+				return exclusions;
+			}
+			
+			override protected function initializationComplete():void {
+				useChromeColor = true;
+				super.initializationComplete();
+			}  
+			
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void {
+				var cr:Number = getStyle("cornerRadius");
+				
+				/* if (cornerRadius != cr) {
+				cornerRadius = cr;
+				shadow.radiusX = cornerRadius;
+				fill.radiusX = cornerRadius;
+				lowlight.radiusX = cornerRadius;
+				highlight.radiusX = cornerRadius;
+				border.radiusX = cornerRadius;
+				}
+				
+				if (highlightStroke) {
+				highlightStroke.radiusX = cornerRadius;
+				}
+				if (hldownstroke1) {
+				hldownstroke1.radiusX = cornerRadius;
+				}
+				if (hldownstroke2) {
+				hldownstroke2.radiusX = cornerRadius;
+				} */
+				if(!iconImg.source){
+					con.gap = 0;	
+				}else {
+					con.gap = 5;	
+				}
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+			}
+			
+			private var cornerRadius:Number = 2;
+		]]>
+	</fx:Script>
+	
+	<!-- layer 1: shadow -->
+	<!--- @private -->
+	<s:Rect id="shadow" left="-1" right="-1" top="-1" bottom="-1" radiusX="5">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x000000" 
+								 color.down="0x333333"
+								 alpha="0.5"
+								 alpha.down="0.2" />
+				<s:GradientEntry color="0x000000" 
+								 color.down="0x333333" 
+								 alpha="0.5"
+								 alpha.down="0.2" />
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- layer 2: fill -->
+	<!--- @private -->
+	<s:Rect id="fill" left="1" right="1" top="1" bottom="1" radiusX="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0x333333" 
+								 
+								 alpha="0.85"
+								 alpha.over="0.7"
+								 />
+				<s:GradientEntry color="0x333333" 
+								 
+								 alpha.over="0.7"
+								 alpha="0.85" />
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- layer 7: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
+	<!--- @private -->
+	<s:Rect id="border" left="0" right="0" top="0" bottom="0" width="69" height="20" radiusX="2">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0x000000" 
+								 alpha="0.5625"
+								 alpha.down="0.6375" />
+				<s:GradientEntry color="0x000000" 
+								 alpha="0.75" 
+								 alpha.down="0.85" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	<s:Rect id="borderWhite" left="1" right="1" top="1" bottom="1" width="69" height="20" radiusX="2">
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90" weight="1">
+				<s:GradientEntry color="0x404040" 
+								 alpha="0.5625"
+								 alpha.down="0.6375" />
+				<s:GradientEntry color="0x404040" 
+								 alpha="0.75" 
+								 alpha.down="0.85" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	
+	
+	
+	<s:HGroup horizontalCenter="0" id="con"  verticalAlign="middle" height="100%" top="0" bottom="2" gap="3"
+			  paddingLeft="4" paddingRight="4">
+		<s:BitmapImage id="iconImg" source="{hostComponent.getStyle('icon')}"  />
+		
+		<!-- layer 8: text -->
+		<s:Label id="labelDisplay" color="#959595"
+				 verticalAlign="middle"
+				 maxDisplayedLines="1"
+				 width="100%"   />
+	</s:HGroup>
+	
+</s:SparkSkin>

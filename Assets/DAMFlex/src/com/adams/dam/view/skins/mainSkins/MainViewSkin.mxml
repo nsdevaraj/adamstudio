@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:login="com.adams.dam.view.hosts.login.*"
+		xmlns:innerView="com.adams.dam.view.hosts.allFiles.*"
+		xmlns:preloader="com.adams.dam.view.hosts.preloader.*">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("com.adams.dam.view.hosts.mainHosts.MainView")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adams.dam.model.ModelLocator;
+			[Bindable]
+			private var model:ModelLocator = ModelLocator.getInstance(); 
+			
+		]]>
+	</fx:Script>
+	
+	<mx:ViewStack id="mainStack" width="100%" height="100%" selectedIndex="{ model.loginIndex }">
+		<s:NavigatorContent width="100%" height="100%">
+			<login:LoginView width="100%" height="100%" skinClass="com.adams.dam.view.skins.login.LoginSkin" loggedIn="{ model.successfulLogin }"/>
+		</s:NavigatorContent>
+		<s:NavigatorContent width="100%" height="100%">
+			<innerView:AllFilesView width="100%" height="100%" skinClass="com.adams.dam.view.skins.allFiles.AllFilesSkin"/>
+		</s:NavigatorContent>	
+	</mx:ViewStack>	
+	<preloader:CustomPreloaderView width="100%" height="100%" visible="{ model.preloaderVisibility }" includeInLayout="{ model.preloaderVisibility }"
+								   skinClass="com.adams.dam.view.skins.preloader.CustomPreloaderSkin"/>
+</s:Skin>

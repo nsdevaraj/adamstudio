@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark"> 
+	<fx:Script>
+		<![CDATA[
+			import com.adams.pdf.model.vo.CommentVO;
+			
+			import mx.collections.ArrayCollection;
+			
+			private var _numOfElements:int = 0;
+
+			public function get numOfElements():int
+			{
+				_numOfElements = vGroupList.numElements;
+				return _numOfElements;
+			}
+			
+			public function addComment(comment:CommentBox):void
+			{
+				vGroupList.addElement( comment );	
+			}
+			
+			public function updateComment(commentBox:CommentBox):void
+			{
+				for(var i:int = 0;i<vGroupList.numElements;i++){
+					if((vGroupList.getElementAt(i) as CommentBox).commentItemName == commentBox.commentItemName)
+					{
+						(vGroupList.getElementAt(i) as CommentBox).updateCollection(commentBox.historyCollection);
+						break;
+					}
+				}
+			}
+			public function updateHistory(historyAC:ArrayCollection):void
+			{
+				for(var itemCounter:int = 0;itemCounter<historyAC.length;itemCounter++)
+				{
+					for(var commentCounter:int = 0;commentCounter<vGroupList.numElements;commentCounter++)
+					{
+						if(CommentVO(historyAC.getItemAt(itemCounter)).history == CommentBox(vGroupList.getElementAt(commentCounter)).commentVO.commentID)
+						{
+							CommentBox(vGroupList.getElementAt(commentCounter)).updateLastEntry(CommentVO(historyAC.getItemAt(itemCounter)),"add");
+						}
+					}
+				}
+			}
+			
+			public function removeComment(commentItemName:String):void
+			{
+				for(var i:int = 0;i<vGroupList.numElements;i++){
+					if((vGroupList.getElementAt(i) as CommentBox).commentItemName == commentItemName)
+					{
+						vGroupList.removeElement(vGroupList.getElementAt(i));
+						break;
+					}
+				}
+			}
+			public function removeAllComments():void
+			{
+				vGroupList.removeAllElements();
+			}
+		]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#000000" alpha="0.5"/>
+		</s:fill>
+	</s:Rect>
+	<s:Scroller width="100%" height="100%" horizontalScrollPolicy="off"> 
+		<s:VGroup id="vGroupList" />
+	</s:Scroller>
+</s:Group>

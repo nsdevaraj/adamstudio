@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" 
+	xmlns:components="com.adams.dt.view.components.*" styleName="innerBorder" creationComplete="init()">
+<mx:Script>
+	<![CDATA[
+		import com.adams.dt.model.vo.FileCategory;
+		import com.adams.dt.model.ModelLocator;		
+		import mx.collections.ArrayCollection;
+		[Bindable]
+		public var workflowData:ArrayCollection;
+		
+		public static const RELEASE_BTN_CLICK : String = "releaseBtnClick";
+
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		[Bindable]
+		public var btnName:String = "000";
+		
+		[Bindable] 								
+		private var btnNameEnabled:String = ""; 
+		private function init():void{
+			btnNameEnabled = "000";
+		}
+		
+		private function naviagationTask(event:MouseEvent):void{
+			btnName = event.currentTarget.id;
+			if(btnName == "P4T05A"){
+				resetUploadComp();
+			}
+			dispatchEvent(new Event("releaseBtnClick"));
+		}
+		private function resetUploadComp():void{
+			fileList.listFiles.dataProvider=[];
+			fileList.UploadFiles = [];			
+			model.currentProjectFiles = new ArrayCollection();
+		}
+		
+	]]>
+	</mx:Script>
+	<mx:Metadata>
+		[Event(name="releaseBtnClick",type="flash.events.Event")]
+	</mx:Metadata>
+	<mx:HBox width="100%" horizontalGap="0">
+		<mx:Form labelWidth="140" paddingLeft="0" paddingBottom="0" width="100%">
+			<mx:FormItem label="OPE to FAB">
+        		<components:Upload fileCategory="{ FileCategory.CREATION }" left="0" type="Tasks" visible="{(btnNameEnabled == '000')}" includeInLayout="{(btnNameEnabled == '000')}"
+					id="fileList" width="375" height="150" basicFileCollection="{ model.basicFileCollection }" 
+					basicFileVisible="{ true }" />	
+       		</mx:FormItem>
+			<mx:FormItem>
+				<mx:Button label="P4T04A Send" id="P4T04A" click="naviagationTask(event);btnNameEnabled = event.currentTarget.id;" enabled="{(btnNameEnabled == '000')}"/>
+			</mx:FormItem>
+		</mx:Form>		
+	</mx:HBox>
+	
+	<mx:HBox width="100%" horizontalGap="0">
+		<mx:Form labelWidth="140" paddingLeft="0" paddingBottom="0" width="100%">
+			<mx:FormItem label="FAB to CLT">
+				<mx:Button label="P4T05A Send" id="P4T05A" click="naviagationTask(event);btnNameEnabled = event.currentTarget.id;" enabled="{(btnNameEnabled == 'P4T04A')}"/>
+			</mx:FormItem>
+		</mx:Form>	
+	</mx:HBox>
+	
+	<mx:HBox width="100%" horizontalGap="0">
+		<mx:Form labelWidth="140" paddingLeft="0" paddingBottom="0" width="100%">
+			<mx:FormItem label="CLT to FAB">
+				<mx:Button label="P4T02A Send" id="P4T02A" click="naviagationTask(event);btnNameEnabled = event.currentTarget.id;" enabled="{(btnNameEnabled == 'P4T05A')}"/>
+			</mx:FormItem>
+		</mx:Form>	
+	</mx:HBox>
+	
+	<mx:HBox width="100%" horizontalGap="0">
+		<mx:Form labelWidth="140" paddingLeft="0" paddingBottom="0" width="100%">
+			<mx:FormItem label="FAB to OPE">
+				<mx:Button label="P4T03A Send" id="P4T03A" click="naviagationTask(event);btnNameEnabled = event.currentTarget.id;" enabled="{(btnNameEnabled == 'P4T02A')}"/>
+			</mx:FormItem>
+		</mx:Form>	
+	</mx:HBox>		
+</mx:VBox>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="domainChange()"  width="100%">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.DateChooser;
+			import com.adams.dt.model.scheduler.util.DateUtil;
+			import mx.collections.ArrayCollection;
+			import com.adams.dt.business.util.Utils;
+			import com.adams.dt.model.vo.Tasks;
+			import com.adams.dt.model.ModelLocator;
+			import com.adams.dt.model.vo.Sprints;
+		import mx.events.ItemClickEvent;
+		import com.adams.dt.model.vo.Categories;
+					
+		[Event(name="deleteRow", type="com.SprintEvent")]
+		
+		[Bindable]
+		public var sprints:Sprints = new Sprints();
+		
+		[Bindable]
+		private var domainProvider:Array = ["Domain","s","d","f","g","h","e"];		
+		
+		[Bindable]
+		private var taskProvider:ArrayCollection;
+		
+		private var yesterdayDate:Date;
+		
+		private var domainValid:Boolean;
+		private var taskValid:Boolean;
+		private var hrValid:Boolean;
+		private var commentsValid:Boolean;
+		
+		
+		[Bindable]
+		private var model:ModelLocator = ModelLocator.getInstance();
+		
+		private function domainChange():void{
+			sprints.domainFK = Categories(domainChoser.selectedItem).categoryId;
+			setTaskDataprovider();
+			taskChange();
+		}
+		private function setTaskDataprovider():void{
+			taskProvider = new ArrayCollection();
+			for each( var task:Tasks in model.sprintTasksCollection) {
+				var domain:Categories = Utils.getDomains( task.projectObject.categories )
+				if(domain.categoryId==sprints.domainFK){
+					if(!task.tDateEnd){
+						var tskLable:String =task.projectObject.projectName+": "+task.workflowtemplateFK.taskLabel;
+						
+						taskProvider.addItem({tLable:tskLable,selectedTask:task});
+					}
+				}
+			}
+		}
+		
+		private function taskChange():void{
+			if(taskChoser.selectedItem!=null){
+				sprints.sprintTask = Tasks(taskChoser.selectedItem.selectedTask); 
+				dateRange(sprints.sprintTask.tDateCreation)
+			}else{
+				
+			}
+		}
+		private function dateRange(date:Date):void{
+			yesterdayDate = new Date(model.currentTime.getTime() - DateUtil.DAY_IN_MILLISECONDS )
+			dateSelector.selectedDate = yesterdayDate; 
+			dateSelector.selectableRange={rangeStart : date,rangeEnd : yesterdayDate};
+			setSprintsTask(dateSelector.selectedDate);
+		}
+		
+		private function isToday(event:ItemClickEvent):void{
+			sprints.yesterToday = String(event.index==0?"false":"true");
+			if(sprints.yesterToday=="true"){
+				dateSelector.enabled = false;
+				dateSelector.selectedDate = new Date();
+				setSprintsTask(dateSelector.selectedDate)
+			}else{
+				dateSelector.enabled = true;
+				dateSelector.selectedDate  = yesterdayDate;
+				setSprintsTask(dateSelector.selectedDate)
+			}
+		}
+		private function setSprintsTask(date:Date):void{
+			sprints.taskDate = date;
+		}
+		
+		private function commentsChange():void{
+			cTxt.text=="Enter your Comments max 140 characters"?cTxt.text = "" :'';
+			if(cTxt.text!=''){
+				sprints.taskComments=cTxt.text;
+				commentsValid = true;
+			}else{
+				commentsValid = false;
+			}
+		}
+		
+		private function hourChange():void{
+			if(hrsChoser.value!=0){
+				sprints.taskTimeSpent = hrsChoser.value;
+				hrValid = true;
+			}else{
+				hrValid = false;
+			}
+		}
+		
+		public function validateSprint():Boolean{
+			if(hrValid && commentsValid){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		private function dispatchDeleteEvent():void{
+			dispatchEvent(new Event("deleteRow"));
+		}
+		
+		private function modifyDPWorkflow():void{
+				model.collectAllDomains.filterFunction = getDomainsOnly;
+		}
+		private function getDomainsOnly(item:Categories):Boolean
+	  	{
+	  		var retVal : Boolean = false;
+			if ( item.categoryFK == null)
+			{ 
+				retVal = true;
+			}
+			return retVal;
+	  	}
+		]]>
+	</mx:Script>
+	<mx:VBox borderStyle="solid" width="100%" verticalGap="10" verticalAlign="middle" paddingBottom="10" paddingLeft="10"
+		 paddingRight="10" paddingTop="10">
+		<mx:HBox width="100%" >
+			<mx:FormItem label="Domain">
+				<mx:ComboBox id="domainChoser" labelField="categoryName" dataProvider="{model.collectAllDomains}" change="domainChange()"/>	
+			</mx:FormItem>
+			<mx:FormItem label="Task">
+				<mx:ComboBox id="taskChoser"  change="taskChange()" labelField="tLable" dataProvider="{taskProvider}"/>	
+			</mx:FormItem>
+		</mx:HBox>	
+		
+		<mx:HBox verticalAlign="middle" width="100%" >
+			<mx:ToggleButtonBar itemClick="isToday(event)" selectedIndex="0" dataProvider="{['Previous','Today']}" />
+			<mx:DateField id="dateSelector" change="setSprintsTask(dateSelector.selectedDate)"  showToday="true"  />
+				<mx:HBox  horizontalGap="0">
+				<mx:NumericStepper id="hrsChoser" change="hourChange()" maximum="999" />
+				<mx:Text id="hrsText" text="hrs"/>	
+			</mx:HBox>
+			<mx:TextArea text="Enter your Comments max 140 characters" id="cTxt" width="100%" maxChars="140"
+			 focusOut="{cTxt.text==''?cTxt.text='Enter your Comments max 140 characters':cTxt.text=cTxt.text}"
+			 click="commentsChange()" change="commentsChange()"/>
+			 <mx:Button styleName="deleteIcon" buttonMode="true" click="dispatchDeleteEvent()"/>
+			 <mx:Spacer width="10"/>
+		</mx:HBox>		
+	</mx:VBox>
+</mx:Canvas>

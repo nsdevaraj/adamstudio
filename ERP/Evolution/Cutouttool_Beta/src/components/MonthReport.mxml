@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox implements="components.Interface.IComponents" xmlns:mx="http://www.adobe.com/2006/mxml" verticalGap="0" verticalAlign="middle" horizontalAlign="center" width="100%" height="100%" 
+	creationComplete="{init(),Controller.getInstance().registerView = this}">
+<mx:Script>
+	<![CDATA[
+		import business.GenerateADExcelData;
+		import business.GenerateExcelData;
+		import mx.core.Application;
+		import controller.Controller;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import business.GenerateReport;
+		
+		import business.org.alivepdf.pdf.PDF;
+		import business.org.alivepdf.image.ImageFormat;
+		import business.org.alivepdf.drawing.DashedLine;
+		import business.org.alivepdf.display.*;
+		import business.org.alivepdf.layout.*;
+		import business.org.alivepdf.colors.*;
+		import business.org.alivepdf.transitions.Transition;
+		import business.org.alivepdf.fonts.FontFamily;
+		import business.org.alivepdf.transitions.Dimension;
+		import business.org.alivepdf.display.PageMode;
+		import business.org.alivepdf.fonts.Style;
+		import business.org.alivepdf.viewing.*;
+		import business.org.alivepdf.saving.Download;
+		import business.org.alivepdf.saving.Method;
+		
+		import mx.collections.ArrayCollection;
+		[Bindable]
+        [Embed("../assets/pdf.png")]
+        private var pdfIcon:Class;
+		
+		[Bindable]
+        [Embed("../assets/print.png")]
+        private var printIcon:Class;
+		
+		[Bindable]
+       	[Embed("../assets/excel.png")]
+        private var excelIcon:Class;
+   
+		[Bindable]
+		private var monthData:ArrayCollection = new ArrayCollection();
+		private var dataTipArr:Array =  ["January","February","March","April","May","June","July","August","september",
+		 								"October","November","December"];
+		[Bindable]
+		 private var monthArr:Array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","sep",
+		 								"Oct","Nov","Dec"]
+		 private var _year:Number = 2008;
+		 private var report:GenerateReport = new GenerateReport();
+		 private var eventInterface:Event; 	
+		 public function init():void{
+		 	var date:Date = new Date()
+		 	startMonthValue= date.getMonth()+1;
+		 	endMonthValue = date.getMonth()+2
+		 	monthDiff.values = [startMonthValue,endMonthValue]
+		 	if(this.parentApplication.demoView)
+	 	 		monthData = report.getReortData(Controller.getInstance().demoObj.report);
+	 	 	else
+	 	 		getData(eventInterface);
+	 	 		
+	 	 	this.addEventListener("DataChanged",getData);
+		 } 
+		public function garbageCollection():void{
+		}
+		 private function getData(event:Event):void{
+		 	if(this.parentApplication.demoView){
+	 	 		monthData = report.getReortData(Controller.getInstance().demoObj.report);
+	 	 	}
+	 	 	else{
+		 		updateQuery = report.getReportQueryBt(_year,startMonthValue,endMonthValue); 
+		 		remoteDataConnector.getOperation("xmldb").send();
+		 		remoteDataConnector.addEventListener(ResultEvent.RESULT,resulthandler);
+	 	 	}
+		 }
+		 [Bindable]
+		 private var pageVal:Number = 1;
+		 private function resulthandler(event:ResultEvent):void{
+			monthData = report.getReortData(XML(event.result));
+			Page.value = 1;
+			pageVal = monthData.length/pageSize
+			pageVal =(monthData.length%pageSize==0)?pageVal:(Math.floor(pageVal)+1);
+			refreshDataProvider(1);
+		 }
+		 private function faultHandler(event:FaultEvent):void{
+		 	
+		 }
+		 private var _startMonthValue:Number;
+		 private var _endMonthValue:Number;
+		 public function set startMonthValue(val:Number):void{	
+		 	_startMonthValue = val;	 	
+			dispatchEvent(new Event("DataChanged"))
+		 }
+		 [Bindable (event="DataChanged",  type="flash.events.Event")]
+		 public function get startMonthValue():Number{		 	
+		 	return _startMonthValue;
+		 }
+		 public function set endMonthValue(val:Number):void{	
+		 	_endMonthValue = val;	 	
+			dispatchEvent(new Event("DataChanged"))
+		 }
+		 [Bindable (event="DataChanged",  type="flash.events.Event")]
+		 public function get endMonthValue():Number{		 	
+		 	return _endMonthValue;
+		 }
+		 private function prevYear(event:Event):void{
+		 	year = (year-1);
+		 }
+		 private function nextYear(event:Event):void{
+		 	year = (year+1);
+		 }
+		 [Bindable (event="DataChanged",  type="flash.events.Event")]
+		 public function get year():Number{
+		 	return _year;
+		 }	
+		 public function set year(num:Number):void{
+		 	_year = num;
+		 	dispatchEvent(new Event("DataChanged"));
+		 }	
+		private var query:String;
+		public function set updateQuery(str:String):void{
+			query = str;
+		}
+		[Bindable]
+		public function get updateQuery():String{
+			return query;
+		}
+		private function checkMonthDiff():void{
+			startMonthValue = monthDiff.values[0]
+			endMonthValue = monthDiff.values[1]
+		}	
+		private function dataTipFunc(val:String):String{
+	         return dataTipArr[Number(val)-1];
+	    }
+	    
+	  	/**
+	  	 * DataGrid Paging
+	  	 */ 
+	    private var pageSize:Number = 16;
+	    [Bindable]
+	    private var myData:ArrayCollection;
+	    private function refreshDataProvider(start:Number):void
+		{
+			start = start-1
+			myData = new ArrayCollection( monthData.source.slice((start * pageSize),(start * pageSize) + pageSize));
+		}
+		
+		private var myPDF:PDF;
+		private function generatePdf():void{
+			myPDF = new PDF( Orientation.LANDSCAPE, Unit.MM, Size.A4 );		
+			myPDF.setDisplayMode (Display.REAL, Layout.SINGLE_PAGE );		
+			for(var i:int=1;i<=pageVal;i++){
+				myPDF.addPage();  				
+				myPDF.addImage (monthlyReport, 1, null, null, true, ImageFormat.JPG );
+			}  
+			var phpPath:String = Application.application.docRoot+"Cutouttool_Beta-debug/create.php"
+			myPDF.savePDF(Method.REMOTE, phpPath, Download.ATTACHMENT, "myPDF.pdf");
+			myPDF.end();
+		}
+
+		private var excelData:GenerateADExcelData = new GenerateADExcelData();
+		private function generateExcel():void{
+			monthlyReport.dataProvider = monthData;
+			excelData.loadDGInExcel(monthlyReport);
+			refreshDataProvider(1);
+		}
+	]]>
+</mx:Script>
+	<mx:RemoteObject id="remoteDataConnector" showBusyCursor="true" destination="amfphp" endpoint="{Application.application.serverPath}" fault="faultHandler(event)" source="dev.xmldb4">
+			<mx:method name="xmldb">
+				<mx:arguments>
+					<query>{updateQuery}</query>
+				</mx:arguments>
+			</mx:method>
+	</mx:RemoteObject> 
+	<mx:VBox verticalAlign="middle" horizontalAlign="center">
+   	 <mx:HBox>
+   	 	<mx:Button x="521" y="10" label="&lt;&lt;{year-1}" click="prevYear(event)"/>
+   	 	<mx:Text fontSize="20" fontFamily="bold" textAlign="center" text="Year {year}" width="316"/>
+   	 	<mx:Button  label="{year+1}&gt;&gt;" click="{nextYear(event)}"/>
+   	 </mx:HBox>	
+	 	<mx:HSlider id="monthDiff" labels="{monthArr}" tickInterval="1" snapInterval="1" minimum="1" maximum="12" thumbCount="2" height="100%" width="100%"
+	 				change="checkMonthDiff()"  showTrackHighlight="true" themeColor="haloBlue" dataTipFormatFunction="dataTipFunc"/>
+	</mx:VBox>
+	
+   <mx:AdvancedDataGrid id="monthlyReport" rowCount="18" 
+        width="100%" 
+        defaultLeafIcon="{null}" y="70" dataProvider="{myData}" verticalScrollPolicy="off">
+        <mx:groupedColumns>
+            <mx:AdvancedDataGridColumn dataField="Delivery" headerText="Delivery"/>
+            <mx:AdvancedDataGridColumn dataField="CreatedBy" headerText="Created by"/>
+            <mx:AdvancedDataGridColumn dataField="Task" headerText="Task"/>
+            <mx:AdvancedDataGridColumn id="qtimages" dataField="QtImages" headerText="qt Images" width="100"/>
+            <mx:AdvancedDataGridColumnGroup dataField="Timing">    
+                <mx:AdvancedDataGridColumn id="hrs" dataField="Hours" width="80"/>
+                <mx:AdvancedDataGridColumn id="mins" dataField="mins" width="80"/>
+            </mx:AdvancedDataGridColumnGroup>    
+        </mx:groupedColumns>
+   </mx:AdvancedDataGrid>   
+	<mx:HBox paddingTop="0" horizontalAlign="right" verticalAlign="top" horizontalGap="50" width="100%">	
+		<mx:HBox paddingTop="0" borderThickness=".5" verticalAlign="top" borderStyle="solid">
+			<mx:Text textAlign="center" text="26" width="121"/>	
+			<mx:Text textAlign="center" text="10" width="69" height="18"/>
+			<mx:Text textAlign="center" text="32" width="94" height="18"/>
+		</mx:HBox>
+	</mx:HBox>
+	<mx:HBox horizontalAlign="left" width="100%">
+			<mx:LinkButton id="pdf" icon="{pdfIcon}" click="generatePdf()"/>
+			<mx:LinkButton id="print" icon="{printIcon}" />
+			<mx:LinkButton id="excel" icon="{excelIcon}" click="generateExcel()"/>
+			<mx:Label text="Page No:"/>
+			<mx:NumericStepper id="Page" minimum="1" maximum="{pageVal}" change="refreshDataProvider(Page.value)"/>
+	</mx:HBox>		
+</mx:VBox>

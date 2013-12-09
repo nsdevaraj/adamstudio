@@ -1,0 +1,169 @@
+<html>
+<head> 
+<style>
+body { margin: 0px;}
+</style>
+<style type="text/css">
+      #divId {
+        visibility:hide;
+      }
+
+    </style>
+
+<script language="javascript">
+//<!--
+function getFlexApp(appName) {
+  if (navigator.appName.indexOf ("Microsoft") !=-1) {
+    return window[appName];
+  } else {
+    return document[appName];
+  }
+}
+
+var txtFile;
+var txtSize;
+function FileNameDetails(sFile)
+{
+	txtFile = escape(sFile);
+	var filepathname = txtFile;
+  	getFlexApp("FlexJSTutorial").addFileNameDetails(filepathname);
+}
+
+function Show(xPx,yPx,widthPx,heightPx)
+{
+
+	if (document.all)
+	{
+		document.getElementById('divId').style.left= xPx;;
+		document.getElementById('divId').style.top= yPx;
+
+		if(document.getElementById('cellId').width != '0px');
+			document.getElementById('cellId').width = widthPx;
+
+		if(document.getElementById('cellId').height != '0px');
+			document.getElementById('cellId').height = heightPx;
+
+		if(document.getElementById('divId').style.visibility="hidden");
+			document.getElementById('divId').style.visibility="visible";
+
+		if(document.getElementById('tabId').style.visibility="hidden");
+			document.getElementById('tabId').style.visibility="visible";
+
+		document.getElementById('document.all.appletId').style.visibility="visible";
+
+		document.getElementById('divId').style.left=xPx;
+		document.getElementById('divId').style.top=yPx;
+
+		document.getElementById('document.all.appletId').width = widthPx;
+		document.getElementById('document.all.appletId').height = heightPx;
+
+	}
+	else
+	{
+		document.getElementById('divId').style.left=xPx;
+		document.getElementById('divId').style.top=yPx;
+
+		document.getElementById('cellId').width = widthPx;
+		document.getElementById('cellId').height = heightPx;
+
+		document.getElementById('appletId').width = widthPx;
+		document.getElementById('appletId').height = heightPx;
+
+	}
+
+
+}
+function getUrl()
+{
+	var url = document.location.toString();
+
+	return url;
+}
+function Hide(xPx,yPx,widthPx,heightPx)
+{
+
+	if (document.all)
+	{
+		document.getElementById('divId').style.left= xPx;;
+		document.getElementById('divId').style.top= yPx;
+
+		if(document.getElementById('divId').style.visibility="visible");
+			document.getElementById('divId').style.visibility="hidden";
+
+		if(document.getElementById('tabId').style.visibility="visible");
+			document.getElementById('tabId').style.visibility="hidden";
+
+		if(document.getElementById('cellId').width != '0px');
+			document.getElementById('cellId').width = xPx;
+
+		if(document.getElementById('cellId').height != '0px');
+			document.getElementById('cellId').height = xPx;
+
+		document.getElementById('document.all.appletId').style.visibility="hide";
+
+	    document.getElementById('document.all.appletId').width = widthPx;
+		document.getElementById('document.all.appletId').height = heightPx;
+	}
+	else
+	{
+		document.getElementById('divId').style.left=xPx;
+		document.getElementById('divId').style.top=yPx;
+
+		document.getElementById('cellId').width = widthPx;
+		document.getElementById('cellId').height = heightPx;
+
+		document.getElementById('appletId').width = widthPx;
+		document.getElementById('appletId').height = heightPx;
+	}
+
+}
+
+//-->
+</script>
+</head>
+<body>
+
+
+ <div>
+	 <table width="100%" height="100%">
+		 <tr>
+			 <td>
+				<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+					id="FlexJSTutorial" width="100%" height="100%"
+					codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+					<param name="movie" value="CutOutTool.swf" />
+					<param name="quality" value="high" />
+					<param name="bgcolor" value="#869ca7" />
+					<param name="allowScriptAccess" value="always" />
+					<param name="wmode" value="transparent">
+					<param name="menu" value="false">
+					<embed src="CutOutTool.swf" quality="high" bgcolor="#869ca7"
+						width="100%" height="100%" name="FlexJSTutorial" align="middle"
+						play="true"
+						loop="false"
+						quality="high"
+						allowScriptAccess="always"
+						type="application/x-shockwave-flash"
+						pluginspage="http://www.adobe.com/go/getflashplayer" wmode="transparent" menu="false">
+					</embed>
+				 </object>
+				 <div id="divId" style="position:absolute;">
+					<table id="tabId">
+						<tr>
+							<td id="cellId">
+								<applet id="appletId" code="DNDApplet.class" archive="DNDApplet.jar" width="100%" height="100%">
+								<param name="ImagePath" value="top.png">
+								<param name="ColorName" value="#ffffff">
+								</applet>
+							</td>
+						</tr>
+					</table>
+				</div>
+			 </td>
+		 </tr>
+	 </table>
+</div>
+
+</body>
+</html>
+

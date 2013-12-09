@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:components="com.adams.scrum.views.*" minHeight="600" minWidth="1000"
+					   xmlns:local="*" horizontalCenter="0" verticalCenter="0">
+	<fx:Style source="Style.css" />
+	<fx:Script>
+		<![CDATA[
+			import com.adams.scrum.dao.AbstractDAO;
+			import com.adams.scrum.models.vo.CurrentInstance;
+			import com.adams.scrum.utils.Utils;
+			import com.adams.scrum.views.components.NativeButton;
+			
+			import mx.binding.utils.BindingUtils;
+			import mx.events.FlexEvent;
+			
+			import spark.components.Label;
+			[Inject]
+			public var currentInstance:CurrentInstance; 
+			[Inject("personDAO")]
+			public var personDAO:AbstractDAO;
+			[SkinPart]
+			public var statusTextLbl:Label;
+			[SkinPart]
+			public var logoutBtn:NativeButton;
+			private function logoutBtnHandler( event:MouseEvent ):void {
+				currentInstance.mainViewStackIndex = Utils.LOGIN_INDEX;
+			} 
+
+			override protected function partAdded(partName:String, instance:Object):void{
+				if(instance ==statusTextLbl){
+					statusTextLbl.text =Utils.version;
+				}else if(instance ==logoutBtn){
+					BindingUtils.bindProperty(logoutBtn,'visible',personDAO.controlService.authCS,'authenticated');
+					logoutBtn.clicked.add( logoutBtnHandler )
+				}
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations> 
+		<local:Context dispatcher="{ this }"/>
+	</fx:Declarations>
+	<s:layout><s:VerticalLayout gap="0"/></s:layout>
+	<components:MyView/> 
+</s:WindowedApplication> 
